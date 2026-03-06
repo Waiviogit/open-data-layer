@@ -32,7 +32,6 @@ The spec defines a deterministic architecture for:
 1. Read **Architecture baseline** below (four services).
 2. Skim [architecture.md](architecture.md) for service boundaries and contracts.
 3. Read [governance-resolution.md](governance-resolution.md) for how masks are computed.
-4. For full narrative: [../spec_governance_updates.md](../spec_governance_updates.md) (end-to-end summary).
 
 ---
 
