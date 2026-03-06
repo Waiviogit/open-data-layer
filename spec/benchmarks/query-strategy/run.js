@@ -69,7 +69,7 @@ function correctness(mongoResult, postgresResult, scenarioName) {
   const totalMatch = mTotal === pTotal;
   const lengthMatch = mongoResult.data.length === postgresResult.data.length;
   const idsMatch = mIds.length === pIds.length && mIds.every((id, i) => id === pIds[i]);
-  return {
+  const out = {
     pass: totalMatch && lengthMatch && idsMatch,
     totalMatch,
     lengthMatch,
@@ -77,6 +77,20 @@ function correctness(mongoResult, postgresResult, scenarioName) {
     mongoTotal: mTotal,
     postgresTotal: pTotal,
   };
+  if (!idsMatch) {
+    out.mongoSample = mIds.slice(0, 5);
+    out.postgresSample = pIds.slice(0, 5);
+    let firstMismatch = -1;
+    for (let i = 0; i < Math.min(mIds.length, pIds.length); i++) {
+      if (mIds[i] !== pIds[i]) {
+        firstMismatch = i;
+        break;
+      }
+    }
+    if (firstMismatch < 0 && mIds.length !== pIds.length) firstMismatch = Math.min(mIds.length, pIds.length);
+    out.firstMismatchIndex = firstMismatch;
+  }
+  return out;
 }
 
 /**

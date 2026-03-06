@@ -50,16 +50,17 @@ Recommendation can be split by feature area: e.g. prefer Postgres for geo if GIS
 
 ### Evidence (benchmark runs)
 
-- **Correctness**: By-id parity is enforced (same objectId and decisive fields or both null). List/tags/text parity requires deterministic ordering: all list queries use stable sort by `object_id` / `objectId`; after rebuilding app images, list_page_1, list_page_mid, tags_all, tags_any, text_contains, text_fulltext, and rejected_visible are expected to show idsMatch pass.
-- **Composition run (10k places, 20 iter)**: Geo (by_object_id, bbox, radius, mixed), exact_body, rejected_hidden pass correctness; rejection semantics pass for both DBs; rejected_visible semantics pass (non-zero rejected rows). Postgres leads p50/req-s on most scenarios; Mongo leads on radius_small/large and text_fulltext.
-- **Rejection**: rejected_hidden and rejected_visible semantics (no REJECTED in hidden, REJECTED rows with decisiveRole/rejectedBy in visible) pass for Mongo and Postgres.
+- **Correctness**: By-id parity is enforced (same objectId and decisive fields or both null). List queries use stable sort by `object_id` / `objectId`; composition run with rebuilt images shows full parity (all scenarios pass correctness).
+- **Composition run (10k places, 30 iter)** — artifact: `spec/benchmarks/query-strategy/bench-report-composition.json`. All scenarios pass correctness (by_object_id, list_page_1, list_page_mid, bbox, radius, tags_all, tags_any, mixed, exact_body, text_contains, text_fulltext, rejected_hidden, rejected_visible). Rejection semantics pass for both DBs; rejected_visible has non-zero rejected rows. Postgres leads p50/req-s on most scenarios; MongoDB leads on radius_small/large and text_fulltext.
+- **Decomposition**: hasFilters logic fixed so unfiltered list (no governance) uses the no-filter path and returns correct totals. Run decomposition benchmark per CLI-RUNBOOK (start apps with `QUERY_STRATEGY=decomposition`), save `bench-report-decomposition.json`, and add a one-line evidence summary here when available.
+- **Rejection**: rejected_hidden and rejected_visible semantics pass for Mongo and Postgres in composition.
 
 ### Recommendation
 
-- **Correctness gate**: Rebuild query-mongo and query-postgres images (with deterministic sort in repos), reseed, and re-run composition then decomposition benchmarks until parity table is fully pass for all scenarios.
+- **Correctness gate**: Composition benchmark passes all parity and semantics checks with current images. Decomposition benchmark should be run per runbook and confirmed.
 - **Per-category (composition evidence)**: Postgres+PostGIS is faster for by_object_id, list, bbox, tags, mixed, exact_body, rejected_hidden, rejected_visible; MongoDB is faster for radius_small/large and text_fulltext. For a single-DB choice: prefer **PostgreSQL+PostGIS** if geo/list/tags and rejection latency matter most; prefer **MongoDB** if radius and fulltext search latency dominate.
-- **Strategy**: Composition is simpler and currently benchmarked; run decomposition with saved artifact and compare latency/correctness before committing to composition vs decomposition.
-- **Next steps**: (1) Re-run full benchmark matrix after image rebuild and confirm parity. (2) Run decomposition benchmark and add evidence to this ADR. (3) Lock DB and strategy in this ADR and deprecate or retain the other app for A/B.
+- **Strategy**: Composition is validated (correctness and semantics pass). Run decomposition benchmark, compare latency/correctness, then lock strategy in this ADR.
+- **Next steps**: (1) Run decomposition benchmark per runbook and record artifact. (2) Lock DB and strategy in this ADR. (3) Deprecate or retain the other app for A/B.
 
 ## Alternatives considered
 

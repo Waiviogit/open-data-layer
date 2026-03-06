@@ -85,7 +85,7 @@ export class PlacesDecompositionRepository {
       objectIds = objectIds.length ? objectIds.filter((id) => !rejectedSet.has(id)) : (await this.conn.collection(OBJECTS_COLL).find({ objectType: PLACE_OBJECT_TYPE }).project({ objectId: 1 }).toArray()).map((d) => d.objectId as string).filter((id) => !rejectedSet.has(id));
     }
     let total: number;
-    const hasFilters = !!(dto.bbox || dto.radius || dto.tags?.length || dto.tagsAny?.length || dto.updateBodyExact != null || (dto.textQuery != null && dto.textQuery.length > 0) || shouldExcludeRejected(dto.includeRejected));
+    const hasFilters = !!(dto.bbox || dto.radius || dto.tags?.length || dto.tagsAny?.length || dto.updateBodyExact != null || (dto.textQuery != null && dto.textQuery.length > 0) || (shouldExcludeRejected(dto.includeRejected) && !!dto.governance));
     if (!hasFilters) {
       total = await this.conn.collection(OBJECTS_COLL).countDocuments({ objectType: PLACE_OBJECT_TYPE });
       const all = await this.conn

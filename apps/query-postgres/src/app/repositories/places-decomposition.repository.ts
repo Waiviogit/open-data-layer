@@ -87,7 +87,7 @@ export class PlacesDecompositionRepository {
         : (await this.pool.query('SELECT object_id FROM place_objects WHERE object_type = $1', [PLACE_OBJECT_TYPE])).rows.map((r) => r.object_id).filter((id) => !rejectedSet.has(id));
     }
     let total: number;
-    const hasFilters = !!(dto.bbox || dto.radius || dto.tags?.length || dto.tagsAny?.length || dto.updateBodyExact != null || (dto.textQuery != null && dto.textQuery.length > 0) || shouldExcludeRejected(dto.includeRejected));
+    const hasFilters = !!(dto.bbox || dto.radius || dto.tags?.length || dto.tagsAny?.length || dto.updateBodyExact != null || (dto.textQuery != null && dto.textQuery.length > 0) || (shouldExcludeRejected(dto.includeRejected) && !!dto.governance));
     if (!hasFilters) {
       const countRes = await this.pool.query('SELECT COUNT(*)::int AS total FROM place_objects WHERE object_type = $1', [PLACE_OBJECT_TYPE]);
       total = countRes.rows[0]?.total ?? 0;
