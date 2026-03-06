@@ -5,7 +5,7 @@ interface RankDocument {
   rankId: string;
   rank: number;
   rankTimestamp: string;
-  account: string;
+  voter: string;
 }
 
 interface VoteDocument {
@@ -23,6 +23,7 @@ interface UpdateDocument {
   value: string; // can be string or stringified JSON
   rejectedBy: string[]; // list of accounts that rejected the update
   votes: VoteDocument[];
+  ranks?: RankDocument[]; //ranks for multiple updates
 }
 
 
