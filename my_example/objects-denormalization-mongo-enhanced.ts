@@ -42,7 +42,6 @@ interface ActiveValidityVote {
 interface ActiveRankVote {
   voter: string;
   rank: number; // 1..10000
-  rankContext: string; // usually "default"
   position: CanonicalPosition;
 }
 
@@ -65,24 +64,12 @@ type UpdateValue = TextUpdateValue | GeoUpdateValue | JsonUpdateValue;
 
 interface UpdateDocumentBase {
   updateId: string;
-  objectId: string;
-  objectType: string;
-  fieldKey: string;
+  updateType: string;
   creator: string;
   cardinality: UpdateCardinality;
   createdAtUnix: number;
   createdPosition: CanonicalPosition;
   value: UpdateValue;
-
-  /**
-   * Transitional simplification for the current phase.
-   * This is raw evidence only, not an authoritative governance-derived decision.
-   */
-  rejectedBy?: string | null;
-
-  /**
-   * Query-time validity must be derived from these raw votes plus governance.
-   */
   validityVotes: ActiveValidityVote[];
 }
 
