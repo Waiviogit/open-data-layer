@@ -27,14 +27,10 @@ All conflict resolution and merge behavior in this document uses this ordering.
 
 ## 3.1 `social_follows_current`
 
-Active follow edge state.
+Active follow edges. A row's presence means the follow is active.
 
 - `follower` (string, PK part)
 - `following` (string, PK part)
-- `is_following` (boolean)
-- `updated_block_num` (int)
-- `updated_trx_index` (int)
-- `updated_op_index` (int)
 - `updated_transaction_id` (string)
 - `updated_at_unix` (bigint, event time)
 
@@ -42,19 +38,15 @@ Primary key: `(follower, following)`
 
 Semantics:
 
-- `follow` sets `is_following = true`
-- `unfollow` sets `is_following = false`
+- `follow` → upsert row (INSERT … ON CONFLICT DO UPDATE SET canonical fields)
+- `unfollow` → DELETE row
 
 ## 3.2 `social_mutes_current`
 
-Active mute edge state.
+Active mute edges. A row's presence means the mute is active.
 
 - `muter` (string, PK part)
 - `muted` (string, PK part)
-- `is_muted` (boolean)
-- `updated_block_num` (int)
-- `updated_trx_index` (int)
-- `updated_op_index` (int)
 - `updated_transaction_id` (string)
 - `updated_at_unix` (bigint, event time)
 
@@ -62,8 +54,8 @@ Primary key: `(muter, muted)`
 
 Semantics:
 
-- `mute` sets `is_muted = true`
-- if blockchain provides explicit unmute operation, it sets `is_muted = false`
+- `mute` → upsert row (INSERT … ON CONFLICT DO UPDATE SET canonical fields)
+- `unmute` → DELETE row
 
 ## 3.3 `social_reblogs_log`
 
@@ -91,9 +83,6 @@ Unified account projection (v1/v2).
 - `json_metadata_raw` (string, nullable)
 - `profile_image` (string, nullable)
 - `last_source_version` (enum: `create_account` | `update_account_v1` | `update_account_v2`)
-- `updated_block_num` (int)
-- `updated_trx_index` (int)
-- `updated_op_index` (int)
 - `updated_transaction_id` (string)
 - `updated_at_unix` (bigint, event time)
 

@@ -1,23 +1,103 @@
 # Governance Resolution
 
-**Back:** [Spec index](README.md) · **Related:** [architecture](architecture.md), [governance-bootstrap](governance-bootstrap.md), [vote-semantics](vote-semantics.md)
+**Back:** [Spec index](README.md) · **Related:** [architecture](architecture.md), [governance-bootstrap](governance-bootstrap.md), [vote-semantics](vote-semantics.md), [authority-entity](authority-entity.md), [social-account-ingestion](social-account-ingestion.md)
 
 ## 1) Purpose
 
-Define how Query/Masking Service computes an effective governance mask from governance declarations indexed on-chain.
+Define how Query/Masking Service constructs an effective governance snapshot from a governance object indexed on-chain.
 
-## 2) Inputs
+A governance object is a regular object in `objects_core` with `objectType = 'governance'`. Its updates follow the same multi-cardinality write and vote semantics as all other objects.
 
-- Neutral indexed governance declarations (`object_type = governance`).
-- Global/platform governance profile.
-- Request governance reference (or subscription default profile).
-- Resolution parameters:
-  - max trust depth,
-  - max visited nodes,
-  - timeout budget.
-  - trust cutoff reference (block height/time) where applicable.
+## 2) Governance update types
 
-## 3) Role domains
+All update types are **multi-cardinality** (accumulate, never replace). No length restriction on value lists.
+
+| `updateType`      | Value format                              | Meaning |
+|-------------------|-------------------------------------------|---------|
+| `admin`           | text — Hive account name                 | Account granted admin role in this governance context |
+| `trusted`         | text — Hive account name                 | Account granted trusted role in this governance context |
+| `validityCutoff`  | JSON — `{ account: string, timestamp: number }` | Actions by this account after `timestamp` (unix) are treated as untrusted; historical valid work remains |
+| `blacklist`       | text — Hive account name                 | Account flagged for reward eligibility (informational only, not enforced in V2) |
+| `whitelist`       | text — Hive account name                 | Account protected from appearing in the resolved `muted` set regardless of who muted them |
+| `inheritsFrom`    | text — `objectId` of another governance object | Merge `admin` and `trusted` lists from the referenced governance object into this one (one level only) |
+
+## 3) Write rules
+
+- Only the governance object `creator` may submit updates (`update_create`) to a governance object.
+- At the indexer level, all events are stored as neutral state.
+- At query layer, updates whose `update.creator` ≠ governance object `creator` are excluded before resolution.
+- Only the creator's own validity votes (`for` / `against`) are considered when resolving governance update entries. Admin, trusted, and curator filter mechanics do not apply to governance objects.
+
+## 4) Snapshot construction
+
+The resolved governance snapshot is computed at request time in five steps.
+
+### Step 1: Resolve own update lists
+
+For each update type, include only entries where `update.creator == governance.creator`. An entry is valid if the creator voted `for` it (or no vote exists, defaulting to valid); it is excluded if the creator voted `against` it.
+
+- `admin` → resolved set of account strings
+- `trusted` → resolved set of account strings
+- `validityCutoff` → resolved list of `{ account: string, timestamp: number }`
+- `blacklist` → resolved set of account strings
+- `whitelist` → resolved set of account strings
+- `inheritsFrom` → resolved set of governance `objectId` strings
+
+### Step 2: Resolve inherited admin and trusted
+
+For each `objectId` in `inheritsFrom`:
+
+- Load the referenced governance object from `objects_core` (must have `objectType = 'governance'`).
+- Resolve **only** its `admin` and `trusted` update lists: include entries where `update.creator == that object's creator`, valid if the creator voted `for` (or no vote, defaulting to valid).
+- **Do not** follow `inheritsFrom` entries of the referenced object — one level only.
+
+### Step 3: Merge admin and trusted sets
+
+```
+admins  = own admins  ∪ inherited admins  (union, deduplicated)
+trusted = own trusted ∪ inherited trusted (union, deduplicated)
+```
+
+`validityCutoff`, `blacklist`, `whitelist`, and `muted` are **not** inherited — they come from the root governance object only.
+
+### Step 4: Aggregate muted accounts
+
+For every account in `admins ∪ trusted` (merged set from step 3):
+
+- Load their active mutes from `social_mutes_current` (`WHERE muter = account`).
+- Union all results into a single `muted` set.
+
+### Step 5: Apply whitelist filter
+
+Remove every account that appears in `whitelist` from the aggregated `muted` set.
+
+Whitelisted accounts are never present in the resolved `muted` set, regardless of who muted them.
+
+### Output snapshot
+
+```typescript
+{
+  admins:          string[];
+  trusted:         string[];
+  validityCutoff:  { account: string; timestamp: number }[];
+  blacklist:       string[];
+  whitelist:       string[];
+  inheritsFrom:    string[];
+  muted:           string[];
+}
+```
+
+## 5) validityCutoff semantics
+
+`validityCutoff` entries describe accounts whose **new** actions became untrusted after a given point in time.
+
+- Actions by `account` with `block_time < timestamp` remain valid under normal vote semantics.
+- Actions by `account` with `block_time >= timestamp` are excluded from trusted resolution (treated as if the account is not in the `trusted` set for those actions).
+- Historical valid work (votes, updates) created before the cutoff is not retroactively invalidated.
+
+Use case: a trusted account was compromised at a known date. The cutoff preserves the historical contribution while discarding post-compromise actions.
+
+## 6) Role domains
 
 Data domain:
 
@@ -28,33 +108,7 @@ Social domain:
 
 - `moderator`
 
-Role effects must be domain-scoped and cannot silently leak across domains.
-
-## 4) Precedence model
-
-Resolution order:
-
-1. Global policy resolution.
-2. Request governance resolution.
-3. Merge with precedence:
-   - global denies/restrictions always win,
-   - request governance can add stricter filtering.
-
-## 5) Trust traversal
-
-- Graph traversal must be deterministic (stable node ordering).
-- Traversal stops at configured depth and node limit.
-- Cycle detection is mandatory.
-- On cycle/limit violation, return `GOVERNANCE_RESOLUTION_FAILED`.
-- Governance may include references to other governance objects; referenced role lists are merged by deterministic precedence.
-
-## 6) Effective mask output
-
-The resolved mask output must include:
-
-- allowed/denied account sets by domain,
-- role map for voting and moderation interpretation,
-- metadata (source governance refs, resolved depth, version/hash).
+Role effects are domain-scoped and must not leak across domains.
 
 ## 7) Caching and invalidation
 
@@ -62,43 +116,34 @@ The resolved mask output must include:
 
 At minimum:
 
-- governance reference(s),
-- global policy version,
-- resolution algorithm version.
-- index checkpoint / resolved_at_block.
+- governance object `objectId`,
+- `objects_core.seq` of the governance object at resolution time,
+- index checkpoint / `resolved_at_block`.
 
 ### Invalidation triggers
 
-- governance declaration update,
-- role assignment change,
-- trust edge change,
-- trust cutoff change,
-- whitelist/blacklist change,
-- global policy update,
-- algorithm version change.
-- TTL expiry (`now >= expires_at_unix`).
-- index checkpoint change when strict consistency mode is enabled.
+- Any update to the governance object (`objects_core.seq` increases),
+- Any validity vote change on a governance update,
+- Any update to a governance object referenced in `inheritsFrom` (`objects_core.seq` of the inherited object increases),
+- Mute graph change for any account in `admins ∪ trusted` (including inherited),
+- TTL expiry.
 
 ## 8) Governance ownership constraint
 
-- Governance object updates and governance update votes are valid only when authored by the governance object `creator`.
-- Any non-creator governance mutation attempt must fail with `UNAUTHORIZED_GOVERNANCE_OP`.
+- Governance object updates are valid only when authored by the governance object `creator`.
+- Any non-creator update attempt must fail with `UNAUTHORIZED_GOVERNANCE_OP` at the indexer level (or be filtered at query layer).
 
 ## 9) Determinism and observability
 
-- Same inputs must produce same mask hash.
-- Resolution logs should include:
-  - cache hit/miss,
-  - nodes traversed,
-  - depth reached,
-  - elapsed time.
+- Same indexed state and same governance `objectId` must produce the same snapshot hash.
+- Resolution logs should include: cache hit/miss, resolved_at_block, elapsed time.
 
 ## 10) Optional trust signals (non-authoritative)
 
-The following signals may be stored and used as auxiliary ranking/freshness factors, but must not replace authoritative governance rules:
+The following signals may inform auxiliary ranking or freshness scoring but must not replace authoritative governance rules:
 
-- profile->website linkage with reciprocal `llm.txt` account proof,
+- profile → website linkage with reciprocal `llm.txt` account proof,
 - subscription/payment signal,
 - account heartbeat/activity recency.
 
-These signals are advisory and should be clearly separated from decisive governance role resolution.
+These signals are advisory and must be clearly separated from decisive role resolution.
