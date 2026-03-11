@@ -1,6 +1,6 @@
 # Social and Account Ingestion
 
-**Back:** [Spec index](README.md) · **Related:** [architecture](architecture.md), [reject-codes](reject-codes.md), [acceptance-tests](acceptance-tests.md)
+**Back:** [Spec index](README.md) · **Related:** [architecture](architecture.md), [reject-codes](reject-codes.md), [acceptance-tests](acceptance-tests.md), [vote-semantics](vote-semantics.md), [authority-entity](authority-entity.md)
 
 ## 1) Scope
 
@@ -75,16 +75,28 @@ Recommended unique key: `(account, author, permlink, block_num, trx_index, op_in
 
 ## 3.4 `accounts_current`
 
-Unified account projection (v1/v2).
+Hive account state plus ODL-computed reputation. Schema is a trimmed version of the Hive `Account` object.
 
-- `account` (string, PK)
-- `name` (string, nullable)
-- `alias` (string, nullable)
-- `json_metadata_raw` (string, nullable)
-- `profile_image` (string, nullable)
-- `last_source_version` (enum: `create_account` | `update_account_v1` | `update_account_v2`)
-- `updated_transaction_id` (string)
-- `updated_at_unix` (bigint, event time)
+**Hive-sourced fields** (synced from Hive node API):
+
+- `name` (string, PK — Hive account username)
+- `hive_id` (int — Hive numeric account id)
+- `json_metadata` (text, nullable — raw `json_metadata` string from Hive)
+- `posting_json_metadata` (text, nullable — raw `posting_json_metadata` string from Hive)
+- `created` (text — account creation timestamp from Hive)
+- `comment_count` (int, default 0)
+- `lifetime_vote_count` (int, default 0)
+- `post_count` (int, default 0)
+- `last_post` (text, nullable — timestamp of last post)
+- `last_root_post` (text, nullable — timestamp of last root post)
+
+**ODL-computed fields** (maintained by Indexer from authority events):
+
+- `object_reputation` (int, default 0 — count of unique users who hold `administrative` authority claims on objects created by this account, excluding self; see [authority-entity.md](authority-entity.md))
+
+**Metadata:**
+
+- `updated_at_unix` (bigint — last sync/update time)
 
 ## 3.5 `social_account_events_log` (optional but recommended)
 
@@ -99,59 +111,79 @@ Raw normalized event log for debugging/replay.
 - `apply_status` (applied/rejected/skipped)
 - `reject_code` (nullable)
 
-## 4) Account normalization fields
+## 4) Account sync model
 
-Current projected user fields:
+### 4.1 Hive-sourced fields
 
-- `name`
-- `alias`
-- `json_metadata_raw`
-- `profile_image`
+Hive account data is synced from the Hive node API (e.g. `condenser_api.get_accounts`). The sync is a full overwrite of all Hive-sourced fields:
 
-Extraction:
+```
+accounts_current.{hive_id, json_metadata, posting_json_metadata, created,
+                  comment_count, lifetime_vote_count, post_count,
+                  last_post, last_root_post, updated_at_unix}
+  ← latest Hive account state
+```
 
-- `profile_image` is extracted from `json_metadata` profile section when present.
-- If extraction fails, keep `profile_image = null` and preserve `json_metadata_raw`.
+Sync triggers (implementation may vary):
 
-## 5) Merge rules for `update_account` v1/v2
+- On first encounter of an account name in any event (lazy creation)
+- Periodic background refresh
+- On-demand when serving a query that references the account
 
-## 5.1 Source of truth (conflict rule)
+If the Hive API call fails, the existing row (if any) is preserved unchanged.
 
-When multiple account update events conflict:
+### 4.2 `object_reputation` maintenance
 
-1. **Primary source of truth** is the latest valid event by canonical ordering.
-2. Version (`v1` vs `v2`) does not override recency.
-3. If two candidate values originate from the same winning event and both versions are available in parsed payload, prefer v2 field mapping, then fallback to v1 mapping.
+`object_reputation` is maintained independently from Hive sync. It is updated by the Indexer when authority events arrive:
 
-In short:
+- **`add_object_authority`** with `authority_type = 'administrative'`:
+  1. Look up the object creator: `SELECT creator FROM objects_core WHERE object_id = $targetId`.
+  2. If the signing user (`username`) is **not** the creator themselves, increment the creator's `object_reputation` only if this is the **first** administrative claim by this user on **any** object by this creator.
+- **`remove_object_authority`** with `authority_type = 'administrative'`:
+  1. After the authority row is deleted, check if the removed user still holds `administrative` authority on any other object by the same creator.
+  2. If no remaining claims, decrement the creator's `object_reputation` by 1.
 
-- **Recency first**
-- **Within same event: v2 mapping first, v1 fallback**
+The invariant:
 
-## 5.2 Field-level merge policy
+```sql
+-- Verification query (must match accounts_current.object_reputation)
+SELECT oc.creator, COUNT(DISTINCT oa.username) AS expected_reputation
+FROM object_authority oa
+JOIN objects_core oc ON oa.target_id = oc.object_id
+                    AND oa.target_kind = 'object'
+WHERE oa.authority_type = 'administrative'
+  AND oa.username != oc.creator
+GROUP BY oc.creator;
+```
 
-For each incoming valid account event:
+### 4.3 Usage in vote weight
 
-- `name`: overwrite if incoming normalized value is present (non-empty after trim).
-- `alias`: overwrite if incoming normalized value is present.
-- `json_metadata_raw`: overwrite with incoming raw metadata if incoming metadata exists.
-- `profile_image`:
-  - set to extracted value when extraction succeeds;
-  - if incoming metadata exists but image is absent/invalid, set to `null` (do not keep stale image from older metadata).
+`object_reputation` feeds the community vote weight system (see [vote-semantics.md § C](vote-semantics.md#c-community-vote-weight)):
 
-Rationale: `profile_image` must reflect current metadata snapshot, not historical fallback.
+```
+votePower = 1 + log₂(1 + object_reputation)
+```
 
-## 5.3 Invalid payload handling
+### 4.4 Account creation (lazy)
 
-- If `create_account` / `update_account` payload cannot be normalized, reject with `INVALID_ACCOUNT_PAYLOAD`.
-- Rejects do not mutate `accounts_current`.
+When an account name appears for the first time in any indexed event (update creator, voter, authority claimant, etc.) and no `accounts_current` row exists:
 
-## 6) Determinism and replay guarantees
+1. Insert a minimal row: `(name = $account, object_reputation = 0)`.
+2. Schedule a Hive API sync to populate Hive-sourced fields.
 
-- Replaying the same block range must yield identical `accounts_current`, `social_follows_current`, `social_mutes_current`, and `social_reblogs_log`.
-- Merge outcomes must be identical across nodes for the same canonical stream.
+This ensures that `object_reputation` can be maintained from the first authority event, even before Hive data arrives.
 
-## 7) Relationship to governance filters
+### 4.5 Invalid data handling
+
+- If Hive API returns an unknown account (account does not exist on-chain), log a warning but do not delete the local row — it may have valid `object_reputation` from authority events.
+- If any field from Hive has an unexpected type, skip that field and log.
+
+## 5) Determinism and replay guarantees
+
+- Replaying the same block range must yield identical `social_follows_current`, `social_mutes_current`, `social_reblogs_log`, and `accounts_current.object_reputation`.
+- Hive-sourced fields in `accounts_current` reflect external API state and are not deterministic from the event stream alone — they depend on sync timing. `object_reputation` is fully deterministic from the authority event stream.
+
+## 6) Relationship to governance filters
 
 - Social/account ingestion itself is neutral and deterministic.
 - Governance masks are applied at query time.

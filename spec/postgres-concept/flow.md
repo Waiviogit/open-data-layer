@@ -21,6 +21,7 @@ Related files:
 | **validity_votes**   | One row per validity vote. FK to object_updates ON DELETE CASCADE — replacing an update deletes its votes automatically.                               |
 | **rank_votes**       | One row per rank vote. Same CASCADE. rank 1..10000 enforced by CHECK.                                                                                  |
 | **object_authority** | One row per `(object_id, username)` authority claim. Written by `add_object_authority` / `remove_object_authority` Hive events. Does not affect `seq`. See [authority-entity.md](../authority-entity.md). |
+| **accounts_current** | One row per Hive account. Hive-sourced fields synced from Hive node API; `object_reputation` maintained by Indexer from administrative authority events. Used at query time to compute community vote weight. See [social-account-ingestion.md](../social-account-ingestion.md). |
 
 
 The **resolved view** (final API response) is computed at request time from core + updates + votes + governance; it is not stored.
@@ -70,7 +71,17 @@ erDiagram
     text authority_type
   }
 
+  AccountsCurrent {
+    text name PK
+    int hive_id
+    int object_reputation
+    int comment_count
+    int post_count
+  }
+
   ObjectCore ||--o{ ObjectAuthority : "has"
+  AccountsCurrent ||--o{ ValidityVote : "voter"
+  AccountsCurrent ||--o{ ObjectCore : "creator"
 ```
 
 
@@ -125,6 +136,15 @@ All in the same transaction as the seq increment.
 - **remove_object_authority**: `DELETE FROM object_authority WHERE object_id = $1 AND username = $2 AND authority_type = $3`
 
 Executed outside any transaction together with content events.
+
+#### Reputation side-effect for `administrative` authority
+
+When `authority_type = 'administrative'`, the Indexer must update `accounts_current.object_reputation` for the target object's creator:
+
+- **add**: Look up `objects_core.creator` for the target object. If the signing user differs from the creator and this is the first `administrative` claim by this user on any object by this creator, increment `accounts_current.object_reputation` for the creator.
+- **remove**: After deleting the authority row, check if the removed user still holds `administrative` authority on any other object by the same creator. If none remain, decrement `accounts_current.object_reputation` by 1.
+
+See [social-account-ingestion.md § 4.2](../social-account-ingestion.md#42-object_reputation-maintenance) for the full maintenance algorithm and verification query.
 
 ### Step 3: No projection
 
@@ -188,9 +208,9 @@ ORDER BY oc.weight DESC NULLS LAST
 LIMIT $2 OFFSET $3;
 ```
 
-### Step 3: Load core, updates, votes, and authority (five targeted queries)
+### Step 3: Load core, updates, votes, authority, and voter reputations (six targeted queries)
 
-A single 4-way JOIN (`objects_core LEFT JOIN object_updates LEFT JOIN validity_votes LEFT JOIN rank_votes`) produces a Cartesian product: if one update has 5 validity votes and 3 rank votes it generates 15 rows per update, requiring complex deduplication in the application. Use five separate queries instead:
+A single multi-way JOIN produces a Cartesian product: if one update has 5 validity votes and 3 rank votes it generates 15 rows per update, requiring complex deduplication in the application. Use six separate queries instead:
 
 ```sql
 -- 1. Core rows
@@ -207,23 +227,34 @@ SELECT * FROM rank_votes WHERE object_id = ANY($objectIds);
 
 -- 5. Authority claims
 SELECT * FROM object_authority WHERE object_id = ANY($objectIds);
+
+-- 6. Voter reputations (for community vote weight, section C of vote-semantics)
+SELECT name, object_reputation
+FROM accounts_current
+WHERE name = ANY($voterNames);
 ```
 
-All five can be sent as a pipeline (single round-trip on most drivers). The application joins them in memory by `object_id` and `update_id`.
+All six can be sent as a pipeline (single round-trip on most drivers). The application joins them in memory by `object_id`, `update_id`, and voter `name`. Query 6 uses the set of distinct voter names collected from queries 3 and 4.
 
 ### Step 4: Assemble ResolvedView
 
-For each object, using the loaded rows, authority records, and the governance snapshot:
+For each object, using the loaded rows, authority records, voter reputations, and the governance snapshot:
 
 1. **Compute curator set** `C = { ownership holders for (targetId, targetKind) from object_authority } ∩ { governance admins ∪ governance trusted }`.
 2. Group updates by `update_type`.
-3. Resolve validity per update:
+3. Resolve validity per update (tiered):
    - If `C` is non-empty, apply curator filter: an update is valid only if its `creator ∈ C` OR it has a positive validity vote from any member of `C`. Updates satisfying neither are treated as invalid regardless of other votes.
-   - If `C` is empty, apply normal vote semantics (votes + governance + precedence).
+   - If `C` is empty, apply the full validity resolution hierarchy:
+     1. **Admin decisive vote** — latest admin `for`/`against` wins (LWAW). Short-circuit.
+     2. **Trusted decisive vote** — latest trusted `for`/`against` wins, only on objects the trusted user has authority over (LWTW). Short-circuit.
+     3. **Community vote weight** — for each non-admin, non-trusted validity vote, compute `votePower = 1 + log₂(1 + object_reputation)` using the voter's `object_reputation` from `accounts_current`. Sum: `field_weight = Σ (votePower × sign)` where `for → +1`, `against → −1`. If `field_weight < 0` the update is INVALID; if `field_weight >= 0` the update is VALID.
+     4. **No votes** — baseline VALID.
 4. Resolve single-cardinality updates (pick one valid value).
 5. Resolve multi-cardinality updates and apply ranking.
 6. Apply visibility options (e.g. omit rejected if `includeRejected=false`).
 7. Shape the API response (ResolvedView).
+
+See [vote-semantics.md § C](../vote-semantics.md#c-community-vote-weight) for the complete community weight specification.
 
 ## Index strategy
 
@@ -247,6 +278,9 @@ For each object, using the loaded rows, authority records, and the governance sn
 | object_authority | (target_id, target_kind, username, authority_type)  | UNIQUE           | Primary key; upsert/delete by event.                    |
 | object_authority | (object_id, authority_type)                         | B-tree           | Load all ownership holders for an object (curator set). |
 | object_authority | (username)                                          | B-tree           | Find all targets a user holds authority over.           |
+| accounts_current | name                                                | PK / B-tree      | Primary lookup by account name.                         |
+| accounts_current | (object_reputation DESC)                            | B-tree           | Sorted listing by reputation.                           |
+| accounts_current | (hive_id)                                           | B-tree (partial) | Lookup by Hive numeric ID (WHERE hive_id IS NOT NULL).  |
 
 
 ## Comparison to Mongo concept v2
@@ -254,7 +288,7 @@ For each object, using the loaded rows, authority records, and the governance sn
 
 | Aspect                     | Mongo concept v2                                               | PostgreSQL concept                                  |
 | -------------------------- | -------------------------------------------------------------- | --------------------------------------------------- |
-| Tables/collections         | 6 (core, updates, validity_votes, rank_votes, projection, authority) | 5 (no projection)                              |
+| Tables/collections         | 6 (core, updates, validity_votes, rank_votes, projection, authority) | 6 (core, updates, validity_votes, rank_votes, authority, accounts_current; no projection) |
 | Projection                 | Separate document/table, must be kept in sync                  | None; query core tables directly                    |
 | Single-cardinality replace | Manual cascade: delete votes, delete update, update projection | DELETE update; CASCADE removes votes; no projection |
 | Consistency                | seq + coreSeqAtBuild for drift detection                       | ACID; seq for change tracking only                  |

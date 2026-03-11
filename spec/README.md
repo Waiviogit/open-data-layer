@@ -56,8 +56,8 @@ Details: [architecture.md](architecture.md).
 |-----|-------------|
 | [object-uniqueness.md](object-uniqueness.md) | `object_id` global uniqueness, first-write-wins, collision rules |
 | [object-type-entity.md](object-type-entity.md) | Open `object_type` registry in its own collections; any user may create types; governance admins act as implicit curators (`supported_updates`, `supposed_updates`) |
-| [authority-entity.md](authority-entity.md) | Open `object_authority` registry; per-object ownership/administrative claims; curator filter in ResolvedView |
-| [vote-semantics.md](vote-semantics.md) | Query-time validity and rank resolution; raw vote storage |
+| [authority-entity.md](authority-entity.md) | Open `object_authority` registry; per-object ownership/administrative claims; curator filter; `administrative` authority drives `object_reputation` for vote weight |
+| [vote-semantics.md](vote-semantics.md) | Query-time validity and rank resolution; raw vote storage; community vote weight (reputation-based `field_weight`) |
 | [reject-codes.md](reject-codes.md) | Canonical indexer and query/masking error codes |
 
 ### Governance and query
@@ -84,7 +84,7 @@ Details: [architecture.md](architecture.md).
 
 | Doc | Description |
 |-----|-------------|
-| [social-account-ingestion.md](social-account-ingestion.md) | Follow/mute/reblog/account ingestion and merge rules |
+| [social-account-ingestion.md](social-account-ingestion.md) | Follow/mute/reblog ingestion; `accounts_current` (trimmed Hive account + `object_reputation`) |
 | [monetization.md](monetization.md) | Plan tiers, entitlement mapping, gateway enforcement |
 | [acceptance-tests.md](acceptance-tests.md) | Acceptance criteria and non-functional targets |
 

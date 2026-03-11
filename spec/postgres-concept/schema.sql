@@ -105,3 +105,27 @@ CREATE TABLE rank_votes (
 );
 
 CREATE INDEX idx_rank_votes_object_id ON rank_votes (object_id);
+
+-- ---------------------------------------------------------------------------
+-- accounts_current
+-- Trimmed Hive account state + ODL-computed object_reputation.
+-- Hive-sourced fields synced from Hive node API; object_reputation
+-- maintained incrementally by Indexer from administrative authority events.
+-- ---------------------------------------------------------------------------
+CREATE TABLE accounts_current (
+  name                   TEXT NOT NULL PRIMARY KEY,
+  hive_id                INT,
+  json_metadata          TEXT,
+  posting_json_metadata  TEXT,
+  created                TEXT,
+  comment_count          INT NOT NULL DEFAULT 0,
+  lifetime_vote_count    INT NOT NULL DEFAULT 0,
+  post_count             INT NOT NULL DEFAULT 0,
+  last_post              TEXT,
+  last_root_post         TEXT,
+  object_reputation      INT NOT NULL DEFAULT 0,
+  updated_at_unix        BIGINT
+);
+
+CREATE INDEX idx_accounts_current_object_reputation ON accounts_current (object_reputation DESC NULLS LAST);
+CREATE INDEX idx_accounts_current_hive_id ON accounts_current (hive_id) WHERE hive_id IS NOT NULL;

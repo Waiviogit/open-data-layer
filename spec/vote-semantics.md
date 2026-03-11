@@ -33,7 +33,8 @@ Validity is derived at query time with tiered hierarchy:
 
 1. Latest `admin` wins (LWAW).
 2. If no admins vote exists, latest `trusted` wins, but only on objects he has authority update (LWTW).
-3. If no decisive vote exists (including after `remove`), fallback is baseline `VALID`.
+3. If no decisive admin/trusted vote exists (including after `remove`), apply community vote weight (see [section C](#c-community-vote-weight)).
+4. If no community votes exist either, fallback is baseline `VALID`.
 
 `latest` is determined by canonical order:
 `(block_num, trx_index, op_index, transaction_id)`.
@@ -94,7 +95,76 @@ For updates with equal `rank_score` in same `rank_context`:
 2. latest update event by canonical order (`block_num DESC`, `trx_index DESC`, `op_index DESC`, `transaction_id DESC`);
 3. `update_id ASC`.
 
-## C) LWW for single-value fields (same creator)
+## C) Community vote weight
+
+When no admin or trusted decisive vote exists for an update, the **community vote weight** system determines validity. This is the lowest-priority tier in the resolution hierarchy.
+
+### Voter reputation (`object_reputation`)
+
+Each voter's weight is derived from their `object_reputation` — a metric stored in [`accounts_current`](social-account-ingestion.md) and maintained incrementally by the Indexer.
+
+Definition:
+
+```
+object_reputation(voter) = count of unique users who hold
+    `administrative` authority claims on objects created by the voter
+    (excluding the voter themselves)
+```
+
+Source data: `object_authority` records with `authority_type = 'administrative'` joined against `objects_core.creator`. See [authority-entity.md](authority-entity.md) for authority write rules.
+
+### Vote power formula
+
+```
+votePower = 1 + log₂(1 + object_reputation)
+```
+
+Scaling examples:
+
+| `object_reputation` | `votePower` |
+|--------------------:|------------:|
+| 0                   | 1.00        |
+| 1                   | 2.00        |
+| 3                   | 3.00        |
+| 7                   | 4.00        |
+| 15                  | 5.00        |
+| 100                 | ≈ 7.66      |
+
+Every voter starts with a base power of 1. Growth is logarithmic — diminishing returns prevent domination by a single high-reputation account.
+
+### Field weight computation
+
+For each update, compute the field weight as the signed sum of all community validity votes:
+
+```
+field_weight = Σ (votePower_i × sign_i)
+```
+
+Where:
+
+- `sign_i = +1` if `vote_i = 'for'`
+- `sign_i = −1` if `vote_i = 'against'`
+
+### Validity from field weight
+
+| Condition | Result |
+|-----------|--------|
+| `field_weight >= 0` | Update is **VALID** |
+| `field_weight < 0` | Update is **INVALID** (not shown in resolved view) |
+| No community votes | `field_weight = 0` → **VALID** (baseline default) |
+
+### Resolution hierarchy (complete)
+
+The full validity resolution for a given update, in priority order:
+
+1. **Admin decisive vote** → latest admin `for`/`against` wins (LWAW).
+2. **Trusted decisive vote** → latest trusted `for`/`against` wins, only on objects the trusted user has authority over (LWTW).
+3. **Community vote weight** → `field_weight` computed from all non-admin, non-trusted voter reputations. Sign determines validity.
+4. **No votes at all** → baseline `VALID`.
+
+Tiers 1 and 2 produce a binary `VALID`/`REJECTED` and short-circuit — community weight is not evaluated. Tier 3 is evaluated only when no decisive admin/trusted vote exists.
+
+## D) LWW for single-value fields (same creator)
 
 For update types targeting a single-value field:
 
@@ -105,3 +175,4 @@ For update types targeting a single-value field:
 
 - Same event stream must produce identical stored raw vote state.
 - Same governance context/snapshot must produce identical `final_status` and ranking output.
+- Same `object_reputation` values and same raw vote set must produce identical `field_weight` and community-tier validity.

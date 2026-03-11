@@ -1,6 +1,6 @@
 # Object Authority Entity
 
-**Back:** [Spec index](README.md) · **Related:** [vote-semantics](vote-semantics.md), [governance-resolution](governance-resolution.md), [object-type-entity](object-type-entity.md)
+**Back:** [Spec index](README.md) · **Related:** [vote-semantics](vote-semantics.md), [governance-resolution](governance-resolution.md), [object-type-entity](object-type-entity.md), [social-account-ingestion](social-account-ingestion.md)
 
 ## 1. Purpose
 
@@ -64,3 +64,25 @@ The indexer stores all authority events as neutral state. No permission check is
 ```
 
 The `username` is taken from the Hive transaction signing account, not from the payload.
+
+## 7. Authority types and their effects
+
+### `ownership`
+
+Drives the **curator filter** during ResolvedView assembly. When an ownership holder is also a governance admin or trusted member, their presence gates which updates are treated as valid for the object. See [section 4](#4-effect-on-resolvedview-curator-filter) above.
+
+### `administrative`
+
+Drives the **object reputation** metric. The count of unique users who hold `administrative` authority on a creator's objects (excluding the creator themselves) is stored as `object_reputation` in [`accounts_current`](social-account-ingestion.md).
+
+`object_reputation` feeds the community vote weight system — it determines each voter's `votePower` when no admin or trusted decisive vote exists:
+
+```
+votePower = 1 + log₂(1 + object_reputation)
+```
+
+See [vote-semantics.md § C](vote-semantics.md#c-community-vote-weight) for the full community weight resolution.
+
+### Side-effects on authority write
+
+When `administrative` authority is added or removed, the Indexer must update `accounts_current.object_reputation` for the target object's creator. See [social-account-ingestion.md § 4.2](social-account-ingestion.md#42-object_reputation-maintenance) for the maintenance algorithm.
