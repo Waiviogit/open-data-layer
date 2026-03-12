@@ -81,7 +81,7 @@ Canonical event order is:
 - **Expect**: Parsed posts dataset stores linkage to `obj-1` and `product`.
 
 ### AC-I14: Muted post author is not persisted in posts dataset
-- **Setup**: Post author P is in muted list of effective owner/moderator set at post block time.
+- **Setup**: Post author P is in muted list of effective moderator set at post block time.
 - **Action**: Index post event from P.
 - **Expect**: Parsed post and linkage are stored; muted filtering is applied in query phase.
 

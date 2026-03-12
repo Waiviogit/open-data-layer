@@ -14,18 +14,20 @@ Most update types are **multi-cardinality** (accumulate, never replace). `object
 
 | `updateType`     | Cardinality | Value format | Meaning |
 |------------------|-------------|--------------|---------|
-| `admins`         | multi  | text — Hive account name | Account granted admin role in this governance context |
-| `trusted`        | multi  | text — Hive account name | Account granted trusted role in this governance context |
+| `admins`         | multi  | text — Hive account name | Account responsible for object data curation; highest precedence in vote resolution |
+| `trusted`        | multi  | text — Hive account name | Account responsible for object data curation on objects they have claimed authority over; lower precedence than `admins` |
+| `moderators`     | multi  | text — Hive account name | Account responsible for muting social content; their mutes form the resolved `muted` set |
 | `validityCutoff` | multi  | JSON — `{ account: string, timestamp: number }` | Actions by this account after `timestamp` (unix) are untrusted; historical work remains valid |
-| `restricted`      | multi  | text — Hive account name | Account flagged for reward eligibility (informational only, not enforced in V2) |
+| `restricted`     | multi  | text — Hive account name | Account flagged for reward eligibility (informational only, not enforced in V2) |
 | `whitelist`      | multi  | text — Hive account name | Account protected from appearing in the resolved `muted` set regardless of who muted them |
 | `inheritsFrom`   | multi  | JSON — `{ objectId: string, scope: GovernanceScope[] }` | Merge specific fields from the referenced governance object into this one (one level only) |
-| `authorities`      | multi  | text — Hive account name | Restricts object search scope to objects where at least one `authorities` account holds an `object_authority` record |
+| `authorities`    | multi  | text — Hive account name | Restricts object search scope to objects where at least one `authorities` account holds an `object_authority` record |
+| `banned`         | multi  | text — Hive account name | Platform-level ban: triggers deletion of all objects and updates created by this account; at governance level all remaining content from this account is excluded from resolved views |
 | `objectControl`  | single | text — `ObjectControlMode` enum value | Activates global object authority control for this governance context |
 
 ```typescript
 // Valid scope field names — any key from the output snapshot except 'objectControl' and 'inheritsFrom'.
-type GovernanceScope = 'admins' | 'trusted' | 'validityCutoff' | 'restricted' | 'whitelist' | 'authorities' | 'muted';
+type GovernanceScope = 'admins' | 'trusted' | 'moderators' | 'validityCutoff' | 'restricted' | 'whitelist' | 'authorities' | 'banned' | 'muted';
 ```
 
 ## 3) Write rules
@@ -45,11 +47,13 @@ For each update type, include only entries where `update.creator == governance.c
 
 - `admins` → resolved set of account strings
 - `trusted` → resolved set of account strings
+- `moderators` → resolved set of account strings
 - `validityCutoff` → resolved list of `{ account: string, timestamp: number }`
 - `restricted` → resolved set of account strings
 - `whitelist` → resolved set of account strings
 - `inheritsFrom` → resolved list of `{ objectId: string, scope: GovernanceScope[] }`
 - `authorities` → resolved set of account strings
+- `banned` → resolved set of account strings
 - `objectControl` → resolved single `ObjectControlMode` string, or `null` if absent / voted against
 
 ### Step 2: Resolve inherited fields
@@ -59,7 +63,7 @@ For each entry in `inheritsFrom`:
 - Load the referenced governance object from `objects_core` (must have `objectType = 'governance'`).
 - Resolve **only** the fields listed in `entry.scope` from that object, using the same creator-vote resolution as Step 1.
 - **Do not** follow `inheritsFrom` entries of the referenced object — one level only.
-- For `muted` in scope: compute the referenced governance's `muted` set (aggregate mutes of its resolved `admins ∪ trusted`, without applying its own `whitelist`).
+- For `muted` in scope: compute the referenced governance's `muted` set (aggregate mutes of its resolved `moderators`, without applying its own `whitelist`).
 
 ### Step 3: Merge by scope
 
@@ -73,7 +77,7 @@ Fields not listed in any `scope` are not inherited — they come from the root g
 
 ### Step 4: Aggregate muted accounts
 
-For every account in `admins ∪ trusted` (merged set from step 3):
+For every account in `moderators` (merged set from step 3):
 
 - Load their active mutes from `social_mutes_current` (`WHERE muter = account`).
 - Union all results, plus any `muted` values carried in from step 3, into a single `muted` set.
@@ -90,7 +94,7 @@ Whitelisted accounts are never present in the resolved `muted` set, regardless o
 // Extensible enum — only 'full' is defined in V2; future modes may be added.
 type ObjectControlMode = 'full';
 
-type GovernanceScope = 'admins' | 'trusted' | 'validityCutoff' | 'restricted' | 'whitelist' | 'authorities' | 'muted';
+type GovernanceScope = 'admins' | 'trusted' | 'moderators' | 'validityCutoff' | 'restricted' | 'whitelist' | 'authorities' | 'banned' | 'muted';
 
 interface InheritsFromEntry {
   objectId: string;
@@ -100,11 +104,13 @@ interface InheritsFromEntry {
 {
   admins:         string[];
   trusted:        string[];
+  moderators:     string[];
   validityCutoff: { account: string; timestamp: number }[];
-  restricted:      string[];
+  restricted:     string[];
   whitelist:      string[];
   inheritsFrom:   InheritsFromEntry[];
-  authorities:      string[];
+  authorities:    string[];
+  banned:         string[];
   objectControl:  ObjectControlMode | null;  // null = control off
   muted:          string[];
 }
@@ -134,7 +140,34 @@ When `authorities` is empty, no scope restriction is applied — all objects are
 
 Use case: a governance context scoped to a specific curator's catalogue — only objects that curator has explicitly claimed authority over are visible in search results for that governance.
 
-## 7) objectControl semantics
+## 7) banned semantics
+
+`banned` is a two-level enforcement mechanism.
+
+### Platform level (write side)
+
+When an account is added to the `banned` list of the **platform governance** object, the platform indexer must:
+
+1. Delete all `objects_core` documents where `creator == account`.
+2. Delete all `object_updates` documents where `creator == account`.
+3. Cascade deletions apply: removing an object removes its updates, votes, projections, and authority records; removing an update removes its validity and rank votes.
+
+This is a destructive, irreversible operation at indexer level. Re-indexing from chain will re-apply the ban on replay.
+
+### API / governance level (read side)
+
+At query time, for any governance snapshot where `banned` is non-empty:
+
+- Objects whose `creator ∈ banned` are excluded from all results.
+- Updates whose `creator ∈ banned` are excluded from all resolved views, as if they do not exist.
+
+The read-side filter applies independently of the platform-level deletion — it ensures that even if platform deletion has not yet propagated, banned content is never surfaced through the API for that governance context.
+
+### Inheritance
+
+`banned` may appear in `GovernanceScope` and be carried via `inheritsFrom`. Inherited `banned` entries apply the read-side filter only; platform-level deletion is triggered only by the platform governance object.
+
+## 8) objectControl semantics
 
 `objectControl` sets a global authority mode for all objects in the governance context.
 
@@ -155,20 +188,20 @@ C = { governance admins } ∪ { explicit ownership holders from object_authority
 
 `ObjectControlMode` is an extensible string enum. Additional modes may be defined in future iterations without breaking the snapshot structure. Unrecognised mode values must be treated as `null` (control off) by the query layer.
 
-## 8) Role domains
+## 9) Role domains
 
-Data domain:
+Data domain (object curation):
 
-- `admins`
-- `trusted`
+- `admins` — highest precedence; vote resolution applies across all objects
+- `trusted` — lower precedence; vote resolution applies only on objects they have claimed authority over
 
-Social domain:
+Social domain (content moderation):
 
-- `moderator`
+- `moderators` — their mutes form the resolved `muted` set; no effect on object data curation
 
 Role effects are domain-scoped and must not leak across domains.
 
-## 9) Caching and invalidation
+## 10) Caching and invalidation
 
 ### Cache key
 
@@ -183,20 +216,20 @@ At minimum:
 - Any update to the governance object (`objects_core.seq` increases),
 - Any validity vote change on a governance update,
 - Any update to a governance object referenced in `inheritsFrom` (`objects_core.seq` of the inherited object increases),
-- Mute graph change for any account in `admins ∪ trusted` (including inherited),
+- Mute graph change for any account in `moderators` (including inherited),
 - TTL expiry.
 
-## 10) Governance ownership constraint
+## 11) Governance ownership constraint
 
 - Governance object updates are valid only when authored by the governance object `creator`.
 - Any non-creator update attempt must fail with `UNAUTHORIZED_GOVERNANCE_OP` at the indexer level (or be filtered at query layer).
 
-## 11) Determinism and observability
+## 12) Determinism and observability
 
 - Same indexed state and same governance `objectId` must produce the same snapshot hash.
 - Resolution logs should include: cache hit/miss, resolved_at_block, elapsed time.
 
-## 12) Optional trust signals (non-authoritative)
+## 13) Optional trust signals (non-authoritative)
 
 The following signals may inform auxiliary ranking or freshness scoring but must not replace authoritative governance rules:
 
