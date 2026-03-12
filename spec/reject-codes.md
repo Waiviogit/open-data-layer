@@ -22,12 +22,13 @@ Indexer MUST persist reject code whenever an event is not applied to neutral sta
 | `INVALID_GOVERNANCE_PAYLOAD` | Governance object payload or governance update payload failed schema/business validation. |
 | `UNAUTHORIZED_GOVERNANCE_OP` | Governance object update/vote is authored by an account other than governance object creator, or otherwise violates governance ownership rules. |
 
-### Object type entity operations (`object_type_create` / `object_type_update`)
+### Object type validation (code-registry checks)
 
 | Code | When |
 |------|------|
-| `INVALID_OBJECT_TYPE_PAYLOAD` | `object_type_create` or `object_type_update` payload failed schema validation (e.g. missing `typeId`, missing `value`, unknown `updateType`). |
-| `DUPLICATE_OBJECT_TYPE` | `object_type_create` names a `typeId` that already exists (first-write-wins; subsequent attempts are silently ignored or flagged). |
+| `UNSUPPORTED_UPDATE_TYPE` | `update_create.updateType` is not present in the global `UPDATE_REGISTRY`. |
+| `UNSUPPORTED_UPDATE_TYPE_FOR_OBJECT` | `update_create.updateType` is not listed in `supportedUpdates` for the target object's known `ObjectType`. |
+| `INVALID_UPDATE_VALUE` | The update value fails the Zod schema defined in `UPDATE_REGISTRY` for that `updateType`. |
 
 ### Update actions (`action = update_create/update_vote/rank_vote` in ODL envelope)
 

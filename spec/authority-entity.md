@@ -24,7 +24,7 @@ Written exclusively via Hive events. Any user may submit:
 - `action: 'add_object_authority'` — insert `(targetId, targetKind, username, authorityType)` for the signing account (no-op if already exists)
 - `action: 'remove_object_authority'` — delete `(targetId, targetKind, username, authorityType)` for the signing account
 
-Authority events do **not** increment `objects_core.seq` or `object_types_core` state. They are written directly to `object_authority` and do not affect content state of the target.
+Authority events do **not** increment `objects_core.seq`. They are written directly to `object_authority` and do not affect content state of the target.
 
 ## 4. Effect on ResolvedView: curator filter
 
