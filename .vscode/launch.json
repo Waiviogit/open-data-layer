@@ -4,45 +4,15 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug api with Nx",
-      "runtimeExecutable": "pnpm exec",
-      "runtimeArgs": [
-        "nx",
-        "serve",
-        "api"
-      ],
-      "env": {
-        "NODE_OPTIONS": "--inspect=9229"
-      },
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "sourceMaps": true,
-      "outFiles": [
-        "${workspaceFolder}/apps/api/dist/**/*.(m|c|)js",
-        "!**/node_modules/**"
-      ]
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "Debug worker with Nx",
       "runtimeExecutable": "pnpm exec",
-      "runtimeArgs": [
-        "nx",
-        "serve",
-        "worker"
-      ],
+      "runtimeArgs": ["nx", "serve", "worker"],
       "env": {
         "NODE_OPTIONS": "--inspect=9230"
       },
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
+      "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
         "${workspaceFolder}/worker/dist/**/*.(m|c|)js",
@@ -52,48 +22,36 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug query-mongo with Nx",
+      "name": "Debug chain-indexer with Nx",
       "runtimeExecutable": "pnpm exec",
-      "runtimeArgs": [
-        "nx",
-        "serve",
-        "query-mongo"
-      ],
+      "runtimeArgs": ["nx", "serve", "chain-indexer"],
       "env": {
-        "NODE_OPTIONS": "--inspect=9231"
+        "NODE_OPTIONS": "--inspect=9233"
       },
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
+      "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/query-mongo/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/apps/chain-indexer/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug query-postgres with Nx",
+      "name": "Debug query-api with Nx",
       "runtimeExecutable": "pnpm exec",
-      "runtimeArgs": [
-        "nx",
-        "serve",
-        "query-postgres"
-      ],
+      "runtimeArgs": ["nx", "serve", "query-api"],
       "env": {
-        "NODE_OPTIONS": "--inspect=9232"
+        "NODE_OPTIONS": "--inspect=9234"
       },
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
+      "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceFolder}/apps/query-postgres/dist/**/*.(m|c|)js",
+        "${workspaceFolder}/apps/query-api/dist/**/*.(m|c|)js",
         "!**/node_modules/**"
       ]
     }

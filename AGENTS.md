@@ -1,6 +1,6 @@
 # agents.md
 
-This document defines the rules an agent must follow when working in this monorepo (NestJS, MongoDB, Redis, Hive parsing). All changes must be production-ready.
+This document defines the rules an agent must follow when working in this monorepo (Nx monorepo: NestJS apps; add Postgres, Redis, Hive, or other runtimes as needed). All changes must be production-ready.
 
 ## 1. General principles
 
@@ -13,10 +13,10 @@ This document defines the rules an agent must follow when working in this monore
 
 ### 2.1 Layering
 
-- Repository pattern is mandatory (base: `MongoRepository<TDocument>` in `@waivio-core-services/clients`).
+- Repository pattern is mandatory for data access.
 - App-specific repositories:
   - Location: `apps/<app>/src/repositories/`
-  - Must extend the base repository where appropriate.
+  - Extend a shared base repository when one exists (e.g. from a lib); otherwise implement data access in the app repository layer.
 - Domain logic (parsers, handlers):
   - Location: `apps/<app>/src/domain/`
 - Configuration:
@@ -29,11 +29,11 @@ This document defines the rules an agent must follow when working in this monore
 ### 2.2 Module boundaries
 
 - Apps (`apps/*`) must not depend on other apps.
-- Shared logic must live in `libs/`.
+- Shared logic must live in `libs/` (when libs exist; currently the workspace may have apps only).
 - Libs must not import from apps.
 - Avoid circular dependencies.
-- Each lib must have a clear responsibility:
-  - `@odl/clients` - database, cache, and blockchain clients (Mongo, Redis, Hive)
+- When libs exist, each lib should have a clear responsibility, e.g.:
+  - `@odl/clients` - database, cache, and blockchain clients (Postgres, Redis, Hive)
   - `@odl/common` - shared utilities
   - `@odl/processors` - blockchain processing logic
   - `@odl/domain-constants` - domain constants (object types, field names, supposed updates)
@@ -53,10 +53,9 @@ Inside `apps/<app>/src/`:
 
 Repository code:
 
-- Builds MongoDB queries and aggregation pipelines:
-  - `$match`, `$lookup`, `$set`, `$push`, filters, projections, lookups, etc.
-- Knows collection names, document structure, indexes.
-- Returns typed data and hides Mongoose/MongoDB internals.
+- Builds queries and data-access operations (use **Kysely** for type-safe SQL: https://kysely.dev/docs).
+- Knows table names, schema, indexes.
+- Returns typed data and hides database/driver internals.
 - Contains no business decisions and no orchestration.
 
 ### 3.2 Service rules (business logic only)
@@ -64,15 +63,14 @@ Repository code:
 Service/domain code:
 
 - Contains formulas, calculations, decisions, orchestration.
-- Calls repository methods and never builds pipelines or raw Mongo filters.
+- Calls repository.
 - Coordinates multiple repositories when needed.
 
 ### 3.3 Red flags (must fix)
 
 Move to repository:
 
-- Service contains `$match`, `$lookup`, `$set`, `$push`.
-- Service references collection names (example: `'waiv-stakes'`).
+- Service contains query building or raw SQL/data access that belongs in the repository layer.
 
 Move to service/domain:
 
@@ -82,44 +80,37 @@ Move to service/domain:
 ## 4. Monorepo structure
 
 - Nx monorepo (configured in `nx.json`).
-- `apps/` - runnable NestJS applications (example: hive-parser, api-service, objects-bot)
-- `libs/` - reusable NestJS libraries (clients, common, processors)
+- `apps/` - runnable NestJS applications (e.g. chain-indexer, query-api).
+- `libs/` - reusable NestJS libraries when present (e.g. clients, common, processors); add via Nx generators when needed.
 
 Rules:
 
-- Apps can import from libs only via `@odl/*`.
-- Libs can import from other libs only via barrel exports (`index.ts`).
+- When libs exist, apps import from libs only via the lib’s package name (e.g. `@odl/*`).
+- Libs import from other libs only via barrel exports (`index.ts`).
 - Never import deep internal files from another lib.
-- Each project has a `project.json` defining targets (build, serve, test, lint).
+- Each project has a `project.json` defining targets (e.g. build, serve, test, lint, e2e).
 
-Correct:
 
-- `import { MongoRepository, MongoClientFactory } from '@odl/clients';`
-- `import { JsonHelper } from '@odl/common';`
-- `import { HiveProcessorModule } from '@waivio-core-services/processors';`
-
-Wrong:
-
-- `import { MongoRepository } from '@odl/clients/mongo-client/mongo.repository';`
-
-Indexing rules:
+Indexing rules (when libs exist):
 
 - Every lib must have a barrel `index.ts` at `libs/<lib>/src/index.ts`.
 - Every sub-module within a lib should have its own `index.ts`.
 
 ## 5. Package management
 
+- **Use pnpm for dependency management** in this monorepo. All install, add, update, and lockfile operations use pnpm (e.g. `pnpm install`, `pnpm add <pkg>`, `pnpm update`). Prefix Nx commands with the package manager when needed (e.g. `pnpm nx build`).
+
 ### 5.1 Root-level dependencies
 
 - Single root `package.json` (Nx monorepo) for development.
-- Use `npm install` / `npm update` at workspace root.
+- Use **pnpm** at workspace root: `pnpm install`, `pnpm add <package>`, `pnpm update`.
 - Never manually write versions into `package.json`.
 - Shared dependencies managed at root level.
 - Keep dependency graph minimal.
 
-**Key runtime dependencies (shared at root):**
+**Key runtime dependencies (add at root as needed):**
 
-- `@nestjs/*`, `mongoose`, `ioredis`, `@hiveio/dhive`, `zod`, `rxjs`, `ws`, `lodash`
+- `@nestjs/*`, `reflect-metadata`, `rxjs` are standard for Nest apps; add `zod`, `kysely`, `pg` (Postgres driver for Kysely), `ioredis`, `@hiveio/dhive`, etc. when an app or lib uses them.
 
 ### 5.2 Project-level dependencies
 
@@ -131,17 +122,11 @@ Each project (app/lib) can generate its own `package.json`:
   - Libraries are not built separately - they're included in app builds via webpack bundling
   - Generated `package.json` for apps includes all workspace library dependencies
 - **Applications**:
-  - Webpack generates `package.json` automatically during build
-  - Generated files appear in `dist/apps/<app-name>/`
+  - **Each app must have a source `package.json`** at `apps/<app>/package.json`. This is the app's declared dependency list, used for consistency, tooling, and documentation. When creating a new app (e.g. via Nx generator), add this file immediately.
+  - **Format**: `name`: `@opden-data-layer/<app>`, `version`: `0.0.0`, `private`: `true`, `dependencies`: at least `@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`, `reflect-metadata`, `rxjs` (add app-specific deps like `kysely`, `pg`, etc. as needed). Match version ranges to the root `package.json`.
+  - Webpack also generates a `package.json` at build time in `dist/apps/<app-name>/` (used for deployment); the source file is the canonical declaration for the app.
   - Use `prune-lockfile` target to generate minimal dependencies for deployment
   - App builds automatically include and bundle dependent libraries
-
-**Project dependency graph (declared in `project.json`):**
-
-- `hive-parser` → depends on: `clients`, `common`, `processors`
-- `processors` → depends on: `clients`, `common`
-- `clients` → depends on: `common`
-- `common` → no internal dependencies
 
 **Implicit dependencies:**
 
@@ -160,10 +145,10 @@ Each project (app/lib) can generate its own `package.json`:
   - Only includes packages that are actually imported/used in the code
   - Unused packages from root `package.json` are automatically excluded
   - Generated file: `dist/apps/<app>/package.json`
-- **Lockfile** (optional): Use `nx run <app>:generate-lockfile` for reproducible Docker builds
-  - Generates `package-lock.json` from the webpack-generated `package.json`
+- **Lockfile** (optional): Use `nx run <app>:prune-lockfile` for reproducible Docker builds
+  - Generates lockfile (e.g. `pnpm-lock.yaml`) from the webpack-generated `package.json`
   - Ensures consistent dependency versions in Docker
-  - Generated file: `dist/apps/<app>/package-lock.json`
+  - Outputs: `dist/apps/<app>/package.json`, `dist/apps/<app>/pnpm-lock.yaml` (or equivalent)
 
 **For libraries:**
 
@@ -173,8 +158,8 @@ Each project (app/lib) can generate its own `package.json`:
 **Commands:**
 
 - `nx build <app>` - Builds app and auto-generates `package.json` (includes only used packages)
-- `nx run <app>:generate-lockfile` - Generates `package-lock.json` for reproducible Docker builds (optional)
-- `nx run <app>:prune` - Runs both `generate-lockfile` and `copy-workspace-modules`
+- `nx run <app>:prune-lockfile` - Generates lockfile for reproducible Docker builds (optional)
+- `nx run <app>:prune` - Runs both `prune-lockfile` and `copy-workspace-modules`
 
 **Docker workflow:**
 
@@ -184,57 +169,57 @@ Each project (app/lib) can generate its own `package.json`:
    - ✅ Unused packages are automatically excluded
    - ✅ No manual `package.json` creation needed!
 
-2. **Lockfile** (optional): `nx run <app>:generate-lockfile`
-   - Generates `package-lock.json` from the webpack-generated `package.json`
+2. **Lockfile** (optional): `nx run <app>:prune-lockfile`
+   - Generates lockfile from the webpack-generated `package.json`
    - Ensures consistent dependency versions in Docker
    - Recommended for production Docker builds
 
-3. **Docker**: Copy `dist/apps/<app>/` directory and run `npm ci --only=production`
+3. **Docker**: Copy `dist/apps/<app>/` directory and run `pnpm install --frozen-lockfile --prod` (or `npm ci --only=production` if using npm lockfile).
 
 **Example:**
 
 ```bash
 # Build (generates package.json automatically)
-nx build hive-parser
+nx build query-api
 
 # Optional: Generate lockfile for Docker
-nx run hive-parser:generate-lockfile
+nx run query-api:prune-lockfile
 
-# Docker: dist/apps/hive-parser/ contains everything needed
-cd dist/apps/hive-parser
-npm ci --only=production
+# Docker: dist/apps/query-api/ contains everything needed
+cd dist/apps/query-api
+pnpm install --frozen-lockfile --prod
 node main.js
 ```
 
-**Docker build:**
+**Docker build (when an app has a Dockerfile):**
 
 ```bash
-# Build Docker image
+# Build Docker image (when apps/<app>/Dockerfile exists)
 docker build -f apps/<app>/Dockerfile -t <app>:latest .
 
 # Run container
 docker run <app>:latest
 ```
 
-See `apps/<app>/Dockerfile` for the actual Dockerfile (Node.js 24.12.0-alpine3.23).
+Add `apps/<app>/Dockerfile` when you need containerized deployment (e.g. Node.js Alpine).
 
 ### 5.4 Dependency management rules
 
 **Development:**
 
 - Use root `node_modules` for all development work
-- Install new dependencies at root: `npm install <package>`
+- Install new dependencies at root: `pnpm add <package>`
 - Nx resolves dependencies from root during development
 
 **Production/Deployment:**
 
 - Use generated `package.json` files from `dist/` directories
-- Run `npm install --production` in `dist/apps/<app>/` for deployment
+- Run `pnpm install --prod` (or `--frozen-lockfile --prod` when a lockfile exists) in `dist/apps/<app>/` for deployment
 - Each app/lib can be deployed independently with minimal dependencies
 
 **Adding new dependencies:**
 
-1. Install at root: `npm install <package>`
+1. Install at root: `pnpm add <package>`
 2. If app-specific, document in project README or comments
 3. Build will automatically include in generated `package.json` if used
 4. For deployment, use `prune-lockfile` to generate minimal set
@@ -252,7 +237,7 @@ See `apps/<app>/Dockerfile` for the actual Dockerfile (Node.js 24.12.0-alpine3.2
   - Prefer explicit types for new code.
   - Avoid widening `any` usage.
 - `@typescript-eslint/no-explicit-any` is off:
-  - Use `any` only when truly necessary (example: Mongoose internals).
+  - Use `any` only when truly necessary (e.g. driver or ORM internals).
   - Prefer `unknown` for new code.
 
 Use Zod for runtime validation of:
@@ -302,7 +287,7 @@ Validate environment at startup:
 
 - Jest with `ts-jest`.
 - Unit tests: `*.spec.ts` (co-located with source).
-- E2E tests: `*.e2e-spec.ts` (in `apps/<app>/test/`).
+- E2E tests: separate Nx project `apps/<app>-e2e/` (e.g. `chain-indexer-e2e`, `query-api-e2e`), with specs under `apps/<app>-e2e/src/`.
 - Domain/business logic must be unit-testable without NestJS container.
 - Mock infrastructure (repositories, clients).
 - Test behavior, not implementation.
@@ -315,17 +300,16 @@ Commands:
 
 ## 11. Performance
 
-- Blockchain processing is the hot path:
+- When processing blockchain or high-throughput data (e.g. indexers):
   - Avoid blocking operations in parsers.
-- MongoDB pool is pre-configured (example: `maxPoolSize 20`, `minPoolSize 2`).
-- Redis URL rotation is handled by `UrlRotationService` in `@waivio-core-services/clients`.
-- Be mindful of memory when processing blocks sequentially.
-- Avoid unnecessary allocations in block/transaction loops.
+  - Be mindful of memory when processing blocks sequentially.
+  - Avoid unnecessary allocations in block/transaction loops.
+- When using a shared clients lib: database pool and Redis URL rotation are typically pre-configured there.
 
 ## 12. Security
 
 - Validate and sanitize all input (blockchain JSON, API requests).
-- Protect against injection in MongoDB queries.
+- Protect against injection in database queries (parameterize queries, avoid raw string interpolation).
 - Avoid mass assignment: use explicit field mapping.
 - Prevent prototype pollution when parsing custom JSON from blockchain.
 - Connection strings and secrets only via env vars, never committed.
@@ -334,9 +318,9 @@ Commands:
 
 - Prefer latest official docs:
   - NestJS v11: https://docs.nestjs.com
-  - Mongoose v9: https://mongoosejs.com/docs
   - Zod: https://zod.dev
-  - `@hiveio/dhive`: https://github.com/openhive-network/dhive
+  - **Kysely** (type-safe SQL query builder for Postgres, etc.): https://kysely.dev/docs
+  - When using Hive: `@hiveio/dhive` https://github.com/openhive-network/dhive
 - Use context7 MCP when available.
 - Do not rely on outdated blog posts.
 
@@ -347,7 +331,7 @@ Commands:
 - Unused vars must be prefixed with `_`.
 - Floating promises: warn.
 - Prefer small focused functions.
-- Prefer composition over inheritance (except `MongoRepository` base class).
+- Prefer composition over inheritance (except when extending a shared repository base class).
 - Use descriptive names.
 - Avoid deep nesting (prefer early returns).
 - Avoid magic numbers (use constants).
@@ -375,8 +359,8 @@ Commands:
 
 **Build order:**
 
-- Nx automatically determines build order based on `implicitDependencies`
-- Example: Building `hive-parser` will build `common` → `clients` → `processors` → `hive-parser`
+- Nx automatically determines build order based on `implicitDependencies` and the project graph.
+- Example: Building an app that depends on libs will build those libs first (e.g. `common` → `clients` → `app`).
 
 ### 15.2 Development
 
@@ -395,8 +379,8 @@ Commands:
 - Prune dependencies: `nx run <app>:prune-lockfile` (optional, for Docker optimization)
   - Generates minimal `package.json` + `package-lock.json`
   - Recommended for Docker images to minimize size
-- Deploy: `cd dist/apps/<app> && npm ci --only=production && node main`
-- Docker: See `apps/<app>/Dockerfile.example` for multi-stage build setup
+- Deploy: `cd dist/apps/<app> && pnpm install --frozen-lockfile --prod && node main`
+- Docker: Add `apps/<app>/Dockerfile` when containerized deployment is needed (e.g. multi-stage build).
 
 **Key points:**
 
@@ -420,7 +404,7 @@ Commands:
 
 ### 17.1 Boundary enforcement
 
-- Project tags (`type:app`, `type:lib`, `scope:shared`, `scope:infra`, `scope:domain`) are set in each project's `project.json`.
+- When used, project tags (e.g. `type:app`, `type:lib`, `scope:shared`, `scope:infra`, `scope:domain`) are set in each project's `project.json`.
 - Module boundaries are enforced by ESLint rule `@nx/enforce-module-boundaries` with `depConstraints`: apps may depend only on libs; `scope:shared` libs have no internal lib deps; `scope:infra` may depend on `scope:shared`; `scope:domain` may depend on `scope:infra` and `scope:shared`.
 - Do not add dependencies that violate these constraints.
 
@@ -448,11 +432,12 @@ Commands:
 
 - Do not create new apps or libraries by manually adding folders and config. Always scaffold via Nx generators (e.g. `nx g @nx/js:library --name=... --directory=... --no-interactive`). Use the `nx-generate` skill when scaffolding.
 - This keeps `project.json`, `tsconfig`, and dependency graph consistent.
+- **After scaffolding a new app**, add `apps/<app>/package.json` with the app's declared dependencies (see §5.2). The Nx Nest app generator does not create this file; it must be added to match existing apps (e.g. chain-indexer, query-api).
 
 ### 17.7 Domain constants and shared libs
 
-- Domain-specific constants (object types, field names, supposed updates, translations) belong in `@waivio-core-services/domain-constants` or another domain-scoped lib.
-- Keep `@odl/common` generic (utilities, non-domain constants). Keep `@waivio-core-services/clients` infrastructure-only (no domain business rules or domain-specific schemas ownership).
+- Domain-specific constants (object types, field names, supposed updates, translations) belong in a domain-scoped lib when one exists (e.g. `@odl/domain-constants`).
+- Keep `@odl/common` generic (utilities, non-domain constants). Keep infrastructure libs (e.g. `@odl/clients`) free of domain business rules and domain-specific schema ownership.
 
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->

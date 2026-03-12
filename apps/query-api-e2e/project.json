@@ -1,0 +1,17 @@
+{
+  "name": "query-api-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "implicitDependencies": ["query-api"],
+  "projectType": "application",
+  "targets": {
+    "e2e": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{e2eProjectRoot}"],
+      "options": {
+        "jestConfig": "apps/query-api-e2e/jest.config.cts",
+        "passWithNoTests": true
+      },
+      "dependsOn": ["query-api:build", "query-api:serve"]
+    }
+  }
+}
