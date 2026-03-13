@@ -51,12 +51,10 @@ export interface ObjectUpdatesTable {
   object_id: string;
   update_type: string;
   creator: string;
-  cardinality: 'single' | 'multi';
   created_at_unix: number;
   /** Packed canonical order: block_num|trx_index|op_index|odl_event_index. See event-seq.ts. */
   event_seq: bigint;
   transaction_id: string;
-  value_kind: 'text' | 'geo' | 'json';
   value_text: string | null;
   value_geo: unknown;
   value_json: JSONColumnType<Record<string, unknown>>;

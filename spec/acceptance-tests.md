@@ -135,7 +135,7 @@ Canonical event order is determined by `event_seq` — a packed BIGINT encoding 
 - **Expect**: tie-break uses deterministic order: decisive rank vote canonical order, then update canonical order, then `update_id ASC`.
 
 ### AC-I25: rank_vote rejected for single-cardinality target
-- **Setup**: Update U targets a field/update type with `single` cardinality.
+- **Setup**: Update U targets a field/update type with `single` cardinality (per the update registry).
 - **Action**: Submit `rank_vote` for U.
 - **Expect**: Rejected with `UNSUPPORTED_RANK_TARGET`.
 

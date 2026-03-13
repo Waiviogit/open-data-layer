@@ -67,8 +67,8 @@ Validity is derived at query time with tiered hierarchy:
 
 - One active raw rank vote per `(update_id, voter, rank_context)`.
 - Revote replaces previous vote for the same key.
-- `rank_vote` is allowed only for updates whose target `update_type` has `multi` cardinality.
-- If target update is `single` cardinality, event must be rejected with `UNSUPPORTED_RANK_TARGET`.
+- `rank_vote` is allowed only for updates whose target `update_type` has `multi` cardinality (per the update registry).
+- If the target `update_type` has `single` cardinality, event must be rejected with `UNSUPPORTED_RANK_TARGET`.
 
 ### Query-time decisive ranking resolution
 

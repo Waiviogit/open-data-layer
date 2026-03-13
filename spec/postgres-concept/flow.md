@@ -45,7 +45,7 @@ erDiagram
     text update_id PK
     text object_id FK
     text update_type
-    text value_kind
+    bigint event_seq
     tsvector search_vector
     geography value_geo
   }
@@ -116,13 +116,9 @@ ON CONFLICT (object_id) DO UPDATE SET seq = objects_core.seq + 1;
 
 ### Step 2: Upsert update or vote
 
-- **update_create (single-cardinality)**  
-Replace the existing update for that object + update_type + cardinality:
-  1. `DELETE FROM object_updates WHERE object_id = $1 AND update_type = $2 AND cardinality = 'single'` — CASCADE deletes validity_votes and rank_votes for that update.
-  2. `INSERT INTO object_updates (...)` for the new update.
-  The trigger sets `search_vector` from `value_text`.
-- **update_create (multi)**  
-`INSERT INTO object_updates (...)` — no delete; multi-cardinality accumulates rows.
+- **update_create**  
+`INSERT INTO object_updates (...)`. The trigger sets `search_vector` from `value_text`.
+Cardinality (`single` vs `multi`) is a property of the `update_type` defined in the application-level update registry; it determines how the resolved view picks values at read time, not how rows are stored. Multiple rows for the same `(object_id, update_type)` can coexist — the Query Service resolves the winner.
 - **update_vote**  
 `INSERT INTO validity_votes (...) ON CONFLICT (update_id, voter) DO UPDATE SET vote = EXCLUDED.vote, ...`
 - **rank_vote**  
@@ -249,8 +245,8 @@ For each object, using the loaded rows, authority records, voter reputations, an
      2. **Trusted decisive vote** — latest trusted `for`/`against` wins, only on objects the trusted user has authority over (LWTW). Short-circuit.
      3. **Community vote weight** — for each non-admin, non-trusted validity vote, compute `votePower = 1 + log₂(1 + object_reputation)` using the voter's `object_reputation` from `accounts_current`. Sum: `field_weight = Σ (votePower × sign)` where `for → +1`, `against → −1`. If `field_weight < 0` the update is INVALID; if `field_weight >= 0` the update is VALID.
      4. **No votes** — baseline VALID.
-4. Resolve single-cardinality updates (pick one valid value).
-5. Resolve multi-cardinality updates and apply ranking.
+4. Resolve single-cardinality update types (pick one valid value per the update registry).
+5. Resolve multi-cardinality update types and apply ranking.
 6. Apply visibility options (e.g. omit rejected if `includeRejected=false`).
 7. Shape the API response (ResolvedView).
 
@@ -270,7 +266,6 @@ See [vote-semantics.md § C](../vote-semantics.md#c-community-vote-weight) for t
 | object_updates | value_geo                                           | GiST             | Geo proximity                             |
 | object_updates | (update_type, value_text)                           | B-tree (partial) | Raw exact match by field type             |
 | object_updates | (update_type, value_text_normalized)                | B-tree (partial) | Case-insensitive exact match              |
-| object_updates | (object_id, update_type) WHERE cardinality='single' | UNIQUE partial   | Enforce one active update per object+type |
 | validity_votes | (update_id, voter)                                  | UNIQUE           | One vote per voter per update             |
 | validity_votes | (object_id)                                         | B-tree           | Bulk load votes for an object             |
 | rank_votes       | (update_id, voter, rank_context)                    | UNIQUE           | One rank per voter per context                          |
@@ -290,7 +285,7 @@ See [vote-semantics.md § C](../vote-semantics.md#c-community-vote-weight) for t
 | -------------------------- | -------------------------------------------------------------- | --------------------------------------------------- |
 | Tables/collections         | 6 (core, updates, validity_votes, rank_votes, projection, authority) | 6 (core, updates, validity_votes, rank_votes, authority, accounts_current; no projection) |
 | Projection                 | Separate document/table, must be kept in sync                  | None; query core tables directly                    |
-| Single-cardinality replace | Manual cascade: delete votes, delete update, update projection | DELETE update; CASCADE removes votes; no projection |
+| Single-cardinality resolve | Manual cascade: delete votes, delete update, update projection | Read-time resolution via update registry; no DB-level enforcement |
 | Consistency                | seq + coreSeqAtBuild for drift detection                       | ACID; seq for change tracking only                  |
 | Text search                | Projection searchText or text index on projection              | tsvector + GIN on object_updates                    |
 | Geo search                 | Projection geoFields + 2dsphere                                | PostGIS geography + GiST on object_updates          |

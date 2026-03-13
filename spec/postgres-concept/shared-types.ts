@@ -4,6 +4,11 @@
  * Position is inlined as columns in SQL; geo uses PostGIS (no GeoPoint wrapper in DB).
  */
 
+/**
+ * Cardinality and value kind are properties of the update type definition
+ * in the application-level update registry (see object-type-entity.md),
+ * not stored in the database. Re-exported here for use in registry types.
+ */
 export type UpdateCardinality = 'single' | 'multi';
 export type ValidityVoteValue = 'for' | 'against';
 export type ValueKind = 'text' | 'geo' | 'json';

@@ -1,27 +1,24 @@
 /**
  * One row per update. Table: object_updates.
  *
- * CanonicalPosition inlined via CanonicalPositionColumns. UpdateValue becomes value_kind
- * plus nullable value_text, value_geo (PostGIS), value_json. search_vector and
- * value_text_normalized are generated/trigger-maintained columns.
+ * CanonicalPosition inlined via CanonicalPositionColumns. Exactly one of
+ * value_text, value_geo, value_json is set (enforced by DB CHECK).
+ * search_vector and value_text_normalized are generated/trigger-maintained columns.
+ *
+ * Cardinality and value_kind are properties of the update_type definition
+ * in the application-level update registry, not stored per row.
  */
 
-import type {
-  CanonicalPositionColumns,
-  UpdateCardinality,
-  ValueKind,
-} from './shared-types';
+import type { CanonicalPositionColumns } from './shared-types';
 
 export interface ObjectUpdateRow extends CanonicalPositionColumns {
   update_id: string;
   object_id: string;
   update_type: string;
   creator: string;
-  cardinality: UpdateCardinality;
   /** BCP 47 language-REGION tag, e.g. "en-US", "fr-FR". Null means language-neutral. */
   locale: string | null;
   created_at_unix: number;
-  value_kind: ValueKind;
   value_text: string | null;
   /**
    * PostGIS geography(Point, 4326).

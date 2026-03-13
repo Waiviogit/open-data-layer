@@ -30,19 +30,17 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       object_id       TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
       update_type     TEXT NOT NULL,
       creator         TEXT NOT NULL,
-      cardinality     TEXT NOT NULL CHECK (cardinality IN ('single', 'multi')),
       created_at_unix BIGINT NOT NULL,
       event_seq       BIGINT NOT NULL,
       transaction_id  TEXT NOT NULL,
-      value_kind      TEXT NOT NULL CHECK (value_kind IN ('text', 'geo', 'json')),
       value_text      TEXT,
       value_geo       GEOGRAPHY(Point, 4326),
       value_json      JSONB,
       value_text_normalized TEXT GENERATED ALWAYS AS (LOWER(TRIM(value_text))) STORED,
       search_vector   TSVECTOR,
-      CONSTRAINT chk_value_kind_text   CHECK (value_kind != 'text' OR (value_text IS NOT NULL AND value_geo IS NULL AND value_json IS NULL)),
-      CONSTRAINT chk_value_kind_geo   CHECK (value_kind != 'geo' OR (value_geo IS NOT NULL AND value_text IS NULL AND value_json IS NULL)),
-      CONSTRAINT chk_value_kind_json  CHECK (value_kind != 'json' OR (value_json IS NOT NULL AND value_text IS NULL AND value_geo IS NULL))
+      CONSTRAINT chk_exactly_one_value CHECK (
+        (value_text IS NOT NULL)::int + (value_geo IS NOT NULL)::int + (value_json IS NOT NULL)::int = 1
+      )
     )
   `.execute(db);
 
@@ -51,13 +49,12 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await sql`CREATE INDEX idx_object_updates_value_geo ON object_updates USING GIST (value_geo)`.execute(db);
   await sql`CREATE INDEX idx_object_updates_update_type_value_text ON object_updates (update_type, value_text) WHERE value_text IS NOT NULL`.execute(db);
   await sql`CREATE INDEX idx_object_updates_update_type_value_text_normalized ON object_updates (update_type, value_text_normalized) WHERE value_text_normalized IS NOT NULL`.execute(db);
-  await sql`CREATE UNIQUE INDEX uq_object_updates_single ON object_updates (object_id, update_type) WHERE cardinality = 'single'`.execute(db);
 
   await sql`
     CREATE OR REPLACE FUNCTION object_updates_search_vector_trigger()
     RETURNS TRIGGER AS $$
     BEGIN
-      IF NEW.value_kind = 'text' AND NEW.value_text IS NOT NULL THEN
+      IF NEW.value_text IS NOT NULL THEN
         NEW.search_vector := to_tsvector('english', NEW.value_text);
       ELSE
         NEW.search_vector := NULL;
@@ -69,7 +66,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
 
   await sql`
     CREATE TRIGGER tr_object_updates_search_vector
-      BEFORE INSERT OR UPDATE OF value_text, value_kind ON object_updates
+      BEFORE INSERT OR UPDATE OF value_text ON object_updates
       FOR EACH ROW
       EXECUTE PROCEDURE object_updates_search_vector_trigger()
   `.execute(db);
