@@ -10,10 +10,12 @@ import type {
   ColumnType,
   Generated,
   Insertable,
-  JSONColumnType,
   Selectable,
   Updateable,
 } from 'kysely';
+
+type JsonPrimitive = string | number | boolean | null;
+export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
 
 export interface OdlDatabase {
   objects_core: ObjectsCoreTable;
@@ -57,7 +59,7 @@ export interface ObjectUpdatesTable {
   transaction_id: string;
   value_text: string | null;
   value_geo: unknown;
-  value_json: JSONColumnType<Record<string, unknown>>;
+  value_json: ColumnType<JsonValue>;
   /** GENERATED ALWAYS AS (LOWER(TRIM(value_text))) STORED; read-only. */
   value_text_normalized: Generated<string | null>;
   search_vector: unknown;

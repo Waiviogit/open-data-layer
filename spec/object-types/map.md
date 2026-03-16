@@ -1,0 +1,58 @@
+# map
+
+- **Object type name:** `map`
+- **Object purpose:**
+
+- **supported_updates**
+
+[`status`](../object-updates/status.md)
+[`avatar`](../object-updates/avatar.md)
+[`pin`](../object-updates/pin.md)
+[`remove`](../object-updates/remove.md)
+[`name`](../object-updates/name.md)
+[`title`](../object-updates/title.md)
+[`description`](../object-updates/description.md)
+[`background`](../object-updates/background.md)
+[`map_rectangles`](../object-updates/map_rectangles.md)
+[`map_object_types`](../object-updates/map_object_types.md)
+[`map_object_tags`](../object-updates/map_object_tags.md)
+[`map_mobile_view`](../object-updates/map_mobile_view.md)
+[`map_desktop_view`](../object-updates/map_desktop_view.md)
+[`map_objects_list`](../object-updates/map_objects_list.md)
+[`gallery_album`](../object-updates/gallery_album.md)
+[`gallery_item`](../object-updates/gallery_item.md)
+[`tag_category`](../object-updates/tag_category.md)
+[`category_item`](../object-updates/category_item.md)
+[`website`](../object-updates/website.md)
+[`delegation`](../object-updates/delegation.md)
+[`promotion`](../object-updates/promotion.md)
+
+- **supposed_updates**
+
+(none)
+
+- **Example payload for broadcast**
+
+```js
+[
+  'custom_json',
+  {
+    required_auths: [],
+    required_posting_auths: [account],
+    id: 'odl-mainnet',
+    json: JSON.stringify({
+      events: [
+        {
+          action: 'object_create',
+          v: 1,
+          payload: {
+            object_id: 'map1',
+            object_type: 'map'
+          }
+        }
+      ]
+    }),
+  },
+]
+
+```

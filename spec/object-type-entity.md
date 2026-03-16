@@ -1,6 +1,6 @@
 # Object Type
 
-**Back:** [Spec index](README.md) · **Related:** [vote-semantics](vote-semantics.md), [reject-codes](reject-codes.md)
+**Back:** [Spec index](README.md) · **Related:** [object types](object-types/README.md), [vote-semantics](vote-semantics.md), [reject-codes](reject-codes.md)
 
 ## 1. Purpose
 
