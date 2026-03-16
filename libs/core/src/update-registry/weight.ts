@@ -4,8 +4,8 @@ import { UPDATE_TYPES } from './update-types';
 
 const WEIGHT_UNITS = ['t', 'kg', 'gm', 'mg', 'mcg', 'st', 'lb', 'oz'] as const;
 
-export const UPDATE_WEIGHT: UpdateDefinition = {
-  update_type: UPDATE_TYPES.WEIGHT,
+export const UPDATE_PRODUCT_WEIGHT: UpdateDefinition = {
+  update_type: UPDATE_TYPES.PRODUCT_WEIGHT,
   value_kind: 'json',
   cardinality: 'single',
   schema: z.object({

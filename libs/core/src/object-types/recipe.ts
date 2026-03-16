@@ -1,0 +1,45 @@
+import { UPDATE_TYPES } from '../update-registry/update-types';
+import { OBJECT_TYPES } from './object-types';
+import { ObjectTypeDefinition } from './types';
+
+export const RECIPE_OBJECT_TYPE: ObjectTypeDefinition = {
+  object_type: OBJECT_TYPES.RECIPE,
+  supported_updates: [
+    UPDATE_TYPES.STATUS,
+    UPDATE_TYPES.AVATAR,
+    UPDATE_TYPES.PIN,
+    UPDATE_TYPES.REMOVE,
+    UPDATE_TYPES.NAME,
+    UPDATE_TYPES.TITLE,
+    UPDATE_TYPES.DESCRIPTION,
+    UPDATE_TYPES.BACKGROUND,
+    UPDATE_TYPES.DELEGATION,
+    UPDATE_TYPES.TAG_CATEGORY,
+    UPDATE_TYPES.CATEGORY_ITEM,
+    UPDATE_TYPES.GALLERY_ALBUM,
+    UPDATE_TYPES.GALLERY_ITEM,
+    UPDATE_TYPES.RATING,
+    UPDATE_TYPES.CALORIES,
+    UPDATE_TYPES.BUDGET,
+    UPDATE_TYPES.COOKING_TIME,
+    UPDATE_TYPES.ADD_ON,
+    UPDATE_TYPES.SIMILAR,
+    UPDATE_TYPES.FEATURES,
+    UPDATE_TYPES.COST,
+    UPDATE_TYPES.RECIPE_INGREDIENTS,
+    UPDATE_TYPES.IDENTIFIER,
+    UPDATE_TYPES.DEPARTMENTS,
+    UPDATE_TYPES.PROMOTION,
+    UPDATE_TYPES.NUTRITION,
+  ],
+  supposed_updates: [
+    {
+      update_type: UPDATE_TYPES.RATING,
+      values: ["Rating"],
+    },
+    {
+      update_type: UPDATE_TYPES.TAG_CATEGORY,
+      values: ["Cuisine","Meal Type","Diet"],
+    },
+  ],
+};

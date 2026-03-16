@@ -6,7 +6,7 @@ import { UPDATE_AGE_RANGE } from './age-range';
 import { UPDATE_PUBLICATION_DATE } from './publication-date';
 import { UPDATE_GROUP_ID } from './group-id';
 import { UPDATE_IDENTIFIER } from './identifier';
-import { UPDATE_WEIGHT } from './weight';
+import { UPDATE_PRODUCT_WEIGHT } from './weight';
 import { UPDATE_DIMENSIONS } from './dimensions';
 import { UPDATE_AUTHORS } from './authors';
 import { UPDATE_PUBLISHER } from './publisher';
@@ -29,6 +29,7 @@ import { UPDATE_AFFILIATE_PRODUCT_ID_TYPES } from './affiliate-product-id-types'
 import { UPDATE_AFFILIATE_GEO_AREA } from './affiliate-geo-area';
 import { UPDATE_AFFILIATE_URL_TEMPLATE } from './affiliate-url-template';
 import { UPDATE_AFFILIATE_CODE } from './affiliate-code';
+import { UPDATE_MAP } from './map';
 import { UPDATE_MAP_OBJECT_TYPES } from './map-object-types';
 import { UPDATE_MAP_OBJECT_TAGS } from './map-object-tags';
 import { UPDATE_MAP_MOBILE_VIEW } from './map-mobile-view';
@@ -58,6 +59,34 @@ import { UPDATE_COMPARE_AT_PRICE } from './compare-at-price';
 import { UPDATE_CONTENT_POSITION } from './content-position';
 import { UPDATE_HTML_CONTENT } from './html-content';
 import { UPDATE_CONTENT_VIEW } from './content-view';
+import { UPDATE_STATUS } from './status';
+import { UPDATE_AVATAR } from './avatar';
+import { UPDATE_TITLE } from './title';
+import { UPDATE_DESCRIPTION } from './description';
+import { UPDATE_BACKGROUND } from './background';
+import { UPDATE_TAG_CATEGORY } from './tag-category';
+import { UPDATE_CATEGORY_ITEM } from './category-item';
+import { UPDATE_GALLERY_ALBUM } from './gallery-album';
+import { UPDATE_GALLERY_ITEM } from './gallery-item';
+import { UPDATE_PARENT } from './parent';
+import { UPDATE_LANGUAGE } from './language';
+import { UPDATE_DEPARTMENTS } from './departments';
+import { UPDATE_WEBSITE } from './website';
+import { UPDATE_RATING } from './rating';
+import { UPDATE_LIST_ITEM } from './list-item';
+import { UPDATE_PRICE } from './price';
+import { UPDATE_SORT_CUSTOM } from './sort-custom';
+import { UPDATE_ADDRESS } from './address';
+import { UPDATE_FORM } from './form';
+import { UPDATE_BLOG } from './blog';
+import { UPDATE_NEWS_FILTER } from './news-filter';
+import { UPDATE_WORK_TIME } from './work-time';
+import { UPDATE_BUTTON } from './button';
+import { UPDATE_PHONE } from './phone';
+import { UPDATE_LINK } from './link';
+import { UPDATE_EMAIL } from './email';
+import { UPDATE_CHART_ID } from './chartid';
+import { UPDATE_PAGE_CONTENT } from './page-content';
 
 export const UPDATE_REGISTRY = {
   [UPDATE_TYPES.NAME]: UPDATE_NAME,
@@ -66,7 +95,7 @@ export const UPDATE_REGISTRY = {
   [UPDATE_TYPES.PUBLICATION_DATE]: UPDATE_PUBLICATION_DATE,
   [UPDATE_TYPES.GROUP_ID]: UPDATE_GROUP_ID,
   [UPDATE_TYPES.IDENTIFIER]: UPDATE_IDENTIFIER,
-  [UPDATE_TYPES.WEIGHT]: UPDATE_WEIGHT,
+  [UPDATE_TYPES.PRODUCT_WEIGHT]: UPDATE_PRODUCT_WEIGHT,
   [UPDATE_TYPES.DIMENSIONS]: UPDATE_DIMENSIONS,
   [UPDATE_TYPES.AUTHORS]: UPDATE_AUTHORS,
   [UPDATE_TYPES.PUBLISHER]: UPDATE_PUBLISHER,
@@ -89,6 +118,7 @@ export const UPDATE_REGISTRY = {
   [UPDATE_TYPES.AFFILIATE_GEO_AREA]: UPDATE_AFFILIATE_GEO_AREA,
   [UPDATE_TYPES.AFFILIATE_URL_TEMPLATE]: UPDATE_AFFILIATE_URL_TEMPLATE,
   [UPDATE_TYPES.AFFILIATE_CODE]: UPDATE_AFFILIATE_CODE,
+  [UPDATE_TYPES.MAP]: UPDATE_MAP,
   [UPDATE_TYPES.MAP_OBJECT_TYPES]: UPDATE_MAP_OBJECT_TYPES,
   [UPDATE_TYPES.MAP_OBJECT_TAGS]: UPDATE_MAP_OBJECT_TAGS,
   [UPDATE_TYPES.MAP_MOBILE_VIEW]: UPDATE_MAP_MOBILE_VIEW,
@@ -118,4 +148,32 @@ export const UPDATE_REGISTRY = {
   [UPDATE_TYPES.CONTENT_POSITION]: UPDATE_CONTENT_POSITION,
   [UPDATE_TYPES.HTML_CONTENT]: UPDATE_HTML_CONTENT,
   [UPDATE_TYPES.CONTENT_VIEW]: UPDATE_CONTENT_VIEW,
+  [UPDATE_TYPES.STATUS]: UPDATE_STATUS,
+  [UPDATE_TYPES.AVATAR]: UPDATE_AVATAR,
+  [UPDATE_TYPES.TITLE]: UPDATE_TITLE,
+  [UPDATE_TYPES.DESCRIPTION]: UPDATE_DESCRIPTION,
+  [UPDATE_TYPES.BACKGROUND]: UPDATE_BACKGROUND,
+  [UPDATE_TYPES.TAG_CATEGORY]: UPDATE_TAG_CATEGORY,
+  [UPDATE_TYPES.CATEGORY_ITEM]: UPDATE_CATEGORY_ITEM,
+  [UPDATE_TYPES.GALLERY_ALBUM]: UPDATE_GALLERY_ALBUM,
+  [UPDATE_TYPES.GALLERY_ITEM]: UPDATE_GALLERY_ITEM,
+  [UPDATE_TYPES.PARENT]: UPDATE_PARENT,
+  [UPDATE_TYPES.LANGUAGE]: UPDATE_LANGUAGE,
+  [UPDATE_TYPES.DEPARTMENTS]: UPDATE_DEPARTMENTS,
+  [UPDATE_TYPES.WEBSITE]: UPDATE_WEBSITE,
+  [UPDATE_TYPES.RATING]: UPDATE_RATING,
+  [UPDATE_TYPES.LIST_ITEM]: UPDATE_LIST_ITEM,
+  [UPDATE_TYPES.PRICE]: UPDATE_PRICE,
+  [UPDATE_TYPES.SORT_CUSTOM]: UPDATE_SORT_CUSTOM,
+  [UPDATE_TYPES.ADDRESS]: UPDATE_ADDRESS,
+  [UPDATE_TYPES.FORM]: UPDATE_FORM,
+  [UPDATE_TYPES.BLOG]: UPDATE_BLOG,
+  [UPDATE_TYPES.NEWS_FILTER]: UPDATE_NEWS_FILTER,
+  [UPDATE_TYPES.WORK_TIME]: UPDATE_WORK_TIME,
+  [UPDATE_TYPES.BUTTON]: UPDATE_BUTTON,
+  [UPDATE_TYPES.PHONE]: UPDATE_PHONE,
+  [UPDATE_TYPES.LINK]: UPDATE_LINK,
+  [UPDATE_TYPES.EMAIL]: UPDATE_EMAIL,
+  [UPDATE_TYPES.CHART_ID]: UPDATE_CHART_ID,
+  [UPDATE_TYPES.PAGE_CONTENT]: UPDATE_PAGE_CONTENT,
 } satisfies UpdateRegistry;

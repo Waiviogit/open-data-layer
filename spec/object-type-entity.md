@@ -18,7 +18,7 @@ interface SupposedUpdate {
 }
 
 interface ObjectType {
-  name: string;                  // unique type identifier, e.g. "product", "recipe"
+  object_type: string;                  // unique type identifier, e.g. "product", "recipe"
   supported_updates: string[];    // update type names accepted for this object type
   supposed_updates: SupposedUpdate[];  // suggested/autocomplete metadata for tooling
 }
