@@ -12,15 +12,15 @@ Adding or changing an object type requires a **pull request** to this repository
 
 ```typescript
 interface SupposedUpdate {
-  name: string;
+  update_type: string;
   values: string[] | unknown[];  // unknown[] for JSON-valued updates
   id_path?: string;             
 }
 
 interface ObjectType {
   name: string;                  // unique type identifier, e.g. "product", "recipe"
-  supportedUpdates: string[];    // update type names accepted for this object type
-  supposedUpdates: SupposedUpdate[];  // suggested/autocomplete metadata for tooling
+  supported_updates: string[];    // update type names accepted for this object type
+  supposed_updates: SupposedUpdate[];  // suggested/autocomplete metadata for tooling
 }
 ```
 
@@ -30,8 +30,8 @@ In addition to per-type definitions, the codebase must maintain a **global updat
 
 ```typescript
 interface UpdateDefinition {
-  name: string;           // update type identifier, e.g. "name", "price", "location"
-  valueKind: 'text' | 'geo' | 'json';
+  update_type: string;           // update type identifier, e.g. "name", "price", "location"
+  value_kind: 'text' | 'geo' | 'json';
   cardinality: 'single' | 'multi';
   schema: ZodSchema;      // runtime validation schema for the value payload
 }
@@ -45,11 +45,11 @@ The indexer validates every incoming `update_create` against this registry. If t
 
 For every `update_create` event:
 
-1. Look up `updateType` in `UPDATE_REGISTRY`. Reject with `UNSUPPORTED_UPDATE_TYPE` if absent.
-2. Resolve the target object's `objectType` from `objects_core`.
-3. Look up the matching `ObjectType` in the code registry. If the `objectType` is unknown, accept the update without type-level restriction (open type).
-4. If the `ObjectType` is known, verify `updateType ∈ supportedUpdates`. Reject with `UNSUPPORTED_UPDATE_TYPE_FOR_OBJECT` if not listed.
-5. Validate the update value against `UPDATE_REGISTRY[updateType].schema`. Reject with `INVALID_UPDATE_VALUE` if invalid.
+1. Look up `update_type` in `UPDATE_REGISTRY`. Reject with `UNSUPPORTED_UPDATE_TYPE` if absent.
+2. Resolve the target object's `object_type` from `objects_core`.
+3. Look up the matching `object_type` in the code registry. If the `object_type` is unknown, Reject with `UNSUPPORTED_UPDATE_TYPE_FOR_OBJECT`.
+4. If the `object_type` is known, verify `updateType ∈ supportedUpdates`. Reject with `UNSUPPORTED_UPDATE_TYPE_FOR_OBJECT` if not listed.
+5. Validate the update value against `UPDATE_REGISTRY[update_type].schema`. Reject with `INVALID_UPDATE_VALUE` if invalid.
 
 ## 5. Adding a new object type
 
@@ -57,17 +57,16 @@ New object types and update definitions are added exclusively via pull request:
 
 - Add an `ObjectType` entry to the type registry constant.
 - Add any new `UpdateDefinition` entries to `UPDATE_REGISTRY` with their Zod schemas.
-- Update `supposedUpdates` for UI autocomplete where applicable.
+- Update `supposed_updates` for UI autocomplete where applicable.
 - The PR must include a description of the new type, its intended update set, and example values.
 
 Requirements for the PR process will be described in a separate contribution guide.
 
 ## 6. supposedUpdates semantics
 
-`supposedUpdates` defines the **recommended set of updates** that should be pre-populated when creating a new object of this type. It is intended for client tooling — when a user creates a new object, the UI uses `supposedUpdates` to suggest or auto-fill the initial update fields.
+`supposed_updates` defines the **recommended set of updates** that should be pre-populated when creating a new object of this type. It is intended for client tooling — when a user creates a new object, the UI uses `supposedUpdates` to suggest or auto-fill the initial update fields.
 
-- `name` — the `updateType` to suggest (must be present in `supportedUpdates`).
+- `update_type` — the `updateType` to suggest (must be present in `supported_updates`).
 - `values` — recommended default values for that field; `string[]` for text updates, `unknown[]` for JSON-valued updates.
-- `id_path` — dot-path to the identity field within a JSON value, used for deduplication when the update is multi-cardinality and JSON-valued (e.g. `"lang"` inside `{ lang: "en", text: "..." }`).
 
-`supposedUpdates` does not affect indexer accept/reject behaviour.
+`supposed_updates` does not affect indexer accept/reject behaviour.
