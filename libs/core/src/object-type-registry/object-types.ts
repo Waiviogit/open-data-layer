@@ -36,6 +36,7 @@ export const OBJECT_TYPES = {
   RECIPE: 'recipe',
   GROUP: 'group',
   HTML: 'html',
+  GOVERNANCE: 'governance',
 } as const;
 
 export type ObjectType = (typeof OBJECT_TYPES)[keyof typeof OBJECT_TYPES];

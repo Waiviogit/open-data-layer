@@ -9,3 +9,5 @@ export interface SupposedUpdate {
     supported_updates: string[];    // update type names accepted for this object type
     supposed_updates: SupposedUpdate[];  // suggested/autocomplete metadata for tooling
   }
+
+  export type ObjectTypeRegistry = Record<string, ObjectTypeDefinition>;

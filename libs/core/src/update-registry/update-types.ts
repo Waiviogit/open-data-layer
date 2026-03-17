@@ -91,6 +91,17 @@ export const UPDATE_TYPES = {
   EMAIL: 'email',
   CHART_ID: 'chart_id',
   PAGE_CONTENT: 'page_content',
+  // Governance (spec/governance-resolution.md §2)
+  ADMINS: 'admins',
+  TRUSTED: 'trusted',
+  MODERATORS: 'moderators',
+  AUTHORITIES: 'authorities',
+  RESTRICTED: 'restricted',
+  BANNED: 'banned',
+  WHITELIST: 'whitelist',
+  OBJECT_CONTROL: 'object_control',
+  INHERITS_FROM: 'inherits_from',
+  VALIDITY_CUTOFF: 'validity_cutoff',
 } as const;
 
 export type UpdateType = (typeof UPDATE_TYPES)[keyof typeof UPDATE_TYPES];

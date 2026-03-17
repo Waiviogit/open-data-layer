@@ -1,6 +1,7 @@
-export type { ObjectTypeDefinition, SupposedUpdate } from './types';
+export type { ObjectTypeDefinition, ObjectTypeRegistry, SupposedUpdate } from './types';
 export { OBJECT_TYPES } from './object-types';
 export type { ObjectType } from './object-types';
+export { OBJECT_TYPE_REGISTRY } from './object-type-registry';
 export { HASHTAG_OBJECT_TYPE } from './object-types/hashtag';
 export { CRYPTO_OBJECT_TYPE } from './object-types/crypto';
 export { COMMODITY_OBJECT_TYPE } from './object-types/commodity';
@@ -38,3 +39,4 @@ export { LINK_OBJECT_TYPE } from './object-types/link';
 export { RECIPE_OBJECT_TYPE } from './object-types/recipe';
 export { GROUP_OBJECT_TYPE } from './object-types/group';
 export { HTML_OBJECT_TYPE } from './object-types/html';
+export { GOVERNANCE_OBJECT_TYPE } from './object-types/governance';

@@ -6,15 +6,18 @@ Specification for each ODL object update type (payload shape, validation, broadc
 |-------------|------|
 | `add_on` | [add_on.md](add_on.md) |
 | `address` | [address.md](address.md) |
+| `admins` | [admins.md](admins.md) |
 | `affiliate_button` | [affiliate_button.md](affiliate_button.md) |
 | `affiliate_code` | [affiliate_code.md](affiliate_code.md) |
 | `affiliate_geo_area` | [affiliate_geo_area.md](affiliate_geo_area.md) |
 | `affiliate_product_id_types` | [affiliate_product_id_types.md](affiliate_product_id_types.md) |
 | `affiliate_url_template` | [affiliate_url_template.md](affiliate_url_template.md) |
 | `age_range` | [age_range.md](age_range.md) |
+| `authorities` | [authorities.md](authorities.md) |
 | `authors` | [authors.md](authors.md) |
 | `avatar` | [avatar.md](avatar.md) |
 | `background` | [background.md](background.md) |
+| `banned` | [banned.md](banned.md) |
 | `blog` | [blog.md](blog.md) |
 | `brand` | [brand.md](brand.md) |
 | `budget` | [budget.md](budget.md) |
@@ -47,6 +50,7 @@ Specification for each ODL object update type (payload shape, validation, broadc
 | `group_min_expertise` | [group_min_expertise.md](group_min_expertise.md) |
 | `html_content` | [html_content.md](html_content.md) |
 | `identifier` | [identifier.md](identifier.md) |
+| `inherits_from` | [inherits_from.md](inherits_from.md) |
 | `language` | [language.md](language.md) |
 | `link` | [link.md](link.md) |
 | `list_item` | [list_item.md](list_item.md) |
@@ -60,10 +64,12 @@ Specification for each ODL object update type (payload shape, validation, broadc
 | `map` | [map.md](map.md) |
 | `menu_item` | [menu_item.md](menu_item.md) |
 | `merchant` | [merchant.md](merchant.md) |
+| `moderators` | [moderators.md](moderators.md) |
 | `name` | [name.md](name.md) |
 | `news_feed` | [news_feed.md](news_feed.md) |
 | `news_filter` | [news_filter.md](news_filter.md) |
 | `nutrition` | [nutrition.md](nutrition.md) |
+| `object_control` | [object_control.md](object_control.md) |
 | `options` | [options.md](options.md) |
 | `page_content` | [page_content.md](page_content.md) |
 | `parent` | [parent.md](parent.md) |
@@ -78,6 +84,7 @@ Specification for each ODL object update type (payload shape, validation, broadc
 | `recipe_ingredients` | [recipe_ingredients.md](recipe_ingredients.md) |
 | `related` | [related.md](related.md) |
 | `remove` | [remove.md](remove.md) |
+| `restricted` | [restricted.md](restricted.md) |
 | `sale` | [sale.md](sale.md) |
 | `shop_filter` | [shop_filter.md](shop_filter.md) |
 | `similar` | [similar.md](similar.md) |
@@ -85,9 +92,12 @@ Specification for each ODL object update type (payload shape, validation, broadc
 | `status` | [status.md](status.md) |
 | `tag_category` | [tag_category.md](tag_category.md) |
 | `title` | [title.md](title.md) |
+| `trusted` | [trusted.md](trusted.md) |
 | `url` | [url.md](url.md) |
+| `validity_cutoff` | [validity_cutoff.md](validity_cutoff.md) |
 | `wallet_address` | [wallet_address.md](wallet_address.md) |
 | `website` | [website.md](website.md) |
 | `product_weight` | [product_weight.md](product_weight.md) |
+| `whitelist` | [whitelist.md](whitelist.md) |
 | `widget` | [widget.md](widget.md) |
 | `work_time` | [work_time.md](work_time.md) |

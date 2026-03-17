@@ -87,6 +87,16 @@ import { UPDATE_LINK } from './updates/link';
 import { UPDATE_EMAIL } from './updates/email';
 import { UPDATE_CHART_ID } from './updates/chartid';
 import { UPDATE_PAGE_CONTENT } from './updates/page-content';
+import { UPDATE_ADMINS } from './updates/admins';
+import { UPDATE_TRUSTED } from './updates/trusted';
+import { UPDATE_MODERATORS } from './updates/moderators';
+import { UPDATE_AUTHORITIES } from './updates/authorities';
+import { UPDATE_RESTRICTED } from './updates/restricted';
+import { UPDATE_BANNED } from './updates/banned';
+import { UPDATE_WHITELIST } from './updates/whitelist';
+import { UPDATE_OBJECT_CONTROL } from './updates/object-control';
+import { UPDATE_INHERITS_FROM } from './updates/inherits-from';
+import { UPDATE_VALIDITY_CUTOFF } from './updates/validity-cutoff';
 
 export const UPDATE_REGISTRY = {
   [UPDATE_TYPES.NAME]: UPDATE_NAME,
@@ -176,4 +186,14 @@ export const UPDATE_REGISTRY = {
   [UPDATE_TYPES.EMAIL]: UPDATE_EMAIL,
   [UPDATE_TYPES.CHART_ID]: UPDATE_CHART_ID,
   [UPDATE_TYPES.PAGE_CONTENT]: UPDATE_PAGE_CONTENT,
+  [UPDATE_TYPES.ADMINS]: UPDATE_ADMINS,
+  [UPDATE_TYPES.TRUSTED]: UPDATE_TRUSTED,
+  [UPDATE_TYPES.MODERATORS]: UPDATE_MODERATORS,
+  [UPDATE_TYPES.AUTHORITIES]: UPDATE_AUTHORITIES,
+  [UPDATE_TYPES.RESTRICTED]: UPDATE_RESTRICTED,
+  [UPDATE_TYPES.BANNED]: UPDATE_BANNED,
+  [UPDATE_TYPES.WHITELIST]: UPDATE_WHITELIST,
+  [UPDATE_TYPES.OBJECT_CONTROL]: UPDATE_OBJECT_CONTROL,
+  [UPDATE_TYPES.INHERITS_FROM]: UPDATE_INHERITS_FROM,
+  [UPDATE_TYPES.VALIDITY_CUTOFF]: UPDATE_VALIDITY_CUTOFF,
 } satisfies UpdateRegistry;
