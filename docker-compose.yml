@@ -9,6 +9,14 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 
+  redis:
+    image: redis:8.6
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
   chain-indexer:
     build:
       context: .
@@ -17,6 +25,7 @@ services:
       - .env
     depends_on:
       - postgres
+      - redis
     restart: unless-stopped
 
   query-api:
@@ -33,3 +42,4 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
