@@ -172,7 +172,7 @@ Kysely expects migrations to run in alphanumeric order. If you add a new migrati
 
 **DATABASE_URL not loaded in CLI**
 
-The CLI reads `process.env.DATABASE_URL` only. It does not load `.env` by default. Use `dotenv` in a wrapper script, or run with `env $(cat .env | xargs) pnpm migrate`, or export `DATABASE_URL` in the shell before running.
+The CLI scripts (`pnpm migrate`, `pnpm migrate:status`, etc.) load `.env` automatically from the workspace root via `tsx --env-file=.env`. If you run the CLI directly without going through the package scripts, export `DATABASE_URL` in the shell first.
 
 ---
 

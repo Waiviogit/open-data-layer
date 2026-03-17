@@ -85,10 +85,7 @@ To roll back the last migration:
 pnpm migrate:down
 ```
 
-> The CLI does **not** auto-load `.env`. If your shell hasn't sourced it, run:
-> ```bash
-> export $(cat .env | grep -v '^#' | xargs) && pnpm migrate
-> ```
+> The CLI automatically loads `.env` from the workspace root via `tsx --env-file=.env`.
 
 ---
 

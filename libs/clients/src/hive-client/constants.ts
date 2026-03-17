@@ -12,3 +12,10 @@ export const CONDENSER_API = Object.freeze({
 export const BRIDGE = Object.freeze({
   GET_DISCUSSION: `${HIVE_API.BRIDGE}.get_discussion`,
 } as const);
+
+export const HIVE_RPC_NODES = [
+  'https://api.deathwing.me',
+  'https://api.hive.blog',
+  'https://api.openhive.network',
+  'https://rpc.mahdiyari.info',
+];
