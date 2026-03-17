@@ -19,6 +19,12 @@ export default () => {
     hive: {
       startBlockNumber: env.START_BLOCK_NUMBER,
       blockNumberKey: env.BLOCK_NUMBER_KEY,
+      client: {
+        cachePrefix: env.HIVE_CACHE_PREFIX,
+        cacheTtlSeconds: env.HIVE_CACHE_TTL_SECONDS,
+        maxResponseTimeMs: env.HIVE_MAX_RESPONSE_TIME_MS,
+        urlRotationDb: env.HIVE_URL_ROTATION_DB,
+      },
       handlers: {
         customJson: {
           enabled: process.env.HANDLER_CUSTOM_JSON_ENABLED !== 'false',

@@ -21,10 +21,10 @@ export class HiveClient implements HiveClientInterface {
   ) {
     this.urlRotationManager = this.urlRotationService.getManager({
       nodes: this.options.nodes,
-      cachePrefix: this.options.cachePrefix ?? 'hiveRpcNode',
+      cachePrefix: this.options.cachePrefix ?? 'hive_client_url_rotation',
       cacheTtlSeconds: this.options.cacheTtlSeconds ?? 1200,
       maxResponseTimeMs: this.options.maxResponseTimeMs ?? 8000,
-      db: this.options.urlRotationDb ?? 10,
+      db: this.options.urlRotationDb ?? 0,
     });
   }
 

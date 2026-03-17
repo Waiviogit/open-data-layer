@@ -19,8 +19,13 @@ import { HiveParserModule } from './domain/hive-parser/hive-parser.module';
       }),
       inject: [ConfigService],
     }),
-    HiveClientModule.forRoot({
-      nodes: HIVE_RPC_NODES,
+    HiveClientModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
+        nodes: HIVE_RPC_NODES,
+        ...config.get('hive.client'),
+      }),
+      inject: [ConfigService],
     }),
     DatabaseModule,
     RepositoriesModule,

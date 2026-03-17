@@ -1,17 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CustomJsonOperation } from '@hiveio/dhive/lib/chain/operation';
-import { HiveTransaction } from '@opden-data-layer/clients';
-import { parseJson } from '@opden-data-layer/core';
-
-
-
+import { HiveOperationHandlerContext } from './hive-handler-context';
 
 type CustomJsonHandler = (
   payload: CustomJsonOperation[1],
-  transaction: HiveTransaction,
-  timestamp: string,
-  operationIndex: number,
+  context: HiveOperationHandlerContext,
 ) => Promise<void>;
 
 @Injectable()
@@ -22,11 +16,7 @@ export class HiveCustomJsonParser {
     { enabled: boolean; handle: CustomJsonHandler }
   >;
 
-  constructor(
-    private readonly configService: ConfigService,
-  ) {
-
-  }
+  constructor(private readonly configService: ConfigService) {}
 
   private getTransactionAccount(customJson: CustomJsonOperation[1]): string {
     return customJson.required_posting_auths[0] || customJson.required_auths[0];
@@ -34,13 +24,9 @@ export class HiveCustomJsonParser {
 
   async parse(
     payload: CustomJsonOperation[1],
-    transaction: HiveTransaction,
-    timestamp: string,
-    operationIndex: number,
+    context: HiveOperationHandlerContext,
   ): Promise<void> {
-    const handler = this.handlers[payload.id];
-    if (!handler?.enabled) return;
-
+    // const handler = this.handlers[payload.id];
+    // if (!handler?.enabled) return;
   }
-
 }

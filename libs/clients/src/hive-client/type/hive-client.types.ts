@@ -1,8 +1,9 @@
 import { Transaction } from '@hiveio/dhive/lib/chain/transaction';
 
-/** Transaction with transaction_id populated by the Hive API in block responses */
+/** Transaction with transaction_id and block_num populated by the Hive API in block responses */
 export interface HiveTransaction extends Transaction {
   transaction_id: string;
+  block_num: number;
 }
 
 export type VoteOnPostType = {
