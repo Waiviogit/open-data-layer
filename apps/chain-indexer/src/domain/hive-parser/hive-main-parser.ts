@@ -21,7 +21,7 @@ export class HiveMainParser {
   private readonly logger = new Logger(HiveMainParser.name);
   private readonly handlers: Record<
     string,
-    { enabled: boolean; handle: OperationHandler }
+    {  handle: OperationHandler }
   >;
 
   constructor(
@@ -30,10 +30,6 @@ export class HiveMainParser {
   ) {
     this.handlers = {
       [HIVE_OPERATION.CUSTOM_JSON]: {
-        enabled: this.configService.get<boolean>(
-          'hive.handlers.customJson.enabled',
-          true,
-        ),
         handle: (p, t, ts, idx) =>
           this.customJsonParser.parse(p as CustomJsonOperation[1], t, ts, idx),
       },
@@ -54,7 +50,7 @@ export class HiveMainParser {
       for (let i = 0; i < operations.length; i++) {
         const [type, payload] = operations[i];
         const handler = this.handlers[type];
-        if (!handler?.enabled) continue;
+        if(!handler) continue;
 
         try {
           await handler.handle(payload, transaction, timestamp, i);
