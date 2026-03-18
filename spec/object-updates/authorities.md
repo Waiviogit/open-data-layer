@@ -1,7 +1,7 @@
 # authorities
 
 - **Update type name:** `authorities`
-- **Update purpose:** Governance: authority or scope list.
+- **Update description:** Governance: authority or scope list.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

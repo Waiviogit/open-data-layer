@@ -1,7 +1,7 @@
 # shop
 
 - **Object type name:** `shop`
-- **Object purpose:** Shop or store with catalog and filters.
+- **Object description:** Shop or store with catalog and filters.
 
 - **supported_updates**
 

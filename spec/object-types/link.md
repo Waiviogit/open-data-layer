@@ -1,7 +1,7 @@
 # link
 
 - **Object type name:** `link`
-- **Object purpose:** Link or URL reference.
+- **Object description:** Link or URL reference.
 
 - **supported_updates**
 

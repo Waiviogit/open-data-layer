@@ -1,7 +1,7 @@
 # page
 
 - **Object type name:** `page`
-- **Object purpose:** Static page or content page.
+- **Object description:** Static page or content page.
 
 - **supported_updates**
 

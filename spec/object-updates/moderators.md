@@ -1,7 +1,7 @@
 # moderators
 
 - **Update type name:** `moderators`
-- **Update purpose:** Governance: moderator account list.
+- **Update description:** Governance: moderator account list.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

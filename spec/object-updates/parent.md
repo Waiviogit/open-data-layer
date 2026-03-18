@@ -1,7 +1,7 @@
 # parent
 
 - **Update type name:** `parent`
-- **Update purpose:** Parent object or list reference.
+- **Update description:** Parent object or list reference.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

@@ -1,7 +1,7 @@
 # dimensions
 
 - **Update type name:** `dimensions`
-- **Update purpose:** Physical dimensions (length, width, depth, unit).
+- **Update description:** Physical dimensions (length, width, depth, unit).
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

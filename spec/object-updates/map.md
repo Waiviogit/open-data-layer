@@ -1,7 +1,7 @@
 # map
 
 - **Update type name:** `map`
-- **Update purpose:** GeoJSON Point (longitude, latitude).
+- **Update description:** GeoJSON Point (longitude, latitude).
 - **Cardinality:** single
 - **Payload kind:** geo
 - **Payload validation requirements (Zod schema):**

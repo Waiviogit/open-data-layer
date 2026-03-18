@@ -1,7 +1,7 @@
 # recipe_ingredients
 
 - **Update type name:** `recipe_ingredients`
-- **Update purpose:** Recipe ingredients list.
+- **Update description:** Recipe ingredients list.
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

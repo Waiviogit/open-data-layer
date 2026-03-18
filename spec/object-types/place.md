@@ -1,7 +1,7 @@
 # place
 
 - **Object type name:** `place`
-- **Object purpose:** Place or location with address and geo.
+- **Object description:** Place or location with address and geo.
 
 - **supported_updates**
 

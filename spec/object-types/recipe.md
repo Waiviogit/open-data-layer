@@ -1,7 +1,7 @@
 # recipe
 
 - **Object type name:** `recipe`
-- **Object purpose:** Recipe or cooking instructions with ingredients.
+- **Object description:** Recipe or cooking instructions with ingredients.
 
 - **supported_updates**
 

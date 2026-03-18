@@ -132,7 +132,7 @@ function mdDoc(updateType, def, schemaSnippet) {
   return `# ${updateType}
 
 - **Update type name:** \`${updateType}\`
-- **Update purpose:** ${purposeLine}
+- **Update description:** ${purposeLine}
 - **Cardinality:** ${card}
 - **Payload kind:** ${kind}
 - **Payload validation requirements (Zod schema):**

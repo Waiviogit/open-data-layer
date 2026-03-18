@@ -1,7 +1,7 @@
 # widget
 
 - **Update type name:** `widget`
-- **Update purpose:** Widget or embed configuration.
+- **Update description:** Widget or embed configuration.
 - **Cardinality:** multi
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

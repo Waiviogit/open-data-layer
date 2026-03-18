@@ -1,7 +1,7 @@
 # content_position
 
 - **Update type name:** `content_position`
-- **Update purpose:** Content position or order.
+- **Update description:** Content position or order.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

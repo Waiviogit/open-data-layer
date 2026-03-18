@@ -1,7 +1,7 @@
 # work_time
 
 - **Update type name:** `work_time`
-- **Update purpose:** Opening hours or work schedule.
+- **Update description:** Opening hours or work schedule.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

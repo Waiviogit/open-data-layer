@@ -1,7 +1,7 @@
 # news_feed
 
 - **Update type name:** `news_feed`
-- **Update purpose:** News feed configuration.
+- **Update description:** News feed configuration.
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

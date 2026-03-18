@@ -1,7 +1,7 @@
 # menu_item
 
 - **Update type name:** `menu_item`
-- **Update purpose:** Menu item or dish entry.
+- **Update description:** Menu item or dish entry.
 - **Cardinality:** multi
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

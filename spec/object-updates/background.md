@@ -1,7 +1,7 @@
 # background
 
 - **Update type name:** `background`
-- **Update purpose:** Background image or cover URL.
+- **Update description:** Background image or cover URL.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

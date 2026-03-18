@@ -1,7 +1,7 @@
 # age_range
 
 - **Update type name:** `age_range`
-- **Update purpose:** Target age range or rating.
+- **Update description:** Target age range or rating.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

@@ -1,7 +1,7 @@
 # product
 
 - **Object type name:** `product`
-- **Object purpose:** Product or sellable item with catalog fields.
+- **Object description:** Product or sellable item with catalog fields.
 
 - **supported_updates**
 

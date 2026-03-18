@@ -1,7 +1,7 @@
 # sort_custom
 
 - **Update type name:** `sort_custom`
-- **Update purpose:** Custom sort order or ranking.
+- **Update description:** Custom sort order or ranking.
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

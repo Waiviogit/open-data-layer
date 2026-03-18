@@ -1,7 +1,7 @@
 # drink
 
 - **Object type name:** `drink`
-- **Object purpose:** Drink or beverage with variants and details.
+- **Object description:** Drink or beverage with variants and details.
 
 - **supported_updates**
 

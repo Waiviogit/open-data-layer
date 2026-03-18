@@ -1,7 +1,7 @@
 # rating
 
 - **Update type name:** `rating`
-- **Update purpose:** Rating or review value.
+- **Update description:** Rating or review value.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

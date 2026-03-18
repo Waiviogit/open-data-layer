@@ -1,7 +1,7 @@
 # group
 
 - **Object type name:** `group`
-- **Object purpose:** Group or community with membership and expertise.
+- **Object description:** Group or community with membership and expertise.
 
 - **supported_updates**
 

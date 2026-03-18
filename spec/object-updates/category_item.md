@@ -1,7 +1,7 @@
 # category_item
 
 - **Update type name:** `category_item`
-- **Update purpose:** Category or tag item with value.
+- **Update description:** Category or tag item with value.
 - **Cardinality:** multi
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

@@ -1,7 +1,7 @@
 # sale
 
 - **Update type name:** `sale`
-- **Update purpose:** Sale or discount configuration.
+- **Update description:** Sale or discount configuration.
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

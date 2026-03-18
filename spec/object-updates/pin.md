@@ -1,7 +1,7 @@
 # pin
 
 - **Update type name:** `pin`
-- **Update purpose:** Pinned item or object reference.
+- **Update description:** Pinned item or object reference.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

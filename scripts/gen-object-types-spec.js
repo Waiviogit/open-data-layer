@@ -157,7 +157,7 @@ function mdDoc(objectType, description, supportedUpdates, supposedUpdates) {
   return `# ${objectType}
 
 - **Object type name:** \`${objectType}\`
-- **Object purpose:** ${purposeLine}
+- **Object description:** ${purposeLine}
 
 - **supported_updates**
 

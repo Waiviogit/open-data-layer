@@ -1,7 +1,7 @@
 # email
 
 - **Update type name:** `email`
-- **Update purpose:** Email address or contact.
+- **Update description:** Email address or contact.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

@@ -1,7 +1,7 @@
 # title
 
 - **Update type name:** `title`
-- **Update purpose:** Display title.
+- **Update description:** Display title.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

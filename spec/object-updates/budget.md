@@ -1,7 +1,7 @@
 # budget
 
 - **Update type name:** `budget`
-- **Update purpose:** Budget or price range.
+- **Update description:** Budget or price range.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

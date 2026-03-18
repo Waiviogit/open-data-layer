@@ -1,7 +1,7 @@
 # brand
 
 - **Update type name:** `brand`
-- **Update purpose:** Brand or manufacturer reference.
+- **Update description:** Brand or manufacturer reference.
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

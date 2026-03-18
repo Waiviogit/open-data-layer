@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "docs:object": "node scripts/gen-docs.js",
     "start:chain-indexer": "pnpm nx serve chain-indexer",
     "migrate": "tsx --env-file=.env libs/migrations/src/cli.ts latest",
     "migrate:latest": "tsx --env-file=.env libs/migrations/src/cli.ts latest",

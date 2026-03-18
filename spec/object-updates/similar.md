@@ -1,7 +1,7 @@
 # similar
 
 - **Update type name:** `similar`
-- **Update purpose:** Similar or related object reference.
+- **Update description:** Similar or related object reference.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

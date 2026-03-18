@@ -1,7 +1,7 @@
 # html_content
 
 - **Update type name:** `html_content`
-- **Update purpose:** HTML or rich text content.
+- **Update description:** HTML or rich text content.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

@@ -1,7 +1,7 @@
 # gallery_album
 
 - **Update type name:** `gallery_album`
-- **Update purpose:** Gallery album or collection reference.
+- **Update description:** Gallery album or collection reference.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

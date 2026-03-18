@@ -1,7 +1,7 @@
 # url
 
 - **Update type name:** `url`
-- **Update purpose:** URL or web link.
+- **Update description:** URL or web link.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

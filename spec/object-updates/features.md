@@ -1,7 +1,7 @@
 # features
 
 - **Update type name:** `features`
-- **Update purpose:** Features or attributes list.
+- **Update description:** Features or attributes list.
 - **Cardinality:** multi
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

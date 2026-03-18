@@ -1,7 +1,7 @@
 # gallery_item
 
 - **Update type name:** `gallery_item`
-- **Update purpose:** Gallery item or media entry.
+- **Update description:** Gallery item or media entry.
 - **Cardinality:** multi
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

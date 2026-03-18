@@ -1,7 +1,7 @@
 # featured
 
 - **Update type name:** `featured`
-- **Update purpose:** Featured item or object reference.
+- **Update description:** Featured item or object reference.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

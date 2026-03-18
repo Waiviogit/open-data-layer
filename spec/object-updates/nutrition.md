@@ -1,7 +1,7 @@
 # nutrition
 
 - **Update type name:** `nutrition`
-- **Update purpose:** Nutrition facts or summary.
+- **Update description:** Nutrition facts or summary.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

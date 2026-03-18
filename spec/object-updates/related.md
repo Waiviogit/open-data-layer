@@ -1,7 +1,7 @@
 # related
 
 - **Update type name:** `related`
-- **Update purpose:** Related object or item reference.
+- **Update description:** Related object or item reference.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

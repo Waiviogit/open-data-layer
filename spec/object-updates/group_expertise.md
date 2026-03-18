@@ -1,7 +1,7 @@
 # group_expertise
 
 - **Update type name:** `group_expertise`
-- **Update purpose:** Group expertise or focus areas.
+- **Update description:** Group expertise or focus areas.
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

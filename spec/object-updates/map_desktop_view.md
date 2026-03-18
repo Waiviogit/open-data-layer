@@ -1,7 +1,7 @@
 # map_desktop_view
 
 - **Update type name:** `map_desktop_view`
-- **Update purpose:** Map desktop view (bounds, center, zoom).
+- **Update description:** Map desktop view (bounds, center, zoom).
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

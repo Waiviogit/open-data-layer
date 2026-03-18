@@ -1,7 +1,7 @@
 # compare_at_price
 
 - **Update type name:** `compare_at_price`
-- **Update purpose:** Compare-at or original price.
+- **Update description:** Compare-at or original price.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

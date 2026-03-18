@@ -1,7 +1,7 @@
 # business
 
 - **Object type name:** `business`
-- **Object purpose:** Business or brand entity with location and contact.
+- **Object description:** Business or brand entity with location and contact.
 
 - **supported_updates**
 

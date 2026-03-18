@@ -1,7 +1,7 @@
 # affiliate_button
 
 - **Update type name:** `affiliate_button`
-- **Update purpose:** Affiliate button or link label.
+- **Update description:** Affiliate button or link label.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

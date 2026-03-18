@@ -1,7 +1,7 @@
 # governance
 
 - **Object type name:** `governance`
-- **Object purpose:** Governance snapshot: admins, trusted, moderation, object control (see spec).
+- **Object description:** Governance snapshot: admins, trusted, moderation, object control (see spec).
 
 - **supported_updates**
 

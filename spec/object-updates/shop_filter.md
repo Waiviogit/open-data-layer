@@ -1,7 +1,7 @@
 # shop_filter
 
 - **Update type name:** `shop_filter`
-- **Update purpose:** Shop catalog filter configuration.
+- **Update description:** Shop catalog filter configuration.
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

@@ -1,7 +1,7 @@
 # avatar
 
 - **Update type name:** `avatar`
-- **Update purpose:** Avatar or profile image URL.
+- **Update description:** Avatar or profile image URL.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

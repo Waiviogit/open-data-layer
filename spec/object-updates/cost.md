@@ -1,7 +1,7 @@
 # cost
 
 - **Update type name:** `cost`
-- **Update purpose:** Cost or price value.
+- **Update description:** Cost or price value.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

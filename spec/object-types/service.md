@@ -1,7 +1,7 @@
 # service
 
 - **Object type name:** `service`
-- **Object purpose:** Service offering with details and booking.
+- **Object description:** Service offering with details and booking.
 
 - **supported_updates**
 

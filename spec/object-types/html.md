@@ -1,7 +1,7 @@
 # html
 
 - **Object type name:** `html`
-- **Object purpose:** Standalone HTML content block.
+- **Object description:** Standalone HTML content block.
 
 - **supported_updates**
 

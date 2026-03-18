@@ -1,7 +1,7 @@
 # calories
 
 - **Update type name:** `calories`
-- **Update purpose:** Calorie count or range.
+- **Update description:** Calorie count or range.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

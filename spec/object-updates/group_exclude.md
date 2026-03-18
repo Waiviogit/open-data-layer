@@ -1,7 +1,7 @@
 # group_exclude
 
 - **Update type name:** `group_exclude`
-- **Update purpose:** Excluded member or account from group.
+- **Update description:** Excluded member or account from group.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

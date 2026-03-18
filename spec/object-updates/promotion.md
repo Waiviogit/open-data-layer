@@ -1,7 +1,7 @@
 # promotion
 
 - **Update type name:** `promotion`
-- **Update purpose:** Promotion or featured placement.
+- **Update description:** Promotion or featured placement.
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

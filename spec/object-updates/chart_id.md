@@ -1,7 +1,7 @@
 # chart_id
 
 - **Update type name:** `chart_id`
-- **Update purpose:** Chart or visualization identifier.
+- **Update description:** Chart or visualization identifier.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

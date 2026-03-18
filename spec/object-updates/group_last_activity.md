@@ -1,7 +1,7 @@
 # group_last_activity
 
 - **Update type name:** `group_last_activity`
-- **Update purpose:** Last activity timestamp for group.
+- **Update description:** Last activity timestamp for group.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

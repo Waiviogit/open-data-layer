@@ -1,7 +1,7 @@
 # form
 
 - **Update type name:** `form`
-- **Update purpose:** Form or input configuration.
+- **Update description:** Form or input configuration.
 - **Cardinality:** multi
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

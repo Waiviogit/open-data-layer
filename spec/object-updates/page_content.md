@@ -1,7 +1,7 @@
 # page_content
 
 - **Update type name:** `page_content`
-- **Update purpose:** Page body or main content.
+- **Update description:** Page body or main content.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

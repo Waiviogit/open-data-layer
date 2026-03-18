@@ -1,7 +1,7 @@
 # affiliate
 
 - **Object type name:** `affiliate`
-- **Object purpose:** Affiliate or referral product/offer with tracking and geo.
+- **Object description:** Affiliate or referral product/offer with tracking and geo.
 
 - **supported_updates**
 

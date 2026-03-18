@@ -1,7 +1,7 @@
 # delegation
 
 - **Update type name:** `delegation`
-- **Update purpose:** Delegation or authority reference.
+- **Update description:** Delegation or authority reference.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

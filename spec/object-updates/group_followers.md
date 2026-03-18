@@ -1,7 +1,7 @@
 # group_followers
 
 - **Update type name:** `group_followers`
-- **Update purpose:** Group followers or audience config.
+- **Update description:** Group followers or audience config.
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

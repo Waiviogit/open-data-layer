@@ -1,7 +1,7 @@
 # publication_date
 
 - **Update type name:** `publication_date`
-- **Update purpose:** Publication or release date.
+- **Update description:** Publication or release date.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**
