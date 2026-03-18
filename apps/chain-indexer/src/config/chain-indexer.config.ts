@@ -1,4 +1,5 @@
 import { validateChainIndexer } from './env.validation';
+import { CUSTOM_JSON_ID } from '../constants/hive-parser';
 
 export default () => {
   const env = validateChainIndexer(
@@ -31,6 +32,10 @@ export default () => {
         },
       },
       customJsonHandlers: {},
+      odlCustomJsonId:
+        env.ODL_NETWORK === 'testnet'
+          ? CUSTOM_JSON_ID.ODL_TESTNET
+          : CUSTOM_JSON_ID.ODL_MAINNET,
     },
   };
 };

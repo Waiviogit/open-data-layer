@@ -7,6 +7,8 @@ export const HIVE_OPERATION = Object.freeze({
 } as const);
 
 export const CUSTOM_JSON_ID = Object.freeze({
+  ODL_MAINNET: 'odl-mainnet',
+  ODL_TESTNET: 'odl-testnet',
   WAIVIO_OPERATIONS: 'waivio_operations',
   HIVE_ENGINE: 'ssc-mainnet-hive',
 } as const);

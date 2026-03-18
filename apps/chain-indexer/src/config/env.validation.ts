@@ -15,6 +15,7 @@ export const chainIndexerConfigSchema = z.object({
   HIVE_CACHE_TTL_SECONDS: z.coerce.number().optional(),
   HIVE_MAX_RESPONSE_TIME_MS: z.coerce.number().optional(),
   HIVE_URL_ROTATION_DB: z.coerce.number().optional(),
+  ODL_NETWORK: z.enum(['mainnet', 'testnet']).optional().default('mainnet'),
 });
 
 export type ChainIndexerConfig = z.infer<typeof chainIndexerConfigSchema>;
