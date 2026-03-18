@@ -7,5 +7,5 @@ export const UPDATE_URL: UpdateDefinition = {
   description: 'URL or web link.',
   value_kind: 'text',
   cardinality: 'single',
-  schema: z.string().url(),
+  schema: z.url(),
 };

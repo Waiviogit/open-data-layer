@@ -7,5 +7,5 @@ export const UPDATE_BACKGROUND: UpdateDefinition = {
   description: 'Background image or cover URL.',
   value_kind: 'text',
   cardinality: 'single',
-  schema: z.string().url(),
+  schema: z.url(),
 };

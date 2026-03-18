@@ -7,5 +7,5 @@ export const UPDATE_WEBSITE: UpdateDefinition = {
   description: 'Website or main URL.',
   value_kind: 'text',
   cardinality: 'single',
-  schema: z.string().url(),
+  schema: z.url(),
 };

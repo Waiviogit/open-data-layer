@@ -10,6 +10,6 @@ export const UPDATE_IDENTIFIER: UpdateDefinition = {
   schema: z.object({
     value: z.string().min(1),
     type: z.string().min(1),
-    image: z.string().url().optional(),
+    image: z.url().optional(),
   }),
 };

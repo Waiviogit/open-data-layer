@@ -7,5 +7,5 @@ export const UPDATE_AVATAR: UpdateDefinition = {
   description: 'Avatar or profile image URL.',
   value_kind: 'text',
   cardinality: 'single',
-  schema: z.string().url(),
+  schema: z.url(),
 };

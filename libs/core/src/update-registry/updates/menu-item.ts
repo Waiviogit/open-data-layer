@@ -15,7 +15,7 @@ export const UPDATE_MENU_ITEM: UpdateDefinition = {
       image: z.string().optional(),
       link_to_object: z.string().optional(),
       object_type: z.string().optional(),
-      link_to_web: z.string().url().optional(),
+      link_to_web: z.url().optional(),
     })
     .refine((v) => v.link_to_object !== undefined || v.link_to_web !== undefined, {
       message: 'Either link_to_object or link_to_web is required',

@@ -10,7 +10,7 @@ export const UPDATE_OPTIONS: UpdateDefinition = {
   schema: z.object({
     category: z.string().min(1),
     value: z.string().min(1),
-    position: z.number().optional(),
+    position: z.number().default(1),
     image: z.string().optional(),
   }),
 };

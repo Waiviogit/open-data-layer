@@ -20,6 +20,7 @@
       "minLength": 1
     },
     "position": {
+      "default": 1,
       "type": "number"
     },
     "image": {
@@ -28,7 +29,8 @@
   },
   "required": [
     "category",
-    "value"
+    "value",
+    "position"
   ],
   "additionalProperties": false
 }

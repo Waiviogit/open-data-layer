@@ -7,5 +7,5 @@ export const UPDATE_AFFILIATE_BUTTON: UpdateDefinition = {
   description: 'Affiliate button or link label.',
   value_kind: 'text',
   cardinality: 'single',
-  schema: z.string().url(),
+  schema: z.url(),
 };
