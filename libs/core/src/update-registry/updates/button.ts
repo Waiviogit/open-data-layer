@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_BUTTON: UpdateDefinition = {
   update_type: UPDATE_TYPES.BUTTON,
+  description: 'Button or CTA configuration.',
   value_kind: 'json',
   cardinality: 'multi',
   schema: z.object({

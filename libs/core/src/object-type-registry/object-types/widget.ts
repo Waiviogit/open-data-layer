@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const WIDGET_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.WIDGET,
+  description: 'Widget or embeddable UI component.',
   supported_updates: [
     UPDATE_TYPES.NAME,
     UPDATE_TYPES.AVATAR,

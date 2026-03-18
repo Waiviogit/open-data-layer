@@ -1,7 +1,7 @@
 # group_min_expertise
 
 - **Update type name:** `group_min_expertise`
-- **Update purpose:**
+- **Update purpose:** Minimum expertise level for group.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

@@ -1,7 +1,7 @@
 # trusted
 
 - **Update type name:** `trusted`
-- **Update purpose:**
+- **Update purpose:** Governance: trusted account list.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_DELEGATION: UpdateDefinition = {
   update_type: UPDATE_TYPES.DELEGATION,
+  description: 'Delegation or authority reference.',
   value_kind: 'text',
   cardinality: 'single',
   schema: z.string().min(3).max(16),

@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_AFFILIATE_CODE: UpdateDefinition = {
   update_type: UPDATE_TYPES.AFFILIATE_CODE,
+  description: 'Affiliate or referral code list.',
   value_kind: 'json',
   cardinality: 'multi',
   /**

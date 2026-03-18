@@ -41,6 +41,11 @@ function extractObjectType(content, objectTypesMap) {
   return objectTypesMap[m[1]] || null;
 }
 
+function extractDescription(content) {
+  const m = content.match(/description:\s*['"]([^'"]*)['"]/);
+  return m ? m[1] : '';
+}
+
 function extractSupportedUpdates(content, updateTypesMap) {
   const start = content.indexOf('supported_updates: [');
   if (start === -1) return [];
@@ -130,7 +135,7 @@ function examplePayload(objectType) {
 `;
 }
 
-function mdDoc(objectType, supportedUpdates, supposedUpdates) {
+function mdDoc(objectType, description, supportedUpdates, supposedUpdates) {
   const supportedList = supportedUpdates.length
     ? supportedUpdates
         .map((u) => `[\`${u}\`](${OBJECT_UPDATES_SPEC}/${u}.md)`)
@@ -147,10 +152,12 @@ function mdDoc(objectType, supportedUpdates, supposedUpdates) {
           .join('\n')
       : '(none)';
 
+  const purposeLine = description ? description : '(none)';
+
   return `# ${objectType}
 
 - **Object type name:** \`${objectType}\`
-- **Object purpose:**
+- **Object purpose:** ${purposeLine}
 
 - **supported_updates**
 
@@ -186,11 +193,12 @@ function main() {
       console.warn('Could not extract object_type from', file);
       continue;
     }
+    const description = extractDescription(content);
     const supportedUpdates = extractSupportedUpdates(content, updateTypesMap);
     const supposedUpdates = extractSupposedUpdates(content, updateTypesMap);
 
     const mdPath = path.join(SPEC_DIR, `${objectType}.md`);
-    const mdContent = mdDoc(objectType, supportedUpdates, supposedUpdates);
+    const mdContent = mdDoc(objectType, description, supportedUpdates, supposedUpdates);
     fs.writeFileSync(mdPath, mdContent, 'utf8');
     entries.push({ objectType, file: `${objectType}.md` });
   }

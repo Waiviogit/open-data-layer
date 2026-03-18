@@ -1,7 +1,7 @@
 # list_item
 
 - **Update type name:** `list_item`
-- **Update purpose:**
+- **Update purpose:** List item or entry reference.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

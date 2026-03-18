@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const DRINK_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.DRINK,
+  description: 'Drink or beverage with variants and details.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
     UPDATE_TYPES.AVATAR,

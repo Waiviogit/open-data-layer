@@ -1,7 +1,7 @@
 # map_object_types
 
 - **Update type name:** `map_object_types`
-- **Update purpose:**
+- **Update purpose:** Object types shown on map.
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

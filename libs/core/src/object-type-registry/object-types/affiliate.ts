@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const AFFILIATE_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.AFFILIATE,
+  description: 'Affiliate or referral product/offer with tracking and geo.',
   supported_updates: [
     UPDATE_TYPES.AFFILIATE_BUTTON,
     UPDATE_TYPES.AFFILIATE_PRODUCT_ID_TYPES,

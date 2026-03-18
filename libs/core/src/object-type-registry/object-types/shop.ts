@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const SHOP_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.SHOP,
+  description: 'Shop or store with catalog and filters.',
   supported_updates: [
     UPDATE_TYPES.SHOP_FILTER,
     UPDATE_TYPES.PARENT,

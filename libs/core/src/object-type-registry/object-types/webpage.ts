@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const WEBPAGE_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.WEBPAGE,
+  description: 'External web page reference.',
   supported_updates: [
     'webpage',
     UPDATE_TYPES.PARENT,

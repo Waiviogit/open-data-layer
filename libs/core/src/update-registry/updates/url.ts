@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_URL: UpdateDefinition = {
   update_type: UPDATE_TYPES.URL,
+  description: 'URL or web link.',
   value_kind: 'text',
   cardinality: 'single',
   schema: z.string().url(),

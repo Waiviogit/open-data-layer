@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const MAP_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.MAP,
+  description: 'Map view with objects and layers.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
     UPDATE_TYPES.AVATAR,

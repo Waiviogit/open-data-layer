@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const SERVICE_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.SERVICE,
+  description: 'Service offering with details and booking.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
     UPDATE_TYPES.DEPARTMENTS,

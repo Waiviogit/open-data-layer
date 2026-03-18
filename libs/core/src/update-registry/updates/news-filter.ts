@@ -9,6 +9,7 @@ import { UPDATE_TYPES } from '../update-types';
  */
 export const UPDATE_NEWS_FILTER: UpdateDefinition = {
   update_type: UPDATE_TYPES.NEWS_FILTER,
+  description: 'News feed filter configuration.',
   value_kind: 'json',
   cardinality: 'single',
   schema: z.object({

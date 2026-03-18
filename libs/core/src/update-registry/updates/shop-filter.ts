@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_SHOP_FILTER: UpdateDefinition = {
   update_type: UPDATE_TYPES.SHOP_FILTER,
+  description: 'Shop catalog filter configuration.',
   value_kind: 'json',
   cardinality: 'single',
   schema: z.object({

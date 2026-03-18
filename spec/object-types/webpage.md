@@ -1,7 +1,7 @@
 # webpage
 
 - **Object type name:** `webpage`
-- **Object purpose:**
+- **Object purpose:** External web page reference.
 
 - **supported_updates**
 

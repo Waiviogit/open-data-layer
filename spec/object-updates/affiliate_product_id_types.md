@@ -1,7 +1,7 @@
 # affiliate_product_id_types
 
 - **Update type name:** `affiliate_product_id_types`
-- **Update purpose:**
+- **Update purpose:** Supported product ID types for affiliate.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

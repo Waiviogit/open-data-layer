@@ -1,7 +1,7 @@
 # restaurant
 
 - **Object type name:** `restaurant`
-- **Object purpose:**
+- **Object purpose:** Restaurant or dining venue.
 
 - **supported_updates**
 

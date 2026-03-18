@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const LINK_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.LINK,
+  description: 'Link or URL reference.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
     UPDATE_TYPES.AVATAR,

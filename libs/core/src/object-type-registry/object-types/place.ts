@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const PLACE_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.PLACE,
+  description: 'Place or location with address and geo.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
     UPDATE_TYPES.AVATAR,

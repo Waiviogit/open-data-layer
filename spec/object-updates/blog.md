@@ -1,7 +1,7 @@
 # blog
 
 - **Update type name:** `blog`
-- **Update purpose:**
+- **Update purpose:** Blog or feed reference list.
 - **Cardinality:** multi
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

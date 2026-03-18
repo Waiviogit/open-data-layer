@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_LANGUAGE: UpdateDefinition = {
   update_type: UPDATE_TYPES.LANGUAGE,
+  description: 'Language or locale code.',
   value_kind: 'text',
   cardinality: 'single',
   schema: z.string().min(1),

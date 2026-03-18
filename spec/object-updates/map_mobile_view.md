@@ -1,7 +1,7 @@
 # map_mobile_view
 
 - **Update type name:** `map_mobile_view`
-- **Update purpose:**
+- **Update purpose:** Map mobile view (bounds, center, zoom).
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

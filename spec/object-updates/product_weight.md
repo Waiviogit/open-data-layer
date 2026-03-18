@@ -1,7 +1,7 @@
 # product_weight
 
 - **Update type name:** `product_weight`
-- **Update purpose:**
+- **Update purpose:** Product weight with unit.
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

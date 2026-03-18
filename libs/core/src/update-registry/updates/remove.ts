@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_REMOVE: UpdateDefinition = {
   update_type: UPDATE_TYPES.REMOVE,
+  description: 'Soft-remove or hide reference.',
   value_kind: 'text',
   cardinality: 'multi',
   schema: z.string().min(1),

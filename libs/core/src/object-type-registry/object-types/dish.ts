@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const DISH_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.DISH,
+  description: 'Dish or menu item with pricing and options.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
     UPDATE_TYPES.AVATAR,

@@ -1,7 +1,7 @@
 # inherits_from
 
 - **Update type name:** `inherits_from`
-- **Update purpose:**
+- **Update purpose:** Governance: merge fields from referenced governance object.
 - **Cardinality:** multi
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

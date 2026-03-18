@@ -1,7 +1,7 @@
 # book
 
 - **Object type name:** `book`
-- **Object purpose:**
+- **Object purpose:** Book or publication with metadata, authors, and commerce.
 
 - **supported_updates**
 

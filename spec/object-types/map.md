@@ -1,7 +1,7 @@
 # map
 
 - **Object type name:** `map`
-- **Object purpose:**
+- **Object purpose:** Map view with objects and layers.
 
 - **supported_updates**
 

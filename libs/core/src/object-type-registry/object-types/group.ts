@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const GROUP_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.GROUP,
+  description: 'Group or community with membership and expertise.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
     UPDATE_TYPES.AVATAR,

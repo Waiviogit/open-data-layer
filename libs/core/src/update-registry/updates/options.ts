@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_OPTIONS: UpdateDefinition = {
   update_type: UPDATE_TYPES.OPTIONS,
+  description: 'Product or variant options.',
   value_kind: 'json',
   cardinality: 'multi',
   schema: z.object({

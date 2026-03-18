@@ -1,7 +1,7 @@
 # status
 
 - **Update type name:** `status`
-- **Update purpose:**
+- **Update purpose:** Status payload (title and link).
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

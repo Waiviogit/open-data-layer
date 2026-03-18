@@ -6,6 +6,7 @@ export interface SupposedUpdate {
   
  export interface ObjectTypeDefinition {
     object_type: string;                  // unique type identifier, e.g. "product", "recipe"
+    description: string;                  // short purpose statement for spec/tooling
     supported_updates: string[];    // update type names accepted for this object type
     supposed_updates: SupposedUpdate[];  // suggested/autocomplete metadata for tooling
   }

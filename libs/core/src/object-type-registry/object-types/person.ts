@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const PERSON_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.PERSON,
+  description: 'Person or user profile.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
     UPDATE_TYPES.AVATAR,

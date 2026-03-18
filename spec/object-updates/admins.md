@@ -1,7 +1,7 @@
 # admins
 
 - **Update type name:** `admins`
-- **Update purpose:**
+- **Update purpose:** Governance: accounts responsible for object data curation.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

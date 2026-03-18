@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_ADD_ON: UpdateDefinition = {
   update_type: UPDATE_TYPES.ADD_ON,
+  description: 'Add-on or upsell reference.',
   value_kind: 'text',
   cardinality: 'multi',
   schema: z.string().min(1),

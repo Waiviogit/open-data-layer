@@ -1,7 +1,7 @@
 # list
 
 - **Object type name:** `list`
-- **Object purpose:**
+- **Object purpose:** Curated list or collection of items.
 
 - **supported_updates**
 

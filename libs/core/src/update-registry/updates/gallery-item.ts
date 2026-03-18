@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_GALLERY_ITEM: UpdateDefinition = {
   update_type: UPDATE_TYPES.GALLERY_ITEM,
+  description: 'Gallery item or media entry.',
   value_kind: 'json',
   cardinality: 'multi',
   schema: z.object({

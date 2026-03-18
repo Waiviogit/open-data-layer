@@ -1,7 +1,7 @@
 # affiliate_geo_area
 
 - **Update type name:** `affiliate_geo_area`
-- **Update purpose:**
+- **Update purpose:** Affiliate geo or region targeting.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

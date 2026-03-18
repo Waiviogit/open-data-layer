@@ -1,7 +1,7 @@
 # validity_cutoff
 
 - **Update type name:** `validity_cutoff`
-- **Update purpose:**
+- **Update purpose:** Governance: validity or time cutoff for updates.
 - **Cardinality:** multi
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

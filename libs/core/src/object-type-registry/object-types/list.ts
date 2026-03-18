@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const LIST_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.LIST,
+  description: 'Curated list or collection of items.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
     UPDATE_TYPES.AVATAR,

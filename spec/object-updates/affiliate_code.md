@@ -1,7 +1,7 @@
 # affiliate_code
 
 - **Update type name:** `affiliate_code`
-- **Update purpose:**
+- **Update purpose:** Affiliate or referral code list.
 - **Cardinality:** multi
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

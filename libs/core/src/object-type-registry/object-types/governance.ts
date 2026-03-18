@@ -5,6 +5,7 @@ import { ObjectTypeDefinition } from '../types';
 /** Governance object: effective snapshot built from creator updates. @see spec/governance-resolution.md */
 export const GOVERNANCE_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.GOVERNANCE,
+  description: 'Governance snapshot: admins, trusted, moderation, object control (see spec).',
   supported_updates: [
     UPDATE_TYPES.NAME,
     UPDATE_TYPES.ADMINS,

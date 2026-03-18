@@ -1,7 +1,7 @@
 # manufacturer
 
 - **Update type name:** `manufacturer`
-- **Update purpose:**
+- **Update purpose:** Manufacturer or maker details.
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

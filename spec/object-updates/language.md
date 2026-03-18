@@ -1,7 +1,7 @@
 # language
 
 - **Update type name:** `language`
-- **Update purpose:**
+- **Update purpose:** Language or locale code.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

@@ -1,7 +1,7 @@
 # remove
 
 - **Update type name:** `remove`
-- **Update purpose:**
+- **Update purpose:** Soft-remove or hide reference.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

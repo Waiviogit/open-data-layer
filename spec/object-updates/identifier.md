@@ -1,7 +1,7 @@
 # identifier
 
 - **Update type name:** `identifier`
-- **Update purpose:**
+- **Update purpose:** External or alternate identifier.
 - **Cardinality:** multi
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

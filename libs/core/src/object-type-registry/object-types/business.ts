@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const BUSINESS_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.BUSINESS,
+  description: 'Business or brand entity with location and contact.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
     UPDATE_TYPES.AVATAR,

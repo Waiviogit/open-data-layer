@@ -1,7 +1,7 @@
 # group_add
 
 - **Update type name:** `group_add`
-- **Update purpose:**
+- **Update purpose:** Group membership or add member.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

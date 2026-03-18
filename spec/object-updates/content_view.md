@@ -1,7 +1,7 @@
 # content_view
 
 - **Update type name:** `content_view`
-- **Update purpose:**
+- **Update purpose:** Content view or layout mode.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

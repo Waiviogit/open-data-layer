@@ -1,7 +1,7 @@
 # affiliate_url_template
 
 - **Update type name:** `affiliate_url_template`
-- **Update purpose:**
+- **Update purpose:** Affiliate URL template or base.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

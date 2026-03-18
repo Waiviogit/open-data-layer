@@ -6,6 +6,7 @@ const DIMENSION_UNITS = ['km', 'm', 'cm', 'mm', 'μm', 'mi', 'yd', 'ft', 'in', '
 
 export const UPDATE_DIMENSIONS: UpdateDefinition = {
   update_type: UPDATE_TYPES.DIMENSIONS,
+  description: 'Physical dimensions (length, width, depth, unit).',
   value_kind: 'json',
   cardinality: 'single',
   schema: z.object({

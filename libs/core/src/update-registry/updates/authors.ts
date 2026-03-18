@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_AUTHORS: UpdateDefinition = {
   update_type: UPDATE_TYPES.AUTHORS,
+  description: 'Authors or contributors list.',
   value_kind: 'json',
   cardinality: 'multi',
   schema: z.object({

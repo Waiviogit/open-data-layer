@@ -12,6 +12,7 @@ const mapViewSchema = z.object({
 
 export const UPDATE_MAP_DESKTOP_VIEW: UpdateDefinition = {
   update_type: UPDATE_TYPES.MAP_DESKTOP_VIEW,
+  description: 'Map desktop view (bounds, center, zoom).',
   value_kind: 'json',
   cardinality: 'single',
   schema: mapViewSchema,

@@ -1,7 +1,7 @@
 # restricted
 
 - **Update type name:** `restricted`
-- **Update purpose:**
+- **Update purpose:** Governance: restricted account list.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

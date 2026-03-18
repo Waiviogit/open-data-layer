@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_MANUFACTURER: UpdateDefinition = {
   update_type: UPDATE_TYPES.MANUFACTURER,
+  description: 'Manufacturer or maker details.',
   value_kind: 'json',
   cardinality: 'single',
   schema: z.object({

@@ -1,7 +1,7 @@
 # banned
 
 - **Update type name:** `banned`
-- **Update purpose:**
+- **Update purpose:** Governance: platform-level ban; account excluded from resolved views.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

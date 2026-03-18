@@ -1,7 +1,7 @@
 # person
 
 - **Object type name:** `person`
-- **Object purpose:**
+- **Object purpose:** Person or user profile.
 
 - **supported_updates**
 

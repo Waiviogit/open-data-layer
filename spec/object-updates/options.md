@@ -1,7 +1,7 @@
 # options
 
 - **Update type name:** `options`
-- **Update purpose:**
+- **Update purpose:** Product or variant options.
 - **Cardinality:** multi
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

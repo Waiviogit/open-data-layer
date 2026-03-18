@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const BOOK_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.BOOK,
+  description: 'Book or publication with metadata, authors, and commerce.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
     UPDATE_TYPES.AVATAR,

@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const HASHTAG_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.HASHTAG,
+  description: 'Hashtag or topic tag for categorization.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
     UPDATE_TYPES.AVATAR,

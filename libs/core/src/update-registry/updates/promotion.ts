@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_PROMOTION: UpdateDefinition = {
   update_type: UPDATE_TYPES.PROMOTION,
+  description: 'Promotion or featured placement.',
   value_kind: 'json',
   cardinality: 'single',
   schema: z.object({

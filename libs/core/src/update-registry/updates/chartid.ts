@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_CHART_ID: UpdateDefinition = {
   update_type: UPDATE_TYPES.CHART_ID,
+  description: 'Chart or visualization identifier.',
   value_kind: 'text',
   cardinality: 'single',
   schema: z.string().min(1),

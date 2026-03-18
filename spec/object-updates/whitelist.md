@@ -1,7 +1,7 @@
 # whitelist
 
 - **Update type name:** `whitelist`
-- **Update purpose:**
+- **Update purpose:** Governance: account protected from muted set.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

@@ -1,7 +1,7 @@
 # object_control
 
 - **Update type name:** `object_control`
-- **Update purpose:**
+- **Update purpose:** Governance: activates global object authority control.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

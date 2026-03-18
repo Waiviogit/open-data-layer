@@ -1,7 +1,7 @@
 # link
 
 - **Update type name:** `link`
-- **Update purpose:**
+- **Update purpose:** Link or URL with optional metadata.
 - **Cardinality:** multi
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

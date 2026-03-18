@@ -1,7 +1,7 @@
 # address
 
 - **Update type name:** `address`
-- **Update purpose:**
+- **Update purpose:** Physical or postal address.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

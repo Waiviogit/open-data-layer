@@ -1,7 +1,7 @@
 # departments
 
 - **Update type name:** `departments`
-- **Update purpose:**
+- **Update purpose:** Department or category list.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

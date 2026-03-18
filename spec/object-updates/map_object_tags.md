@@ -1,7 +1,7 @@
 # map_object_tags
 
 - **Update type name:** `map_object_tags`
-- **Update purpose:**
+- **Update purpose:** Tags filter for map objects.
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

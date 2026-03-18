@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const RESTAURANT_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.RESTAURANT,
+  description: 'Restaurant or dining venue.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
     UPDATE_TYPES.AVATAR,

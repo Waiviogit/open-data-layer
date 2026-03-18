@@ -1,7 +1,7 @@
 # description
 
 - **Update type name:** `description`
-- **Update purpose:**
+- **Update purpose:** Free-form description text.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

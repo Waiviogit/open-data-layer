@@ -1,7 +1,7 @@
 # newsfeed
 
 - **Object type name:** `newsfeed`
-- **Object purpose:**
+- **Object purpose:** News feed or feed configuration.
 
 - **supported_updates**
 

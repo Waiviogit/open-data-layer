@@ -1,7 +1,7 @@
 # print_length
 
 - **Update type name:** `print_length`
-- **Update purpose:**
+- **Update purpose:** Print or page length.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

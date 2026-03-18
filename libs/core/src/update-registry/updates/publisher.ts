@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_PUBLISHER: UpdateDefinition = {
   update_type: UPDATE_TYPES.PUBLISHER,
+  description: 'Publisher or imprint details.',
   value_kind: 'json',
   cardinality: 'single',
   schema: z.object({

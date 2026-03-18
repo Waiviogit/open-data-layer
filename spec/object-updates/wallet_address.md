@@ -1,7 +1,7 @@
 # wallet_address
 
 - **Update type name:** `wallet_address`
-- **Update purpose:**
+- **Update purpose:** Wallet or payment address.
 - **Cardinality:** multi
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

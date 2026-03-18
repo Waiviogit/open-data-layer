@@ -1,7 +1,7 @@
 # tag_category
 
 - **Update type name:** `tag_category`
-- **Update purpose:**
+- **Update purpose:** Tag category with optional values.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

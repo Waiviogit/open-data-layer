@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const RECIPE_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.RECIPE,
+  description: 'Recipe or cooking instructions with ingredients.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
     UPDATE_TYPES.AVATAR,

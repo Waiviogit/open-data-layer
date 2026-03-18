@@ -9,6 +9,8 @@ import type { ZodType } from 'zod';
 export interface UpdateDefinition {
   /** Unique update type identifier, e.g. "name", "price", "location". */
   update_type: string;
+  /** Short purpose statement for spec/tooling. */
+  description: string;
   /** Which value column holds the data for this update type. */
   value_kind: 'text' | 'geo' | 'json';
   /**

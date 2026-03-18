@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_PARENT: UpdateDefinition = {
   update_type: UPDATE_TYPES.PARENT,
+  description: 'Parent object or list reference.',
   value_kind: 'text',
   cardinality: 'single',
   schema: z.string().min(1),

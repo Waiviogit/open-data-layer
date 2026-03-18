@@ -1,7 +1,7 @@
 # map_rectangles
 
 - **Update type name:** `map_rectangles`
-- **Update purpose:**
+- **Update purpose:** Map rectangle or region overlays.
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

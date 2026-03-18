@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_RELATED: UpdateDefinition = {
   update_type: UPDATE_TYPES.RELATED,
+  description: 'Related object or item reference.',
   value_kind: 'text',
   cardinality: 'multi',
   schema: z.string().min(1),

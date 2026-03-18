@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_COST: UpdateDefinition = {
   update_type: UPDATE_TYPES.COST,
+  description: 'Cost or price value.',
   value_kind: 'text',
   cardinality: 'single',
   schema: z.string().min(1),

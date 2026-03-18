@@ -1,7 +1,7 @@
 # widget
 
 - **Object type name:** `widget`
-- **Object purpose:**
+- **Object purpose:** Widget or embeddable UI component.
 
 - **supported_updates**
 

@@ -1,7 +1,7 @@
 # publisher
 
 - **Update type name:** `publisher`
-- **Update purpose:**
+- **Update purpose:** Publisher or imprint details.
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

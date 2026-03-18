@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_BRAND: UpdateDefinition = {
   update_type: UPDATE_TYPES.BRAND,
+  description: 'Brand or manufacturer reference.',
   value_kind: 'json',
   cardinality: 'single',
   schema: z.object({

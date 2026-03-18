@@ -1,7 +1,7 @@
 # cooking_time
 
 - **Update type name:** `cooking_time`
-- **Update purpose:**
+- **Update purpose:** Cooking or prep time.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

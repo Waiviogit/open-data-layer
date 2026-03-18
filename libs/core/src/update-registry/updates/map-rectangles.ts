@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_MAP_RECTANGLES: UpdateDefinition = {
   update_type: UPDATE_TYPES.MAP_RECTANGLES,
+  description: 'Map rectangle or region overlays.',
   value_kind: 'json',
   cardinality: 'single',
   schema: z.array(

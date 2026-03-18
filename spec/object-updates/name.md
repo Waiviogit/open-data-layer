@@ -1,7 +1,7 @@
 # name
 
 - **Update type name:** `name`
-- **Update purpose:**
+- **Update purpose:** Display or canonical name for the object.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

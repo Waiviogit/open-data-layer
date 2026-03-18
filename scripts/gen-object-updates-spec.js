@@ -91,11 +91,14 @@ function extractDefinition(filePath) {
   const valueKindMatch = content.match(/value_kind:\s*'(\w+)'/);
   const cardinalityMatch = content.match(/cardinality:\s*'(\w+)'/);
   if (!typeKeyMatch || !valueKindMatch || !cardinalityMatch) return null;
+  const descMatch = content.match(/description:\s*['"]([^'"]*)['"]/);
+  const description = descMatch ? descMatch[1] : '';
   const schemaSnippet = extractSchemaSnippet(content);
   return {
     typeKey: typeKeyMatch[1],
     valueKind: valueKindMatch[1],
     cardinality: cardinalityMatch[1],
+    description,
     schemaSnippet,
   };
 }
@@ -125,10 +128,11 @@ function examplePayload(valueKind, updateType) {
 function mdDoc(updateType, def, schemaSnippet) {
   const card = def.cardinality === 'multi' ? 'multi' : 'single';
   const kind = def.valueKind;
+  const purposeLine = def.description || '(none)';
   return `# ${updateType}
 
 - **Update type name:** \`${updateType}\`
-- **Update purpose:**
+- **Update purpose:** ${purposeLine}
 - **Cardinality:** ${card}
 - **Payload kind:** ${kind}
 - **Payload validation requirements (Zod schema):**

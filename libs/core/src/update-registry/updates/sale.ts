@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_SALE: UpdateDefinition = {
   update_type: UPDATE_TYPES.SALE,
+  description: 'Sale or discount configuration.',
   value_kind: 'json',
   cardinality: 'single',
   schema: z.object({

@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_AFFILIATE_URL_TEMPLATE: UpdateDefinition = {
   update_type: UPDATE_TYPES.AFFILIATE_URL_TEMPLATE,
+  description: 'Affiliate URL template or base.',
   value_kind: 'text',
   cardinality: 'single',
   /** Must contain $product_id and $affiliate_code placeholders. */

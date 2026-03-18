@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_NEWS_FEED: UpdateDefinition = {
   update_type: UPDATE_TYPES.NEWS_FEED,
+  description: 'News feed configuration.',
   value_kind: 'json',
   cardinality: 'single',
   schema: z.object({

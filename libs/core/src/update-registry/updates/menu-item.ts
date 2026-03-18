@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_MENU_ITEM: UpdateDefinition = {
   update_type: UPDATE_TYPES.MENU_ITEM,
+  description: 'Menu item or dish entry.',
   value_kind: 'json',
   cardinality: 'multi',
   /** Either link_to_object or link_to_web must be provided. */

@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const NEWSFEED_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.NEWSFEED,
+  description: 'News feed or feed configuration.',
   supported_updates: [
     UPDATE_TYPES.NAME,
     UPDATE_TYPES.AVATAR,

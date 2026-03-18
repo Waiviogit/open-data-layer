@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_GROUP_MIN_EXPERTISE: UpdateDefinition = {
   update_type: UPDATE_TYPES.GROUP_MIN_EXPERTISE,
+  description: 'Minimum expertise level for group.',
   value_kind: 'text',
   cardinality: 'single',
   schema: z.string().regex(/^\d+$/, 'Must be a numeric string'),

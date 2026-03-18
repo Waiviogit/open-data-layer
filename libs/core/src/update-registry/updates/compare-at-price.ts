@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_COMPARE_AT_PRICE: UpdateDefinition = {
   update_type: UPDATE_TYPES.COMPARE_AT_PRICE,
+  description: 'Compare-at or original price.',
   value_kind: 'text',
   cardinality: 'single',
   schema: z.string().min(1),

@@ -1,7 +1,7 @@
 # hashtag
 
 - **Object type name:** `hashtag`
-- **Object purpose:**
+- **Object purpose:** Hashtag or topic tag for categorization.
 
 - **supported_updates**
 

@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_CATEGORY_ITEM: UpdateDefinition = {
   update_type: UPDATE_TYPES.CATEGORY_ITEM,
+  description: 'Category or tag item with value.',
   value_kind: 'json',
   cardinality: 'multi',
   schema: z.object({

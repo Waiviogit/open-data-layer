@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const PRODUCT_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.PRODUCT,
+  description: 'Product or sellable item with catalog fields.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
     UPDATE_TYPES.AVATAR,

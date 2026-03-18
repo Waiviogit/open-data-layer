@@ -1,7 +1,7 @@
 # group_id
 
 - **Update type name:** `group_id`
-- **Update purpose:**
+- **Update purpose:** Group or community identifier.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

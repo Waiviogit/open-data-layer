@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_GROUP_ADD: UpdateDefinition = {
   update_type: UPDATE_TYPES.GROUP_ADD,
+  description: 'Group membership or add member.',
   value_kind: 'text',
   cardinality: 'multi',
   schema: z.string().min(3).max(16),

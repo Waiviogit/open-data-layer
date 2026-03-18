@@ -1,7 +1,7 @@
 # button
 
 - **Update type name:** `button`
-- **Update purpose:**
+- **Update purpose:** Button or CTA configuration.
 - **Cardinality:** multi
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

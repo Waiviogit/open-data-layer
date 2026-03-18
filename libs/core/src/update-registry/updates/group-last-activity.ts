@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_GROUP_LAST_ACTIVITY: UpdateDefinition = {
   update_type: UPDATE_TYPES.GROUP_LAST_ACTIVITY,
+  description: 'Last activity timestamp for group.',
   value_kind: 'text',
   cardinality: 'single',
   /** Milliseconds to subtract from current date, e.g. "7776000000" (90 days). */

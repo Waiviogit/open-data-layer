@@ -1,7 +1,7 @@
 # authors
 
 - **Update type name:** `authors`
-- **Update purpose:**
+- **Update purpose:** Authors or contributors list.
 - **Cardinality:** multi
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

@@ -13,6 +13,7 @@ const geoPointSchema = z.object({
 
 export const UPDATE_MAP: UpdateDefinition = {
   update_type: UPDATE_TYPES.MAP,
+  description: 'GeoJSON Point (longitude, latitude).',
   value_kind: 'geo',
   cardinality: 'single',
   schema: geoPointSchema,

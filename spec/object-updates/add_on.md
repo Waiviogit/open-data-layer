@@ -1,7 +1,7 @@
 # add_on
 
 - **Update type name:** `add_on`
-- **Update purpose:**
+- **Update purpose:** Add-on or upsell reference.
 - **Cardinality:** multi
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

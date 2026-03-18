@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const HTML_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.HTML,
+  description: 'Standalone HTML content block.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
     UPDATE_TYPES.AVATAR,

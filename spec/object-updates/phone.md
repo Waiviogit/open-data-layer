@@ -1,7 +1,7 @@
 # phone
 
 - **Update type name:** `phone`
-- **Update purpose:**
+- **Update purpose:** Phone number or contact.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

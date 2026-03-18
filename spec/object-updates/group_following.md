@@ -1,7 +1,7 @@
 # group_following
 
 - **Update type name:** `group_following`
-- **Update purpose:**
+- **Update purpose:** Groups this object follows.
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

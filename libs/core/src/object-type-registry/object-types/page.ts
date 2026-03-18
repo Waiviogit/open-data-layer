@@ -4,6 +4,7 @@ import { ObjectTypeDefinition } from '../types';
 
 export const PAGE_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.PAGE,
+  description: 'Static page or content page.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
     UPDATE_TYPES.AVATAR,

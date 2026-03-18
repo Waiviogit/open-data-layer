@@ -1,7 +1,7 @@
 # map_objects_list
 
 - **Update type name:** `map_objects_list`
-- **Update purpose:**
+- **Update purpose:** List of object IDs shown on map.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**

@@ -1,7 +1,7 @@
 # merchant
 
 - **Update type name:** `merchant`
-- **Update purpose:**
+- **Update purpose:** Merchant or seller reference.
 - **Cardinality:** single
 - **Payload kind:** json
 - **Payload validation requirements (Zod schema):**

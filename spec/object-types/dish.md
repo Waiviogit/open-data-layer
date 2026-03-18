@@ -1,7 +1,7 @@
 # dish
 
 - **Object type name:** `dish`
-- **Object purpose:**
+- **Object purpose:** Dish or menu item with pricing and options.
 
 - **supported_updates**
 

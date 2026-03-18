@@ -1,7 +1,7 @@
 # website
 
 - **Update type name:** `website`
-- **Update purpose:**
+- **Update purpose:** Website or main URL.
 - **Cardinality:** single
 - **Payload kind:** text
 - **Payload validation requirements (Zod schema):**
