@@ -1,19 +1,75 @@
 # map_mobile_view
 
-- **Update type name:** `map_mobile_view`
+- **Update type:** `map_mobile_view`
 - **Update description:** Map mobile view (bounds, center, zoom).
 - **Cardinality:** single
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-  /** [lon, lat] — lon: -180..180, lat: -90..90 */
-  top_point: z.tuple([z.number().min(-180).max(180), z.number().min(-90).max(90)]),
-  bottom_point: z.tuple([z.number().min(-180).max(180), z.number().min(-90).max(90)]),
-  center: z.tuple([z.number().min(-180).max(180), z.number().min(-90).max(90)]),
-  zoom: z.number().int().min(1).max(18),
-})
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "top_point": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        },
+        {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        }
+      ]
+    },
+    "bottom_point": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        },
+        {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        }
+      ]
+    },
+    "center": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        },
+        {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        }
+      ]
+    },
+    "zoom": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 18
+    }
+  },
+  "required": [
+    "top_point",
+    "bottom_point",
+    "center",
+    "zoom"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

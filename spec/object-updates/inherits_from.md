@@ -1,16 +1,44 @@
 # inherits_from
 
-- **Update type name:** `inherits_from`
+- **Update type:** `inherits_from`
 - **Update description:** Governance: merge fields from referenced governance object.
 - **Cardinality:** multi
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    object_id: z.string().min(1),
-    scope: z.array(z.enum(GOVERNANCE_SCOPE)),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "object_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "admins",
+          "trusted",
+          "moderators",
+          "validity_cutoff",
+          "restricted",
+          "whitelist",
+          "authorities",
+          "banned",
+          "muted"
+        ]
+      }
+    }
+  },
+  "required": [
+    "object_id",
+    "scope"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

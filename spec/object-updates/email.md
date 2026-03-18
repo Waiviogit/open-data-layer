@@ -1,13 +1,18 @@
 # email
 
-- **Update type name:** `email`
+- **Update type:** `email`
 - **Update description:** Email address or contact.
 - **Cardinality:** single
 - **Payload kind:** text
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.string().email()
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "format": "email",
+  "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+}
 ```
 
 - **Example payload for broadcast:**

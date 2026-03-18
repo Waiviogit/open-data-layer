@@ -1,18 +1,44 @@
 # shop_filter
 
-- **Update type name:** `shop_filter`
+- **Update type:** `shop_filter`
 - **Update description:** Shop catalog filter configuration.
 - **Cardinality:** single
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    type: z.string().min(1),
-    departments: z.array(z.string()).optional(),
-    tags: z.array(z.string()).optional(),
-    authorities: z.array(z.string()).optional(),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "departments": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "authorities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "type"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

@@ -5,17 +5,17 @@
 
 - **supported_updates**
 
-[`name`](../object-updates/name.md)
 [`admins`](../object-updates/admins.md)
-[`trusted`](../object-updates/trusted.md)
-[`moderators`](../object-updates/moderators.md)
 [`authorities`](../object-updates/authorities.md)
-[`restricted`](../object-updates/restricted.md)
 [`banned`](../object-updates/banned.md)
-[`whitelist`](../object-updates/whitelist.md)
-[`object_control`](../object-updates/object_control.md)
 [`inherits_from`](../object-updates/inherits_from.md)
+[`moderators`](../object-updates/moderators.md)
+[`name`](../object-updates/name.md)
+[`object_control`](../object-updates/object_control.md)
+[`restricted`](../object-updates/restricted.md)
+[`trusted`](../object-updates/trusted.md)
 [`validity_cutoff`](../object-updates/validity_cutoff.md)
+[`whitelist`](../object-updates/whitelist.md)
 
 - **supposed_updates**
 

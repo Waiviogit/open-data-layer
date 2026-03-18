@@ -1,13 +1,17 @@
 # map_objects_list
 
-- **Update type name:** `map_objects_list`
+- **Update type:** `map_objects_list`
 - **Update description:** List of object IDs shown on map.
 - **Cardinality:** single
 - **Payload kind:** text
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.string().min(1)
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "minLength": 1
+}
 ```
 
 - **Example payload for broadcast:**

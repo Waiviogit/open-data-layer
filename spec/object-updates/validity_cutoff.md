@@ -1,16 +1,30 @@
 # validity_cutoff
 
-- **Update type name:** `validity_cutoff`
+- **Update type:** `validity_cutoff`
 - **Update description:** Governance: validity or time cutoff for updates.
 - **Cardinality:** multi
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    account: z.string().min(1),
-    timestamp: z.number(),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "account": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "account",
+    "timestamp"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

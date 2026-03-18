@@ -1,13 +1,17 @@
 # affiliate_button
 
-- **Update type name:** `affiliate_button`
+- **Update type:** `affiliate_button`
 - **Update description:** Affiliate button or link label.
 - **Cardinality:** single
 - **Payload kind:** text
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.string().url()
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "format": "uri"
+}
 ```
 
 - **Example payload for broadcast:**

@@ -1,13 +1,20 @@
 # group_followers
 
-- **Update type name:** `group_followers`
+- **Update type:** `group_followers`
 - **Update description:** Group followers or audience config.
 - **Cardinality:** single
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.array(z.string().min(1))
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": {
+    "type": "string",
+    "minLength": 1
+  }
+}
 ```
 
 - **Example payload for broadcast:**

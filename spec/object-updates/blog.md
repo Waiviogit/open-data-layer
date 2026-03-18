@@ -1,16 +1,31 @@
 # blog
 
-- **Update type name:** `blog`
+- **Update type:** `blog`
 - **Update description:** Blog or feed reference list.
 - **Cardinality:** multi
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    title: z.string().min(1),
-    value: z.string().min(1),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "value": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "title",
+    "value"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

@@ -1,17 +1,45 @@
 # news_filter
 
-- **Update type name:** `news_filter`
+- **Update type:** `news_filter`
 - **Update description:** News feed filter configuration.
 - **Cardinality:** single
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    allow_list: z.array(z.array(z.string())),
-    ignore_list: z.array(z.string()),
-    type_list: z.array(z.string()),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "allow_list": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "ignore_list": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "type_list": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "allow_list",
+    "ignore_list",
+    "type_list"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

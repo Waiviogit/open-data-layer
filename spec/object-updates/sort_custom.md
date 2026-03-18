@@ -1,16 +1,35 @@
 # sort_custom
 
-- **Update type name:** `sort_custom`
+- **Update type:** `sort_custom`
 - **Update description:** Custom sort order or ranking.
 - **Cardinality:** single
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    include: z.array(z.string()),
-    exclude: z.array(z.string()),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "include": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "exclude": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "include",
+    "exclude"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

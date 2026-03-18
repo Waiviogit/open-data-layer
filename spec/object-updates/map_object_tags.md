@@ -1,13 +1,20 @@
 # map_object_tags
 
-- **Update type name:** `map_object_tags`
+- **Update type:** `map_object_tags`
 - **Update description:** Tags filter for map objects.
 - **Cardinality:** single
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.array(z.string().min(1))
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": {
+    "type": "string",
+    "minLength": 1
+  }
+}
 ```
 
 - **Example payload for broadcast:**

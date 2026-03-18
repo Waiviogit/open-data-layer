@@ -1,13 +1,20 @@
 # group_expertise
 
-- **Update type name:** `group_expertise`
+- **Update type:** `group_expertise`
 - **Update description:** Group expertise or focus areas.
 - **Cardinality:** single
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.array(z.string().min(1))
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": {
+    "type": "string",
+    "minLength": 1
+  }
+}
 ```
 
 - **Example payload for broadcast:**

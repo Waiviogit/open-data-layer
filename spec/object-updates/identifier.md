@@ -1,17 +1,35 @@
 # identifier
 
-- **Update type name:** `identifier`
+- **Update type:** `identifier`
 - **Update description:** External or alternate identifier.
 - **Cardinality:** multi
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    value: z.string().min(1),
-    type: z.string().min(1),
-    image: z.string().url().optional(),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": "string",
+      "minLength": 1
+    },
+    "type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "image": {
+      "type": "string",
+      "format": "uri"
+    }
+  },
+  "required": [
+    "value",
+    "type"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

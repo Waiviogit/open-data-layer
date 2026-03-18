@@ -5,23 +5,23 @@
 
 - **supported_updates**
 
-[`status`](../object-updates/status.md)
 [`avatar`](../object-updates/avatar.md)
-[`pin`](../object-updates/pin.md)
-[`remove`](../object-updates/remove.md)
-[`name`](../object-updates/name.md)
-[`title`](../object-updates/title.md)
-[`description`](../object-updates/description.md)
 [`background`](../object-updates/background.md)
+[`category_item`](../object-updates/category_item.md)
 [`delegation`](../object-updates/delegation.md)
+[`description`](../object-updates/description.md)
 [`gallery_album`](../object-updates/gallery_album.md)
 [`gallery_item`](../object-updates/gallery_item.md)
-[`tag_category`](../object-updates/tag_category.md)
-[`category_item`](../object-updates/category_item.md)
+[`name`](../object-updates/name.md)
 [`parent`](../object-updates/parent.md)
-[`rating`](../object-updates/rating.md)
-[`url`](../object-updates/url.md)
+[`pin`](../object-updates/pin.md)
 [`promotion`](../object-updates/promotion.md)
+[`rating`](../object-updates/rating.md)
+[`remove`](../object-updates/remove.md)
+[`status`](../object-updates/status.md)
+[`tag_category`](../object-updates/tag_category.md)
+[`title`](../object-updates/title.md)
+[`url`](../object-updates/url.md)
 
 - **supposed_updates**
 

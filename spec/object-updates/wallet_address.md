@@ -1,17 +1,34 @@
 # wallet_address
 
-- **Update type name:** `wallet_address`
+- **Update type:** `wallet_address`
 - **Update description:** Wallet or payment address.
 - **Cardinality:** multi
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    symbol: z.string().min(1),
-    address: z.string().min(1),
-    title: z.string().optional(),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1
+    },
+    "address": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "symbol",
+    "address"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

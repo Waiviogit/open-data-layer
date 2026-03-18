@@ -1,13 +1,17 @@
 # website
 
-- **Update type name:** `website`
+- **Update type:** `website`
 - **Update description:** Website or main URL.
 - **Cardinality:** single
 - **Payload kind:** text
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.string().url()
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "format": "uri"
+}
 ```
 
 - **Example payload for broadcast:**

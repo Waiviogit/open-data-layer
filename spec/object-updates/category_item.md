@@ -1,16 +1,31 @@
 # category_item
 
-- **Update type name:** `category_item`
+- **Update type:** `category_item`
 - **Update description:** Category or tag item with value.
 - **Cardinality:** multi
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    value: z.string().min(1),
-    category: z.string().min(1),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "value",
+    "category"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

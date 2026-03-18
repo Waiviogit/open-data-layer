@@ -1,16 +1,31 @@
 # status
 
-- **Update type name:** `status`
+- **Update type:** `status`
 - **Update description:** Status payload (title and link).
 - **Cardinality:** single
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    title: z.string().min(1),
-    link: z.string().min(1),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "link": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "title",
+    "link"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

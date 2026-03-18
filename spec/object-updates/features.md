@@ -1,16 +1,31 @@
 # features
 
-- **Update type name:** `features`
+- **Update type:** `features`
 - **Update description:** Features or attributes list.
 - **Cardinality:** multi
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    key: z.string().min(1),
-    value: z.string().min(1),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "value": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "key",
+    "value"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

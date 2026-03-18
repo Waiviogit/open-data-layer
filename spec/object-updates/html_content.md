@@ -1,13 +1,17 @@
 # html_content
 
-- **Update type name:** `html_content`
+- **Update type:** `html_content`
 - **Update description:** HTML or rich text content.
 - **Cardinality:** single
 - **Payload kind:** text
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.string().min(1)
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "minLength": 1
+}
 ```
 
 - **Example payload for broadcast:**

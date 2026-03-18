@@ -1,16 +1,31 @@
 # button
 
-- **Update type name:** `button`
+- **Update type:** `button`
 - **Update description:** Button or CTA configuration.
 - **Cardinality:** multi
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    title: z.string().min(1),
-    link: z.string().min(1),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "link": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "title",
+    "link"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

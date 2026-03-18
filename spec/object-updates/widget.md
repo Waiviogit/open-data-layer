@@ -1,17 +1,36 @@
 # widget
 
-- **Update type name:** `widget`
+- **Update type:** `widget`
 - **Update description:** Widget or embed configuration.
 - **Cardinality:** multi
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    column: z.string().min(1),
-    type: z.string().min(1),
-    content: z.string().min(1),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "column": {
+      "type": "string",
+      "minLength": 1
+    },
+    "type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "content": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "column",
+    "type",
+    "content"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

@@ -1,16 +1,29 @@
 # manufacturer
 
-- **Update type name:** `manufacturer`
+- **Update type:** `manufacturer`
 - **Update description:** Manufacturer or maker details.
 - **Cardinality:** single
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    name: z.string().min(1),
-    author_permlink: z.string().optional(),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "author_permlink": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

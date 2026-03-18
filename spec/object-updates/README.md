@@ -55,13 +55,13 @@ Specification for each ODL object update type (payload shape, validation, broadc
 | `link` | [link.md](link.md) |
 | `list_item` | [list_item.md](list_item.md) |
 | `manufacturer` | [manufacturer.md](manufacturer.md) |
+| `map` | [map.md](map.md) |
 | `map_desktop_view` | [map_desktop_view.md](map_desktop_view.md) |
 | `map_mobile_view` | [map_mobile_view.md](map_mobile_view.md) |
 | `map_object_tags` | [map_object_tags.md](map_object_tags.md) |
 | `map_object_types` | [map_object_types.md](map_object_types.md) |
 | `map_objects_list` | [map_objects_list.md](map_objects_list.md) |
 | `map_rectangles` | [map_rectangles.md](map_rectangles.md) |
-| `map` | [map.md](map.md) |
 | `menu_item` | [menu_item.md](menu_item.md) |
 | `merchant` | [merchant.md](merchant.md) |
 | `moderators` | [moderators.md](moderators.md) |
@@ -77,6 +77,7 @@ Specification for each ODL object update type (payload shape, validation, broadc
 | `pin` | [pin.md](pin.md) |
 | `price` | [price.md](price.md) |
 | `print_length` | [print_length.md](print_length.md) |
+| `product_weight` | [product_weight.md](product_weight.md) |
 | `promotion` | [promotion.md](promotion.md) |
 | `publication_date` | [publication_date.md](publication_date.md) |
 | `publisher` | [publisher.md](publisher.md) |
@@ -97,7 +98,6 @@ Specification for each ODL object update type (payload shape, validation, broadc
 | `validity_cutoff` | [validity_cutoff.md](validity_cutoff.md) |
 | `wallet_address` | [wallet_address.md](wallet_address.md) |
 | `website` | [website.md](website.md) |
-| `product_weight` | [product_weight.md](product_weight.md) |
 | `whitelist` | [whitelist.md](whitelist.md) |
 | `widget` | [widget.md](widget.md) |
 | `work_time` | [work_time.md](work_time.md) |

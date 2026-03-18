@@ -1,13 +1,17 @@
 # departments
 
-- **Update type name:** `departments`
+- **Update type:** `departments`
 - **Update description:** Department or category list.
 - **Cardinality:** multi
 - **Payload kind:** text
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.string().min(1)
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "minLength": 1
+}
 ```
 
 - **Example payload for broadcast:**

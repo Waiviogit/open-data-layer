@@ -1,13 +1,18 @@
 # group_add
 
-- **Update type name:** `group_add`
+- **Update type:** `group_add`
 - **Update description:** Group membership or add member.
 - **Cardinality:** multi
 - **Payload kind:** text
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.string().min(3).max(16)
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "minLength": 3,
+  "maxLength": 16
+}
 ```
 
 - **Example payload for broadcast:**

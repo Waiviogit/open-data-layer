@@ -1,16 +1,31 @@
 # gallery_item
 
-- **Update type name:** `gallery_item`
+- **Update type:** `gallery_item`
 - **Update description:** Gallery item or media entry.
 - **Cardinality:** multi
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    album: z.string().min(1),
-    value: z.string().min(1),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "album": {
+      "type": "string",
+      "minLength": 1
+    },
+    "value": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "album",
+    "value"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

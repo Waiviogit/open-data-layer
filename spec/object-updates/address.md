@@ -1,13 +1,49 @@
 # address
 
-- **Update type name:** `address`
-- **Update description:** Physical or postal address.
+- **Update type:** `address`
+- **Update description:** Structured physical/postal address (vCard/RFC 6350 naming). street: street name and number; locality: city, village, or town; postal_code: ZIP or postal code; country: country name; state (optional): state, province, or region; suite (optional): apartment, unit, or floor.
 - **Cardinality:** single
-- **Payload kind:** text
-- **Payload validation requirements (Zod schema):**
+- **Payload kind:** json
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.string().min(1)
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "street": {
+      "type": "string",
+      "minLength": 1
+    },
+    "locality": {
+      "type": "string",
+      "minLength": 1
+    },
+    "postal_code": {
+      "type": "string",
+      "minLength": 1
+    },
+    "country": {
+      "type": "string",
+      "minLength": 1
+    },
+    "state": {
+      "type": "string",
+      "minLength": 1
+    },
+    "suite": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "street",
+    "locality",
+    "postal_code",
+    "country"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**
@@ -28,7 +64,7 @@ z.string().min(1)
             object_id,
             update_type: 'address',
             locale: 'en-US',
-            value_text: "<string>"
+            value_json: {}  // or [] — valid JSON per schema
           }
         }
       ]

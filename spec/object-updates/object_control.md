@@ -1,13 +1,19 @@
 # object_control
 
-- **Update type name:** `object_control`
+- **Update type:** `object_control`
 - **Update description:** Governance: activates global object authority control.
 - **Cardinality:** single
 - **Payload kind:** text
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.enum(['full'])
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "enum": [
+    "full"
+  ]
+}
 ```
 
 - **Example payload for broadcast:**

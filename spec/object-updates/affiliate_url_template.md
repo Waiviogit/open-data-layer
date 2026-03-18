@@ -1,18 +1,17 @@
 # affiliate_url_template
 
-- **Update type name:** `affiliate_url_template`
+- **Update type:** `affiliate_url_template`
 - **Update description:** Affiliate URL template or base.
 - **Cardinality:** single
 - **Payload kind:** text
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z
-    .string()
-    .min(1)
-    .refine((v) => v.includes('$product_id') && v.includes('$affiliate_code'), {
-      message: 'Template must contain $product_id and $affiliate_code',
-    })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "minLength": 1
+}
 ```
 
 - **Example payload for broadcast:**

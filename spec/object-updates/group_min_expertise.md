@@ -1,13 +1,17 @@
 # group_min_expertise
 
-- **Update type name:** `group_min_expertise`
+- **Update type:** `group_min_expertise`
 - **Update description:** Minimum expertise level for group.
 - **Cardinality:** single
 - **Payload kind:** text
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.string().regex(/^\d+$/, 'Must be a numeric string')
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "pattern": "^\\d+$"
+}
 ```
 
 - **Example payload for broadcast:**

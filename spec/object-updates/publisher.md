@@ -1,16 +1,29 @@
 # publisher
 
-- **Update type name:** `publisher`
+- **Update type:** `publisher`
 - **Update description:** Publisher or imprint details.
 - **Cardinality:** single
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    name: z.string().min(1),
-    author_permlink: z.string().optional(),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "author_permlink": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

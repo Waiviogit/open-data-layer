@@ -1,13 +1,18 @@
 # group_exclude
 
-- **Update type name:** `group_exclude`
+- **Update type:** `group_exclude`
 - **Update description:** Excluded member or account from group.
 - **Cardinality:** multi
 - **Payload kind:** text
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.string().min(3).max(16)
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "minLength": 3,
+  "maxLength": 16
+}
 ```
 
 - **Example payload for broadcast:**

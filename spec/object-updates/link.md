@@ -1,16 +1,31 @@
 # link
 
-- **Update type name:** `link`
+- **Update type:** `link`
 - **Update description:** Link or URL with optional metadata.
 - **Cardinality:** multi
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    type: z.string().min(1),
-    value: z.string().min(1),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "value": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "type",
+    "value"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

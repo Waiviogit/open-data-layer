@@ -1,13 +1,16 @@
 # affiliate_product_id_types
 
-- **Update type name:** `affiliate_product_id_types`
+- **Update type:** `affiliate_product_id_types`
 - **Update description:** Supported product ID types for affiliate.
 - **Cardinality:** single
 - **Payload kind:** text
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.string().toLowerCase()
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string"
+}
 ```
 
 - **Example payload for broadcast:**

@@ -1,24 +1,44 @@
 # menu_item
 
-- **Update type name:** `menu_item`
+- **Update type:** `menu_item`
 - **Update description:** Menu item or dish entry.
 - **Cardinality:** multi
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z
-    .object({
-      title: z.string().min(1),
-      style: z.string().min(1),
-      image: z.string().optional(),
-      link_to_object: z.string().optional(),
-      object_type: z.string().optional(),
-      link_to_web: z.string().url().optional(),
-    })
-    .refine((v) => v.link_to_object !== undefined || v.link_to_web !== undefined, {
-      message: 'Either link_to_object or link_to_web is required',
-    })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "style": {
+      "type": "string",
+      "minLength": 1
+    },
+    "image": {
+      "type": "string"
+    },
+    "link_to_object": {
+      "type": "string"
+    },
+    "object_type": {
+      "type": "string"
+    },
+    "link_to_web": {
+      "type": "string",
+      "format": "uri"
+    }
+  },
+  "required": [
+    "title",
+    "style"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

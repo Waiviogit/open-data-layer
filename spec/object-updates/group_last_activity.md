@@ -1,13 +1,17 @@
 # group_last_activity
 
-- **Update type name:** `group_last_activity`
+- **Update type:** `group_last_activity`
 - **Update description:** Last activity timestamp for group.
 - **Cardinality:** single
 - **Payload kind:** text
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.string().regex(/^\d+$/, 'Must be a numeric string in milliseconds')
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "string",
+  "pattern": "^\\d+$"
+}
 ```
 
 - **Example payload for broadcast:**

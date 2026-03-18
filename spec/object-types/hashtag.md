@@ -5,16 +5,16 @@
 
 - **supported_updates**
 
-[`status`](../object-updates/status.md)
 [`avatar`](../object-updates/avatar.md)
-[`pin`](../object-updates/pin.md)
-[`remove`](../object-updates/remove.md)
-[`name`](../object-updates/name.md)
-[`title`](../object-updates/title.md)
-[`description`](../object-updates/description.md)
 [`background`](../object-updates/background.md)
 [`delegation`](../object-updates/delegation.md)
+[`description`](../object-updates/description.md)
+[`name`](../object-updates/name.md)
+[`pin`](../object-updates/pin.md)
 [`promotion`](../object-updates/promotion.md)
+[`remove`](../object-updates/remove.md)
+[`status`](../object-updates/status.md)
+[`title`](../object-updates/title.md)
 
 - **supposed_updates**
 

@@ -1,19 +1,56 @@
 # map_rectangles
 
-- **Update type name:** `map_rectangles`
+- **Update type:** `map_rectangles`
 - **Update description:** Map rectangle or region overlays.
 - **Cardinality:** single
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.array(
-    z.object({
-      /** [lon, lat] */
-      top_point: z.tuple([z.number().min(-180).max(180), z.number().min(-90).max(90)]),
-      bottom_point: z.tuple([z.number().min(-180).max(180), z.number().min(-90).max(90)]),
-    }),
-  )
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "top_point": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          }
+        ]
+      },
+      "bottom_point": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          }
+        ]
+      }
+    },
+    "required": [
+      "top_point",
+      "bottom_point"
+    ],
+    "additionalProperties": false
+  }
+}
 ```
 
 - **Example payload for broadcast:**

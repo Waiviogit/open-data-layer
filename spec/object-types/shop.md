@@ -5,21 +5,21 @@
 
 - **supported_updates**
 
-[`shop_filter`](../object-updates/shop_filter.md)
-[`parent`](../object-updates/parent.md)
-[`name`](../object-updates/name.md)
+[`avatar`](../object-updates/avatar.md)
+[`background`](../object-updates/background.md)
+[`delegation`](../object-updates/delegation.md)
+[`description`](../object-updates/description.md)
 [`gallery_album`](../object-updates/gallery_album.md)
 [`gallery_item`](../object-updates/gallery_item.md)
-[`avatar`](../object-updates/avatar.md)
-[`title`](../object-updates/title.md)
-[`description`](../object-updates/description.md)
-[`background`](../object-updates/background.md)
-[`status`](../object-updates/status.md)
+[`name`](../object-updates/name.md)
+[`parent`](../object-updates/parent.md)
 [`pin`](../object-updates/pin.md)
-[`remove`](../object-updates/remove.md)
-[`website`](../object-updates/website.md)
-[`delegation`](../object-updates/delegation.md)
 [`promotion`](../object-updates/promotion.md)
+[`remove`](../object-updates/remove.md)
+[`shop_filter`](../object-updates/shop_filter.md)
+[`status`](../object-updates/status.md)
+[`title`](../object-updates/title.md)
+[`website`](../object-updates/website.md)
 
 - **supposed_updates**
 

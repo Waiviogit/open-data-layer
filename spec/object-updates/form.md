@@ -1,18 +1,41 @@
 # form
 
-- **Update type name:** `form`
+- **Update type:** `form`
 - **Update description:** Form or input configuration.
 - **Cardinality:** multi
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    title: z.string().min(1),
-    column: z.string().min(1),
-    form: z.string().min(1),
-    link: z.string().min(1),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "column": {
+      "type": "string",
+      "minLength": 1
+    },
+    "form": {
+      "type": "string",
+      "minLength": 1
+    },
+    "link": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "title",
+    "column",
+    "form",
+    "link"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**

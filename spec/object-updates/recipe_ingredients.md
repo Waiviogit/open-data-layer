@@ -1,13 +1,21 @@
 # recipe_ingredients
 
-- **Update type name:** `recipe_ingredients`
+- **Update type:** `recipe_ingredients`
 - **Update description:** Recipe ingredients list.
 - **Cardinality:** single
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.array(z.string().min(1)).min(1)
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "minItems": 1,
+  "type": "array",
+  "items": {
+    "type": "string",
+    "minLength": 1
+  }
+}
 ```
 
 - **Example payload for broadcast:**

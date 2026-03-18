@@ -1,17 +1,36 @@
 # sale
 
-- **Update type name:** `sale`
+- **Update type:** `sale`
 - **Update description:** Sale or discount configuration.
 - **Cardinality:** single
 - **Payload kind:** json
-- **Payload validation requirements (Zod schema):**
+- **Payload validation requirements (JSON Schema derived from Zod):**
 
-```ts
-z.object({
-    value: z.string().min(1),
-    start_date: z.number().int().positive().optional(),
-    end_date: z.number().int().positive().optional(),
-  })
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": "string",
+      "minLength": 1
+    },
+    "start_date": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "end_date": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    }
+  },
+  "required": [
+    "value"
+  ],
+  "additionalProperties": false
+}
 ```
 
 - **Example payload for broadcast:**
