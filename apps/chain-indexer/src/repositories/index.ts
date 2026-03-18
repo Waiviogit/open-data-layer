@@ -4,3 +4,4 @@ export { ObjectUpdatesRepository } from './object-updates.repository';
 export { ValidityVotesRepository } from './validity-votes.repository';
 export { RankVotesRepository } from './rank-votes.repository';
 export { AccountsCurrentRepository } from './accounts-current.repository';
+export { ObjectAuthorityRepository } from './object-authority.repository';

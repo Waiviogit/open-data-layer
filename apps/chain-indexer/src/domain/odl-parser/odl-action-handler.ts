@@ -1,5 +1,7 @@
 /** Context passed to every ODL action handler. */
 export interface OdlEventContext {
+  /** The action string from the event, e.g. 'object_create'. */
+  action: string;
   /** Posting_auth or required_auth Hive account that submitted the custom_json. */
   creator: string;
   blockNum: number;

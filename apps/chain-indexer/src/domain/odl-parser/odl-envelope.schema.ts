@@ -44,12 +44,20 @@ export const rankVotePayloadSchema = z.object({
 
 export type RankVotePayload = z.infer<typeof rankVotePayloadSchema>;
 
+export const authorityPayloadSchema = z.object({
+  object_id: z.string().min(1).max(256),
+  authority_type: z.enum(['ownership', 'administrative']),
+  method: z.enum(['add', 'remove']),
+});
+
+export type AuthorityPayload = z.infer<typeof authorityPayloadSchema>;
+
 // ---------------------------------------------------------------------------
 // Envelope schema
 // ---------------------------------------------------------------------------
 
 const odlEventSchema = z.object({
-  action: z.enum(['object_create', 'update_create', 'update_vote', 'rank_vote']),
+  action: z.enum(['object_create', 'update_create', 'update_vote', 'rank_vote', 'object_authority']),
   v: z.number().int().min(1),
   payload: z.record(z.string(), z.unknown()),
 });

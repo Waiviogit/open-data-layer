@@ -132,10 +132,10 @@ If the Hive API call fails, the existing row (if any) is preserved unchanged.
 
 `object_reputation` is maintained independently from Hive sync. It is updated by the Indexer when authority events arrive:
 
-- **`add_object_authority`** with `authority_type = 'administrative'`:
-  1. Look up the object creator: `SELECT creator FROM objects_core WHERE object_id = $targetId`.
-  2. If the signing user (`username`) is **not** the creator themselves, increment the creator's `object_reputation` only if this is the **first** administrative claim by this user on **any** object by this creator.
-- **`remove_object_authority`** with `authority_type = 'administrative'`:
+- **`object_authority` (method = 'add')** with `authority_type = 'administrative'`:
+  1. Look up the object creator: `SELECT creator FROM objects_core WHERE object_id = $object_id`.
+  2. If the signing user (`account`) is **not** the creator themselves, increment the creator's `object_reputation` only if this is the **first** administrative claim by this user on **any** object by this creator.
+- **`object_authority` (method = 'remove')** with `authority_type = 'administrative'`:
   1. After the authority row is deleted, check if the removed user still holds `administrative` authority on any other object by the same creator.
   2. If no remaining claims, decrement the creator's `object_reputation` by 1.
 
@@ -143,12 +143,11 @@ The invariant:
 
 ```sql
 -- Verification query (must match accounts_current.object_reputation)
-SELECT oc.creator, COUNT(DISTINCT oa.username) AS expected_reputation
+SELECT oc.creator, COUNT(DISTINCT oa.account) AS expected_reputation
 FROM object_authority oa
-JOIN objects_core oc ON oa.target_id = oc.object_id
-                    AND oa.target_kind = 'object'
+JOIN objects_core oc ON oa.object_id = oc.object_id
 WHERE oa.authority_type = 'administrative'
-  AND oa.username != oc.creator
+  AND oa.account != oc.creator
 GROUP BY oc.creator;
 ```
 

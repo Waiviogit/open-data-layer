@@ -20,7 +20,7 @@ Related files:
 | **object_updates**   | One row per active update. FK to objects_core ON DELETE CASCADE. Holds value (text/geo/json), plus `search_vector` (tsvector) and PostGIS `value_geo`. |
 | **validity_votes**   | One row per validity vote. FK to object_updates ON DELETE CASCADE — replacing an update deletes its votes automatically.                               |
 | **rank_votes**       | One row per rank vote. Same CASCADE. rank 1..10000 enforced by CHECK.                                                                                  |
-| **object_authority** | One row per `(object_id, username)` authority claim. Written by `add_object_authority` / `remove_object_authority` Hive events. Does not affect `seq`. See [authority-entity.md](../authority-entity.md). |
+| **object_authority** | One row per `(object_id, account, authority_type)` authority claim. Written by `object_authority` Hive events (`method: 'add' | 'remove'`). Does not affect `seq`. See [authority-entity.md](../authority-entity.md). |
 | **accounts_current** | One row per Hive account. Hive-sourced fields synced from Hive node API; `object_reputation` maintained by Indexer from administrative authority events. Used at query time to compute community vote weight. See [social-account-ingestion.md](../social-account-ingestion.md). |
 
 
@@ -67,7 +67,7 @@ erDiagram
 
   ObjectAuthority {
     text object_id FK
-    text username
+    text account
     text authority_type
   }
 
@@ -98,7 +98,7 @@ flowchart LR
   coreSeq --> upsert[UpsertUpdateOrVote]
   upsert --> commit["COMMIT"]
   commit --> done[(PostgreSQL)]
-  route -->|add_object_authority / remove_object_authority| authWrite[UpsertOrDeleteAuthority]
+  route -->|object_authority (method add/remove)| authWrite[UpsertOrDeleteAuthority]
   authWrite --> done
 ```
 
@@ -128,8 +128,8 @@ All in the same transaction as the seq increment.
 
 ### Authority events (separate path)
 
-- **add_object_authority**: `INSERT INTO object_authority (object_id, username, authority_type) VALUES ($1, $2, $3) ON CONFLICT (object_id, username, authority_type) DO NOTHING`
-- **remove_object_authority**: `DELETE FROM object_authority WHERE object_id = $1 AND username = $2 AND authority_type = $3`
+- **object_authority (method = 'add')**: `INSERT INTO object_authority (object_id, account, authority_type) VALUES ($1, $2, $3) ON CONFLICT (object_id, account, authority_type) DO NOTHING`
+- **object_authority (method = 'remove')**: `DELETE FROM object_authority WHERE object_id = $1 AND account = $2 AND authority_type = $3`
 
 Executed outside any transaction together with content events.
 
@@ -236,7 +236,7 @@ All six can be sent as a pipeline (single round-trip on most drivers). The appli
 
 For each object, using the loaded rows, authority records, voter reputations, and the governance snapshot:
 
-1. **Compute curator set** `C = { ownership holders for (targetId, targetKind) from object_authority } ∩ { governance admins ∪ governance trusted }`.
+1. **Compute curator set** `C = { ownership holders for object_id from object_authority } ∩ { governance admins ∪ governance trusted }`.
 2. Group updates by `update_type`.
 3. Resolve validity per update (tiered):
    - If `C` is non-empty, apply curator filter: an update is valid only if its `creator ∈ C` OR it has a positive validity vote from any member of `C`. Updates satisfying neither are treated as invalid regardless of other votes.
@@ -270,9 +270,9 @@ See [vote-semantics.md § C](../vote-semantics.md#c-community-vote-weight) for t
 | validity_votes | (object_id)                                         | B-tree           | Bulk load votes for an object             |
 | rank_votes       | (update_id, voter, rank_context)                    | UNIQUE           | One rank per voter per context                          |
 | rank_votes       | (object_id)                                         | B-tree           | Bulk load ranks for an object                           |
-| object_authority | (target_id, target_kind, username, authority_type)  | UNIQUE           | Primary key; upsert/delete by event.                    |
+| object_authority | (object_id, account, authority_type)                | UNIQUE           | Primary key; upsert/delete by event.                    |
 | object_authority | (object_id, authority_type)                         | B-tree           | Load all ownership holders for an object (curator set). |
-| object_authority | (username)                                          | B-tree           | Find all targets a user holds authority over.           |
+| object_authority | (account)                                           | B-tree           | Find all objects a user holds authority over.           |
 | accounts_current | name                                                | PK / B-tree      | Primary lookup by account name.                         |
 | accounts_current | (object_reputation DESC)                            | B-tree           | Sorted listing by reputation.                           |
 | accounts_current | (hive_id)                                           | B-tree (partial) | Lookup by Hive numeric ID (WHERE hive_id IS NOT NULL).  |

@@ -99,6 +99,21 @@ CREATE TABLE rank_votes (
 CREATE INDEX idx_rank_votes_object_id ON rank_votes (object_id);
 
 -- ---------------------------------------------------------------------------
+-- object_authority
+-- One row per (object_id, account, authority_type) claim.
+-- Written by object_authority events (method: 'add' | 'remove').
+-- ---------------------------------------------------------------------------
+CREATE TABLE object_authority (
+  object_id       TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
+  account         TEXT NOT NULL,
+  authority_type  TEXT NOT NULL CHECK (authority_type IN ('ownership', 'administrative')),
+  PRIMARY KEY (object_id, account, authority_type)
+);
+
+CREATE INDEX idx_object_authority_object_id_authority_type ON object_authority (object_id, authority_type);
+CREATE INDEX idx_object_authority_account ON object_authority (account);
+
+-- ---------------------------------------------------------------------------
 -- accounts_current
 -- Trimmed Hive account state + ODL-computed object_reputation.
 -- Hive-sourced fields synced from Hive node API; object_reputation

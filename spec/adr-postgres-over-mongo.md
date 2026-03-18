@@ -38,7 +38,7 @@ objects_core 1──* object_updates 1──* validity_votes
 objects_core 1──* object_authority
 ```
 
-Every event type (`update_create`, `update_vote`, `rank_vote`, `add_object_authority`) operates on a specific row in a specific table via a typed foreign key. The updates, votes, and authority claims are independent entities that reference each other — the classic shape that relational databases model directly and document stores have to simulate.
+Every event type (`update_create`, `update_vote`, `rank_vote`, `object_authority`) operates on a specific row in a specific table via a typed foreign key. The updates, votes, and authority claims are independent entities that reference each other — the classic shape that relational databases model directly and document stores have to simulate.
 
 Forcing this into MongoDB requires either:
 

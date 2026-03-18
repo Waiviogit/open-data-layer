@@ -4,6 +4,7 @@ import { ObjectUpdatesRepository } from './object-updates.repository';
 import { ValidityVotesRepository } from './validity-votes.repository';
 import { RankVotesRepository } from './rank-votes.repository';
 import { AccountsCurrentRepository } from './accounts-current.repository';
+import { ObjectAuthorityRepository } from './object-authority.repository';
 
 @Module({
   providers: [
@@ -12,6 +13,7 @@ import { AccountsCurrentRepository } from './accounts-current.repository';
     ValidityVotesRepository,
     RankVotesRepository,
     AccountsCurrentRepository,
+    ObjectAuthorityRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -19,6 +21,7 @@ import { AccountsCurrentRepository } from './accounts-current.repository';
     ValidityVotesRepository,
     RankVotesRepository,
     AccountsCurrentRepository,
+    ObjectAuthorityRepository,
   ],
 })
 export class RepositoriesModule {}

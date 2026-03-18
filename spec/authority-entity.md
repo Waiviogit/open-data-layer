@@ -4,38 +4,37 @@
 
 ## 1. Purpose
 
-`object_authority` is an open registry that records which users have claimed authority roles on specific targets (regular objects or object types). Any user may claim or relinquish authority via Hive events. The indexer stores all valid claims as neutral state without permission checks.
+`object_authority` is an open registry that records which users have claimed authority roles on specific objects. Any user may claim or relinquish authority via Hive events. The indexer stores all valid claims as neutral state without permission checks.
 
 Authority drives the **curator filter** applied during ResolvedView assembly when the authority holder is also a governance admin or trusted member.
 
 ## 2. Schema (logical)
 
-- `targetId`: string — the ID of the target (`objectId` for regular objects, `typeId` for object types)
-- `targetKind`: `'object'` | `'object_type'` — discriminates between the two target namespaces
-- `username`: string — Hive account
-- `authorityType`: `'ownership'` | `'administrative'`
+- `object_id`: string — the ID of the object
+- `account`: string — Hive account
+- `authority_type`: `'ownership'` | `'administrative'`
 
-Unique key: `(targetId, targetKind, username, authorityType)` — a user may hold multiple roles on the same target.
+Unique key: `(object_id, account, authority_type)` — a user may hold multiple roles on the same object.
 
 ## 3. Write rules
 
 Written exclusively via Hive events. Any user may submit:
 
-- `action: 'add_object_authority'` — insert `(targetId, targetKind, username, authorityType)` for the signing account (no-op if already exists)
-- `action: 'remove_object_authority'` — delete `(targetId, targetKind, username, authorityType)` for the signing account
+- `action: 'object_authority', method: 'add'` — insert `(object_id, account, authority_type)` for the signing account (no-op if already exists)
+- `action: 'object_authority', method: 'remove'` — delete `(object_id, account, authority_type)` for the signing account
 
 Authority events do **not** increment `objects_core.seq`. They are written directly to `object_authority` and do not affect content state of the target.
 
 ## 4. Effect on ResolvedView: curator filter
 
-Authority with `authorityType = 'ownership'` triggers a curator filter when the holder is also a member of the resolved governance `admins` or `trusted` sets.
+Authority with `authority_type = 'ownership'` triggers a curator filter when the holder is also a member of the resolved governance `admins` or `trusted` sets.
 
 ### Rule
 
-For a given target and governance snapshot, define the curator set:
+For a given object and governance snapshot, define the curator set:
 
 ```
-C = { ownership holders for (targetId, targetKind) } ∩ { governance admins ∪ governance trusted }
+C = { ownership holders for object_id } ∩ { governance admins ∪ governance trusted }
 ```
 
 If `C` is non-empty, only updates satisfying **at least one** of the following are treated as valid for this governance context:
@@ -47,23 +46,22 @@ Updates that satisfy neither condition are treated as invalid, regardless of oth
 
 If `C` is empty (no overlap), normal vote semantics apply without the curator filter.
 
-### Curator filter applied per target per governance snapshot
+### Curator filter applied per object per governance snapshot
 
-The filter is request-scoped. The same target may appear with different validity results under different governance snapshots depending on who holds ownership in each governance context.
+The filter is request-scoped. The same object may appear with different validity results under different governance snapshots depending on who holds ownership in each governance context.
 
 ## 5. Indexer behavior
 
-The indexer stores all authority events as neutral state. No permission check is performed — any user can claim ownership on any target. The semantic weight of that claim depends entirely on the governance snapshot at query time.
+The indexer stores all authority events as neutral state. No permission check is performed — any user can claim ownership on any object. The semantic weight of that claim depends entirely on the governance snapshot at query time.
 
 ## 6. Payload shape (Hive custom_json)
 
 ```json
-{ "action": "add_object_authority",    "v": 1, "payload": { "targetId": "product123", "targetKind": "object",      "authorityType": "ownership" } }
-{ "action": "add_object_authority",    "v": 1, "payload": { "targetId": "product",    "targetKind": "object_type", "authorityType": "ownership" } }
-{ "action": "remove_object_authority", "v": 1, "payload": { "targetId": "product123", "targetKind": "object",      "authorityType": "ownership" } }
+{ "action": "object_authority", "v": 1, "payload": { "object_id": "product123", "authority_type": "ownership", "method": "add" } }
+{ "action": "object_authority", "v": 1, "payload": { "object_id": "product123", "authority_type": "ownership", "method": "remove" } }
 ```
 
-The `username` is taken from the Hive transaction signing account, not from the payload.
+The `account` is taken from the Hive transaction signing account, not from the payload.
 
 ## 7. Authority types and their effects
 

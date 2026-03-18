@@ -22,6 +22,7 @@ export interface OdlDatabase {
   object_updates: ObjectUpdatesTable;
   validity_votes: ValidityVotesTable;
   rank_votes: RankVotesTable;
+  object_authority: ObjectAuthorityTable;
   accounts_current: AccountsCurrentTable;
 }
 
@@ -106,6 +107,20 @@ export interface RankVotesTable {
 export type RankVote = Selectable<RankVotesTable>;
 export type NewRankVote = Insertable<RankVotesTable>;
 export type RankVoteUpdate = Updateable<RankVotesTable>;
+
+// ---------------------------------------------------------------------------
+// object_authority
+// ---------------------------------------------------------------------------
+
+export interface ObjectAuthorityTable {
+  object_id: string;
+  account: string;
+  authority_type: 'ownership' | 'administrative';
+}
+
+export type ObjectAuthority = Selectable<ObjectAuthorityTable>;
+export type NewObjectAuthority = Insertable<ObjectAuthorityTable>;
+export type ObjectAuthorityUpdate = Updateable<ObjectAuthorityTable>;
 
 // ---------------------------------------------------------------------------
 // accounts_current

@@ -20,7 +20,7 @@ Related TypeScript interfaces:
 | **validity_votes** | One document per active validity vote. References `updateId` and `objectId`. |
 | **rank_votes** | One document per active rank vote (multi-value updates). References `updateId` and `objectId`. |
 | **object_query_projection** | Derived query helper. Split by value kind (textFields, geoFields, jsonFields). Tracks `coreSeqAtBuild` for drift detection. |
-| **object_authority** | One document per `(objectId, username)` authority claim. Written by `add_object_authority` / `remove_object_authority` Hive events. Does not affect `objects_core.seq`. See [authority-entity.md](../authority-entity.md). |
+| **object_authority** | One document per `(objectId, account)` authority claim. Written by `object_authority` Hive events (`method: 'add' | 'remove'`). Does not affect `objects_core.seq`. See [authority-entity.md](../authority-entity.md). |
 
 The **resolved view** (final API response) is still computed at request time from core + updates + votes + governance; it is not stored.
 
@@ -75,7 +75,7 @@ erDiagram
 
   ObjectAuthority {
     string objectId FK
-    string username
+    string account
     string authorityType
   }
 
@@ -93,7 +93,7 @@ flowchart LR
   coreSeq --> upsert[UpsertUpdateOrVote]
   upsert --> proj[UpdateProjection]
   proj --> done[(Mongo)]
-  route -->|add_object_authority / remove_object_authority| authWrite[UpsertOrDeleteAuthority]
+  route -->|object_authority (method add/remove)| authWrite[UpsertOrDeleteAuthority]
   authWrite --> done
 ```
 
@@ -118,8 +118,8 @@ All of these reference `objectId` so you can query by object when rebuilding or 
 
 ### Authority events (separate path)
 
-- **add_object_authority**: Insert one document into `object_authority` (key: `objectId` + `username` + `authorityType`). No-op if already exists.
-- **remove_object_authority**: Delete the document from `object_authority` matching `objectId` + `username` + `authorityType` of the signing account.
+- **object_authority (method = 'add')**: Insert one document into `object_authority` (key: `objectId` + `account` + `authorityType`). No-op if already exists.
+- **object_authority (method = 'remove')**: Delete the document from `object_authority` matching `objectId` + `account` + `authorityType` of the signing account.
 
 Authority events bypass seq increment and projection update entirely.
 
@@ -211,9 +211,9 @@ For each object, using the loaded updates, votes, authority records, and the gov
 | **object_query_projection** | `{ objectType: 1, "textFields.exactValueKey": 1 }` | Type-scoped exact match. |
 | **object_query_projection** | `{ objectType: 1, weight: -1 }` | Type-scoped sorted listing. |
 | **object_query_projection** | `{ creator: 1 }` | Filter by object creator. |
-| **object_authority** | \{ objectId: 1, username: 1 }\ (unique) | Primary key; upsert/delete by event. |
+| **object_authority** | \{ objectId: 1, account: 1 }\ (unique) | Primary key; upsert/delete by event. |
 | **object_authority** | \{ objectId: 1, authorityType: 1 }\ | Load all ownership holders for an object (curator set computation). |
-| **object_authority** | \{ username: 1 }\ | Find all objects a user holds authority over. |
+| **object_authority** | \{ account: 1 }\ | Find all objects a user holds authority over. |
 
 Splitting text and geo into separate arrays avoids MongoDB's limitation of one text index per collection and keeps 2dsphere and text indexes on distinct paths.
 

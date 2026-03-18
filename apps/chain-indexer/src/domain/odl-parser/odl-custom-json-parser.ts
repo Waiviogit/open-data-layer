@@ -7,6 +7,7 @@ import { ObjectCreateHandler } from './handlers/object-create.handler';
 import { UpdateCreateHandler } from './handlers/update-create.handler';
 import { UpdateVoteHandler } from './handlers/update-vote.handler';
 import { RankVoteHandler } from './handlers/rank-vote.handler';
+import { AuthorityHandler } from './handlers/authority.handler';
 
 @Injectable()
 export class OdlCustomJsonParser {
@@ -18,12 +19,14 @@ export class OdlCustomJsonParser {
     private readonly updateCreateHandler: UpdateCreateHandler,
     private readonly updateVoteHandler: UpdateVoteHandler,
     private readonly rankVoteHandler: RankVoteHandler,
+    private readonly authorityHandler: AuthorityHandler,
   ) {
     this.handlerMap = {
       [this.objectCreateHandler.action]: this.objectCreateHandler,
       [this.updateCreateHandler.action]: this.updateCreateHandler,
       [this.updateVoteHandler.action]: this.updateVoteHandler,
       [this.rankVoteHandler.action]: this.rankVoteHandler,
+      [this.authorityHandler.action]: this.authorityHandler,
     };
   }
 
@@ -58,6 +61,7 @@ export class OdlCustomJsonParser {
       }
 
       const ctx: OdlEventContext = {
+        action: event.action,
         creator: account,
         blockNum: hiveCtx.blockNum,
         transactionIndex: hiveCtx.transactionIndex,

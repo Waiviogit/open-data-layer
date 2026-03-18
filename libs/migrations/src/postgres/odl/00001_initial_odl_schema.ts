@@ -2,7 +2,7 @@ import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 
 /**
- * Initial ODL schema: objects_core, object_updates, validity_votes, rank_votes, accounts_current.
+ * Initial ODL schema: objects_core, object_updates, validity_votes, rank_votes, object_authority, accounts_current.
  * Source: spec/postgres-concept/schema.sql. Types: @opden-data-layer/core (OdlDatabase).
  * Requires: PostGIS extension.
  */
@@ -101,6 +101,18 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await sql`CREATE INDEX idx_rank_votes_object_id ON rank_votes (object_id)`.execute(db);
 
   await sql`
+    CREATE TABLE object_authority (
+      object_id       TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
+      account         TEXT NOT NULL,
+      authority_type  TEXT NOT NULL CHECK (authority_type IN ('ownership', 'administrative')),
+      PRIMARY KEY (object_id, account, authority_type)
+    )
+  `.execute(db);
+
+  await sql`CREATE INDEX idx_object_authority_object_id_authority_type ON object_authority (object_id, authority_type)`.execute(db);
+  await sql`CREATE INDEX idx_object_authority_account ON object_authority (account)`.execute(db);
+
+  await sql`
     CREATE TABLE accounts_current (
       name                   TEXT NOT NULL PRIMARY KEY,
       hive_id                INT,
@@ -124,6 +136,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
 export async function down(db: Kysely<unknown>): Promise<void> {
   await sql`DROP TRIGGER IF EXISTS tr_object_updates_search_vector ON object_updates`.execute(db);
   await sql`DROP FUNCTION IF EXISTS object_updates_search_vector_trigger()`.execute(db);
+  await sql`DROP TABLE IF EXISTS object_authority`.execute(db);
   await sql`DROP TABLE IF EXISTS rank_votes`.execute(db);
   await sql`DROP TABLE IF EXISTS validity_votes`.execute(db);
   await sql`DROP TABLE IF EXISTS object_updates`.execute(db);
