@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { UPDATE_REGISTRY, OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core';
-import type { NewObjectUpdate } from '@opden-data-layer/core';
+import type { JsonValue, NewObjectUpdate } from '@opden-data-layer/core';
 import { ObjectsCoreRepository, ObjectUpdatesRepository } from '../../../repositories';
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
 import { updateCreatePayloadSchema } from '../odl-envelope.schema';
+import { WriteGuardRunner } from '../guards';
 
 @Injectable()
 export class UpdateCreateHandler implements OdlActionHandler {
@@ -13,6 +14,7 @@ export class UpdateCreateHandler implements OdlActionHandler {
   constructor(
     private readonly objectUpdatesRepository: ObjectUpdatesRepository,
     private readonly objectsCoreRepository: ObjectsCoreRepository,
+    private readonly writeGuardRunner: WriteGuardRunner,
   ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
@@ -44,6 +46,19 @@ export class UpdateCreateHandler implements OdlActionHandler {
       return;
     }
 
+    const guardRejection = this.writeGuardRunner.check({
+      action: 'update_create',
+      object_type: object.object_type,
+      object_id: object.object_id,
+      object_creator: object.creator,
+      event_creator: ctx.creator,
+      update_type,
+    });
+    if (guardRejection) {
+      this.logger.warn(`update_create rejected by guard: ${guardRejection}`);
+      return;
+    }
+
     const valueField = `value_${definition.value_kind}` as const;
     const rawValue = payload[valueField];
     const valueResult = definition.schema.safeParse(rawValue);
@@ -66,7 +81,7 @@ export class UpdateCreateHandler implements OdlActionHandler {
       transaction_id,
       value_text: definition.value_kind === 'text' ? String(valueResult.data) : null,
       value_geo: definition.value_kind === 'geo' ? valueResult.data : null,
-      value_json: definition.value_kind === 'json' ? (valueResult.data as any) : null,
+      value_json: definition.value_kind === 'json' ? (valueResult.data as JsonValue) : null,
     };
 
     await this.objectUpdatesRepository.create(row);

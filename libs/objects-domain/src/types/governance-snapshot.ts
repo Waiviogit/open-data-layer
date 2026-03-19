@@ -21,6 +21,12 @@ export interface ValidityCutoffEntry {
   timestamp: number;
 }
 
+/** One inherits_from update value (parsed from value_json). */
+export interface InheritsFromEntry {
+  object_id: string;
+  scope: GovernanceScope[];
+}
+
 /**
  * Resolved governance snapshot computed at request time.
  * @see spec/governance-resolution.md §4
@@ -36,6 +42,8 @@ export interface GovernanceSnapshot {
   banned: string[];
   object_control: ObjectControlMode | null;
   muted: string[];
+  /** Direct inherits_from configuration on this object (not merged from parents). */
+  inherits_from: InheritsFromEntry[];
 }
 
 /**
@@ -53,4 +61,5 @@ export const DEFAULT_GOVERNANCE_SNAPSHOT: GovernanceSnapshot = {
   banned: [],
   object_control: null,
   muted: [],
+  inherits_from: [],
 };

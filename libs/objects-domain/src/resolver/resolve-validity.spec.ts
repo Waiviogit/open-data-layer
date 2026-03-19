@@ -29,6 +29,7 @@ const EMPTY_GOVERNANCE: GovernanceSnapshot = {
   banned: [],
   object_control: null,
   muted: [],
+  inherits_from: [],
 };
 
 function makeVote(

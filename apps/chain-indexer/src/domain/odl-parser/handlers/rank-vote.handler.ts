@@ -1,8 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { NewRankVote } from '@opden-data-layer/core';
-import { ObjectUpdatesRepository, RankVotesRepository } from '../../../repositories';
+import {
+  ObjectUpdatesRepository,
+  ObjectsCoreRepository,
+  RankVotesRepository,
+} from '../../../repositories';
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
 import { rankVotePayloadSchema } from '../odl-envelope.schema';
+import { WriteGuardRunner } from '../guards';
 
 @Injectable()
 export class RankVoteHandler implements OdlActionHandler {
@@ -12,6 +17,8 @@ export class RankVoteHandler implements OdlActionHandler {
   constructor(
     private readonly rankVotesRepository: RankVotesRepository,
     private readonly objectUpdatesRepository: ObjectUpdatesRepository,
+    private readonly objectsCoreRepository: ObjectsCoreRepository,
+    private readonly writeGuardRunner: WriteGuardRunner,
   ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
@@ -31,6 +38,24 @@ export class RankVoteHandler implements OdlActionHandler {
         return;
       }
       object_id = update.object_id;
+    }
+
+    const core = await this.objectsCoreRepository.findByObjectId(object_id);
+    if (!core) {
+      this.logger.warn(`rank_vote: object '${object_id}' not found; skipping`);
+      return;
+    }
+
+    const guardRejection = this.writeGuardRunner.check({
+      action: 'rank_vote',
+      object_type: core.object_type,
+      object_id: core.object_id,
+      object_creator: core.creator,
+      event_creator: ctx.creator,
+    });
+    if (guardRejection) {
+      this.logger.warn(`rank_vote rejected by guard: ${guardRejection}`);
+      return;
     }
 
     const row: NewRankVote = {

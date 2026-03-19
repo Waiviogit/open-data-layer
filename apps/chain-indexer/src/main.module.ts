@@ -5,6 +5,7 @@ import { DatabaseModule } from './database';
 import { RepositoriesModule } from './repositories';
 import chainIndexerConfig from './config/chain-indexer.config';
 import { HiveParserModule } from './domain/hive-parser/hive-parser.module';
+import { GovernanceModule } from './domain/governance';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { HiveParserModule } from './domain/hive-parser/hive-parser.module';
     DatabaseModule,
     RepositoriesModule,
     HiveParserModule,
+    GovernanceModule,
   ],
 })
 export class MainModule {}
