@@ -98,7 +98,7 @@ import { UPDATE_OBJECT_CONTROL } from './updates/object-control';
 import { UPDATE_INHERITS_FROM } from './updates/inherits-from';
 import { UPDATE_VALIDITY_CUTOFF } from './updates/validity-cutoff';
 
-export const UPDATE_REGISTRY = {
+export const UPDATE_REGISTRY: UpdateRegistry = {
   [UPDATE_TYPES.NAME]: UPDATE_NAME,
   [UPDATE_TYPES.OPTIONS]: UPDATE_OPTIONS,
   [UPDATE_TYPES.AGE_RANGE]: UPDATE_AGE_RANGE,

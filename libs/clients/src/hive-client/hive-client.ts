@@ -74,6 +74,7 @@ export class HiveClient implements HiveClientInterface {
     } catch (error) {
       this.logger.error(error instanceof Error ? error.message : String(error));
       hasError = true;
+      return undefined;
     } finally {
       clearTimeout(timeoutId);
       const responseTime = Date.now() - start;

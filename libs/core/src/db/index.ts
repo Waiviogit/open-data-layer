@@ -1,4 +1,5 @@
 export type {
+  JsonValue,
   AccountCurrent,
   AccountCurrentUpdate,
   NewAccountCurrent,

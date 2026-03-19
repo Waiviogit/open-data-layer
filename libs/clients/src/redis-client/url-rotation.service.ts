@@ -87,12 +87,12 @@ export class UrlRotationManager {
     }
 
     return {
-      errors: parseInt(stats.errors) || 0,
-      totalRequests: parseInt(stats.totalRequests) || 0,
-      totalResponseTime: parseInt(stats.totalResponseTime) || 0,
-      avgResponseTime: parseFloat(stats.avgResponseTime) || 0,
-      avgErrors: parseFloat(stats.avgErrors) || 0,
-      weight: parseFloat(stats.weight) || 1,
+      errors: parseInt(stats['errors']) || 0,
+      totalRequests: parseInt(stats['totalRequests']) || 0,
+      totalResponseTime: parseInt(stats['totalResponseTime']) || 0,
+      avgResponseTime: parseFloat(stats['avgResponseTime']) || 0,
+      avgErrors: parseFloat(stats['avgErrors']) || 0,
+      weight: parseFloat(stats['weight']) || 1,
     };
   }
 
