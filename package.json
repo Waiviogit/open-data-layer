@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {
     "start:chain-indexer": "pnpm nx serve chain-indexer",
+    "start:query-api": "pnpm nx serve query-api",
     "gen:object-updates": "tsx scripts/gen-object-updates-spec.ts",
     "gen:object-types": "tsx scripts/gen-object-types-spec.ts",
     "migrate": "tsx --env-file=.env libs/migrations/src/cli.ts latest",
@@ -13,12 +14,14 @@
   },
   "private": true,
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^8.4.3",
     "@hiveio/dhive": "^1.3.5",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/schedule": "^6.1.1",
+    "@nestjs/swagger": "^11.2.6",
     "axios": "^1.6.0",
     "class-transformer": "^0.5.1",
     "ioredis": "^5.10.0",
