@@ -18,6 +18,7 @@ export const updateCreatePayloadSchema = z.object({
   update_type: z.string().min(1),
   creator: z.string().min(1).max(32),
   transaction_id: z.string().min(1).max(256),
+  locale: z.string().min(2).max(35).optional(),
 });
 
 export type UpdateCreatePayload = z.infer<typeof updateCreatePayloadSchema>;

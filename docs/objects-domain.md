@@ -9,8 +9,9 @@ Given raw DB rows for a batch of objects (core, updates, votes, authorities) and
 1. Filters banned creators
 2. Computes the curator set `C` per object
 3. Resolves validity for each update using the tiered hierarchy (curator filter → admin LWAW → trusted LWTW → community vote weight → baseline VALID)
-4. Applies single/multi cardinality rules and ranking
-5. Returns a typed `ResolvedObjectView[]` ready for API serialization
+4. Applies **locale preference** on VALID rows per `update_type` (see [Locale filtering](#locale-filtering))
+5. Applies single/multi cardinality rules and ranking
+6. Returns a typed `ResolvedObjectView[]` ready for API serialization
 
 ## Integration in an application
 
@@ -69,9 +70,24 @@ objectViewService.resolve(objects, voterReputations, {
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `update_types` | `string[]` | required | Only these update types are resolved and returned |
-| `locale` | `string` | `'en-US'` | BCP-47 locale for locale-sensitive field handling |
+| `locale` | `string` | `'en-US'` | BCP-47 locale used when choosing among VALID updates (see [Locale filtering](#locale-filtering)) |
 | `governance` | `GovernanceSnapshot` | empty stub | Governance context: admins, trusted, banned, object_control, etc. |
 | `include_rejected` | `boolean` | `false` | When true, REJECTED updates are appended after VALID ones in each field |
+
+## Locale filtering
+
+Resolution uses the optional `locale` column on each `object_updates` row (set at index time via `update_create` payload). It does **not** filter raw rows before validity; votes and curator rules run on the full set first.
+
+For each `(object_id, update_type)` group, after validity is known:
+
+- **Single-cardinality:** Among VALID updates, if any row has `locale === options.locale`, only those rows are considered for the LWW / `event_seq` winner. If none match, all VALID rows are considered (legacy behavior).
+- **Multi-cardinality:** Among VALID updates, the preferred set is rows with `locale === options.locale` **plus** language-neutral rows (`locale` null). Cardinality and ranking run on that set. If the preferred set is empty, fall back to all VALID rows.
+
+If the request locale has no usable VALID updates (e.g. only REJECTED rows in that language), the resolver falls back to other locales so the API still returns a value when one exists.
+
+Each `ResolvedUpdate` echoes `locale` from the winning row for clients.
+
+Pure helper: `filterByLocalePreference` is exported from `@opden-data-layer/objects-domain` for tests and advanced use.
 
 ## Output shape
 
@@ -95,6 +111,7 @@ interface ResolvedUpdate {
   update_id: string;
   update_type: string;
   creator: string;
+  locale: string | null;
   event_seq: bigint;
   value_text: string | null;
   value_json: JsonValue | null;

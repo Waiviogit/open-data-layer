@@ -26,6 +26,7 @@ function makeResolved(
     update_id: id,
     update_type: 'name',
     creator: 'alice',
+    locale: null,
     created_at_unix: 1000,
     event_seq: eventSeq,
     value_text: `value-${id}`,

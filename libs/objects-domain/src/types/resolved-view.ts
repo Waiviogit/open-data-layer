@@ -9,6 +9,8 @@ export interface ResolvedUpdate {
   update_id: string;
   update_type: string;
   creator: string;
+  /** BCP 47 tag from object_updates.locale; null = language-neutral. */
+  locale: string | null;
   created_at_unix: number;
   event_seq: bigint;
   value_text: string | null;

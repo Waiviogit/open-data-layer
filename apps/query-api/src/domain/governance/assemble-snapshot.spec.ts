@@ -6,6 +6,7 @@ function ru(partial: Partial<ResolvedUpdate>): ResolvedUpdate {
     update_id: 'u1',
     update_type: partial.update_type ?? 'admins',
     creator: 'alice',
+    locale: null,
     created_at_unix: 1,
     event_seq: BigInt(1),
     value_text: null,

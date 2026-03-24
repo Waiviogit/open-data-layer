@@ -245,10 +245,11 @@ For each object, using the loaded rows, authority records, voter reputations, an
      2. **Trusted decisive vote** — latest trusted `for`/`against` wins, only on objects the trusted user has authority over (LWTW). Short-circuit.
      3. **Community vote weight** — for each non-admin, non-trusted validity vote, compute `votePower = 1 + log₂(1 + object_reputation)` using the voter's `object_reputation` from `accounts_current`. Sum: `field_weight = Σ (votePower × sign)` where `for → +1`, `against → −1`. If `field_weight < 0` the update is INVALID; if `field_weight >= 0` the update is VALID.
      4. **No votes** — baseline VALID.
-4. Resolve single-cardinality update types (pick one valid value per the update registry).
-5. Resolve multi-cardinality update types and apply ranking.
-6. Apply visibility options (e.g. omit rejected if `includeRejected=false`).
-7. Shape the API response (ResolvedView).
+4. **Locale preference** — Each `object_updates` row may carry an optional BCP-47 `locale` (NULL = language-neutral). For each `update_type` group, among **VALID** updates only: prefer rows whose `locale` equals the request locale. For **multi**-cardinality types, also include language-neutral (`locale` IS NULL) updates in that preferred set. If the preferred set is empty (no VALID rows match), fall back to **all** VALID rows in the group — same winner ordering as before locale was introduced (single: highest `event_seq`; multi: ranking rules).
+5. Resolve single-cardinality update types (pick one valid value per the update registry).
+6. Resolve multi-cardinality update types and apply ranking.
+7. Apply visibility options (e.g. omit rejected if `includeRejected=false`).
+8. Shape the API response (ResolvedView).
 
 See [vote-semantics.md § C](../vote-semantics.md#c-community-vote-weight) for the complete community weight specification.
 

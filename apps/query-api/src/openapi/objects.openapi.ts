@@ -10,6 +10,9 @@ const resolvedUpdateSchema = registry.register(
     update_id: z.string(),
     update_type: z.string(),
     creator: z.string(),
+    locale: z.string().nullable().openapi({
+      description: 'BCP-47 tag from the update row; null means language-neutral.',
+    }),
     created_at_unix: z.number().int(),
     event_seq: z.string().openapi({
       description:

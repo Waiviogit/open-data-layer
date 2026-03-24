@@ -26,6 +26,8 @@ CREATE TABLE object_updates (
   object_id       TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
   update_type     TEXT NOT NULL,
   creator         TEXT NOT NULL,
+  -- BCP 47 language tag, e.g. en-US. Null = language-neutral.
+  locale          TEXT,
   created_at_unix BIGINT NOT NULL,
   -- Packed canonical order: block_num(32)|trx_index(10)|op_index(8)|odl_event_index(8). See event-seq.ts.
   event_seq       BIGINT NOT NULL,

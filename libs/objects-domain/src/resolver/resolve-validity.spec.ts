@@ -8,6 +8,7 @@ const BASE_UPDATE: ObjectUpdate = {
   object_id: 'obj1',
   update_type: 'name',
   creator: 'alice',
+  locale: null,
   created_at_unix: 1000,
   event_seq: BigInt(1),
   transaction_id: 'tx1',

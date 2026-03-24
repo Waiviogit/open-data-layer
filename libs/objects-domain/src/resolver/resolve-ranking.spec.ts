@@ -22,6 +22,7 @@ function makeResolved(id: string, eventSeq = BigInt(1)): ResolvedUpdate {
     update_id: id,
     update_type: 'tag',
     creator: 'alice',
+    locale: null,
     created_at_unix: 1000,
     event_seq: eventSeq,
     value_text: `value-${id}`,

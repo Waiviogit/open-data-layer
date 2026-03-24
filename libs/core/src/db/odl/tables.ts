@@ -54,6 +54,8 @@ export interface ObjectUpdatesTable {
   object_id: string;
   update_type: string;
   creator: string;
+  /** BCP 47 tag, e.g. en-US. Null = language-neutral. */
+  locale: string | null;
   created_at_unix: number;
   /** Packed canonical order: block_num|trx_index|op_index|odl_event_index. See event-seq.ts. */
   event_seq: bigint;

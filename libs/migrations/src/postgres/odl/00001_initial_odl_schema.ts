@@ -30,6 +30,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       object_id       TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
       update_type     TEXT NOT NULL,
       creator         TEXT NOT NULL,
+      locale          TEXT,
       created_at_unix BIGINT NOT NULL,
       event_seq       BIGINT NOT NULL,
       transaction_id  TEXT NOT NULL,
