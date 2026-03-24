@@ -10,7 +10,8 @@
     "migrate": "tsx --env-file=.env libs/migrations/src/cli.ts latest",
     "migrate:latest": "tsx --env-file=.env libs/migrations/src/cli.ts latest",
     "migrate:down": "tsx --env-file=.env libs/migrations/src/cli.ts down",
-    "migrate:status": "tsx --env-file=.env libs/migrations/src/cli.ts status"
+    "migrate:status": "tsx --env-file=.env libs/migrations/src/cli.ts status",
+    "migrate:mongo": "tsx --env-file=.env scripts/migrate-mongo-to-pg/index.ts"
   },
   "private": true,
   "dependencies": {
@@ -29,6 +30,7 @@
     "pg": "^8.20.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
+    "stream-json": "^2.0.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -50,6 +52,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "20.19.9",
     "@types/pg": "^8.18.0",
+    "@types/stream-json": "^1.7.8",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
     "jest": "^30.0.2",

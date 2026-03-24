@@ -53,6 +53,9 @@ importers:
       rxjs:
         specifier: ^7.8.0
         version: 7.8.1
+      stream-json:
+        specifier: ^2.0.0
+        version: 2.0.0
       zod:
         specifier: ^4.3.6
         version: 4.3.6
@@ -111,6 +114,9 @@ importers:
       '@types/pg':
         specifier: ^8.18.0
         version: 8.18.0
+      '@types/stream-json':
+        specifier: ^1.7.8
+        version: 1.7.8
       eslint:
         specifier: ^9.8.0
         version: 9.39.3
@@ -2062,6 +2068,12 @@ packages:
 
   '@types/stack-utils@2.0.3':
     resolution: {integrity: sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==}
+
+  '@types/stream-chain@2.1.0':
+    resolution: {integrity: sha512-guDyAl6s/CAzXUOWpGK2bHvdiopLIwpGu8v10+lb9hnQOyo4oj/ZUQFOvqFjKGsE3wJP1fpIesCcMvbXuWsqOg==}
+
+  '@types/stream-json@1.7.8':
+    resolution: {integrity: sha512-MU1OB1eFLcYWd1LjwKXrxdoPtXSRzRmAnnxs4Js/ayB5O/NvHraWwuOaqMWIebpYwM6khFlsJOHEhI9xK/ab4Q==}
 
   '@types/ws@8.18.1':
     resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
@@ -5457,6 +5469,12 @@ packages:
     resolution: {integrity: sha512-DvEy55V3DB7uknRo+4iOGT5fP1slR8wQohVdknigZPMpMstaKJQWhwiYBACJE3Ul2pTnATihhBYnRhZQHGBiRw==}
     engines: {node: '>= 0.8'}
 
+  stream-chain@3.5.1:
+    resolution: {integrity: sha512-yaex4P/giOUHv5c3Mq2KXLta6P/eDgWGzamdwa5oIsohjFi6z/CmXBr5Fdu+KB6ipoFZ1QkGGw7wqpFnn6ljlA==}
+
+  stream-json@2.0.0:
+    resolution: {integrity: sha512-Yvp7K6a1A0dsEnM1CvbdanKaEdTMwF31H6dxjvHpBz7/FbwH4SBQWUGzk6x/tTvBTBxz0w3Xsel8KRndFaoEJA==}
+
   streamsearch@1.1.0:
     resolution: {integrity: sha512-Mcc5wHehp9aXz1ax6bZUyY5afg9u2rv5cqQI3mRrYkGC8rW2hM02jWuwjtL++LS5qinSyhj2QfLyNsuc+VsExg==}
     engines: {node: '>=10.0.0'}
@@ -8340,6 +8358,15 @@ snapshots:
       '@types/node': 20.19.9
 
   '@types/stack-utils@2.0.3': {}
+
+  '@types/stream-chain@2.1.0':
+    dependencies:
+      '@types/node': 20.19.9
+
+  '@types/stream-json@1.7.8':
+    dependencies:
+      '@types/node': 20.19.9
+      '@types/stream-chain': 2.1.0
 
   '@types/ws@8.18.1':
     dependencies:
@@ -12076,6 +12103,12 @@ snapshots:
   statuses@1.5.0: {}
 
   statuses@2.0.2: {}
+
+  stream-chain@3.5.1: {}
+
+  stream-json@2.0.0:
+    dependencies:
+      stream-chain: 3.5.1
 
   streamsearch@1.1.0: {}
 
