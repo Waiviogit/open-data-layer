@@ -9,6 +9,6 @@ export const UPDATE_PUBLISHER: UpdateDefinition = {
   cardinality: 'single',
   schema: z.object({
     name: z.string().min(1),
-    author_permlink: z.string().optional(),
+    object_id: z.string().optional(),
   }),
 };

@@ -31,6 +31,9 @@ export interface MongoWObjectField {
   id?: string;
   active_votes?: MongoActiveVote[];
   _id?: MongoId;
+  /** Legacy promotion/sale window (often ms since epoch). */
+  startDate?: number;
+  endDate?: number;
 }
 
 export interface MongoWObject {

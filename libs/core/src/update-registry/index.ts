@@ -86,7 +86,7 @@ export { UPDATE_NEWS_FILTER } from './updates/news-filter';
 export { UPDATE_WORK_TIME } from './updates/work-time';
 export { UPDATE_BUTTON } from './updates/button';
 export { UPDATE_PHONE } from './updates/phone';
-export { UPDATE_LINK } from './updates/link';
+export { LINK_TYPES, type LinkType, UPDATE_LINK } from './updates/link';
 export { UPDATE_EMAIL } from './updates/email';
 export { UPDATE_CHART_ID } from './updates/chartid';
 export { UPDATE_PAGE_CONTENT } from './updates/page-content';

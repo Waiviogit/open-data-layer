@@ -27,7 +27,11 @@ import {
 } from './field-name-map';
 import type { MongoWObject, MongoWObjectField } from './types';
 import { createdAtUnixFromObjectId, mongoIdToString } from './utils';
-import { transformJsonBody } from './value-strategies';
+import {
+  transformJsonBody,
+  transformJsonBodyMulti,
+  transformPromotionSaleFromField,
+} from './value-strategies';
 
 const BATCH_SIZE = 500;
 const LEGACY_EVENT_SEQ = BigInt(0);
@@ -367,12 +371,56 @@ class MongoToPgMigrator {
       }
       value_geo = sql`ST_GeogFromGeoJSON(${parsed.geoJsonText})`;
     } else {
-      const jsonResult = transformJsonBody(legacyName, updateType, field.body ?? '');
-      if (!jsonResult.ok) {
-        this.stats.fieldsSkippedBadPayload += 1;
-        return;
+      const promoSale = transformPromotionSaleFromField(updateType, field);
+      if (promoSale !== null) {
+        if (!promoSale.ok) {
+          this.stats.fieldsSkippedBadPayload += 1;
+          return;
+        }
+        value_json = promoSale.value;
+      } else {
+        const multi = transformJsonBodyMulti(
+          legacyName,
+          updateType,
+          field.body ?? '',
+        );
+        if (multi !== null) {
+          if (!multi.ok) {
+            this.stats.fieldsSkippedBadPayload += 1;
+            return;
+          }
+          for (const { suffix, value } of multi.values) {
+            this.pushUpdate({
+              update_id: fieldId + suffix,
+              object_id: objectId,
+              update_type: updateType,
+              creator: fieldCreator,
+              locale,
+              created_at_unix: createdAt,
+              event_seq: LEGACY_EVENT_SEQ,
+              transaction_id: fieldTxId,
+              value_text: null,
+              value_json: value,
+              value_geo: null,
+            });
+            this.processVotesForField(
+              objectId,
+              fieldId + suffix,
+              fieldAuthor,
+              permlink,
+              field.active_votes,
+            );
+          }
+          return;
+        }
+
+        const jsonResult = transformJsonBody(legacyName, updateType, field.body ?? '');
+        if (!jsonResult.ok) {
+          this.stats.fieldsSkippedBadPayload += 1;
+          return;
+        }
+        value_json = jsonResult.value;
       }
-      value_json = jsonResult.value;
     }
 
     this.pushUpdate({

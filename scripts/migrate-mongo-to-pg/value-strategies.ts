@@ -1,9 +1,33 @@
+import type { MongoWObjectField } from './types';
 import type { JsonValue } from './utils';
 import { keysCamelToSnake } from './utils';
 
 export type JsonTransformResult =
   | { ok: true; value: JsonValue }
   | { ok: false; reason: string };
+
+/** One Mongo JSON field → N `object_updates` rows (e.g. legacy `link`). */
+export type JsonTransformMultiResult =
+  | { ok: true; values: { suffix: string; value: JsonValue }[] }
+  | { ok: false; reason: string };
+
+/** Legacy Mongo social keys → ODL `link.type` (migration-only). */
+const LEGACY_LINK_KEY_MAP: Record<string, string> = {
+  linkFacebook: 'facebook',
+  linkTwitter: 'twitter',
+  linkYouTube: 'youtube',
+  linkTikTok: 'tiktok',
+  linkReddit: 'reddit',
+  linkLinkedIn: 'linkedin',
+  linkTelegram: 'telegram',
+  linkWhatsApp: 'whatsapp',
+  linkPinterest: 'pinterest',
+  linkTwitch: 'twitch',
+  linkSnapchat: 'snapchat',
+  linkInstagram: 'instagram',
+  linkGitHub: 'github',
+  linkHive: 'hive',
+};
 
 export interface JsonValueStrategy {
   supports(legacyFieldName: string, updateType: string): boolean;
@@ -206,6 +230,78 @@ export const addressStrategy: JsonValueStrategy = {
   },
 };
 
+/** Legacy `{ name, author_permlink }` -> ODL `{ name, object_id? }` (authors, brand, …). */
+function legacyNameAuthorPermlinkToObjectIdJson(
+  rawBody: string,
+  label: string,
+): JsonTransformResult {
+  const parsed = parseJson(rawBody);
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return { ok: false, reason: `${label}: body is not a JSON object` };
+  }
+  const o = parsed as Record<string, unknown>;
+  const name = trimStr(o.name);
+  if (!name.length) {
+    return { ok: false, reason: `${label}: missing or empty name` };
+  }
+  const objectId = trimStr(o.author_permlink);
+  const out: Record<string, JsonValue> = { name };
+  if (objectId.length > 0) {
+    out.object_id = objectId;
+  }
+  return { ok: true, value: out as JsonValue };
+}
+
+export const authorsStrategy: JsonValueStrategy = {
+  supports(_legacyFieldName: string, updateType: string): boolean {
+    void _legacyFieldName;
+    return updateType === 'authors';
+  },
+  transform(rawBody: string): JsonTransformResult {
+    return legacyNameAuthorPermlinkToObjectIdJson(rawBody, 'authors');
+  },
+};
+
+export const brandStrategy: JsonValueStrategy = {
+  supports(_legacyFieldName: string, updateType: string): boolean {
+    void _legacyFieldName;
+    return updateType === 'brand';
+  },
+  transform(rawBody: string): JsonTransformResult {
+    return legacyNameAuthorPermlinkToObjectIdJson(rawBody, 'brand');
+  },
+};
+
+export const manufacturerStrategy: JsonValueStrategy = {
+  supports(_legacyFieldName: string, updateType: string): boolean {
+    void _legacyFieldName;
+    return updateType === 'manufacturer';
+  },
+  transform(rawBody: string): JsonTransformResult {
+    return legacyNameAuthorPermlinkToObjectIdJson(rawBody, 'manufacturer');
+  },
+};
+
+export const merchantStrategy: JsonValueStrategy = {
+  supports(_legacyFieldName: string, updateType: string): boolean {
+    void _legacyFieldName;
+    return updateType === 'merchant';
+  },
+  transform(rawBody: string): JsonTransformResult {
+    return legacyNameAuthorPermlinkToObjectIdJson(rawBody, 'merchant');
+  },
+};
+
+export const publisherStrategy: JsonValueStrategy = {
+  supports(_legacyFieldName: string, updateType: string): boolean {
+    void _legacyFieldName;
+    return updateType === 'publisher';
+  },
+  transform(rawBody: string): JsonTransformResult {
+    return legacyNameAuthorPermlinkToObjectIdJson(rawBody, 'publisher');
+  },
+};
+
 /** Legacy companyId / productId -> ODL identifier `{ value, type, image? }`. */
 export const identifierStrategy: JsonValueStrategy = {
   supports(legacyFieldName: string, updateType: string): boolean {
@@ -267,8 +363,102 @@ export const defaultJsonStrategy: JsonValueStrategy = {
 const STRATEGIES_ORDERED: JsonValueStrategy[] = [
   identifierStrategy,
   addressStrategy,
+  authorsStrategy,
+  brandStrategy,
+  manufacturerStrategy,
+  merchantStrategy,
+  publisherStrategy,
   defaultJsonStrategy,
 ];
+
+function transformLinkLegacyBody(rawBody: string): JsonTransformMultiResult {
+  const parsed = parseJson(rawBody);
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return { ok: false, reason: 'link: body is not a JSON object' };
+  }
+  const values: { suffix: string; value: JsonValue }[] = [];
+  for (const [key, raw] of Object.entries(
+    parsed as Record<string, unknown>,
+  )) {
+    const linkType = LEGACY_LINK_KEY_MAP[key];
+    if (linkType === undefined) {
+      continue;
+    }
+    const val = typeof raw === 'string' ? raw.trim() : '';
+    if (!val.length) {
+      continue;
+    }
+    values.push({
+      suffix: `_${linkType}`,
+      value: { type: linkType, value: val } as JsonValue,
+    });
+  }
+  if (values.length === 0) {
+    return { ok: false, reason: 'link: no known non-empty link keys' };
+  }
+  return { ok: true, values };
+}
+
+/**
+ * Returns a multi-row transform for legacy fields that expand to several updates.
+ * `null` means use the single-value {@link transformJsonBody} path.
+ */
+export function transformJsonBodyMulti(
+  legacyFieldName: string,
+  updateType: string,
+  rawBody: string,
+): JsonTransformMultiResult | null {
+  void legacyFieldName;
+  if (updateType !== 'link') {
+    return null;
+  }
+  return transformLinkLegacyBody(rawBody);
+}
+
+/** Legacy epoch on field: ms (>1e12) → seconds for ODL `start_date` / `end_date`. */
+function normalizeLegacyEpoch(n: number): number {
+  const t = Math.trunc(n);
+  if (!Number.isFinite(t) || t <= 0) {
+    return t;
+  }
+  if (t > 1_000_000_000_000) {
+    return Math.trunc(t / 1000);
+  }
+  return t;
+}
+
+/**
+ * Legacy `promotion` / `sale`: `value` from `field.body`, dates from `field.startDate` / `field.endDate`.
+ * Returns `null` for other update types (caller uses {@link transformJsonBody}).
+ */
+export function transformPromotionSaleFromField(
+  updateType: string,
+  field: MongoWObjectField,
+): JsonTransformResult | null {
+  if (updateType !== 'promotion' && updateType !== 'sale') {
+    return null;
+  }
+  const value = typeof field.body === 'string' ? field.body.trim() : '';
+  if (!value.length) {
+    return { ok: false, reason: `${updateType}: empty body` };
+  }
+  const out: Record<string, JsonValue> = { value };
+  const start = field.startDate;
+  const end = field.endDate;
+  if (typeof start === 'number' && Number.isFinite(start)) {
+    const sd = normalizeLegacyEpoch(start);
+    if (sd > 0) {
+      out.start_date = sd;
+    }
+  }
+  if (typeof end === 'number' && Number.isFinite(end)) {
+    const ed = normalizeLegacyEpoch(end);
+    if (ed > 0) {
+      out.end_date = ed;
+    }
+  }
+  return { ok: true, value: out as JsonValue };
+}
 
 export function transformJsonBody(
   legacyFieldName: string,
