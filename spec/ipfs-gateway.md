@@ -104,6 +104,24 @@ flowchart TD
   end
 ```
 
-## 8) Informative: relation to overflow storage
+## 8) Caching guidance
+
+CID-addressed content is **immutable** by definition (the same CID always resolves to the same bytes). The `GET /files/{cid}` endpoint should return aggressive cache headers:
+
+```
+Cache-Control: public, max-age=31536000, immutable
+```
+
+This applies **only** to `GET /files/{cid}`. Other endpoints must not be cached long-term:
+
+| Endpoint | Caching | Reason |
+|----------|---------|--------|
+| `GET /files/{cid}` | `public, max-age=31536000, immutable` | CID = content hash; content never changes |
+| `GET /namespaces/{ns}/cid` | `no-cache` or short `max-age` | Directory CID changes on every new upload |
+| `POST /upload/*` | Not cacheable | Mutating requests |
+
+When deploying behind a CDN (Cloudflare, Nginx, etc.), point `IPFS_GATEWAY_URL` at the CDN domain so upload responses return CDN-accelerated URLs directly (e.g. `https://cdn.example.com/ipfs/{cid}`).
+
+## 9) Informative: relation to overflow storage
 
 The indexer and overflow pipeline may reference IPFS CIDs for large payloads. This gateway is the **operational** ingress and coordination layer for **images and JSON** namespaces used by the platform; the exact linkage to Hive/overflow events is defined in [storage](storage.md) and [overflow-strategy](overflow-strategy.md).

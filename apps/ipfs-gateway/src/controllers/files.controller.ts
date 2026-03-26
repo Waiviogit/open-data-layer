@@ -23,6 +23,7 @@ export class FilesController {
     }
     const stream = await this.gatewayRead.readFile(cid.trim());
     res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     return new StreamableFile(stream);
   }
 }

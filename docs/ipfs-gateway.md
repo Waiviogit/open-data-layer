@@ -75,6 +75,14 @@ If `IPFS_PEER_URLS` is empty, pin sync and read fallback to peers are **disabled
 | `pnpm nx build ipfs-gateway` | Production webpack build |
 | `pnpm nx lint ipfs-gateway` | ESLint |
 
+## CDN / caching
+
+CID-addressed content is immutable -- the same CID always returns the same bytes. When deploying behind a CDN or reverse proxy:
+
+- Set `Cache-Control: public, max-age=31536000, immutable` on `GET /files/{cid}` responses.
+- Do **not** cache `GET /namespaces/{ns}/cid` (directory CID changes on each upload).
+- Point `IPFS_GATEWAY_URL` at the CDN domain so upload responses return CDN URLs directly.
+
 ## Normative specification
 
 See [spec/ipfs-gateway.md](../spec/ipfs-gateway.md) for MFS namespaces, peer sync, read fallback, and API summary.
