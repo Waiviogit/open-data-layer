@@ -37,5 +37,13 @@ export default () => {
           ? CUSTOM_JSON_ID.ODL_TESTNET
           : CUSTOM_JSON_ID.ODL_MAINNET,
     },
+    ipfs: {
+      apiUrl: env.IPFS_API_URL,
+      gatewayUrl: env.IPFS_GATEWAY_URL,
+    },
+    batchImport: {
+      maxRetries: env.BATCH_IMPORT_MAX_RETRIES,
+      retryDelayMs: env.BATCH_IMPORT_RETRY_DELAY_MS,
+    },
   };
 };

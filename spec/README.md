@@ -73,6 +73,7 @@ Details: [architecture.md](architecture.md).
 |-----|-------------|
 | [storage.md](storage.md) | Primary write path (Hive), overflow (IPFS), required datasets |
 | [overflow-strategy.md](overflow-strategy.md) | When to use Hive vs IPFS; triggers, lifecycle, Arweave deferred |
+| [ipfs-gateway.md](ipfs-gateway.md) | IPFS Gateway: MFS namespaces, peer sync, read fallback |
 
 ### Architecture decisions
 

@@ -5,6 +5,7 @@
   "scripts": {
     "start:chain-indexer": "pnpm nx serve chain-indexer",
     "start:query-api": "pnpm nx serve query-api",
+    "start:ipfs-gateway": "pnpm nx serve ipfs-gateway",
     "gen:object-updates": "tsx scripts/gen-object-updates-spec.ts",
     "gen:object-types": "tsx scripts/gen-object-types-spec.ts",
     "migrate": "tsx --env-file=.env libs/migrations/src/cli.ts latest",
@@ -20,6 +21,7 @@
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.0",
+    "@nestjs/event-emitter": "^3.0.1",
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/schedule": "^6.1.1",
     "@nestjs/swagger": "^11.2.6",
@@ -30,6 +32,8 @@
     "pg": "^8.20.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
+    "sharp": "^0.34.5",
+    "stream-chain": "^3.6.0",
     "stream-json": "^2.0.0",
     "zod": "^4.3.6"
   },
@@ -49,6 +53,7 @@
     "@swc-node/register": "~1.11.1",
     "@swc/core": "~1.15.5",
     "@swc/helpers": "~0.5.18",
+    "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/node": "20.19.9",
     "@types/pg": "^8.18.0",

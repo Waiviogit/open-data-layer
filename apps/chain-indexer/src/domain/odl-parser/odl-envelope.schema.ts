@@ -53,12 +53,26 @@ export const authorityPayloadSchema = z.object({
 
 export type AuthorityPayload = z.infer<typeof authorityPayloadSchema>;
 
+export const batchImportPayloadSchema = z.object({
+  type: z.literal('ipfs'),
+  ref: z.string().min(1),
+});
+
+export type BatchImportPayload = z.infer<typeof batchImportPayloadSchema>;
+
 // ---------------------------------------------------------------------------
 // Envelope schema
 // ---------------------------------------------------------------------------
 
 const odlEventSchema = z.object({
-  action: z.enum(['object_create', 'update_create', 'update_vote', 'rank_vote', 'object_authority']),
+  action: z.enum([
+    'object_create',
+    'update_create',
+    'update_vote',
+    'rank_vote',
+    'object_authority',
+    'batch_import',
+  ]),
   v: z.number().int().min(1),
   payload: z.record(z.string(), z.unknown()),
 });
@@ -69,3 +83,6 @@ export const odlEnvelopeSchema = z.object({
 
 export type OdlEnvelope = z.infer<typeof odlEnvelopeSchema>;
 export type OdlEvent = z.infer<typeof odlEventSchema>;
+
+/** Single event shape for IPFS batch files (same as on-chain envelope events). */
+export const odlEnvelopeEventSchema = odlEventSchema;

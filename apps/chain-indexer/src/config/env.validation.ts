@@ -16,6 +16,10 @@ export const chainIndexerConfigSchema = z.object({
   HIVE_MAX_RESPONSE_TIME_MS: z.coerce.number().optional(),
   HIVE_URL_ROTATION_DB: z.coerce.number().optional(),
   ODL_NETWORK: z.enum(['mainnet', 'testnet']).optional().default('mainnet'),
+  IPFS_API_URL: z.string().url().optional().default('http://localhost:5001'),
+  IPFS_GATEWAY_URL: z.string().url().optional(),
+  BATCH_IMPORT_MAX_RETRIES: z.coerce.number().optional().default(3),
+  BATCH_IMPORT_RETRY_DELAY_MS: z.coerce.number().optional().default(1000),
 });
 
 export type ChainIndexerConfig = z.infer<typeof chainIndexerConfigSchema>;

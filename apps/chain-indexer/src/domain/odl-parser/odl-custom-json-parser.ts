@@ -8,6 +8,7 @@ import { UpdateCreateHandler } from './handlers/update-create.handler';
 import { UpdateVoteHandler } from './handlers/update-vote.handler';
 import { RankVoteHandler } from './handlers/rank-vote.handler';
 import { AuthorityHandler } from './handlers/authority.handler';
+import { BatchImportHandler } from './handlers/batch-import.handler';
 
 @Injectable()
 export class OdlCustomJsonParser {
@@ -20,6 +21,7 @@ export class OdlCustomJsonParser {
     private readonly updateVoteHandler: UpdateVoteHandler,
     private readonly rankVoteHandler: RankVoteHandler,
     private readonly authorityHandler: AuthorityHandler,
+    private readonly batchImportHandler: BatchImportHandler,
   ) {
     this.handlerMap = {
       [this.objectCreateHandler.action]: this.objectCreateHandler,
@@ -27,6 +29,7 @@ export class OdlCustomJsonParser {
       [this.updateVoteHandler.action]: this.updateVoteHandler,
       [this.rankVoteHandler.action]: this.rankVoteHandler,
       [this.authorityHandler.action]: this.authorityHandler,
+      [this.batchImportHandler.action]: this.batchImportHandler,
     };
   }
 

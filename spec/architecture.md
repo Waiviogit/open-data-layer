@@ -165,3 +165,16 @@ Governance must be applied before final winner selection.
 
 - Gateway must emit per-token usage metrics suitable for billing-grade aggregation.
 - Dashboard/Billing must support plan-level usage visibility (requests, quota usage, throttling events).
+
+## 11) IPFS Gateway Service
+
+The monorepo includes a deployable **ipfs-gateway** application (`apps/ipfs-gateway`): a NestJS HTTP layer in front of a Kubo node. It is **not** the same as the API Gateway/Rate-Limit Service in sections 5–6; it is a **specialized** gateway for IPFS uploads, MFS-backed namespaces (`/images`, `/json`), optional peer pin-sync, and read fallback to peer gateways.
+
+**Responsibilities (informative):**
+
+- Accept controlled uploads (WebP images, JSON), pin content, and mirror entries into Kubo MFS for namespace directory CIDs.
+- Expose `GET /namespaces/{namespace}/cid` so replica nodes can discover directory roots for recursive `pin/add`.
+- Optionally poll peer gateways and align local pins when `IPFS_PEER_URLS` is configured.
+- Stream `GET /files/{cid}` from local Kubo first, then from peers if local read fails.
+
+Full specification: [ipfs-gateway.md](ipfs-gateway.md).

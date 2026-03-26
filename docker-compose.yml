@@ -17,6 +17,17 @@ services:
       - redis_data:/data
     restart: unless-stopped
 
+  ipfs:
+    image: ipfs/kubo:latest
+    ports:
+      - "${IPFS_API_PORT:-5001}:5001"
+      - "${IPFS_GATEWAY_PORT:-8080}:8080"
+    volumes:
+      - ipfs_data:/data/ipfs
+    environment:
+      - IPFS_PROFILE=server
+    restart: unless-stopped
+
   chain-indexer:
     build:
       context: .
@@ -26,6 +37,21 @@ services:
     depends_on:
       - postgres
       - redis
+      - ipfs
+    restart: unless-stopped
+
+  ipfs-gateway:
+    build:
+      context: .
+      dockerfile: apps/ipfs-gateway/Dockerfile
+    ports:
+      - "${IPFS_GATEWAY_APP_PORT:-3001}:3001"
+    environment:
+      PORT: "3001"
+    env_file:
+      - .env
+    depends_on:
+      - ipfs
     restart: unless-stopped
 
   query-api:
@@ -43,3 +69,4 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  ipfs_data:

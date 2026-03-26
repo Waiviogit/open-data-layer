@@ -1,6 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { HIVE_RPC_NODES, HiveClientModule, RedisClientModule } from '@opden-data-layer/clients';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import {
+  HIVE_RPC_NODES,
+  HiveClientModule,
+  IpfsClientModule,
+  RedisClientModule,
+} from '@opden-data-layer/clients';
 import { DatabaseModule } from './database';
 import { RepositoriesModule } from './repositories';
 import chainIndexerConfig from './config/chain-indexer.config';
@@ -12,6 +18,15 @@ import { GovernanceModule } from './domain/governance';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [chainIndexerConfig],
+    }),
+    EventEmitterModule.forRoot(),
+    IpfsClientModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
+        apiUrl: config.get<string>('ipfs.apiUrl', 'http://localhost:5001'),
+        gatewayUrl: config.get<string | undefined>('ipfs.gatewayUrl'),
+      }),
+      inject: [ConfigService],
     }),
     RedisClientModule.forRootAsync({
       imports: [ConfigModule],

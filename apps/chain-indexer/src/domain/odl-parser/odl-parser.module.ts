@@ -5,6 +5,8 @@ import { UpdateCreateHandler } from './handlers/update-create.handler';
 import { UpdateVoteHandler } from './handlers/update-vote.handler';
 import { RankVoteHandler } from './handlers/rank-vote.handler';
 import { AuthorityHandler } from './handlers/authority.handler';
+import { BatchImportHandler } from './handlers/batch-import.handler';
+import { BatchImportWorker } from './batch-import.worker';
 import { OdlCustomJsonParser } from './odl-custom-json-parser';
 import {
   GovernanceWriteGuard,
@@ -27,6 +29,8 @@ import {
     UpdateVoteHandler,
     RankVoteHandler,
     AuthorityHandler,
+    BatchImportHandler,
+    BatchImportWorker,
     OdlCustomJsonParser,
   ],
   exports: [OdlCustomJsonParser],
