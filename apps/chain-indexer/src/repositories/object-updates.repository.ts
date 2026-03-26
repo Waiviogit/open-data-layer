@@ -1,5 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import type { Kysely } from 'kysely';
+import { sql } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
 import type {
@@ -75,6 +76,58 @@ export class ObjectUpdatesRepository {
       .set(updateWith)
       .where('update_id', '=', updateId)
       .execute();
+  }
+
+  /**
+   * True if this object already has an update with the same type and payload
+   * in the column implied by value_kind (value_text | value_geo | value_json).
+   */
+  async existsByObjectAndValue(
+    objectId: string,
+    updateType: string,
+    valueKind: 'text' | 'geo' | 'json',
+    value: unknown,
+  ): Promise<boolean> {
+    let query = this.db
+      .selectFrom('object_updates')
+      .select('update_id')
+      .where('object_id', '=', objectId)
+      .where('update_type', '=', updateType);
+
+    if (valueKind === 'text') {
+      query = query.where('value_text', '=', String(value));
+    } else if (valueKind === 'json') {
+      query = query.where(
+        sql<boolean>`value_json = ${JSON.stringify(value)}::jsonb`,
+      );
+    } else {
+      query = query.where(
+        sql<boolean>`ST_Equals(
+          value_geo::geometry,
+          ST_GeogFromGeoJSON(${JSON.stringify(value)}::json)::geometry
+        )`,
+      );
+    }
+
+    const row = await query.executeTakeFirst();
+    return row !== undefined;
+  }
+
+  /**
+   * True if any row has identifier update_type with the same value + type keys.
+   */
+  async existsIdentifierByValueAndType(
+    identifierValue: string,
+    identifierType: string,
+  ): Promise<boolean> {
+    const row = await this.db
+      .selectFrom('object_updates')
+      .select('update_id')
+      .where('update_type', '=', 'identifier')
+      .where(sql<boolean>`value_json->>'value' = ${identifierValue}`)
+      .where(sql<boolean>`value_json->>'type' = ${identifierType}`)
+      .executeTakeFirst();
+    return row !== undefined;
   }
 
   async create(row: NewObjectUpdate) {

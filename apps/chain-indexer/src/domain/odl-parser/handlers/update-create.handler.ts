@@ -1,5 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { UPDATE_REGISTRY, OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core';
+import {
+  OBJECT_TYPE_REGISTRY,
+  UPDATE_REGISTRY,
+  UPDATE_TYPES,
+} from '@opden-data-layer/core';
 import type { JsonValue, NewObjectUpdate } from '@opden-data-layer/core';
 import { ObjectsCoreRepository, ObjectUpdatesRepository } from '../../../repositories';
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
@@ -84,6 +88,34 @@ export class UpdateCreateHandler implements OdlActionHandler {
       value_geo: definition.value_kind === 'geo' ? valueResult.data : null,
       value_json: definition.value_kind === 'json' ? (valueResult.data as JsonValue) : null,
     };
+
+    const duplicate = await this.objectUpdatesRepository.existsByObjectAndValue(
+      object_id,
+      update_type,
+      definition.value_kind,
+      valueResult.data,
+    );
+    if (duplicate) {
+      this.logger.warn(
+        `update_create: duplicate value for '${update_type}' on '${object_id}'; skipping`,
+      );
+      return;
+    }
+
+    if (update_type === UPDATE_TYPES.IDENTIFIER) {
+      const parsed = valueResult.data as { value: string; type: string };
+      const identifierExists =
+        await this.objectUpdatesRepository.existsIdentifierByValueAndType(
+          parsed.value,
+          parsed.type,
+        );
+      if (identifierExists) {
+        this.logger.warn(
+          `update_create: identifier '${parsed.type}:${parsed.value}' already exists globally; skipping`,
+        );
+        return;
+      }
+    }
 
     await this.objectUpdatesRepository.create(row);
   }
