@@ -17,6 +17,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       transaction_id TEXT NOT NULL,
       weight      DOUBLE PRECISION,
       meta_group_id TEXT,
+      canonical   TEXT,
       seq         BIGINT NOT NULL DEFAULT 0
     )
   `.execute(db);

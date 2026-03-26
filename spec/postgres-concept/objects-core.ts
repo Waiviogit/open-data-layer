@@ -11,5 +11,7 @@ export interface ObjectCoreRow {
   creator: string;
   weight: number | null;
   meta_group_id: string | null;
+  /** Normalized display name for search/sort; null if unset. */
+  canonical: string | null;
   seq: number;
 }

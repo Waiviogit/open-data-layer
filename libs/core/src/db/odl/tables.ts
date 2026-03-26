@@ -36,6 +36,8 @@ export interface ObjectsCoreTable {
   creator: string;
   weight: number | null;
   meta_group_id: string | null;
+  /** Normalized display name for search/sort; null if unset. */
+  canonical: string | null;
   transaction_id: string;
   /** DEFAULT 0; optional on insert. */
   seq: ColumnType<number, number | undefined, number>;

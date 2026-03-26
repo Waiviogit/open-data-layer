@@ -12,6 +12,7 @@ CREATE TABLE objects_core (
   creator     TEXT NOT NULL,
   weight      DOUBLE PRECISION,
   meta_group_id TEXT,
+  canonical   TEXT,
   seq         BIGINT NOT NULL DEFAULT 0
 );
 
