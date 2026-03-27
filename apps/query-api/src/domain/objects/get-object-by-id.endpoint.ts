@@ -26,8 +26,13 @@ export class GetObjectByIdEndpoint {
       return null;
     }
 
+    const updateTypes =
+      input.updateTypes.length > 0
+        ? input.updateTypes
+        : [...new Set(agg.updates.map((u) => u.update_type))];
+
     const views = this.objectViewService.resolve(objects, voterReputations, {
-      update_types: input.updateTypes,
+      update_types: updateTypes,
       locale: input.locale,
       include_rejected: input.includeRejected ?? false,
     });

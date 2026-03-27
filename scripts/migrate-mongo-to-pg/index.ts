@@ -1,11 +1,17 @@
 /**
  * Stream MongoDB wobject JSON array export into ODL Postgres tables.
- * Usage: pnpm migrate:mongo <path-to.json>
+ * Usage: pnpm migrate:mongo <path-to.json> [--skip-indexes]
  * Requires DATABASE_URL (e.g. via .env with tsx --env-file).
+ *
+ * --skip-indexes  Drop object_updates indexes and trigger before bulk insert,
+ *                 recreate them after. Dramatically faster for large files
+ *                 (avoids incremental index maintenance on every row).
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { pipeline as streamPipeline } from 'node:stream/promises';
+import { Writable } from 'node:stream';
 
 import type {
   NewObjectAuthority,
@@ -33,7 +39,7 @@ import {
   transformPromotionSaleFromField,
 } from './value-strategies';
 
-const BATCH_SIZE = 500;
+const BATCH_SIZE = 5000;
 const LEGACY_EVENT_SEQ = BigInt(0);
 
 const AUTHORITY_TYPES = new Set<string>(['ownership', 'administrative']);
@@ -134,7 +140,7 @@ function buildVoteLegacyTransactionId(
 }
 
 class MongoToPgMigrator {
-  private readonly db: Kysely<OdlDatabase>;
+  readonly db: Kysely<OdlDatabase>;
 
   private coreBuffer: NewObjectsCore[] = [];
 
@@ -192,9 +198,20 @@ class MongoToPgMigrator {
     }
     const chunk = this.updateBuffer;
     this.updateBuffer = [];
+    // node-postgres does not JSON.stringify JS strings — it sends them as raw
+    // text, which Postgres rejects for JSONB columns. Explicitly cast all
+    // non-null value_json through a sql literal so the serialization is
+    // always correct regardless of the JS runtime type.
+    const rows = chunk.map((row) => ({
+      ...row,
+      value_json:
+        row.value_json !== null
+          ? sql`${JSON.stringify(row.value_json)}::jsonb`
+          : null,
+    }));
     await this.db
       .insertInto('object_updates')
-      .values(chunk as NewObjectUpdate[])
+      .values(rows as unknown as NewObjectUpdate[])
       .onConflict((oc) => oc.column('update_id').doNothing())
       .execute();
   }
@@ -369,7 +386,7 @@ class MongoToPgMigrator {
         this.stats.fieldsSkippedBadPayload += 1;
         return;
       }
-      value_geo = sql`ST_GeogFromGeoJSON(${parsed.geoJsonText})`;
+      value_geo = sql`ST_GeomFromGeoJSON(${parsed.geoJsonText}::text)::geography`;
     } else {
       const promoSale = transformPromotionSaleFromField(updateType, field);
       if (promoSale !== null) {
@@ -498,7 +515,39 @@ class MongoToPgMigrator {
   }
 }
 
-async function migrateFile(filePath: string): Promise<void> {
+async function dropObjectUpdatesIndexes(db: Kysely<OdlDatabase>): Promise<void> {
+  console.log('Dropping object_updates indexes and trigger...');
+  await sql`ALTER TABLE object_updates DISABLE TRIGGER tr_object_updates_search_vector`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_object_updates_search_vector`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_object_updates_value_geo`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_object_updates_update_type_value_text`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_object_updates_update_type_value_text_normalized`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_object_updates_object_id_update_type`.execute(db);
+  console.log('Indexes dropped.');
+}
+
+async function recreateObjectUpdatesIndexes(db: Kysely<OdlDatabase>): Promise<void> {
+  console.log('Recreating object_updates indexes...');
+  await sql`CREATE INDEX idx_object_updates_object_id_update_type ON object_updates (object_id, update_type)`.execute(db);
+  console.log('  [1/5] idx_object_updates_object_id_update_type done');
+  await sql`CREATE INDEX idx_object_updates_value_geo ON object_updates USING GIST (value_geo)`.execute(db);
+  console.log('  [2/5] idx_object_updates_value_geo done');
+  await sql`CREATE INDEX idx_object_updates_update_type_value_text ON object_updates (update_type, LEFT(value_text, 2048)) WHERE value_text IS NOT NULL`.execute(db);
+  console.log('  [3/5] idx_object_updates_update_type_value_text done');
+  await sql`CREATE INDEX idx_object_updates_update_type_value_text_normalized ON object_updates (update_type, LEFT(value_text_normalized, 2048)) WHERE value_text_normalized IS NOT NULL`.execute(db);
+  console.log('  [4/5] idx_object_updates_update_type_value_text_normalized done');
+  await sql`ALTER TABLE object_updates ENABLE TRIGGER tr_object_updates_search_vector`.execute(db);
+  await sql`
+    UPDATE object_updates
+    SET search_vector = to_tsvector('english', value_text)
+    WHERE value_text IS NOT NULL
+  `.execute(db);
+  await sql`CREATE INDEX idx_object_updates_search_vector ON object_updates USING GIN (search_vector)`.execute(db);
+  console.log('  [5/5] idx_object_updates_search_vector done');
+  console.log('Indexes recreated.');
+}
+
+async function migrateFile(filePath: string, skipIndexes: boolean): Promise<void> {
   const resolved = path.resolve(filePath);
   if (!fs.existsSync(resolved)) {
     fail(`File not found: ${resolved}`);
@@ -511,49 +560,62 @@ async function migrateFile(filePath: string): Promise<void> {
 
   const migrator = new MongoToPgMigrator(databaseUrl);
 
-  await new Promise<void>((resolve, reject) => {
-    const pipeline = streamArray.withParserAsStream();
-    const stream = fs.createReadStream(resolved, { encoding: 'utf8' });
+  if (skipIndexes) {
+    await dropObjectUpdatesIndexes(migrator.db);
+  }
 
-    stream.on('error', reject);
-    pipeline.on('error', reject);
-
-    let chain = Promise.resolve();
-
-    pipeline.on('data', (item: { key: number; value: MongoWObject }) => {
-      chain = chain
-        .then(async () => {
-          migrator.processWObject(item.value);
-          await migrator.flushAfterObjectIfNeeded();
-          if ((item.key + 1) % 1000 === 0) {
-            console.log(`Processed ${item.key + 1} objects...`);
-          }
-        })
-        .catch(reject);
+  try {
+    const sink = new Writable({
+      objectMode: true,
+      write(
+        item: { key: number; value: MongoWObject },
+        _encoding: BufferEncoding,
+        callback: (err?: Error | null) => void,
+      ) {
+        migrator.processWObject(item.value);
+        migrator
+          .flushAfterObjectIfNeeded()
+          .then(() => {
+            if ((item.key + 1) % 1000 === 0) {
+              console.log(`Processed ${item.key + 1} objects...`);
+            }
+            callback();
+          })
+          .catch((err: unknown) =>
+            callback(err instanceof Error ? err : new Error(String(err))),
+          );
+      },
     });
 
-    pipeline.on('end', () => {
-      void chain
-        .then(() => resolve())
-        .catch(reject);
-    });
+    await streamPipeline(
+      fs.createReadStream(resolved, { encoding: 'utf8' }),
+      streamArray.withParserAsStream(),
+      sink,
+    );
 
-    stream.pipe(pipeline);
-  });
-
-  await migrator.flushAll();
-  await migrator.destroy();
+    await migrator.flushAll();
+  } finally {
+    if (skipIndexes) {
+      await recreateObjectUpdatesIndexes(migrator.db);
+    }
+    await migrator.destroy();
+  }
 
   console.log('Migration finished. Stats:', migrator.stats);
 }
 
 function main(): void {
-  const fileArg = process.argv[2];
+  const args = process.argv.slice(2);
+  const fileArg = args.find((a) => !a.startsWith('--'));
+  const skipIndexes = args.includes('--skip-indexes');
+
   if (!fileArg?.trim()) {
-    fail('Usage: tsx scripts/migrate-mongo-to-pg/index.ts <path-to-wobjects.json>');
+    fail(
+      'Usage: tsx scripts/migrate-mongo-to-pg/index.ts <path-to-wobjects.json> [--skip-indexes]',
+    );
   }
 
-  migrateFile(fileArg).catch((err: unknown) => {
+  migrateFile(fileArg, skipIndexes).catch((err: unknown) => {
     console.error(err);
     process.exit(1);
   });

@@ -110,7 +110,7 @@ node dist/apps/chain-indexer/main.js
 
 | Command | Description |
 |---------|-------------|
-| `docker compose up postgres redis -d` | Start only infrastructure |
+| `docker compose up postgres redis ipfs -d` | Start only infrastructure |
 | `docker compose down` | Stop all containers |
 | `docker compose down -v` | Stop containers and delete volumes (wipes DB data) |
 | `pnpm migrate` | Apply all pending migrations |

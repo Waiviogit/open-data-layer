@@ -104,7 +104,7 @@ export class ObjectUpdatesRepository {
       query = query.where(
         sql<boolean>`ST_Equals(
           value_geo::geometry,
-          ST_GeogFromGeoJSON(${JSON.stringify(value)}::json)::geometry
+          ST_GeomFromGeoJSON(${JSON.stringify(value)}::json)::geometry
         )`,
       );
     }

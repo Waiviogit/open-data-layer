@@ -29,11 +29,24 @@ describe('resolveObjectBodySchema', () => {
     expect(r.success).toBe(false);
   });
 
-  it('rejects empty update_types', () => {
+  it('accepts empty update_types (resolved as all types on the object)', () => {
     const r = resolveObjectBodySchema.safeParse({
       object_id: 'x',
       update_types: [],
     });
-    expect(r.success).toBe(false);
+    expect(r.success).toBe(true);
+    if (r.success) {
+      expect(r.data.update_types).toEqual([]);
+    }
+  });
+
+  it('defaults omitted update_types to empty array', () => {
+    const r = resolveObjectBodySchema.safeParse({
+      object_id: 'x',
+    });
+    expect(r.success).toBe(true);
+    if (r.success) {
+      expect(r.data.update_types).toEqual([]);
+    }
   });
 });
