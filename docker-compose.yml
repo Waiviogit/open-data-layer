@@ -18,7 +18,7 @@ services:
     restart: unless-stopped
 
   ipfs:
-    image: ipfs/kubo:latest
+    image: ipfs/kubo:v0.40.1
     ports:
       - "${IPFS_API_PORT:-5001}:5001"
       - "${IPFS_GATEWAY_PORT:-8080}:8080"

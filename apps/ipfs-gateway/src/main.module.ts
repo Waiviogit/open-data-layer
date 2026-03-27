@@ -2,7 +2,12 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { IpfsClientModule } from '@opden-data-layer/clients';
-import { FilesController, NamespacesController, UploadController } from './controllers';
+import {
+  ContentController,
+  FilesController,
+  NamespacesController,
+  UploadController,
+} from './controllers';
 import { GatewayReadService } from './domain/gateway-read.service';
 import { ImageProcessorService } from './domain/image-processor.service';
 import { MfsInitService } from './domain/mfs-init.service';
@@ -25,7 +30,12 @@ import ipfsGatewayConfig from './config/ipfs-gateway.config';
       inject: [ConfigService],
     }),
   ],
-  controllers: [UploadController, FilesController, NamespacesController],
+  controllers: [
+    UploadController,
+    FilesController,
+    ContentController,
+    NamespacesController,
+  ],
   providers: [
     ImageProcessorService,
     MfsInitService,

@@ -1,5 +1,7 @@
 # IPFS Gateway
 
+**Developer guide:** [docs/ipfs-gateway.md](../docs/ipfs-gateway.md) (local setup, Docker, commands).
+
 **Back:** [Spec index](README.md) · **Related:** [storage](storage.md), [overflow-strategy](overflow-strategy.md), [architecture](architecture.md)
 
 ## 1) Purpose
@@ -45,10 +47,12 @@ When configured (comma-separated base URLs of peer gateways, e.g. `http://node-a
 
 ## 4) Read fallback (GatewayReadService)
 
-`GET /ipfs-gateway/files/{cid}` streams bytes for a CID.
+Read routes stream bytes for a CID using the same logic:
 
 1. **First** try local Kubo `cat` (HTTP API from the gateway process to `IPFS_API_URL`).
-2. If that fails **and** `IPFS_PEER_URLS` is non-empty, try each peer in order: `GET {peer}/files/{cid}`.
+2. If that fails **and** `IPFS_PEER_URLS` is non-empty, try each peer in order: `GET {peer}/files/{cid}` (peer fallback uses the raw `/files/{cid}` path).
+
+`GET /files/{cid}` returns octet-stream. `GET /content/image/{cid}` and `GET /content/json/{cid}` return the same bytes with typed `Content-Type` and inline disposition for browsers and CDNs.
 
 No Redis or external load balancer is required for this fallback; it is sequential HTTP inside the gateway.
 
@@ -70,7 +74,9 @@ All routes are under the global prefix **`/ipfs-gateway`** (see `main.ts`).
 |--------|------|-------------|
 | `POST` | `/upload/image` | Multipart field `file`; image converted to WebP, pinned, copied into MFS `/images/` |
 | `POST` | `/upload/json` | JSON body; pinned, copied into MFS `/json/` |
-| `GET` | `/files/{cid}` | Stream object by CID (local first, then peer fallback) |
+| `GET` | `/files/{cid}` | Stream object by CID as octet-stream (local first, then peer fallback) |
+| `GET` | `/content/image/{cid}` | Same object as WebP with inline disposition (CDN-cacheable) |
+| `GET` | `/content/json/{cid}` | Same object as JSON with inline disposition (CDN-cacheable) |
 | `GET` | `/namespaces/{namespace}/cid` | `namespace` ∈ `images` \| `json`; returns directory CID for bulk pin |
 
 OpenAPI/Swagger is served at `/ipfs-gateway/docs` when the app is running.
@@ -106,17 +112,17 @@ flowchart TD
 
 ## 8) Caching guidance
 
-CID-addressed content is **immutable** by definition (the same CID always resolves to the same bytes). The `GET /files/{cid}` endpoint should return aggressive cache headers:
+CID-addressed content is **immutable** by definition (the same CID always resolves to the same bytes). Immutable read endpoints should return:
 
 ```
 Cache-Control: public, max-age=31536000, immutable
 ```
 
-This applies **only** to `GET /files/{cid}`. Other endpoints must not be cached long-term:
-
 | Endpoint | Caching | Reason |
 |----------|---------|--------|
 | `GET /files/{cid}` | `public, max-age=31536000, immutable` | CID = content hash; content never changes |
+| `GET /content/image/{cid}` | Same | Typed response; URL encodes intent for CDN cache keys |
+| `GET /content/json/{cid}` | Same | Same rationale |
 | `GET /namespaces/{ns}/cid` | `no-cache` or short `max-age` | Directory CID changes on every new upload |
 | `POST /upload/*` | Not cacheable | Mutating requests |
 
