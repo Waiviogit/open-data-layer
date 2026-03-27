@@ -1,12 +1,12 @@
 import { z } from 'zod';
 import { registry } from './registry';
 
-const namespaceParamSchema = z.enum(['images', 'json']);
+const namespaceParamSchema = z.enum(['images', 'files']);
 
 const namespaceCidResponseSchema = registry.register(
   'NamespaceCidResponse',
   z.object({
-    namespace: z.string().openapi({ description: 'Namespace key (images or json)' }),
+    namespace: z.string().openapi({ description: 'Namespace key (images or files)' }),
     cid: z
       .string()
       .openapi({ description: 'CID of the MFS directory for bulk pinning' }),
@@ -18,11 +18,11 @@ registry.registerPath({
   path: '/namespaces/{namespace}/cid',
   summary: 'Get MFS directory CID for a namespace',
   description:
-    'Returns the current IPFS CID of the `/images` or `/json` MFS directory so other nodes can `pin/add` recursively.',
+    'Returns the current IPFS CID of the `/images` or `/files` MFS directory so other nodes can `pin/add` recursively.',
   request: {
     params: z.object({
       namespace: namespaceParamSchema.openapi({
-        description: 'Namespace: images or json',
+        description: 'Namespace: images or files',
       }),
     }),
   },

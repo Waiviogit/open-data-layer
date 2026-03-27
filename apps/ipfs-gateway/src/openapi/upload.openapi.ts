@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { UPLOAD_IMAGE_MAX_FILE_BYTES } from '../constants/upload.constants';
 import { registry } from './registry';
 
 const ipfsUploadResultSchema = registry.register(
@@ -16,7 +17,8 @@ registry.registerPath({
   path: '/upload/image',
   summary: 'Upload image (converted to WebP) to IPFS',
   description:
-    'Accepts multipart form field `file`. Image must be a supported type; server validates with sharp and stores WebP on IPFS.',
+    `Accepts multipart form field \`file\`. Max upload size is ${UPLOAD_IMAGE_MAX_FILE_BYTES / (1024 * 1024)} MiB per file. ` +
+    'Image must be a supported type; server validates with sharp and stores WebP on IPFS.',
   request: {
     body: {
       content: {
@@ -39,23 +41,31 @@ registry.registerPath({
       content: { 'application/json': { schema: ipfsUploadResultSchema } },
     },
     400: { description: 'Invalid or missing file' },
+    413: { description: 'File exceeds maximum size (50 MiB)' },
   },
 });
 
-const jsonBodySchema = registry.register(
-  'JsonUploadBody',
-  z.unknown().openapi({ description: 'Any JSON value to pin on IPFS' }),
-);
-
 registry.registerPath({
   method: 'post',
-  path: '/upload/json',
-  summary: 'Upload JSON payload to IPFS',
+  path: '/upload/file',
+  summary: 'Stream a large binary file to IPFS',
+  description:
+    'Accepts raw bytes as `application/octet-stream`. ' +
+    'The body is streamed directly to IPFS without buffering in memory — ' +
+    'suitable for multi-GB files. ' +
+    'Optional `filename` query parameter sets the MFS entry name; ' +
+    'defaults to `upload-<timestamp>.bin`.',
   request: {
+    query: z.object({
+      filename: z
+        .string()
+        .optional()
+        .openapi({ description: 'Desired filename stored in MFS (e.g. video.mp4)' }),
+    }),
     body: {
       content: {
-        'application/json': {
-          schema: jsonBodySchema,
+        'application/octet-stream': {
+          schema: z.any().openapi({ type: 'string', format: 'binary', description: 'Raw file bytes' }),
         },
       },
       required: true,

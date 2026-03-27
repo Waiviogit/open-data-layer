@@ -4,7 +4,7 @@ import { MFS_NAMESPACE } from '../constants/mfs-namespaces';
 
 const NAMESPACE_TO_MFS: Record<string, string> = {
   images: MFS_NAMESPACE.IMAGES,
-  json: MFS_NAMESPACE.JSON,
+  files: MFS_NAMESPACE.FILES,
 };
 
 @Controller('namespaces')

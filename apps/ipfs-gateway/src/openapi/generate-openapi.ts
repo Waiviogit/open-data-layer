@@ -11,7 +11,8 @@ export function generateOpenApiDocument() {
     info: {
       title: 'Opden Data Layer — IPFS Gateway',
       version: '1.0.0',
-      description: 'Upload images (WebP) and JSON to IPFS; retrieve by CID.',
+      description:
+        'Upload images (WebP) and large files to IPFS; retrieve by CID.',
     },
     servers: [{ url: '/' }],
   });

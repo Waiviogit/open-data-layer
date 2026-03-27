@@ -10,7 +10,7 @@ The **ipfs-gateway** application is a controlled HTTP layer in front of a Kubo (
 
 **Normative goals:**
 
-- Restrict the write surface to validated operations (multipart image upload, JSON upload).
+- Restrict the write surface to validated operations (multipart image upload, streaming file upload).
 - Convert uploaded images to WebP via Sharp before pinning.
 - Use deterministic filenames derived from SHA-256 of content (`{sha256}.{ext}`) for deduplication-friendly naming.
 - Expose read-by-CID and namespace-directory-CID discovery for integrators and replica nodes.
@@ -23,14 +23,14 @@ Kubo’s **Mutable File System (MFS)** holds logical directories separate from t
 
 | MFS path | Purpose |
 |----------|---------|
-| `/images` | WebP blobs after image upload |
-| `/json` | JSON blobs after JSON upload |
+| `/images` | WebP blobs after `POST /upload/image` |
+| `/files` | Arbitrary blobs after `POST /upload/file` (streaming upload) |
 
-**On startup**, `MfsInitService` ensures both directories exist (`files/mkdir` with parents).
+**On startup**, `MfsInitService` ensures these directories exist (`files/mkdir` with parents).
 
-**On each successful upload**, after `add` (which pins the blob), the gateway copies the same CID into MFS via `files/cp` (source `/ipfs/{cid}`, destination `/images/{filename}` or `/json/{filename}`). No duplicate data is stored; MFS entries reference the pinned block.
+**On each successful upload**, after `add` (which pins the blob), the gateway copies the same CID into MFS via `files/cp` (source `/ipfs/{cid}`, destination `/images/{filename}` or `/files/{filename}`). No duplicate data is stored; MFS entries reference the pinned block.
 
-**Discovery:** `GET /ipfs-gateway/namespaces/{namespace}/cid` with `namespace` in `images` | `json` returns `{ namespace, cid }` where `cid` is the MFS directory root for that subtree (`files/stat` on `/images` or `/json`). Other nodes use this CID for bulk recursive pinning.
+**Discovery:** `GET /ipfs-gateway/namespaces/{namespace}/cid` with `namespace` in `images` | `files` returns `{ namespace, cid }` where `cid` is the MFS directory root for that subtree (`files/stat` on `/images` or `/files`). Other nodes use this CID for bulk recursive pinning.
 
 ## 3) Peer sync (PinSyncService)
 
@@ -38,9 +38,9 @@ Optional **replica** behaviour. If `IPFS_PEER_URLS` is unset or empty, **no** sy
 
 When configured (comma-separated base URLs of peer gateways, e.g. `http://node-a:3001/ipfs-gateway,http://node-b:3001/ipfs-gateway`):
 
-1. On startup and on a fixed interval (`PIN_SYNC_INTERVAL_MS`, default 300000 ms), for each namespace `images` and `json`:
+1. On startup and on a fixed interval (`PIN_SYNC_INTERVAL_MS`, default 300000 ms), for each namespace `images` and `files`:
 2. **Fetch** remote directory CID: `GET {peer}/namespaces/{namespace}/cid` — peers are tried **in order**; first successful response wins.
-3. **Compare** with local `files/stat` on `/images` or `/json`.
+3. **Compare** with local `files/stat` on `/images` or `/files`.
 4. If remote CID ≠ local CID, **`pin/add` recursive** on the local Kubo for the remote directory CID so blocks are pulled into the local repo.
 
 **Note:** Pinning updates the local blockstore and pinset. Local MFS roots may still differ from the master until MFS is updated locally; content is still retrievable by CID. Operators should treat the master as source of truth for namespace directory CIDs when coordinating replication.
@@ -52,7 +52,7 @@ Read routes stream bytes for a CID using the same logic:
 1. **First** try local Kubo `cat` (HTTP API from the gateway process to `IPFS_API_URL`).
 2. If that fails **and** `IPFS_PEER_URLS` is non-empty, try each peer in order: `GET {peer}/files/{cid}` (peer fallback uses the raw `/files/{cid}` path).
 
-`GET /files/{cid}` returns octet-stream. `GET /content/image/{cid}` and `GET /content/json/{cid}` return the same bytes with typed `Content-Type` and inline disposition for browsers and CDNs.
+`GET /files/{cid}` returns octet-stream. `GET /content/image/{cid}` returns the same bytes with `Content-Type: image/webp` and inline disposition for browsers and CDNs.
 
 No Redis or external load balancer is required for this fallback; it is sequential HTTP inside the gateway.
 
@@ -72,12 +72,11 @@ All routes are under the global prefix **`/ipfs-gateway`** (see `main.ts`).
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/upload/image` | Multipart field `file`; image converted to WebP, pinned, copied into MFS `/images/` |
-| `POST` | `/upload/json` | JSON body; pinned, copied into MFS `/json/` |
+| `POST` | `/upload/image` | Multipart field `file`; max **50 MiB** per file; image converted to WebP, pinned, copied into MFS `/images/` |
+| `POST` | `/upload/file` | Raw body `application/octet-stream`; streamed to IPFS (large files), optional `?filename=`; copied into MFS `/files/` |
 | `GET` | `/files/{cid}` | Stream object by CID as octet-stream (local first, then peer fallback) |
 | `GET` | `/content/image/{cid}` | Same object as WebP with inline disposition (CDN-cacheable) |
-| `GET` | `/content/json/{cid}` | Same object as JSON with inline disposition (CDN-cacheable) |
-| `GET` | `/namespaces/{namespace}/cid` | `namespace` ∈ `images` \| `json`; returns directory CID for bulk pin |
+| `GET` | `/namespaces/{namespace}/cid` | `namespace` ∈ `images` \| `files`; returns directory CID for bulk pin |
 
 OpenAPI/Swagger is served at `/ipfs-gateway/docs` when the app is running.
 
@@ -88,7 +87,7 @@ flowchart TD
   subgraph upload [Upload path]
     UC["UploadController"]
     UC -->|"add + pin"| Kubo["Kubo API"]
-    UC -->|"files/cp"| MFS["MFS /images / /json"]
+    UC -->|"files/cp"| MFS["MFS /images / /files"]
   end
 
   subgraph ns [Namespace CID]
@@ -122,7 +121,6 @@ Cache-Control: public, max-age=31536000, immutable
 |----------|---------|--------|
 | `GET /files/{cid}` | `public, max-age=31536000, immutable` | CID = content hash; content never changes |
 | `GET /content/image/{cid}` | Same | Typed response; URL encodes intent for CDN cache keys |
-| `GET /content/json/{cid}` | Same | Same rationale |
 | `GET /namespaces/{ns}/cid` | `no-cache` or short `max-age` | Directory CID changes on every new upload |
 | `POST /upload/*` | Not cacheable | Mutating requests |
 
@@ -130,4 +128,4 @@ When deploying behind a CDN (Cloudflare, Nginx, etc.), point `IPFS_GATEWAY_URL` 
 
 ## 9) Informative: relation to overflow storage
 
-The indexer and overflow pipeline may reference IPFS CIDs for large payloads. This gateway is the **operational** ingress and coordination layer for **images and JSON** namespaces used by the platform; the exact linkage to Hive/overflow events is defined in [storage](storage.md) and [overflow-strategy](overflow-strategy.md).
+The indexer and overflow pipeline may reference IPFS CIDs for large payloads. This gateway is the **operational** ingress and coordination layer for **images** and **files** namespaces used by the platform; the exact linkage to Hive/overflow events is defined in [storage](storage.md) and [overflow-strategy](overflow-strategy.md).

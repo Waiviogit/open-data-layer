@@ -5,5 +5,3 @@ export const IMMUTABLE_CACHE_CONTROL =
 export const CONTENT_DISPOSITION_INLINE = 'inline';
 
 export const MIME_IMAGE_WEBP = 'image/webp';
-
-export const MIME_JSON_UTF8 = 'application/json; charset=utf-8';

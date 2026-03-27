@@ -10,7 +10,7 @@ import { MFS_NAMESPACE } from '../constants/mfs-namespaces';
 
 const SYNC_NAMESPACES = [
   { key: 'images' as const, mfsPath: MFS_NAMESPACE.IMAGES },
-  { key: 'json' as const, mfsPath: MFS_NAMESPACE.JSON },
+  { key: 'files' as const, mfsPath: MFS_NAMESPACE.FILES },
 ];
 
 interface NamespaceCidResponse {

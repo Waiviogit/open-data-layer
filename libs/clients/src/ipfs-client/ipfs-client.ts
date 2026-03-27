@@ -1,4 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { randomBytes } from 'node:crypto';
+import * as http from 'node:http';
+import * as https from 'node:https';
 import { Readable } from 'node:stream';
 import type { ReadableStream as WebReadableStream } from 'node:stream/web';
 import { IPFS_CLIENT_MODULE_OPTIONS, type IpfsClientModuleOptions } from './ipfs-client.options';
@@ -61,6 +64,74 @@ export class IpfsClient {
       cid,
       url: gw ? `${gw}/ipfs/${cid}` : undefined,
     };
+  }
+
+  /**
+   * Stream raw bytes to IPFS without buffering.
+   * Uses node:http/https directly so backpressure is respected end-to-end —
+   * data flows from the source stream into the TCP socket in chunks without
+   * ever accumulating in Node.js memory. Suitable for multi-GB files.
+   */
+  async addStream(
+    stream: Readable,
+    filename = 'upload.bin',
+  ): Promise<{ cid: string; url?: string }> {
+    const boundary = `ipfs${randomBytes(16).toString('hex')}`;
+    const safeFilename = filename.replace(/"/g, '').replace(/\r|\n/g, '');
+
+    const apiUrl = new URL(`${this.apiUrl}/api/v0/add`);
+    apiUrl.searchParams.set('pin', 'true');
+
+    const protocol = apiUrl.protocol === 'https:' ? https : http;
+
+    return new Promise<{ cid: string; url?: string }>((resolve, reject) => {
+      const req = protocol.request(
+        {
+          hostname: apiUrl.hostname,
+          port: apiUrl.port || (apiUrl.protocol === 'https:' ? 443 : 80),
+          path: apiUrl.pathname + apiUrl.search,
+          method: 'POST',
+          headers: {
+            'Content-Type': `multipart/form-data; boundary=${boundary}`,
+            'Transfer-Encoding': 'chunked',
+          },
+        },
+        (res) => {
+          let data = '';
+          res.on('data', (chunk: Buffer) => (data += chunk.toString()));
+          res.on('end', () => {
+            if (res.statusCode !== 200) {
+              this.logger.error(`IPFS add (stream) failed: ${res.statusCode} ${data}`);
+              reject(new Error(`IPFS add failed: ${res.statusCode}`));
+              return;
+            }
+            try {
+              const json = JSON.parse(data) as AddApiResponse;
+              const cid = json.Hash;
+              const gw = this.gatewayUrl;
+              resolve({ cid, url: gw ? `${gw}/ipfs/${cid}` : undefined });
+            } catch (e) {
+              reject(e);
+            }
+          });
+        },
+      );
+
+      req.on('error', reject);
+
+      req.write(
+        Buffer.from(
+          `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${safeFilename}"\r\nContent-Type: application/octet-stream\r\n\r\n`,
+        ),
+      );
+
+      stream.pipe(req, { end: false });
+      stream.on('end', () => {
+        req.write(Buffer.from(`\r\n--${boundary}--\r\n`));
+        req.end();
+      });
+      stream.on('error', reject);
+    });
   }
 
   /**

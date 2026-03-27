@@ -168,7 +168,7 @@ Governance must be applied before final winner selection.
 
 ## 11) IPFS Gateway Service
 
-The monorepo includes a deployable **ipfs-gateway** application (`apps/ipfs-gateway`): a NestJS HTTP layer in front of a Kubo node. It is **not** the same as the API Gateway/Rate-Limit Service in sections 5–6; it is a **specialized** gateway for IPFS uploads, MFS-backed namespaces (`/images`, `/json`), optional peer pin-sync, and read fallback to peer gateways.
+The monorepo includes a deployable **ipfs-gateway** application (`apps/ipfs-gateway`): a NestJS HTTP layer in front of a Kubo node. It is **not** the same as the API Gateway/Rate-Limit Service in sections 5–6; it is a **specialized** gateway for IPFS uploads, MFS-backed namespaces (`/images`, `/files`), optional peer pin-sync, and read fallback to peer gateways.
 
 **Responsibilities (informative):**
 

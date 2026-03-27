@@ -9,7 +9,7 @@ export class MfsInitService implements OnModuleInit {
   constructor(private readonly ipfsClient: IpfsClient) {}
 
   async onModuleInit(): Promise<void> {
-    for (const path of [MFS_NAMESPACE.IMAGES, MFS_NAMESPACE.JSON]) {
+    for (const path of [MFS_NAMESPACE.IMAGES, MFS_NAMESPACE.FILES]) {
       try {
         await this.ipfsClient.mkdirp(path);
         this.logger.log(`MFS directory ready: ${path}`);
