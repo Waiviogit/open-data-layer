@@ -1,3 +1,5 @@
+import { HomeI18nToolbar } from './home-i18n-toolbar';
+
 export default function Index() {
   /*
    * Replace the elements below with your own.
@@ -8,6 +10,7 @@ export default function Index() {
     <div>
       <div className="wrapper">
         <div className="container">
+          <HomeI18nToolbar />
           <div id="welcome">
             <h1>
               <span> Hello there, </span>
