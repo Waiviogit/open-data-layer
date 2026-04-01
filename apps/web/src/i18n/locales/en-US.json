@@ -2706,6 +2706,11 @@
   "shopify_updated_successfully": "Shopify credentials updated successfully",
   "object_field_sale": "Sale",
   "object_field_compareAtPrice": "Compare-at price",
-  "paste_your_meta_tags_here": "Paste your meta tags here"
+  "paste_your_meta_tags_here": "Paste your meta tags here",
+  "user_profile_nav_aria": "Profile sections",
+  "user_profile_recipe": "Recipe",
+  "user_profile_not_found_title": "Profile not found",
+  "user_profile_not_found_body": "This account does not exist or could not be loaded.",
+  "user_profile_back_home": "Back to home"
 }
 

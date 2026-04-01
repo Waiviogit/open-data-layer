@@ -2359,7 +2359,7 @@
   "object_editing_by_users": "Pengeditan objek oleh pengguna",
   "object_editing_by_users_info": "Tidak memungkinkan pengguna untuk melakukan perubahan pada objek di situs web. Hanya pembaruan oleh administrator yang disetujui yang akan digunakan.",
   "claim_authority_service": "Layanan Bot Klaim Wewenang disediakan sesuai kondisi yang ada / sesuai ketersediaan.",
-  "claim_athority_requires_auth":"Bot Klaim Wewenang memerlukan otorisasi untuk memberi suara pada pembaruan data atas nama Anda",
+  "claim_athority_requires_auth": "Bot Klaim Wewenang memerlukan otorisasi untuk memberi suara pada pembaruan data atas nama Anda",
   "claim_authority_pause": "Bot Klaim Wewenang akan dijeda jika kekuatan voting WAIV pada akun Anda turun di bawah ambang batas yang ditetapkan.",
   "adSense_advertisements_updated_successfully": "Iklan AdSense diperbarui dengan sukses",
   "sign_in_for_rewards": "Masuk untuk hadiah!",
@@ -2558,5 +2558,10 @@
   "optimize_description_with_ChatGPT": "Optimalkan deskripsi dengan ChatGPT",
   "claim_administrative_authority": "Klaim otoritas administratif",
   "department_update_bot": "Bot Pembaruan Departemen",
-  "list_duplication_bot": "Bot Duplikasi Daftar"
+  "list_duplication_bot": "Bot Duplikasi Daftar",
+  "user_profile_nav_aria": "Profile sections",
+  "user_profile_recipe": "Recipe",
+  "user_profile_not_found_title": "Profile not found",
+  "user_profile_not_found_body": "This account does not exist or could not be loaded.",
+  "user_profile_back_home": "Back to home"
 }

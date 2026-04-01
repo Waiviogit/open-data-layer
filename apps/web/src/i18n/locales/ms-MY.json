@@ -1734,8 +1734,8 @@
   "waiv_token": "Token WAIV",
   "waiv_vote": "Undi WAIV",
   "Total": "Jumlah",
-  "liquid_waiv_tokens":"Token WAIV cecair",
-  "staked_waiv_tokens":"Token WAIV yang dipertaruhkan",
+  "liquid_waiv_tokens": "Token WAIV cecair",
+  "staked_waiv_tokens": "Token WAIV yang dipertaruhkan",
   "waiv_wallet": "Dompet WAIV",
   "hive_wallet": "Dompet HIVE",
   "hive_engine_wallet": "Dompet Enjin HIVE",
@@ -1747,8 +1747,8 @@
   "Editor": "Editor",
   "Rewards": "Ganjaran",
   "max": "maks",
-  "your_balance":"Baki anda",
-  "estimated_transaction_value":"Anggaran nilai transaksi",
+  "your_balance": "Baki anda",
+  "estimated_transaction_value": "Anggaran nilai transaksi",
   "estimated_price_impact": "Anggaran kesan harga",
   "max_price_impact": "Kesan harga maksimum",
   "swaptokens_info": "Urus niaga besar mungkin mempunyai kesan ke atas kadar pertukaran. Jika impak ini lebih besar daripada nilai yang ditetapkan, urus niaga akan dibatalkan.",
@@ -1818,5 +1818,10 @@
   "comment_lowercase": "komen",
   "mining_rewards": "Ganjaran perlombongan",
   "deposit_instruction": "Arahan deposit",
-  "swap": "Tukar"
+  "swap": "Tukar",
+  "user_profile_nav_aria": "Profile sections",
+  "user_profile_recipe": "Recipe",
+  "user_profile_not_found_title": "Profile not found",
+  "user_profile_not_found_body": "This account does not exist or could not be loaded.",
+  "user_profile_back_home": "Back to home"
 }

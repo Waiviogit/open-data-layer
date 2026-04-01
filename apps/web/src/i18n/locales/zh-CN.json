@@ -2539,5 +2539,10 @@
   "rejected_by_owner": "被所有者拒绝",
   "rejected_by_admin": "被管理员拒绝",
   "rejected_by_moderator": "被版主拒绝",
-  "mobnav_list_duplication": "列表复制"
+  "mobnav_list_duplication": "列表复制",
+  "user_profile_nav_aria": "Profile sections",
+  "user_profile_recipe": "Recipe",
+  "user_profile_not_found_title": "Profile not found",
+  "user_profile_not_found_body": "This account does not exist or could not be loaded.",
+  "user_profile_back_home": "Back to home"
 }

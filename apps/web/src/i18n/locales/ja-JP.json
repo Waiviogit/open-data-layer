@@ -2359,7 +2359,7 @@
   "object_editing_by_users": "ユーザーによるオブジェクトの編集",
   "object_editing_by_users_info": "ウェブサイト上でユーザーがオブジェクトを変更できないようにします。承認済み管理者による更新のみ使用されます。",
   "claim_authority_service": "権限主張ボットサービスは、提供される時点での状態 / 利用可能なベースで提供されます。",
-  "claim_athority_requires_auth":"権限主張ボットには、データ更新をアップボートするための認証が必要です",
+  "claim_athority_requires_auth": "権限主張ボットには、データ更新をアップボートするための認証が必要です",
   "claim_authority_pause": "権限主張ボットは、アカウントのWAIV投票権が設定された閾値を下回ると一時停止します。",
   "adSense_advertisements_updated_successfully": "AdSense広告が正常に更新されました",
   "sign_in_for_rewards": "報酬のためにサインイン！",
@@ -2369,7 +2369,7 @@
   "guest_account": "ゲストアカウント",
   "object_field_webpage": "ウェブページ",
   "webpage": "ウェブページ",
-  "empty_webpage_content":"このウェブページにはコンテンツがありません。編集をクリックして開始してください。",
+  "empty_webpage_content": "このウェブページにはコンテンツがありません。編集をクリックして開始してください。",
   "object_type_webpage": "ウェブページ",
   "website_hosting_pricing": "ウェブサイトホスティング価格",
   "All_payment_obligations_calculated": "すべての支払い義務は、取引時の為替レートに基づいてその通貨で計算されます。",
@@ -2558,5 +2558,10 @@
   "optimize_description_with_ChatGPT": "ChatGPTを使用して説明を最適化",
   "claim_administrative_authority": "管理権限の主張",
   "department_update_bot": "部門更新ボット",
-  "list_duplication_bot": "リスト複製ボット"
+  "list_duplication_bot": "リスト複製ボット",
+  "user_profile_nav_aria": "Profile sections",
+  "user_profile_recipe": "Recipe",
+  "user_profile_not_found_title": "Profile not found",
+  "user_profile_not_found_body": "This account does not exist or could not be loaded.",
+  "user_profile_back_home": "Back to home"
 }

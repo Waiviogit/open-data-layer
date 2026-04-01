@@ -2359,7 +2359,7 @@
   "object_editing_by_users": "Objektbearbeitung durch Benutzer",
   "object_editing_by_users_info": "Erlauben Sie Benutzern nicht, Änderungen an Objekten auf der Website vorzunehmen. Nur Updates von genehmigten Administratoren werden verwendet.",
   "claim_authority_service": "Der Dienst des Anspruchsberechtigungsbots wird 'wie vorhanden' zur Verfügung gestellt.",
-  "claim_athority_requires_auth":"Der Anspruchsberechtigungsbote erfordert eine Autorisierung, um Datenaktualisierungen in Ihrem Namen abzustimmen",
+  "claim_athority_requires_auth": "Der Anspruchsberechtigungsbote erfordert eine Autorisierung, um Datenaktualisierungen in Ihrem Namen abzustimmen",
   "claim_authority_pause": "Der Anspruchsberechtigungsbote pausiert, wenn die WAIV-Wahlkraft auf dem Konto unter die festgelegte Schwelle fällt.",
   "adSense_advertisements_updated_successfully": "AdSense-Anzeigen wurden erfolgreich aktualisiert",
   "sign_in_for_rewards": "Melden Sie sich an, um Belohnungen zu erhalten!",
@@ -2369,7 +2369,7 @@
   "guest_account": "Gastkonto",
   "object_field_webpage": "Webseite",
   "webpage": "Webseite",
-  "empty_webpage_content":"Diese Webseite hat keinen Inhalt. Klicken Sie auf Bearbeiten, um zu beginnen.",
+  "empty_webpage_content": "Diese Webseite hat keinen Inhalt. Klicken Sie auf Bearbeiten, um zu beginnen.",
   "object_type_webpage": "Webseite",
   "website_hosting_pricing": "Preisgestaltung für Website-Hosting",
   "All_payment_obligations_calculated": "Alle Zahlungsverpflichtungen werden in dieser Währung berechnet, basierend auf den Wechselkursen zum Zeitpunkt der Transaktionen.",
@@ -2558,5 +2558,10 @@
   "optimize_description_with_ChatGPT": "Beschreibung mit ChatGPT optimieren",
   "claim_administrative_authority": "Administrative Autorität beanspruchen",
   "department_update_bot": "Bot zur Abteilungsaktualisierung",
-  "list_duplication_bot": "Listenduplikationsbot"
+  "list_duplication_bot": "Listenduplikationsbot",
+  "user_profile_nav_aria": "Profile sections",
+  "user_profile_recipe": "Recipe",
+  "user_profile_not_found_title": "Profile not found",
+  "user_profile_not_found_body": "This account does not exist or could not be loaded.",
+  "user_profile_back_home": "Back to home"
 }

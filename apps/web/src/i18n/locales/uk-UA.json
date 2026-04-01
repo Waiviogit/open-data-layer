@@ -2189,11 +2189,11 @@
   "option_website": "Веб-сайт",
   "image_for_the_button": "Зображення для кнопки",
   "style_of_the_button": "Стиль кнопки",
-  "link_type":"Тип посилання",
-  "link_to_a_website":"Посилання на веб-сайт",
-  "eligibility":"Правомірність",
-  "filter_type":"Нагороди для",
-  "filter_sponsors":"Спонсори",
+  "link_type": "Тип посилання",
+  "link_to_a_website": "Посилання на веб-сайт",
+  "eligibility": "Правомірність",
+  "filter_type": "Нагороди для",
+  "filter_sponsors": "Спонсори",
   "ASIN_scanner": "Сканер ASIN",
   "ASIN_scanner_description": "Інструмент сканера ASIN може сканувати будь-яку URL-адресу Amazon та вилучати номери ASIN продуктів з цієї веб-сторінки. Він генерує запит на пошук продуктів в API пошуку продуктів Datafiniti. Після знаходження відповідності для цих продуктів у базі даних Datafiniti користувачі можуть завантажити JSON-файл, який можна завантажити до Waivio для подальшої обробки за допомогою інструмента імпорту даних.",
   "link_to_an_object": "Посилання на об'єкт",
@@ -2558,5 +2558,10 @@
   "optimize_description_with_ChatGPT": "Оптимізувати опис з допомогою ChatGPT",
   "claim_administrative_authority": "Заявка на адміністративну владу",
   "department_update_bot": "Бот оновлення відділу",
-  "list_duplication_bot": "Бот дублювання списку"
+  "list_duplication_bot": "Бот дублювання списку",
+  "user_profile_nav_aria": "Profile sections",
+  "user_profile_recipe": "Recipe",
+  "user_profile_not_found_title": "Profile not found",
+  "user_profile_not_found_body": "This account does not exist or could not be loaded.",
+  "user_profile_back_home": "Back to home"
 }

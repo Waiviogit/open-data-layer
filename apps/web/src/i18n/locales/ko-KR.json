@@ -1736,8 +1736,8 @@
   "waiv_token": "WAIV 토큰",
   "waiv_vote": "WAIV 투표",
   "Total": "총",
-  "liquid_waiv_tokens":"유동적 WAIV 토큰",
-  "staked_waiv_tokens":"스테이킹된 WAIV 토큰",
+  "liquid_waiv_tokens": "유동적 WAIV 토큰",
+  "staked_waiv_tokens": "스테이킹된 WAIV 토큰",
   "waiv_wallet": "WAIV 지갑",
   "hive_wallet": "하이브 지갑",
   "hive_engine_wallet": "HIVE 엔진 지갑",
@@ -1749,8 +1749,8 @@
   "Editor": "편집자",
   "Rewards": "보상",
   "max": "최대",
-  "your_balance":"잔액",
-  "estimated_transaction_value":"예상 거래 금액",
+  "your_balance": "잔액",
+  "estimated_transaction_value": "예상 거래 금액",
   "estimated_price_impact": "예상 가격 영향",
   "max_price_impact": "최대 가격 영향",
   "swaptokens_info": "큰 거래는 환율에 영향을 미칠 수 있습니다. 이 영향이 설정 값보다 크면 거래가 취소됩니다.",
@@ -1820,5 +1820,10 @@
   "comment_lowercase": "논평",
   "mining_rewards": "채굴 보상",
   "deposit_instruction": "입금 안내",
-  "swap": "교환"
+  "swap": "교환",
+  "user_profile_nav_aria": "Profile sections",
+  "user_profile_recipe": "Recipe",
+  "user_profile_not_found_title": "Profile not found",
+  "user_profile_not_found_body": "This account does not exist or could not be loaded.",
+  "user_profile_back_home": "Back to home"
 }

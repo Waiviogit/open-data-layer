@@ -2558,5 +2558,10 @@
   "optimize_description_with_ChatGPT": "Optimiser la description avec ChatGPT",
   "claim_administrative_authority": "Revendiquer l'autorité administrative",
   "department_update_bot": "Bot de mise à jour du département",
-  "list_duplication_bot": "Bot de duplication de listes"
+  "list_duplication_bot": "Bot de duplication de listes",
+  "user_profile_nav_aria": "Profile sections",
+  "user_profile_recipe": "Recipe",
+  "user_profile_not_found_title": "Profile not found",
+  "user_profile_not_found_body": "This account does not exist or could not be loaded.",
+  "user_profile_back_home": "Back to home"
 }

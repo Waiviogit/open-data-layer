@@ -1735,8 +1735,8 @@
   "waiv_token": "Token WAIV",
   "waiv_vote": "WAIV",
   "Total": "Total",
-  "liquid_waiv_tokens":"Tokens WAIV líquidos",
-  "staked_waiv_tokens":"Tokens WAIV apostados",
+  "liquid_waiv_tokens": "Tokens WAIV líquidos",
+  "staked_waiv_tokens": "Tokens WAIV apostados",
   "waiv_wallet": "Сarteira WAIV",
   "hive_wallet": "Сarteira HIVE",
   "hive_engine_wallet": "Carteira HIVE Engine",
@@ -1748,8 +1748,8 @@
   "Editor": "Editor",
   "Rewards": "Recompensas",
   "max": "máx",
-  "your_balance":"Seu balanço",
-  "estimated_transaction_value":"Valor estimado da transação",
+  "your_balance": "Seu balanço",
+  "estimated_transaction_value": "Valor estimado da transação",
   "estimated_price_impact": "Impacto do preço estimado",
   "max_price_impact": "Impacto máximo do preço",
   "swaptokens_info": "Grandes transações podem ter um impacto na taxa de câmbio. Se esse impacto for maior que o valor definido, a transação será cancelada.",
@@ -1819,5 +1819,10 @@
   "comment_lowercase": "Comente",
   "mining_rewards": "Recompensas de mineração",
   "deposit_instruction": "Instrução de depósito",
-  "swap": "Troca"
+  "swap": "Troca",
+  "user_profile_nav_aria": "Profile sections",
+  "user_profile_recipe": "Recipe",
+  "user_profile_not_found_title": "Profile not found",
+  "user_profile_not_found_body": "This account does not exist or could not be loaded.",
+  "user_profile_back_home": "Back to home"
 }

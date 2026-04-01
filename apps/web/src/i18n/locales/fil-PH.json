@@ -1736,8 +1736,8 @@
   "waiv_token": "WAIV token",
   "waiv_vote": "WAIV boto",
   "Total": "Kabuuan",
-  "liquid_waiv_tokens":"Liquid WAIV token",
-  "staked_waiv_tokens":"Mga na-staked na WAIV token",
+  "liquid_waiv_tokens": "Liquid WAIV token",
+  "staked_waiv_tokens": "Mga na-staked na WAIV token",
   "waiv_wallet": "WAIV wallet",
   "hive_wallet": "Wallet ng HIVE",
   "hive_engine_wallet": "HIVE Engine wallet",
@@ -1749,8 +1749,8 @@
   "Editor": "Editor",
   "Rewards": "Gantimpala",
   "max": "max",
-  "your_balance":"Iyong balanse",
-  "estimated_transaction_value":"Tinantyang halaga ng transaksyon",
+  "your_balance": "Iyong balanse",
+  "estimated_transaction_value": "Tinantyang halaga ng transaksyon",
   "estimated_price_impact": "Tinantyang epekto sa presyo",
   "max_price_impact": "Max na epekto sa presyo",
   "swaptokens_info": "Ang malalaking transaksyon ay maaaring magkaroon ng epekto sa halaga ng palitan. Kung mas malaki ang epektong ito kaysa sa itinakdang halaga, kakanselahin ang transaksyon.",
@@ -1820,5 +1820,10 @@
   "comment_lowercase": "komento",
   "mining_rewards": "Mga gantimpala sa pagmimina",
   "deposit_instruction": "Pagtuturo sa deposito",
-  "swap": "Magpalit"
+  "swap": "Magpalit",
+  "user_profile_nav_aria": "Profile sections",
+  "user_profile_recipe": "Recipe",
+  "user_profile_not_found_title": "Profile not found",
+  "user_profile_not_found_body": "This account does not exist or could not be loaded.",
+  "user_profile_back_home": "Back to home"
 }

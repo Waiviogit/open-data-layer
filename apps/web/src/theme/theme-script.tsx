@@ -8,6 +8,8 @@ export function ThemeScript() {
   return (
     <script
       // Next.js may move scripts; keep in layout <head> as first child for earliest execution.
+      // suppressHydrationWarning: extensions (e.g. Hive Keychain) may rewrite <script> nodes before React hydrates.
+      suppressHydrationWarning
       dangerouslySetInnerHTML={{ __html: inline }}
     />
   );
