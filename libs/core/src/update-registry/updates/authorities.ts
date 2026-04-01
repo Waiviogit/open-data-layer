@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
 import { UPDATE_TYPES } from '../update-types';
 
-/** Governance: restricts object search scope to objects where this account holds object_authority. @see spec/governance-resolution.md §2 */
+/** Governance: restricts object search scope to objects where this account holds object_authority. @see docs/spec/governance-resolution.md §2 */
 export const UPDATE_AUTHORITIES: UpdateDefinition = {
   update_type: UPDATE_TYPES.AUTHORITIES,
   description: 'Governance: authority or scope list.',

@@ -1,7 +1,7 @@
 /**
  * Extensible enum — only 'full' is defined in V2.
  * Unrecognised values must be treated as null (control off).
- * @see spec/governance-resolution.md §8
+ * @see docs/spec/governance-resolution.md §8
  */
 export type ObjectControlMode = 'full';
 
@@ -29,7 +29,7 @@ export interface InheritsFromEntry {
 
 /**
  * Resolved governance snapshot computed at request time.
- * @see spec/governance-resolution.md §4
+ * @see docs/spec/governance-resolution.md §4
  */
 export interface GovernanceSnapshot {
   admins: string[];

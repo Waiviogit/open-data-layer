@@ -10,8 +10,8 @@ import type { ValidityStatus, VoterReputationMap } from '../types';
  * Otherwise (null / unrecognised):
  *   C = ownership_holders ∩ (governance.admins ∪ governance.trusted)
  *
- * @see spec/authority-entity.md §4
- * @see spec/governance-resolution.md §8
+ * @see docs/spec/authority-entity.md §4
+ * @see docs/spec/governance-resolution.md §8
  */
 export function computeCuratorSet(
   authorities: ObjectAuthority[],
@@ -53,8 +53,8 @@ export function computeCuratorSet(
  *   3. Community vote weight: field_weight = Σ(votePower × sign)
  *   4. No votes → baseline VALID
  *
- * @see spec/postgres-concept/flow.md §Step 4
- * @see spec/vote-semantics.md §A and §C
+ * @see docs/spec/data-model/flow.md §Step 4
+ * @see docs/spec/vote-semantics.md §A and §C
  */
 export function resolveUpdateValidity(
   update: ObjectUpdate,

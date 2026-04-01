@@ -27,7 +27,7 @@ import type {
  *
  * Queries 1–5 run in parallel. Query 6 runs after collecting distinct voter names.
  *
- * @see spec/postgres-concept/flow.md §Step 3
+ * @see docs/spec/data-model/flow.md §Step 3
  */
 @Injectable()
 export class AggregatedObjectRepository {

@@ -1,5 +1,5 @@
 # Open Data Layer
 
-**Documentation:** [docs/](docs/README.md) — developer guides (migrations, operations).
+**Documentation:** [docs/](docs/README.md) — getting started, architecture, standards, operations, per-app guides.
 
-**Specification:** [spec/](spec/README.md) — single entry point for architecture, concepts, and normative docs.
+**Specification:** [docs/spec/](docs/spec/README.md) — domain specs, data model, governance, normative docs.

@@ -1,7 +1,7 @@
 /**
  * String constants for every registered update_type.
  * Use these instead of raw strings when referencing update types in code.
- * @see spec/object-type-entity.md §3
+ * @see docs/spec/object-type-entity.md §3
  */
 export const UPDATE_TYPES = {
   NAME: 'name',
@@ -91,7 +91,7 @@ export const UPDATE_TYPES = {
   EMAIL: 'email',
   CHART_ID: 'chart_id',
   PAGE_CONTENT: 'page_content',
-  // Governance (spec/governance-resolution.md §2)
+  // Governance (docs/spec/governance-resolution.md §2)
   ADMINS: 'admins',
   TRUSTED: 'trusted',
   MODERATORS: 'moderators',

@@ -2,8 +2,8 @@
  * Table schemas and row types for the PostgreSQL concept schema.
  * Table interfaces are used only in the `OdlDatabase` type; use
  * `Selectable`, `Insertable`, and `Updateable` types for queries.
- * @see spec/postgres-concept/schema.sql
- * @see spec/postgres-concept/flow.md
+ * @see docs/spec/data-model/schema.sql
+ * @see docs/spec/data-model/flow.md
  */
 
 import type {

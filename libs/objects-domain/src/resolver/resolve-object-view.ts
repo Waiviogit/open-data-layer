@@ -40,7 +40,7 @@ export function filterByLocalePreference(
  *   6. Optionally include REJECTED updates when include_rejected = true
  *   7. Assemble ResolvedObjectView
  *
- * @see spec/postgres-concept/flow.md §Step 4
+ * @see docs/spec/data-model/flow.md §Step 4
  */
 export function resolveObjectViews(
   objects: AggregatedObject[],

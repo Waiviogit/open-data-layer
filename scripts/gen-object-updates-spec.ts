@@ -8,7 +8,7 @@ import {
 } from '../libs/core/src/update-registry';
 
 const ROOT = path.resolve(__dirname, '..');
-const SPEC_DIR = path.join(ROOT, 'spec/object-updates');
+const SPEC_DIR = path.join(ROOT, 'generated/object-updates');
 
 function payloadField(kind: UpdateDefinition['value_kind']): string {
   if (kind === 'text') return 'value_text';
@@ -127,7 +127,7 @@ ${entries
   console.log(
     'Generated',
     entries.length,
-    'spec files + README.md in spec/object-updates/',
+    'spec files + README.md in generated/object-updates/',
   );
 }
 

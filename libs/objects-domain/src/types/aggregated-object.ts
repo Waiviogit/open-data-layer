@@ -8,7 +8,7 @@ import type {
 
 /**
  * All DB rows for a single object, grouped in memory after the 6-query pipeline.
- * @see spec/postgres-concept/flow.md §Step 3
+ * @see docs/spec/data-model/flow.md §Step 3
  */
 export interface AggregatedObject {
   core: ObjectsCore;

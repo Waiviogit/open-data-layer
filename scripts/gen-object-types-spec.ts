@@ -7,7 +7,7 @@ import {
 } from '../libs/core/src/object-type-registry';
 
 const ROOT = path.resolve(__dirname, '..');
-const SPEC_DIR = path.join(ROOT, 'spec/object-types');
+const SPEC_DIR = path.join(ROOT, 'generated/object-types');
 const OBJECT_UPDATES_SPEC = '../object-updates';
 
 function examplePayload(objectType: string): string {
@@ -114,7 +114,7 @@ ${entries
   console.log(
     'Generated',
     entries.length,
-    'object-type spec files + README.md in spec/object-types/',
+    'object-type spec files + README.md in generated/object-types/',
   );
 }
 

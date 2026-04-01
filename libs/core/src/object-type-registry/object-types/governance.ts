@@ -2,7 +2,7 @@ import { UPDATE_TYPES } from '../../update-registry/update-types';
 import { OBJECT_TYPES } from '../object-types';
 import { ObjectTypeDefinition } from '../types';
 
-/** Governance object: effective snapshot built from creator updates. @see spec/governance-resolution.md */
+/** Governance object: effective snapshot built from creator updates. @see docs/spec/governance-resolution.md */
 export const GOVERNANCE_OBJECT_TYPE: ObjectTypeDefinition = {
   object_type: OBJECT_TYPES.GOVERNANCE,
   description: 'Governance snapshot: admins, trusted, moderation, object control (see spec).',

@@ -13,7 +13,7 @@ import { resolveRanking } from './resolve-ranking';
  *
  * Returns a list with at most one entry (the winner), or empty if no VALID updates exist.
  *
- * @see spec/vote-semantics.md §D
+ * @see docs/spec/vote-semantics.md §D
  */
 export function resolveSingleCardinality(updates: ResolvedUpdate[]): ResolvedUpdate[] {
   const valid = updates.filter((u) => u.validity_status === 'VALID');
@@ -28,7 +28,7 @@ export function resolveSingleCardinality(updates: ResolvedUpdate[]): ResolvedUpd
  *
  * Delegates ordering to resolveRanking which applies the admin/trusted/tie-break hierarchy.
  *
- * @see spec/vote-semantics.md §B
+ * @see docs/spec/vote-semantics.md §B
  */
 export function resolveMultiCardinality(
   updates: ResolvedUpdate[],

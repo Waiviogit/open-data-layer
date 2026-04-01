@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
 import { UPDATE_TYPES } from '../update-types';
 
-/** Governance: platform-level ban; content from this account excluded from resolved views. @see spec/governance-resolution.md §2 */
+/** Governance: platform-level ban; content from this account excluded from resolved views. @see docs/spec/governance-resolution.md §2 */
 export const UPDATE_BANNED: UpdateDefinition = {
   update_type: UPDATE_TYPES.BANNED,
   description: 'Governance: platform-level ban; account excluded from resolved views.',

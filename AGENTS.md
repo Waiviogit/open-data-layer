@@ -160,10 +160,21 @@ Rules:
 - Docker: add `apps/<app>/Dockerfile` when containerized deployment is needed.
 - Libraries are bundled into app builds via webpack; standalone lib builds work best for libs without workspace deps.
 
-### Documentation
+### External library docs
 
 - Prefer latest official docs: NestJS v11 (https://docs.nestjs.com), Zod (https://zod.dev), Kysely (https://kysely.dev/docs), dhive (https://github.com/openhive-network/dhive).
 - Use context7 MCP when available. Do not rely on outdated blog posts.
+
+## Project documentation
+
+- **Where to read:** Start at [`docs/README.md`](docs/README.md). Domain specs: [`docs/spec/README.md`](docs/spec/README.md). Per-app docs: [`docs/apps/<app>/`](docs/apps/).
+- **Architecture:** [`docs/architecture/overview.md`](docs/architecture/overview.md), ADRs under [`docs/architecture/adr/`](docs/architecture/adr/).
+- **Writing rules:** [`docs/standards/docs-standards.md`](docs/standards/docs-standards.md).
+- **One description, one place** — do not duplicate prose; cross-link with relative Markdown paths.
+- **Missing spec** — if you add behavior and no spec exists, add or extend a doc under `docs/spec/` or `docs/apps/<app>/spec/` in the same change.
+- **Spec vs code** — if implementation diverges from the spec, update the spec or mark explicitly: `> **TODO: spec–code divergence**`.
+- **Generated registry docs** — `pnpm tsx scripts/gen-object-types-spec.ts` and `pnpm tsx scripts/gen-object-updates-spec.ts` write to `generated/` (gitignored). Source of truth: `OBJECT_TYPE_REGISTRY` and `UPDATE_REGISTRY` in `@opden-data-layer/core`; never edit generated files by hand.
+- **Code comments** — `@see` references use repo-root paths such as `docs/spec/data-model/flow.md`.
 
 ## Restrictions
 
@@ -179,6 +190,7 @@ Rules:
 - Never trust external input without validation.
 - Never violate `@nx/enforce-module-boundaries` constraints.
 - Never use raw string interpolation in DB queries.
+- Never commit `generated/` (registry Markdown output) or edit those files by hand.
 
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->

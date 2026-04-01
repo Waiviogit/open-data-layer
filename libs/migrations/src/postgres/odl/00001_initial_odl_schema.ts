@@ -3,7 +3,7 @@ import { sql } from 'kysely';
 
 /**
  * Initial ODL schema: objects_core, object_updates, validity_votes, rank_votes, object_authority, accounts_current.
- * Source: spec/postgres-concept/schema.sql. Types: @opden-data-layer/core (OdlDatabase).
+ * Source: docs/spec/data-model/schema.sql. Types: @opden-data-layer/core (OdlDatabase).
  * Requires: PostGIS extension.
  */
 export async function up(db: Kysely<unknown>): Promise<void> {

@@ -10,7 +10,7 @@ import type { ResolvedUpdate } from '../types/resolved-view';
  *   2. Latest trusted rank wins (LWTW) — highest event_seq among trusted voters
  *   3. No decisive rank → rank_score = null
  *
- * @see spec/vote-semantics.md §B
+ * @see docs/spec/vote-semantics.md §B
  */
 function resolveDecisiveRankScore(
   rankVotes: RankVote[],

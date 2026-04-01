@@ -47,7 +47,7 @@ export interface ResolvedField {
 
 /**
  * Fully resolved object — the final API-ready representation.
- * @see spec/postgres-concept/flow.md §Step 4
+ * @see docs/spec/data-model/flow.md §Step 4
  */
 export interface ResolvedObjectView {
   object_id: string;

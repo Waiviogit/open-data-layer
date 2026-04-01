@@ -48,3 +48,6 @@ Thumbs.db
 # Next.js
 .next
 out
+
+# Generated reference docs (run scripts/gen-object-types-spec.ts and gen-object-updates-spec.ts)
+generated/

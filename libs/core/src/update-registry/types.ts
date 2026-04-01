@@ -4,7 +4,7 @@ import type { ZodType } from 'zod';
  * Defines a single registerable update type.
  * Cardinality and value_kind live here (not in the DB) — they are resolved
  * at query time by the Query Service via UPDATE_REGISTRY lookup.
- * @see spec/object-type-entity.md §3
+ * @see docs/spec/object-type-entity.md §3
  */
 export interface UpdateDefinition {
   /** Unique update type identifier, e.g. "name", "price", "location". */
@@ -26,6 +26,6 @@ export interface UpdateDefinition {
 /**
  * Global flat map of every supported update type name to its definition.
  * Looked up by the Indexer on every `update_create` event.
- * @see spec/object-type-entity.md §3
+ * @see docs/spec/object-type-entity.md §3
  */
 export type UpdateRegistry = Record<string, UpdateDefinition>;

@@ -14,7 +14,7 @@ const GOVERNANCE_SCOPE = [
   'muted',
 ] as const;
 
-/** Governance: merge specific fields from the referenced governance object (one level only). @see spec/governance-resolution.md §2 */
+/** Governance: merge specific fields from the referenced governance object (one level only). @see docs/spec/governance-resolution.md §2 */
 export const UPDATE_INHERITS_FROM: UpdateDefinition = {
   update_type: UPDATE_TYPES.INHERITS_FROM,
   description: 'Governance: merge fields from referenced governance object.',
