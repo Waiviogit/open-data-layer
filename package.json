@@ -26,7 +26,6 @@
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/schedule": "^6.1.1",
     "@nestjs/swagger": "^11.2.6",
-    "axios": "^1.6.0",
     "class-transformer": "^0.5.1",
     "ioredis": "^5.10.0",
     "kysely": "^0.28.11",

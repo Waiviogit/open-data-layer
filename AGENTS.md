@@ -116,6 +116,7 @@ Rules:
 
 - Jest with `ts-jest`. Unit tests: `*.spec.ts` co-located with source.
 - E2E tests: separate Nx project `apps/<app>-e2e/src/`.
+- **HTTP in E2E**: use the built-in **`fetch` API** for HTTP calls. Do not add **axios** (or similar HTTP client libraries) — not used in this repo.
 - Domain/business logic must be unit-testable without NestJS container. Mock infrastructure.
 - Test behavior, not implementation.
 - Commands: `pnpm nx test <project>`, `--watch`, `--coverage`.
@@ -207,6 +208,7 @@ Full standards: [`docs/standards/docs-standards.md`](docs/standards/docs-standar
 - Never violate `@nx/enforce-module-boundaries` constraints.
 - Never use raw string interpolation in DB queries.
 - Never commit `generated/` (registry Markdown output) or edit those files by hand.
+- Never add **axios** or use it for HTTP — use **`fetch`** (e.g. in E2E tests).
 
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->

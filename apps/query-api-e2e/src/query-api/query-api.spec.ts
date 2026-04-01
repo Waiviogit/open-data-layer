@@ -1,10 +1,9 @@
-import axios from 'axios';
-
-describe('GET /api', () => {
-  it('should return a message', async () => {
-    const res = await axios.get(`/api`);
+describe('GET /api/v1/docs', () => {
+  it('should serve OpenAPI UI', async () => {
+    const res = await fetch(`${process.env.E2E_BASE_URL}/api/v1/docs`);
 
     expect(res.status).toBe(200);
-    expect(res.data).toEqual({ message: 'Hello API' });
+    const contentType = res.headers.get('content-type') ?? '';
+    expect(contentType).toContain('text/html');
   });
 });

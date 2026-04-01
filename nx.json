@@ -40,7 +40,6 @@
       },
       "exclude": [
         "worker-e2e/**/*",
-        "apps/chain-indexer-e2e/**/*",
         "apps/query-api-e2e/**/*",
         "apps/web-e2e/**/*"
       ]
