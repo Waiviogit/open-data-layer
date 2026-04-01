@@ -167,12 +167,28 @@ Rules:
 
 ## Project documentation
 
-- **Where to read:** Start at [`docs/README.md`](docs/README.md). Domain specs: [`docs/spec/README.md`](docs/spec/README.md). Per-app docs: [`docs/apps/<app>/`](docs/apps/).
-- **Architecture:** [`docs/architecture/overview.md`](docs/architecture/overview.md), ADRs under [`docs/architecture/adr/`](docs/architecture/adr/).
-- **Writing rules:** [`docs/standards/docs-standards.md`](docs/standards/docs-standards.md).
-- **One description, one place** — do not duplicate prose; cross-link with relative Markdown paths.
-- **Missing spec** — if you add behavior and no spec exists, add or extend a doc under `docs/spec/` or `docs/apps/<app>/spec/` in the same change.
-- **Spec vs code** — if implementation diverges from the spec, update the spec or mark explicitly: `> **TODO: spec–code divergence**`.
+Full standards: [`docs/standards/docs-standards.md`](docs/standards/docs-standards.md).
+
+### Where to find docs
+
+- Start at [`docs/README.md`](docs/README.md).
+- Domain specs: [`docs/spec/README.md`](docs/spec/README.md).
+- Per-app docs: `docs/apps/<app>/`.
+- Architecture: [`docs/architecture/overview.md`](docs/architecture/overview.md), ADRs under [`docs/architecture/adr/`](docs/architecture/adr/).
+
+### Doc structure rules
+
+- **One description, one place** — never duplicate prose; cross-link with relative Markdown paths.
+- **`overview.md` must stay slim** — purpose, scope/stack, feature index table, verification commands. No feature detail.
+- **One feature, one file** — each feature gets its own `<feature>.md` under the app's `spec/` folder. Add a row to the overview's "Feature specs" table.
+- **Split when needed** — if a file exceeds ~150 lines or covers two unrelated topics, split into separate files.
+- **Prefer many small files** over few large files.
+
+### When to create or update docs
+
+- **Missing spec** — if you add behavior and no spec exists, create `docs/apps/<app>/spec/<feature>.md` (or `docs/spec/<topic>.md` for cross-cutting) in the same change.
+- **Spec vs code** — if implementation diverges from spec, update the spec or mark explicitly: `> **TODO: spec-code divergence**`.
+- **Behavior change** — update the corresponding doc in the same PR.
 - **Generated registry docs** — `pnpm tsx scripts/gen-object-types-spec.ts` and `pnpm tsx scripts/gen-object-updates-spec.ts` write to `generated/` (gitignored). Source of truth: `OBJECT_TYPE_REGISTRY` and `UPDATE_REGISTRY` in `@opden-data-layer/core`; never edit generated files by hand.
 - **Code comments** — `@see` references use repo-root paths such as `docs/spec/data-model/flow.md`.
 
