@@ -1,3 +1,4 @@
+@import '../styles/theme.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -27,6 +28,8 @@ body {
   font-family: inherit;
   line-height: inherit;
   margin: 0;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
 }
 h1,
 h2,
@@ -105,7 +108,7 @@ pre {
   padding-bottom: 3rem;
   padding-left: 1rem;
   padding-right: 1rem;
-  color: rgba(55, 65, 81, 1);
+  color: var(--color-fg);
   width: 100%;
 }
 #welcome {

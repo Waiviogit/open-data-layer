@@ -20,6 +20,7 @@ The **web** application is the Next.js **App Router** frontend for the Open Data
 | Doc | Description |
 |-----|-------------|
 | [i18n.md](i18n.md) | Locale resolution, messages, cookies, SSR, RTL |
+| [theme.md](theme.md) | Theme preference, `data-theme`, CSS variables, SSR script, Tailwind |
 
 ## Verification
 

@@ -4,6 +4,9 @@ import { isRTL } from '../i18n/domain/is-rtl';
 import { I18nProvider } from '../i18n/providers/i18n-provider';
 import { getRequestLocale } from '../i18n/runtime/get-request-locale';
 import { loadMessages } from '../i18n/runtime/load-messages';
+import { getServerThemeResolution } from '../theme/get-server-theme-resolution';
+import { ThemeProvider } from '../theme/theme-provider';
+import { ThemeScript } from '../theme/theme-script';
 
 export const metadata = {
   title: 'Welcome to web',
@@ -18,13 +21,27 @@ export default async function RootLayout({
   const locale = await getRequestLocale();
   const messages = await loadMessages(locale);
   const dir = isRTL(locale) ? 'rtl' : 'ltr';
+  const themeResolution = await getServerThemeResolution();
+  const isSystemPreference = themeResolution.preference === 'system';
 
   return (
-    <html lang={locale} dir={dir}>
-      <body>
-        <I18nProvider locale={locale} messages={messages}>
-          {children}
-        </I18nProvider>
+    <html
+      lang={locale}
+      dir={dir}
+      suppressHydrationWarning
+      {...(!isSystemPreference
+        ? { 'data-theme': themeResolution.resolvedTheme }
+        : {})}
+    >
+      <head>
+        {isSystemPreference ? <ThemeScript /> : null}
+      </head>
+      <body className="min-h-screen bg-bg text-fg antialiased">
+        <ThemeProvider initialResolution={themeResolution}>
+          <I18nProvider locale={locale} messages={messages}>
+            {children}
+          </I18nProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
