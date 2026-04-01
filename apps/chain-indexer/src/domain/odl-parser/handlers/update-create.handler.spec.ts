@@ -23,6 +23,7 @@ describe('UpdateCreateHandler write guard', () => {
     creator: 'owner',
     weight: null,
     meta_group_id: null,
+    canonical: null,
     transaction_id: 'tx0',
     seq: 0,
   };
@@ -56,7 +57,10 @@ describe('UpdateCreateHandler write guard', () => {
 
   it('persists when signer matches governance object creator', async () => {
     const create = jest.fn().mockResolvedValue(undefined);
-    const objectUpdatesRepository = { create } as unknown as import('../../../repositories').ObjectUpdatesRepository;
+    const objectUpdatesRepository = {
+      create,
+      existsByObjectAndValue: jest.fn().mockResolvedValue(false),
+    } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
       findByObjectId: jest.fn().mockResolvedValue(governanceCore),
     } as unknown as import('../../../repositories').ObjectsCoreRepository;

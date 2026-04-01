@@ -16,7 +16,7 @@ Entry point for Open Data Layer documentation.
 
 | App | Entry |
 |-----|-------|
-| `chain-indexer` | [README](apps/chain-indexer/README.md) |
+| `chain-indexer` | [README](apps/chain-indexer/README.md) · [Developer guide](apps/chain-indexer/developer-guide.md) · [Spec](apps/chain-indexer/spec/overview.md) |
 | `ipfs-gateway` | [README](apps/ipfs-gateway/README.md) |
 | `query-api` | [README](apps/query-api/README.md) |
 | `web` | [README](apps/web/README.md) |
