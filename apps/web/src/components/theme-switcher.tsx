@@ -27,7 +27,7 @@ export function ThemeSwitcher() {
             key={opt.id}
             type="button"
             onClick={() => void setPreference(opt.id)}
-            className={`rounded border px-3 py-1.5 text-sm transition-colors ${
+            className={`rounded-btn border px-3 py-1.5 text-sm transition-colors ${
               active
                 ? 'border-accent bg-accent text-accent-fg'
                 : 'border-border bg-surface text-fg hover:bg-bg'

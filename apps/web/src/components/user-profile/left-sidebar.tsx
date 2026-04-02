@@ -5,7 +5,7 @@ type LeftSidebarProps = {
 export function LeftSidebar({ title = 'Discover' }: LeftSidebarProps) {
   return (
     <aside
-      className="rounded-lg border border-border bg-surface/60 p-4 text-sm text-muted"
+      className="rounded-card border border-border bg-surface/60 p-4 text-sm text-muted"
       aria-label={title}
     >
       <p className="font-medium text-fg">{title}</p>

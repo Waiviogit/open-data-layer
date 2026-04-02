@@ -19,7 +19,7 @@ export function UserHero(props: UserHeroProps) {
   const { pathname, ...headerProps } = props;
 
   return (
-    <header className="overflow-hidden rounded-lg border border-border bg-bg shadow-sm">
+    <header className="overflow-hidden rounded-card border border-border bg-bg shadow-card">
       <UserHeader {...headerProps} />
       <div className="px-4 pb-3 sm:px-6">
         <UserMenuClient accountName={headerProps.username} pathname={pathname} />

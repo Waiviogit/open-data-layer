@@ -60,7 +60,7 @@ function isActive(
 
 function navLinkClass(active: boolean) {
   return [
-    'inline-flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors',
+    'inline-flex items-center rounded-btn px-3 py-2 text-sm font-medium transition-colors',
     active
       ? 'bg-surface text-fg'
       : 'text-muted hover:bg-surface/80 hover:text-fg',

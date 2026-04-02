@@ -8,7 +8,7 @@ export function HomeI18nToolbar() {
   const { t } = useI18n();
 
   return (
-    <div className="mb-4 flex flex-col gap-4 rounded border border-border bg-surface px-4 py-3 text-fg">
+    <div className="mb-4 flex flex-col gap-4 rounded-btn border border-border bg-surface px-4 py-3 text-fg">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="font-medium">{t('search_placeholder')}</p>
         <LocaleSwitcher />

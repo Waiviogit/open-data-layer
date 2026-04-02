@@ -1,14 +1,47 @@
-/* Semantic colors: Tailwind maps to var(--color-*). data-theme on <html> is the source of truth. */
+/* Design tokens: Tailwind maps to var(--*). data-theme on <html> is the source of truth. */
 
 :root,
 [data-theme='light'] {
+  /* Colors */
   --color-bg: #ffffff;
   --color-fg: #111827;
   --color-muted: #6b7280;
   --color-border: #e5e7eb;
+  --color-border-strong: #374151;
   --color-surface: #f9fafb;
+  --color-surface-alt: #f3f4f6;
+  --color-heading: #111827;
   --color-accent: #0d9488;
   --color-accent-fg: #ffffff;
+  --color-cta-secondary-bg: #f3f4f6;
+  --color-cta-secondary-fg: #111827;
+  --color-code-bg: #374151;
+  --color-code-fg: #ffffff;
+
+  /* Typography */
+  --font-display:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-body:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-editorial: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+
+  /* Border radius */
+  --radius-btn: 0.25rem;
+  --radius-card: 0.5rem;
+  --radius-card-lg: 0.75rem;
+  --radius-pill: 9999px;
+
+  /* Elevation */
+  --shadow-card:
+    0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+
+  /* Layout */
+  --spacing-section-y: 4rem;
+  --container-max: 75rem;
 }
 
 [data-theme='dark'] {
@@ -16,9 +49,37 @@
   --color-fg: #f3f4f6;
   --color-muted: #9ca3af;
   --color-border: #27272a;
+  --color-border-strong: #3f3f46;
   --color-surface: #18181b;
+  --color-surface-alt: #27272a;
+  --color-heading: #f9fafb;
   --color-accent: #2dd4bf;
   --color-accent-fg: #0a0a0a;
+  --color-cta-secondary-bg: #27272a;
+  --color-cta-secondary-fg: #f3f4f6;
+  --color-code-bg: #27272a;
+  --color-code-fg: #e5e7eb;
+
+  --font-display:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-body:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-editorial: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+
+  --radius-btn: 0.25rem;
+  --radius-card: 0.5rem;
+  --radius-card-lg: 0.75rem;
+  --radius-pill: 9999px;
+
+  --shadow-card:
+    0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+
+  --spacing-section-y: 4rem;
+  --container-max: 75rem;
 }
 
 [data-theme='sepia'] {
@@ -26,7 +87,35 @@
   --color-fg: #433422;
   --color-muted: #6b5c4c;
   --color-border: #d4c4a8;
+  --color-border-strong: #5c4d3a;
   --color-surface: #ebe4d1;
+  --color-surface-alt: #e2d9c4;
+  --color-heading: #433422;
   --color-accent: #8b6914;
   --color-accent-fg: #fffef8;
+  --color-cta-secondary-bg: #e2d9c4;
+  --color-cta-secondary-fg: #433422;
+  --color-code-bg: #5c4d3a;
+  --color-code-fg: #fffef8;
+
+  --font-display:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-body:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-editorial: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+
+  --radius-btn: 0.25rem;
+  --radius-card: 0.5rem;
+  --radius-card-lg: 0.75rem;
+  --radius-pill: 9999px;
+
+  --shadow-card:
+    0 1px 3px 0 rgb(67 52 34 / 0.12), 0 1px 2px -1px rgb(67 52 34 / 0.1);
+
+  --spacing-section-y: 4rem;
+  --container-max: 75rem;
 }

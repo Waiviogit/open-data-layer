@@ -6,7 +6,7 @@ type ProfileRouteStubProps = {
 export function ProfileRouteStub({ title, description }: ProfileRouteStubProps) {
   return (
     <section
-      className="rounded-lg border border-border bg-surface/80 p-6"
+      className="rounded-card border border-border bg-surface/80 p-6"
       aria-labelledby="profile-route-stub-title"
     >
       <h2 id="profile-route-stub-title" className="text-lg font-semibold text-fg">

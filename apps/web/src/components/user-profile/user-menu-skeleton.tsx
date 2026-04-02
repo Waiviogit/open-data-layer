@@ -17,7 +17,7 @@ export function UserMenuSkeleton() {
       {Array.from({ length: 9 }).map((_, i) => (
         <div
           key={i}
-          className="inline-flex h-9 min-w-[4.5rem] animate-pulse rounded-md bg-surface px-3 py-2"
+          className="inline-flex h-9 min-w-[4.5rem] animate-pulse rounded-btn bg-surface px-3 py-2"
         />
       ))}
     </nav>

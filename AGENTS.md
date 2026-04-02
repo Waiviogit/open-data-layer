@@ -112,6 +112,16 @@ Rules:
 - Prettier: single quotes, trailing commas (all), auto endOfLine.
 - Use descriptive names.
 
+### Web app (`apps/web`) — Design tokens
+
+When creating or editing UI in `apps/web`, follow the **design token** system so themes and future design presets stay swappable without scattered hex values.
+
+- **Source of truth:** CSS custom properties per `[data-theme='…']` in [`apps/web/src/styles/theme.css`](apps/web/src/styles/theme.css); Tailwind maps them in [`apps/web/tailwind.config.js`](apps/web/tailwind.config.js). Spec: [`docs/apps/web/spec/theme.md`](docs/apps/web/spec/theme.md).
+- **Colors:** use semantic utilities (`bg-bg`, `text-fg`, `text-muted`, `border-border`, `bg-accent`, `text-accent-fg`, `bg-surface`, extended tokens such as `border-border-strong`, `bg-surface-alt`, `text-heading`, `bg-code-bg`). Do **not** embed raw `#…` / `rgb()` / `rgba()` in component `className` or inline styles except where documented (e.g. temporary scaffold CSS).
+- **Typography:** root uses `var(--font-body)` from `global.css`; prefer `font-body`, `font-display`, or `font-editorial` when a component needs an explicit stack.
+- **Radius and elevation:** prefer token-backed utilities (`rounded-btn`, `rounded-card`, `rounded-card-lg`, `rounded-pill`, `shadow-card`) over default Tailwind `rounded-md` / `rounded-lg` / `shadow-sm` so curvature and depth follow the active theme.
+- **New tokens:** if a design needs a new role (color, radius, shadow), add the CSS variable in `theme.css` for every theme block, extend Tailwind in `tailwind.config.js`, and update `docs/apps/web/spec/theme.md` in the same change.
+
 ### Testing
 
 - Jest with `ts-jest`. Unit tests: `*.spec.ts` co-located with source.
@@ -209,6 +219,7 @@ Full standards: [`docs/standards/docs-standards.md`](docs/standards/docs-standar
 - Never use raw string interpolation in DB queries.
 - Never commit `generated/` (registry Markdown output) or edit those files by hand.
 - Never add **axios** or use it for HTTP — use **`fetch`** (e.g. in E2E tests).
+- Never hardcode ad-hoc colors or ignore design-token utilities in `apps/web` UI — follow **Web app (`apps/web`) — Design tokens** (semantic Tailwind + `theme.css`).
 
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
