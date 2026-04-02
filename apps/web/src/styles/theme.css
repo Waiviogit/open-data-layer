@@ -5,11 +5,15 @@
   /* Colors */
   --color-bg: #ffffff;
   --color-fg: #111827;
+  --color-fg-secondary: rgb(17 24 39 / 0.7);
+  --color-fg-tertiary: rgb(17 24 39 / 0.45);
   --color-muted: #6b7280;
+  --color-link: #0066cc;
   --color-border: #e5e7eb;
   --color-border-strong: #374151;
   --color-surface: #f9fafb;
   --color-surface-alt: #f3f4f6;
+  --color-surface-raised: #ffffff;
   --color-heading: #111827;
   --color-accent: #0d9488;
   --color-accent-fg: #ffffff;
@@ -17,6 +21,8 @@
   --color-cta-secondary-fg: #111827;
   --color-code-bg: #374151;
   --color-code-fg: #ffffff;
+  --color-nav-bg: rgb(255 255 255 / 0.85);
+  --color-nav-fg: #111827;
 
   /* Typography */
   --font-display:
@@ -29,15 +35,28 @@
     'Segoe UI Symbol', 'Noto Color Emoji';
   --font-editorial: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
 
+  /* Letter spacing */
+  --tracking-display: -0.015em;
+  --tracking-body: -0.011em;
+  --tracking-caption: -0.008em;
+
+  /* Line height */
+  --leading-display: 1.1;
+  --leading-body: 1.5;
+
   /* Border radius */
   --radius-btn: 0.25rem;
   --radius-card: 0.5rem;
   --radius-card-lg: 0.75rem;
   --radius-pill: 9999px;
+  --radius-circle: 50%;
 
   /* Elevation */
   --shadow-card:
     0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-card-float:
+    0 5px 30px 0 rgb(0 0 0 / 0.12), 0 3px 8px 0 rgb(0 0 0 / 0.06);
+  --backdrop-nav: saturate(180%) blur(20px);
 
   /* Layout */
   --spacing-section-y: 4rem;
@@ -47,11 +66,15 @@
 [data-theme='dark'] {
   --color-bg: #0a0a0a;
   --color-fg: #f3f4f6;
+  --color-fg-secondary: rgb(243 244 246 / 0.7);
+  --color-fg-tertiary: rgb(243 244 246 / 0.45);
   --color-muted: #9ca3af;
+  --color-link: #60a5fa;
   --color-border: #27272a;
   --color-border-strong: #3f3f46;
   --color-surface: #18181b;
   --color-surface-alt: #27272a;
+  --color-surface-raised: #303033;
   --color-heading: #f9fafb;
   --color-accent: #2dd4bf;
   --color-accent-fg: #0a0a0a;
@@ -59,6 +82,8 @@
   --color-cta-secondary-fg: #f3f4f6;
   --color-code-bg: #27272a;
   --color-code-fg: #e5e7eb;
+  --color-nav-bg: rgb(10 10 10 / 0.8);
+  --color-nav-fg: #f3f4f6;
 
   --font-display:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
@@ -70,13 +95,24 @@
     'Segoe UI Symbol', 'Noto Color Emoji';
   --font-editorial: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
 
+  --tracking-display: -0.015em;
+  --tracking-body: -0.011em;
+  --tracking-caption: -0.008em;
+
+  --leading-display: 1.1;
+  --leading-body: 1.5;
+
   --radius-btn: 0.25rem;
   --radius-card: 0.5rem;
   --radius-card-lg: 0.75rem;
   --radius-pill: 9999px;
+  --radius-circle: 50%;
 
   --shadow-card:
     0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+  --shadow-card-float:
+    0 5px 30px 0 rgb(0 0 0 / 0.5), 0 3px 8px 0 rgb(0 0 0 / 0.3);
+  --backdrop-nav: saturate(180%) blur(20px);
 
   --spacing-section-y: 4rem;
   --container-max: 75rem;
@@ -85,11 +121,15 @@
 [data-theme='sepia'] {
   --color-bg: #f4ecd8;
   --color-fg: #433422;
+  --color-fg-secondary: rgb(67 52 34 / 0.7);
+  --color-fg-tertiary: rgb(67 52 34 / 0.45);
   --color-muted: #6b5c4c;
+  --color-link: #7a4f1a;
   --color-border: #d4c4a8;
   --color-border-strong: #5c4d3a;
   --color-surface: #ebe4d1;
   --color-surface-alt: #e2d9c4;
+  --color-surface-raised: #f8f2e4;
   --color-heading: #433422;
   --color-accent: #8b6914;
   --color-accent-fg: #fffef8;
@@ -97,6 +137,8 @@
   --color-cta-secondary-fg: #433422;
   --color-code-bg: #5c4d3a;
   --color-code-fg: #fffef8;
+  --color-nav-bg: rgb(244 236 216 / 0.88);
+  --color-nav-fg: #433422;
 
   --font-display:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
@@ -108,13 +150,24 @@
     'Segoe UI Symbol', 'Noto Color Emoji';
   --font-editorial: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
 
+  --tracking-display: -0.015em;
+  --tracking-body: -0.011em;
+  --tracking-caption: -0.008em;
+
+  --leading-display: 1.1;
+  --leading-body: 1.5;
+
   --radius-btn: 0.25rem;
   --radius-card: 0.5rem;
   --radius-card-lg: 0.75rem;
   --radius-pill: 9999px;
+  --radius-circle: 50%;
 
   --shadow-card:
     0 1px 3px 0 rgb(67 52 34 / 0.12), 0 1px 2px -1px rgb(67 52 34 / 0.1);
+  --shadow-card-float:
+    0 5px 30px 0 rgb(67 52 34 / 0.16), 0 3px 8px 0 rgb(67 52 34 / 0.08);
+  --backdrop-nav: saturate(160%) blur(16px);
 
   --spacing-section-y: 4rem;
   --container-max: 75rem;

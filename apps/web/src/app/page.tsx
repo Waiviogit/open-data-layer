@@ -1,3 +1,4 @@
+import { HydrationSafeAnchor } from '../components/hydration-safe-anchor';
 import { HomeI18nToolbar } from './home-i18n-toolbar';
 
 export default function Index() {
@@ -36,7 +37,7 @@ export default function Index() {
                 </svg>
                 <span>You&apos;re up and running</span>
               </h2>
-              <a href="#commands"> What&apos;s next? </a>
+              <HydrationSafeAnchor href="#commands"> What&apos;s next? </HydrationSafeAnchor>
             </div>
             <div className="logo-container">
               <svg
@@ -53,7 +54,7 @@ export default function Index() {
           <div id="middle-content">
             <div id="learning-materials" className="rounded shadow">
               <h2>Learning materials</h2>
-              <a
+              <HydrationSafeAnchor
                 href="https://nx.dev/getting-started/intro?utm_source=nx-project"
                 target="_blank"
                 rel="noreferrer"
@@ -89,8 +90,8 @@ export default function Index() {
                     d="M9 5l7 7-7 7"
                   />
                 </svg>
-              </a>
-              <a
+              </HydrationSafeAnchor>
+              <HydrationSafeAnchor
                 href="https://nx.dev/blog/?utm_source=nx-project"
                 target="_blank"
                 rel="noreferrer"
@@ -126,8 +127,8 @@ export default function Index() {
                     d="M9 5l7 7-7 7"
                   />
                 </svg>
-              </a>
-              <a
+              </HydrationSafeAnchor>
+              <HydrationSafeAnchor
                 href="https://www.youtube.com/@NxDevtools/videos?utm_source=nx-project&sub_confirmation=1"
                 target="_blank"
                 rel="noreferrer"
@@ -159,8 +160,8 @@ export default function Index() {
                     d="M9 5l7 7-7 7"
                   />
                 </svg>
-              </a>
-              <a
+              </HydrationSafeAnchor>
+              <HydrationSafeAnchor
                 href="https://nx.dev/react-tutorial/1-code-generation?utm_source=nx-project"
                 target="_blank"
                 rel="noreferrer"
@@ -196,8 +197,8 @@ export default function Index() {
                     d="M9 5l7 7-7 7"
                   />
                 </svg>
-              </a>
-              <a
+              </HydrationSafeAnchor>
+              <HydrationSafeAnchor
                 href="https://nxplaybook.com/?utm_source=nx-project"
                 target="_blank"
                 rel="noreferrer"
@@ -235,10 +236,10 @@ export default function Index() {
                     d="M9 5l7 7-7 7"
                   />
                 </svg>
-              </a>
+              </HydrationSafeAnchor>
             </div>
             <div id="other-links">
-              <a
+              <HydrationSafeAnchor
                 id="nx-console"
                 className="button-pill rounded shadow"
                 href="https://marketplace.visualstudio.com/items?itemName=nrwl.angular-console&utm_source=nx-project"
@@ -258,8 +259,8 @@ export default function Index() {
                   Install Nx Console for VSCode
                   <span>The official VSCode extension for Nx.</span>
                 </span>
-              </a>
-              <a
+              </HydrationSafeAnchor>
+              <HydrationSafeAnchor
                 id="nx-console-jetbrains"
                 className="button-pill rounded shadow"
                 href="https://plugins.jetbrains.com/plugin/21060-nx-console"
@@ -292,7 +293,7 @@ export default function Index() {
                     Available for WebStorm, Intellij IDEA Ultimate and more!
                   </span>
                 </span>
-              </a>
+              </HydrationSafeAnchor>
               <div id="nx-cloud" className="rounded shadow">
                 <div>
                   <svg
@@ -322,16 +323,16 @@ export default function Index() {
                   running:
                 </p>
                 <pre>nx connect</pre>
-                <a
+                <HydrationSafeAnchor
                   href="https://nx.app/?utm_source=nx-project"
                   target="_blank"
                   rel="noreferrer"
                 >
                   {' '}
                   What is Nx Cloud?{' '}
-                </a>
+                </HydrationSafeAnchor>
               </div>
-              <a
+              <HydrationSafeAnchor
                 id="nx-repo"
                 className="button-pill rounded shadow"
                 href="https://github.com/nrwl/nx?utm_source=nx-project"
@@ -350,7 +351,7 @@ export default function Index() {
                   Nx is open source
                   <span> Love Nx? Give us a star! </span>
                 </span>
-              </a>
+              </HydrationSafeAnchor>
             </div>
           </div>
 

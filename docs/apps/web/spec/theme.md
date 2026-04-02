@@ -62,11 +62,15 @@ Each `[data-theme='…']` block in `apps/web/src/styles/theme.css` sets the same
 | ------------ | ------------------- | ---- |
 | `--color-bg` | `bg-bg` | Page / main surface background |
 | `--color-fg` | `text-fg` | Default body text |
-| `--color-muted` | `text-muted` | Secondary / de-emphasized text |
+| `--color-fg-secondary` | `text-fg-secondary` | Secondary text (opacity-shifted from `fg`) |
+| `--color-fg-tertiary` | `text-fg-tertiary` | Tertiary / disabled text |
+| `--color-muted` | `text-muted` | De-emphasized labels, captions |
+| `--color-link` | `text-link` | Text link color (theme-aware; differs on dark vs light) |
 | `--color-border` | `border-border` | Default borders |
 | `--color-border-strong` | `border-border-strong` | Stronger dividers / emphasis |
 | `--color-surface` | `bg-surface` | Raised panels, sidebars |
 | `--color-surface-alt` | `bg-surface-alt` | Alternate tint (hover, stripes) |
+| `--color-surface-raised` | `bg-surface-raised` | Elevated cards within already-raised panels |
 | `--color-heading` | `text-heading` | Headings (can match `fg`) |
 | `--color-accent` | `bg-accent`, `text-accent` | Primary accent / CTA fill |
 | `--color-accent-fg` | `text-accent-fg` | Text on accent background |
@@ -74,14 +78,21 @@ Each `[data-theme='…']` block in `apps/web/src/styles/theme.css` sets the same
 | `--color-cta-secondary-fg` | `text-cta-secondary-fg` | Secondary button text |
 | `--color-code-bg` | `bg-code-bg` | `<pre>` / code block background |
 | `--color-code-fg` | `text-code-fg` | `<pre>` / code block foreground |
+| `--color-nav-bg` | `bg-nav-bg` | Navigation surface (translucent per theme) |
+| `--color-nav-fg` | `text-nav-fg` | Navigation link text |
 
 ### Typography
 
 | CSS variable | Tailwind | Role |
 | ------------ | -------- | ---- |
-| `--font-display` | `font-display` | Display / marketing headlines (optional) |
+| `--font-display` | `font-display` | Display / marketing headlines |
 | `--font-body` | `font-body` | UI and body copy |
-| `--font-editorial` | `font-editorial` | Serif / editorial accents (optional) |
+| `--font-editorial` | `font-editorial` | Serif / editorial accents |
+| `--tracking-display` | `tracking-display` | Letter-spacing for hero headlines |
+| `--tracking-body` | `tracking-body` | Letter-spacing for body text |
+| `--tracking-caption` | `tracking-caption` | Letter-spacing for captions / small text |
+| `--leading-display` | `leading-display` | Line-height for display headlines |
+| `--leading-body` | `leading-body` | Line-height for body text |
 
 `html` in `global.css` uses `font-family: var(--font-body)`.
 
@@ -93,6 +104,7 @@ Each `[data-theme='…']` block in `apps/web/src/styles/theme.css` sets the same
 | `--radius-card` | `rounded-card` | Cards, panels, nav chrome |
 | `--radius-card-lg` | `rounded-card-lg` | Larger featured surfaces |
 | `--radius-pill` | `rounded-pill` | Pills, fully rounded controls |
+| `--radius-circle` | `rounded-circle` | Circular avatars, media control buttons |
 
 Prefer these over raw `rounded-md` / `rounded-lg` so a theme can change curvature globally.
 
@@ -100,9 +112,16 @@ Prefer these over raw `rounded-md` / `rounded-lg` so a theme can change curvatur
 
 | CSS variable | Tailwind | Role |
 | ------------ | -------- | ---- |
-| `--shadow-card` | `shadow-card` | Default card / floating chrome shadow |
+| `--shadow-card` | `shadow-card` | Default card shadow (tight, subtle) |
+| `--shadow-card-float` | `shadow-card-float` | Elevated / floating product card (soft, wide offset) |
+| `--backdrop-nav` | not a utility — use `backdrop-filter: var(--backdrop-nav)` | Backdrop filter for glass-style navigation |
 
-Prefer `shadow-card` over `shadow-sm` for surfaces that should track the design system.
+`--backdrop-nav` is not a Tailwind utility. Use it in a CSS rule or `style` prop:
+```css
+.nav { backdrop-filter: var(--backdrop-nav); }
+```
+
+Prefer `shadow-card` over `shadow-sm` and `shadow-card-float` over `shadow-lg` so depth tracks the active theme.
 
 ### Layout
 
