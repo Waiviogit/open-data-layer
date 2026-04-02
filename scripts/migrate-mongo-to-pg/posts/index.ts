@@ -36,6 +36,7 @@ type PostInsertBuffer = Omit<NewPost, 'beneficiaries'> & {
 interface MigrationStats {
   postsSeen: number;
   postsSkippedMissingPk: number;
+  postsSkippedEmptyTitleBody: number;
   postObjectsSkippedNoFk: number;
   postRowsBuffered: number;
   voteRowsBuffered: number;
@@ -189,6 +190,7 @@ class MongoPostsMigrator {
   readonly stats: MigrationStats = {
     postsSeen: 0,
     postsSkippedMissingPk: 0,
+    postsSkippedEmptyTitleBody: 0,
     postObjectsSkippedNoFk: 0,
     postRowsBuffered: 0,
     voteRowsBuffered: 0,
@@ -431,6 +433,13 @@ class MongoPostsMigrator {
     const permlink = doc.permlink?.trim();
     if (!author || !permlink) {
       this.stats.postsSkippedMissingPk += 1;
+      return;
+    }
+
+    const titleTrim = doc.title?.trim() ?? '';
+    const bodyTrim = doc.body?.trim() ?? '';
+    if (titleTrim === '' && bodyTrim === '') {
+      this.stats.postsSkippedEmptyTitleBody += 1;
       return;
     }
 
