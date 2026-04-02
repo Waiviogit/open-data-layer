@@ -10,6 +10,7 @@ Related files:
 - [validity-votes.ts](validity-votes.ts) — ValidityVoteRow
 - [rank-votes.ts](rank-votes.ts) — RankVoteRow
 - [schema.sql](schema.sql) — Full DDL
+- [posts.md](posts.md) — Hive `posts` and satellite tables (separate from object/update flow)
 
 ## Roles of the tables
 

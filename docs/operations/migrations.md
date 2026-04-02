@@ -21,7 +21,7 @@ The library is engine- and schema-aware: migrations are grouped by database (e.g
 ```
 libs/migrations/src/
   postgres/
-    odl/                          # ODL schema (objects_core, object_updates, votes, accounts_current)
+    odl/                          # ODL schema (objects_core, object_updates, votes, accounts_current, posts, post_*)
       00001_initial_odl_schema.ts
       index.ts                    # MIGRATIONS record for OdlMigrationProvider
   cli.ts                          # CLI entry (latest | down | status)
@@ -180,3 +180,4 @@ The CLI scripts (`pnpm migrate`, `pnpm migrate:status`, etc.) load `.env` automa
 
 - **Schema and types:** [`data-model/schema.sql`](../spec/data-model/schema.sql), [`data-model/flow.md`](../spec/data-model/flow.md), and `@opden-data-layer/core` (`OdlDatabase`, table row types).
 - **Kysely:** [kysely.dev/docs](https://kysely.dev/docs), including [Migrations](https://kysely.dev/docs/migrations).
+- **Mongo → Postgres data import** (one-off JSON array loads, not Kysely schema migrations): [`scripts/migrate-mongo-to-pg/README.md`](../../scripts/migrate-mongo-to-pg/README.md) (`pnpm migrate:mongo-objects`, `pnpm migrate:mongo-posts`).

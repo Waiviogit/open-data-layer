@@ -1,6 +1,6 @@
 /**
  * Stream MongoDB wobject JSON array export into ODL Postgres tables.
- * Usage: pnpm migrate:mongo <path-to.json> [--skip-indexes]
+ * Usage: pnpm migrate:mongo-objects <path-to.json> [--skip-indexes]
  * Requires DATABASE_URL (e.g. via .env with tsx --env-file).
  *
  * --skip-indexes  Drop object_updates indexes and trigger before bulk insert,
@@ -19,9 +19,9 @@ import type {
   NewObjectUpdate,
   NewValidityVote,
   OdlDatabase,
-} from '../../libs/core/src/db';
-import { OBJECT_TYPE_REGISTRY } from '../../libs/core/src/object-type-registry';
-import { UPDATE_REGISTRY } from '../../libs/core/src/update-registry';
+} from '../../../libs/core/src/db';
+import { OBJECT_TYPE_REGISTRY } from '../../../libs/core/src/object-type-registry';
+import { UPDATE_REGISTRY } from '../../../libs/core/src/update-registry';
 import { Kysely, PostgresDialect, sql } from 'kysely';
 import { Pool } from 'pg';
 import streamArray from 'stream-json/streamers/stream-array.js';
@@ -611,7 +611,7 @@ function main(): void {
 
   if (!fileArg?.trim()) {
     fail(
-      'Usage: tsx scripts/migrate-mongo-to-pg/index.ts <path-to-wobjects.json> [--skip-indexes]',
+      'Usage: tsx scripts/migrate-mongo-to-pg/objects/index.ts <path-to-wobjects.json> [--skip-indexes]',
     );
   }
 

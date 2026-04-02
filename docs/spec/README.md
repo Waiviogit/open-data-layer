@@ -80,6 +80,7 @@ Details: [architecture overview](../architecture/overview.md).
 | Doc | Description |
 |-----|-------------|
 | [data-model/flow.md](data-model/flow.md) | Schema, write/read flows, indexes, comparison notes |
+| [data-model/posts.md](data-model/posts.md) | Hive posts: `posts` + satellite tables (votes, objects, reblogs, languages, links, mentions) |
 | [data-model/schema.sql](data-model/schema.sql) | DDL sketch |
 
 ### Architecture decisions

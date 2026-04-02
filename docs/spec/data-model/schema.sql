@@ -1,4 +1,5 @@
--- PostgreSQL concept schema: objects_core, object_updates, validity_votes, rank_votes.
+-- PostgreSQL concept schema: objects_core, object_updates, validity_votes, rank_votes,
+-- posts and post_* satellite tables.
 -- Requires: PostGIS extension for geo. No projection table; query directly via JOINs, tsvector, PostGIS.
 
 CREATE EXTENSION IF NOT EXISTS postgis;
@@ -139,3 +140,149 @@ CREATE TABLE accounts_current (
 
 CREATE INDEX idx_accounts_current_object_reputation ON accounts_current (object_reputation DESC NULLS LAST);
 CREATE INDEX idx_accounts_current_hive_id ON accounts_current (hive_id) WHERE hive_id IS NOT NULL;
+
+-- ---------------------------------------------------------------------------
+-- posts (Hive post; normalized from legacy Mongo PostSchema)
+-- Embedded arrays → post_active_votes, post_objects, post_reblogged_users,
+-- post_languages, post_links, post_mentions. Omitted: blocked_for_apps,
+-- language (singular), reblog_to.
+-- ---------------------------------------------------------------------------
+CREATE TABLE posts (
+  author                   TEXT NOT NULL,
+  permlink                 TEXT NOT NULL,
+  hive_id                  INT,
+  author_reputation        INT NOT NULL DEFAULT 0,
+  author_weight            DOUBLE PRECISION NOT NULL DEFAULT 0,
+  parent_author            TEXT NOT NULL DEFAULT '',
+  parent_permlink          TEXT NOT NULL DEFAULT '',
+  title                    TEXT NOT NULL DEFAULT '',
+  body                     TEXT NOT NULL DEFAULT '',
+  json_metadata            TEXT NOT NULL DEFAULT '',
+  app                      TEXT,
+  depth                    INT,
+  category                 TEXT,
+  last_update              TEXT,
+  created                  TEXT,
+  active                   TEXT,
+  last_payout              TEXT,
+  children                 INT NOT NULL DEFAULT 0,
+  net_rshares              BIGINT NOT NULL DEFAULT 0,
+  abs_rshares              BIGINT NOT NULL DEFAULT 0,
+  vote_rshares             BIGINT NOT NULL DEFAULT 0,
+  children_abs_rshares     BIGINT,
+  cashout_time             TEXT,
+  reward_weight            TEXT,
+  total_payout_value       TEXT NOT NULL DEFAULT '0.000 HBD',
+  curator_payout_value     TEXT NOT NULL DEFAULT '0.000 HBD',
+  author_rewards           INT,
+  net_votes                INT,
+  root_author              TEXT NOT NULL DEFAULT '',
+  root_permlink            TEXT NOT NULL DEFAULT '',
+  root_title               TEXT,
+  max_accepted_payout      TEXT NOT NULL DEFAULT '1000000.000 HBD',
+  percent_steem_dollars    INT,
+  allow_replies            BOOLEAN,
+  allow_votes              BOOLEAN,
+  allow_curation_rewards   BOOLEAN,
+  beneficiaries            JSONB NOT NULL DEFAULT '[]'::jsonb,
+  url                      TEXT,
+  pending_payout_value     TEXT NOT NULL DEFAULT '0.000 HBD',
+  total_pending_payout_value TEXT NOT NULL DEFAULT '0.000 HBD',
+  total_vote_weight        BIGINT,
+  promoted                 TEXT,
+  body_length              INT,
+  net_rshares_WAIV         DOUBLE PRECISION NOT NULL DEFAULT 0,
+  total_payout_WAIV        DOUBLE PRECISION NOT NULL DEFAULT 0,
+  total_rewards_WAIV       DOUBLE PRECISION NOT NULL DEFAULT 0,
+  created_unix             BIGINT NOT NULL,
+  PRIMARY KEY (author, permlink)
+);
+
+CREATE INDEX idx_posts_author_created_unix ON posts (author, created_unix DESC);
+
+-- ---------------------------------------------------------------------------
+-- post_active_votes
+-- ---------------------------------------------------------------------------
+CREATE TABLE post_active_votes (
+  author    TEXT NOT NULL,
+  permlink  TEXT NOT NULL,
+  voter     TEXT NOT NULL,
+  weight    INT,
+  percent   INT,
+  rshares   BIGINT,
+  rshares_waiv DOUBLE PRECISION,
+  PRIMARY KEY (author, permlink, voter),
+  FOREIGN KEY (author, permlink) REFERENCES posts (author, permlink) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_post_active_votes_voter ON post_active_votes (voter);
+
+-- ---------------------------------------------------------------------------
+-- post_objects (posts ↔ objects_core)
+-- ---------------------------------------------------------------------------
+CREATE TABLE post_objects (
+  author       TEXT NOT NULL,
+  permlink     TEXT NOT NULL,
+  object_id    TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
+  percent      INT,
+  tagged       TEXT,
+  object_type  TEXT,
+  PRIMARY KEY (author, permlink, object_id),
+  FOREIGN KEY (author, permlink) REFERENCES posts (author, permlink) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_post_objects_object_id ON post_objects (object_id);
+CREATE INDEX idx_post_objects_object_type ON post_objects (object_type) WHERE object_type IS NOT NULL;
+
+-- ---------------------------------------------------------------------------
+-- post_reblogged_users
+-- ---------------------------------------------------------------------------
+CREATE TABLE post_reblogged_users (
+  author             TEXT NOT NULL,
+  permlink           TEXT NOT NULL,
+  account            TEXT NOT NULL,
+  reblogged_at_unix  BIGINT NOT NULL,
+  PRIMARY KEY (author, permlink, account),
+  FOREIGN KEY (author, permlink) REFERENCES posts (author, permlink) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_post_reblogged_users_account_reblogged_at ON post_reblogged_users (account, reblogged_at_unix DESC);
+
+-- ---------------------------------------------------------------------------
+-- post_languages
+-- ---------------------------------------------------------------------------
+CREATE TABLE post_languages (
+  author    TEXT NOT NULL,
+  permlink  TEXT NOT NULL,
+  language  TEXT NOT NULL,
+  PRIMARY KEY (author, permlink, language),
+  FOREIGN KEY (author, permlink) REFERENCES posts (author, permlink) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_post_languages_language ON post_languages (language);
+
+-- ---------------------------------------------------------------------------
+-- post_links
+-- ---------------------------------------------------------------------------
+CREATE TABLE post_links (
+  author    TEXT NOT NULL,
+  permlink  TEXT NOT NULL,
+  url       TEXT NOT NULL,
+  PRIMARY KEY (author, permlink, url),
+  FOREIGN KEY (author, permlink) REFERENCES posts (author, permlink) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_post_links_url ON post_links (url);
+
+-- ---------------------------------------------------------------------------
+-- post_mentions
+-- ---------------------------------------------------------------------------
+CREATE TABLE post_mentions (
+  author    TEXT NOT NULL,
+  permlink  TEXT NOT NULL,
+  account   TEXT NOT NULL,
+  PRIMARY KEY (author, permlink, account),
+  FOREIGN KEY (author, permlink) REFERENCES posts (author, permlink) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_post_mentions_account ON post_mentions (account);

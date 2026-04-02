@@ -2,7 +2,8 @@ import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 
 /**
- * Initial ODL schema: objects_core, object_updates, validity_votes, rank_votes, object_authority, accounts_current.
+ * Initial ODL schema: objects_core, object_updates, validity_votes, rank_votes, object_authority, accounts_current,
+ * posts and post_* satellite tables.
  * Source: docs/spec/data-model/schema.sql. Types: @opden-data-layer/core (OdlDatabase).
  * Requires: PostGIS extension.
  */
@@ -133,9 +134,152 @@ export async function up(db: Kysely<unknown>): Promise<void> {
 
   await sql`CREATE INDEX idx_accounts_current_object_reputation ON accounts_current (object_reputation DESC NULLS LAST)`.execute(db);
   await sql`CREATE INDEX idx_accounts_current_hive_id ON accounts_current (hive_id) WHERE hive_id IS NOT NULL`.execute(db);
+
+  await sql`
+    CREATE TABLE posts (
+      author                   TEXT NOT NULL,
+      permlink                 TEXT NOT NULL,
+      hive_id                  INT,
+      author_reputation        INT NOT NULL DEFAULT 0,
+      author_weight            DOUBLE PRECISION NOT NULL DEFAULT 0,
+      parent_author            TEXT NOT NULL DEFAULT '',
+      parent_permlink          TEXT NOT NULL DEFAULT '',
+      title                    TEXT NOT NULL DEFAULT '',
+      body                     TEXT NOT NULL DEFAULT '',
+      json_metadata            TEXT NOT NULL DEFAULT '',
+      app                      TEXT,
+      depth                    INT,
+      category                 TEXT,
+      last_update              TEXT,
+      created                  TEXT,
+      active                   TEXT,
+      last_payout              TEXT,
+      children                 INT NOT NULL DEFAULT 0,
+      net_rshares              BIGINT NOT NULL DEFAULT 0,
+      abs_rshares              BIGINT NOT NULL DEFAULT 0,
+      vote_rshares             BIGINT NOT NULL DEFAULT 0,
+      children_abs_rshares     BIGINT,
+      cashout_time             TEXT,
+      reward_weight            TEXT,
+      total_payout_value       TEXT NOT NULL DEFAULT '0.000 HBD',
+      curator_payout_value     TEXT NOT NULL DEFAULT '0.000 HBD',
+      author_rewards           INT,
+      net_votes                INT,
+      root_author              TEXT NOT NULL DEFAULT '',
+      root_permlink            TEXT NOT NULL DEFAULT '',
+      root_title               TEXT,
+      max_accepted_payout      TEXT NOT NULL DEFAULT '1000000.000 HBD',
+      percent_steem_dollars    INT,
+      allow_replies            BOOLEAN,
+      allow_votes              BOOLEAN,
+      allow_curation_rewards   BOOLEAN,
+      beneficiaries            JSONB NOT NULL DEFAULT '[]'::jsonb,
+      url                      TEXT,
+      pending_payout_value     TEXT NOT NULL DEFAULT '0.000 HBD',
+      total_pending_payout_value TEXT NOT NULL DEFAULT '0.000 HBD',
+      total_vote_weight        BIGINT,
+      promoted                 TEXT,
+      body_length              INT,
+      net_rshares_WAIV         DOUBLE PRECISION NOT NULL DEFAULT 0,
+      total_payout_WAIV        DOUBLE PRECISION NOT NULL DEFAULT 0,
+      total_rewards_WAIV       DOUBLE PRECISION NOT NULL DEFAULT 0,
+      created_unix             BIGINT NOT NULL,
+      PRIMARY KEY (author, permlink)
+    )
+  `.execute(db);
+
+  await sql`CREATE INDEX idx_posts_author_created_unix ON posts (author, created_unix DESC)`.execute(db);
+
+  await sql`
+    CREATE TABLE post_active_votes (
+      author    TEXT NOT NULL,
+      permlink  TEXT NOT NULL,
+      voter     TEXT NOT NULL,
+      weight    INT,
+      percent   INT,
+      rshares   BIGINT,
+      rshares_waiv DOUBLE PRECISION,
+      PRIMARY KEY (author, permlink, voter),
+      FOREIGN KEY (author, permlink) REFERENCES posts (author, permlink) ON DELETE CASCADE
+    )
+  `.execute(db);
+
+  await sql`CREATE INDEX idx_post_active_votes_voter ON post_active_votes (voter)`.execute(db);
+
+  await sql`
+    CREATE TABLE post_objects (
+      author       TEXT NOT NULL,
+      permlink     TEXT NOT NULL,
+      object_id    TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
+      percent      INT,
+      tagged       TEXT,
+      object_type  TEXT,
+      PRIMARY KEY (author, permlink, object_id),
+      FOREIGN KEY (author, permlink) REFERENCES posts (author, permlink) ON DELETE CASCADE
+    )
+  `.execute(db);
+
+  await sql`CREATE INDEX idx_post_objects_object_id ON post_objects (object_id)`.execute(db);
+  await sql`CREATE INDEX idx_post_objects_object_type ON post_objects (object_type) WHERE object_type IS NOT NULL`.execute(db);
+
+  await sql`
+    CREATE TABLE post_reblogged_users (
+      author             TEXT NOT NULL,
+      permlink           TEXT NOT NULL,
+      account            TEXT NOT NULL,
+      reblogged_at_unix  BIGINT NOT NULL,
+      PRIMARY KEY (author, permlink, account),
+      FOREIGN KEY (author, permlink) REFERENCES posts (author, permlink) ON DELETE CASCADE
+    )
+  `.execute(db);
+
+  await sql`CREATE INDEX idx_post_reblogged_users_account_reblogged_at ON post_reblogged_users (account, reblogged_at_unix DESC)`.execute(db);
+
+  await sql`
+    CREATE TABLE post_languages (
+      author    TEXT NOT NULL,
+      permlink  TEXT NOT NULL,
+      language  TEXT NOT NULL,
+      PRIMARY KEY (author, permlink, language),
+      FOREIGN KEY (author, permlink) REFERENCES posts (author, permlink) ON DELETE CASCADE
+    )
+  `.execute(db);
+
+  await sql`CREATE INDEX idx_post_languages_language ON post_languages (language)`.execute(db);
+
+  await sql`
+    CREATE TABLE post_links (
+      author    TEXT NOT NULL,
+      permlink  TEXT NOT NULL,
+      url       TEXT NOT NULL,
+      PRIMARY KEY (author, permlink, url),
+      FOREIGN KEY (author, permlink) REFERENCES posts (author, permlink) ON DELETE CASCADE
+    )
+  `.execute(db);
+
+  await sql`CREATE INDEX idx_post_links_url ON post_links (url)`.execute(db);
+
+  await sql`
+    CREATE TABLE post_mentions (
+      author    TEXT NOT NULL,
+      permlink  TEXT NOT NULL,
+      account   TEXT NOT NULL,
+      PRIMARY KEY (author, permlink, account),
+      FOREIGN KEY (author, permlink) REFERENCES posts (author, permlink) ON DELETE CASCADE
+    )
+  `.execute(db);
+
+  await sql`CREATE INDEX idx_post_mentions_account ON post_mentions (account)`.execute(db);
 }
 
 export async function down(db: Kysely<unknown>): Promise<void> {
+  await sql`DROP TABLE IF EXISTS post_mentions`.execute(db);
+  await sql`DROP TABLE IF EXISTS post_links`.execute(db);
+  await sql`DROP TABLE IF EXISTS post_languages`.execute(db);
+  await sql`DROP TABLE IF EXISTS post_reblogged_users`.execute(db);
+  await sql`DROP TABLE IF EXISTS post_objects`.execute(db);
+  await sql`DROP TABLE IF EXISTS post_active_votes`.execute(db);
+  await sql`DROP TABLE IF EXISTS posts`.execute(db);
   await sql`DROP TRIGGER IF EXISTS tr_object_updates_search_vector ON object_updates`.execute(db);
   await sql`DROP FUNCTION IF EXISTS object_updates_search_vector_trigger()`.execute(db);
   await sql`DROP TABLE IF EXISTS object_authority`.execute(db);

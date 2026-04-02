@@ -13,7 +13,8 @@
     "migrate:latest": "tsx --env-file=.env libs/migrations/src/cli.ts latest",
     "migrate:down": "tsx --env-file=.env libs/migrations/src/cli.ts down",
     "migrate:status": "tsx --env-file=.env libs/migrations/src/cli.ts status",
-    "migrate:mongo": "tsx --env-file=.env scripts/migrate-mongo-to-pg/index.ts"
+    "migrate:mongo-objects": "tsx --env-file=.env scripts/migrate-mongo-to-pg/objects/index.ts",
+    "migrate:mongo-posts": "tsx --env-file=.env scripts/migrate-mongo-to-pg/posts/index.ts"
   },
   "private": true,
   "dependencies": {
