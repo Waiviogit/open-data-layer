@@ -1,5 +1,11 @@
-import { ProfileRouteStub } from '@/modules/user-profile';
+import { FeedProfileContent } from '../feed-profile-content';
 
-export default function UserProfileActivityPage() {
-  return <ProfileRouteStub title="Activity" description="Recent activity for this profile." />;
+export default async function UserProfileActivityPage({
+  params,
+}: {
+  params: Promise<{ name: string }>;
+}) {
+  const { name } = await params;
+  const accountName = decodeURIComponent(name);
+  return <FeedProfileContent accountName={accountName} feedTab="activity" />;
 }

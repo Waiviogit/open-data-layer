@@ -23,6 +23,7 @@ The **web** application is the Next.js **App Router** frontend for the Open Data
 | [web-conventions.md](web-conventions.md) | Development rules: boundaries, imports, Result, policies |
 | [i18n.md](i18n.md) | Locale resolution, messages, cookies, SSR, RTL |
 | [theme.md](theme.md) | Theme preference, `data-theme`, CSS variables, SSR script, Tailwind |
+| [components/story-container.md](components/story-container.md) | Feed row (`StoryContainer` / `Story`), DTO, demo mocks |
 | [pages/index.md](pages/index.md) | Page-level specs directory (user profile, ...) |
 
 ## Verification

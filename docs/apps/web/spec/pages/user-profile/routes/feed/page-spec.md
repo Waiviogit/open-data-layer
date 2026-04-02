@@ -90,6 +90,11 @@ Per tab component loaders; muted user short-circuits to empty state.
 
 N/A.
 
+## apps/web (Next.js)
+
+- Center content for these routes is `FeedProfileContent` → `FeedList` → `StoryContainer` / `Story`. See [story-container.md](../../../../components/story-container.md).
+- Mock feed rows: `apps/web/src/app/user-profile/[name]/mock-feed.ts` (sample data for `@demo` only).
+
 ## References
 
 - [../../page-spec.md](../../page-spec.md)

@@ -1,5 +1,11 @@
-import { ProfileRouteStub } from '@/modules/user-profile';
+import { FeedProfileContent } from '../feed-profile-content';
 
-export default function UserProfileCommentsPage() {
-  return <ProfileRouteStub title="Comments" description="Comments by this account." />;
+export default async function UserProfileCommentsPage({
+  params,
+}: {
+  params: Promise<{ name: string }>;
+}) {
+  const { name } = await params;
+  const accountName = decodeURIComponent(name);
+  return <FeedProfileContent accountName={accountName} feedTab="comments" />;
 }

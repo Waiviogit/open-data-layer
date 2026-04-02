@@ -1,5 +1,11 @@
-import { ProfileRouteStub } from '@/modules/user-profile';
+import { FeedProfileContent } from '../feed-profile-content';
 
-export default function UserProfileThreadsPage() {
-  return <ProfileRouteStub title="Threads" description="Thread list for this profile." />;
+export default async function UserProfileThreadsPage({
+  params,
+}: {
+  params: Promise<{ name: string }>;
+}) {
+  const { name } = await params;
+  const accountName = decodeURIComponent(name);
+  return <FeedProfileContent accountName={accountName} feedTab="threads" />;
 }
