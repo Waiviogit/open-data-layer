@@ -23,6 +23,13 @@
   --color-code-fg: #ffffff;
   --color-nav-bg: rgb(255 255 255 / 0.85);
   --color-nav-fg: #111827;
+  --color-secondary: #4f46e5;
+  --color-secondary-fg: #ffffff;
+  --color-tertiary: #db2777;
+  --color-tertiary-fg: #ffffff;
+  --color-error: #dc2626;
+  --color-error-fg: #ffffff;
+  --color-focus: #2563eb;
 
   /* Typography */
   --font-display:
@@ -43,6 +50,16 @@
   /* Line height */
   --leading-display: 1.1;
   --leading-body: 1.5;
+  --font-label: var(--font-body);
+  --font-size-display: 3.5rem;
+  --font-size-section: 3rem;
+  --font-size-body: 1rem;
+  --font-size-caption: 0.875rem;
+  --font-size-micro: 0.75rem;
+  --font-weight-display: 600;
+  --font-weight-body: 400;
+  --font-weight-label: 500;
+  --font-weight-strong: 600;
 
   /* Border radius */
   --radius-btn: 0.25rem;
@@ -84,6 +101,13 @@
   --color-code-fg: #e5e7eb;
   --color-nav-bg: rgb(10 10 10 / 0.8);
   --color-nav-fg: #f3f4f6;
+  --color-secondary: #818cf8;
+  --color-secondary-fg: #0a0a0a;
+  --color-tertiary: #f472b6;
+  --color-tertiary-fg: #0a0a0a;
+  --color-error: #f87171;
+  --color-error-fg: #0a0a0a;
+  --color-focus: #93c5fd;
 
   --font-display:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
@@ -101,6 +125,16 @@
 
   --leading-display: 1.1;
   --leading-body: 1.5;
+  --font-label: var(--font-body);
+  --font-size-display: 3.5rem;
+  --font-size-section: 3rem;
+  --font-size-body: 1rem;
+  --font-size-caption: 0.875rem;
+  --font-size-micro: 0.75rem;
+  --font-weight-display: 600;
+  --font-weight-body: 400;
+  --font-weight-label: 500;
+  --font-weight-strong: 600;
 
   --radius-btn: 0.25rem;
   --radius-card: 0.5rem;
@@ -139,6 +173,13 @@
   --color-code-fg: #fffef8;
   --color-nav-bg: rgb(244 236 216 / 0.88);
   --color-nav-fg: #433422;
+  --color-secondary: #5c4d3a;
+  --color-secondary-fg: #fffef8;
+  --color-tertiary: #9a3412;
+  --color-tertiary-fg: #fffef8;
+  --color-error: #b91c1c;
+  --color-error-fg: #fffef8;
+  --color-focus: #8b6914;
 
   --font-display:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
@@ -156,6 +197,16 @@
 
   --leading-display: 1.1;
   --leading-body: 1.5;
+  --font-label: var(--font-body);
+  --font-size-display: 3.5rem;
+  --font-size-section: 3rem;
+  --font-size-body: 1rem;
+  --font-size-caption: 0.875rem;
+  --font-size-micro: 0.75rem;
+  --font-weight-display: 600;
+  --font-weight-body: 400;
+  --font-weight-label: 500;
+  --font-weight-strong: 600;
 
   --radius-btn: 0.25rem;
   --radius-card: 0.5rem;

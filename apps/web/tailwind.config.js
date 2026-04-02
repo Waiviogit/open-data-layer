@@ -39,11 +39,50 @@ module.exports = {
         'code-fg': 'var(--color-code-fg)',
         'nav-bg': 'var(--color-nav-bg)',
         'nav-fg': 'var(--color-nav-fg)',
+        secondary: 'var(--color-secondary)',
+        'secondary-fg': 'var(--color-secondary-fg)',
+        tertiary: 'var(--color-tertiary)',
+        'tertiary-fg': 'var(--color-tertiary-fg)',
+        error: 'var(--color-error)',
+        'error-fg': 'var(--color-error-fg)',
+        focus: 'var(--color-focus)',
       },
       fontFamily: {
         display: ['var(--font-display)'],
         body: ['var(--font-body)'],
         editorial: ['var(--font-editorial)'],
+        label: ['var(--font-label)'],
+      },
+      fontSize: {
+        display: [
+          'var(--font-size-display)',
+          { lineHeight: 'var(--leading-display)' },
+        ],
+        section: [
+          'var(--font-size-section)',
+          { lineHeight: 'var(--leading-display)' },
+        ],
+        body: [
+          'var(--font-size-body)',
+          { lineHeight: 'var(--leading-body)' },
+        ],
+        caption: [
+          'var(--font-size-caption)',
+          { lineHeight: '1.43' },
+        ],
+        micro: [
+          'var(--font-size-micro)',
+          { lineHeight: '1.33' },
+        ],
+      },
+      fontWeight: {
+        'weight-display': 'var(--font-weight-display)',
+        'weight-body': 'var(--font-weight-body)',
+        'weight-label': 'var(--font-weight-label)',
+        'weight-strong': 'var(--font-weight-strong)',
+      },
+      outlineColor: {
+        focus: 'var(--color-focus)',
       },
       letterSpacing: {
         display: 'var(--tracking-display)',

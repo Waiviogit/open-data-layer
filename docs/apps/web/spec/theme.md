@@ -9,7 +9,7 @@ Theming uses **`data-theme` on `<html>`** as the single source of truth for appe
 - Resolve the active **preference** on the **server** (root layout) from cookie and optional user settings; persist **preference**, not the resolved `ThemeId`.
 - **SSR:** For non-`system` preferences, set `data-theme` on `<html>` to the resolved `ThemeId`. For `system`, omit `data-theme` on the server and inject a **synchronous** inline script in `<head>` that sets `data-theme` from `matchMedia('(prefers-color-scheme: dark)')` before paint (no flicker).
 - **Client:** `ThemeProvider` keeps **preference** in React state; applies `document.documentElement.dataset.theme` to the **resolved** theme; subscribes to `matchMedia` only while `preference === 'system'`.
-- **Tailwind:** Use semantic utilities (`bg-bg`, `text-fg`, `rounded-card`, `shadow-card`, `font-body`, etc.). Avoid hardcoded palette hex values and fixed Tailwind default scale for radii/shadows when a tokenized utility exists.
+- **Tailwind:** Use semantic utilities (`bg-bg`, `text-fg`, `bg-secondary`, `text-error`, `outline-focus`, `text-display`, `font-weight-display`, `rounded-card`, `shadow-card`, `font-body`, etc.). Avoid hardcoded palette hex values and fixed Tailwind default scale for radii/shadows when a tokenized utility exists.
 
 ## Module layout
 
@@ -80,6 +80,15 @@ Each `[data-theme='…']` block in `apps/web/src/styles/theme.css` sets the same
 | `--color-code-fg` | `text-code-fg` | `<pre>` / code block foreground |
 | `--color-nav-bg` | `bg-nav-bg` | Navigation surface (translucent per theme) |
 | `--color-nav-fg` | `text-nav-fg` | Navigation link text |
+| `--color-secondary` | `bg-secondary`, `text-secondary` | Supporting actions, chips, toggles |
+| `--color-secondary-fg` | `text-secondary-fg` | Text on secondary fill |
+| `--color-tertiary` | `bg-tertiary`, `text-tertiary` | Badges, decorative accents |
+| `--color-tertiary-fg` | `text-tertiary-fg` | Text on tertiary fill |
+| `--color-error` | `bg-error`, `text-error`, `border-error` | Destructive actions, validation errors |
+| `--color-error-fg` | `text-error-fg` | Text on error fill |
+| `--color-focus` | `outline-focus`, `ring-focus` | Keyboard focus ring (see note below) |
+
+Focus: `--color-focus` is for `outline-color` / focus rings (`outline outline-2 outline-offset-2 outline-focus`), not a general surface fill. Prefer `outline-focus` over `bg-focus` for focus-visible styling.
 
 ### Typography
 
@@ -88,6 +97,16 @@ Each `[data-theme='…']` block in `apps/web/src/styles/theme.css` sets the same
 | `--font-display` | `font-display` | Display / marketing headlines |
 | `--font-body` | `font-body` | UI and body copy |
 | `--font-editorial` | `font-editorial` | Serif / editorial accents |
+| `--font-label` | `font-label` | UI labels (defaults to body stack in built-in themes) |
+| `--font-size-display` | `text-display` | Hero headline size |
+| `--font-size-section` | `text-section` | Section heading size |
+| `--font-size-body` | `text-body` | Standard reading size |
+| `--font-size-caption` | `text-caption` | Caption / metadata size |
+| `--font-size-micro` | `text-micro` | Fine print, small labels |
+| `--font-weight-display` | `font-weight-display` | Display headline weight |
+| `--font-weight-body` | `font-weight-body` | Body text weight |
+| `--font-weight-label` | `font-weight-label` | UI label weight |
+| `--font-weight-strong` | `font-weight-strong` | Emphasized / semibold weight |
 | `--tracking-display` | `tracking-display` | Letter-spacing for hero headlines |
 | `--tracking-body` | `tracking-body` | Letter-spacing for body text |
 | `--tracking-caption` | `tracking-caption` | Letter-spacing for captions / small text |
