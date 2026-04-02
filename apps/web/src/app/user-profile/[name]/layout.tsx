@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 
 import { UserProfileShell } from '@/components/user-profile/user-profile-shell';
 
@@ -20,8 +21,10 @@ export default async function UserProfileLayout({
   }
   const profile = getMockUserProfile(decoded);
   return (
-    <UserProfileShell accountName={decoded} initialUser={profile}>
-      {children}
-    </UserProfileShell>
+    <Suspense fallback={null}>
+      <UserProfileShell accountName={decoded} initialUser={profile}>
+        {children}
+      </UserProfileShell>
+    </Suspense>
   );
 }

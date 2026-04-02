@@ -1,6 +1,6 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
 import { getSegmentsAfterAccount } from './profile-path';
@@ -23,6 +23,8 @@ export function UserProfileShell({
   children,
 }: UserProfileShellProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const search = searchParams.toString();
   const [isHeroLoading, setIsHeroLoading] = useState(true);
   const [layoutReady, setLayoutReady] = useState(false);
 
@@ -79,6 +81,7 @@ export function UserProfileShell({
         onTransferClick={onTransferClick}
         onFollowClick={onFollowClick}
         pathname={pathname}
+        search={search}
       />
 
       <div className={['mt-card-padding grid grid-cols-1 gap-card-padding', gridClass].join(' ')}>
