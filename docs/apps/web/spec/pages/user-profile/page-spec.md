@@ -1,3 +1,5 @@
+**Back:** [Pages index](../index.md) · [web overview](../../overview.md)
+
 # User profile shell (`/@:name`)
 
 ## route_path
