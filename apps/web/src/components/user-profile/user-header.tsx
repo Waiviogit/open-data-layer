@@ -44,7 +44,7 @@ export function UserHeader({
         ) : null}
       </div>
 
-      <div className="relative -mt-12 flex flex-col gap-4 px-4 pb-4 sm:flex-row sm:items-end sm:px-6">
+      <div className="relative -mt-12 flex flex-col gap-4 px-gutter pb-4 sm:flex-row sm:items-end sm:px-gutter-sm">
         <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border-4 border-bg bg-bg text-lg font-semibold text-fg shadow-card">
           {isHeroLoading ? (
             <span className="h-8 w-8 animate-pulse rounded-full bg-surface" />

@@ -9,7 +9,7 @@ export default async function UserProfileNotFound() {
   const t = (key: string) => messages[key] ?? key;
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-16 text-center">
+    <div className="mx-auto max-w-container-narrow px-gutter py-section-y-hero text-center">
       <h1 className="text-2xl font-semibold text-fg">{t('user_profile_not_found_title')}</h1>
       <p className="mt-2 text-muted">{t('user_profile_not_found_body')}</p>
       <Link href="/" className="mt-6 inline-block text-accent hover:underline">

@@ -5,7 +5,7 @@ type RightSidebarProps = {
 export function RightSidebar({ accountName }: RightSidebarProps) {
   return (
     <aside
-      className="rounded-card border border-border bg-surface/60 p-4 text-sm text-muted"
+      className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted"
       aria-label="Profile sidebar"
     >
       <p className="font-medium text-fg">About @{accountName}</p>

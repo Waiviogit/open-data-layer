@@ -67,7 +67,7 @@ export function UserProfileShell({
   const coverImage = initialUser.coverImageUrl;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+    <div className="mx-auto max-w-container-page px-gutter py-section-y-sm sm:px-gutter-sm">
       <UserHero
         user={initialUser}
         username={accountName}
@@ -81,7 +81,7 @@ export function UserProfileShell({
         pathname={pathname}
       />
 
-      <div className={['mt-6 grid grid-cols-1 gap-6', gridClass].join(' ')}>
+      <div className={['mt-card-padding grid grid-cols-1 gap-card-padding', gridClass].join(' ')}>
         {showLeftSidebar ? (
           <div className="hidden lg:block">
             <LeftSidebar />

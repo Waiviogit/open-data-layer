@@ -30,6 +30,13 @@
   --color-error: #dc2626;
   --color-error-fg: #ffffff;
   --color-focus: #2563eb;
+  --color-overlay: rgb(0 0 0 / 0.5);
+  --color-ghost-surface: rgb(255 255 255 / 0.1);
+  --color-ghost-border: rgb(255 255 255 / 0.35);
+  --color-fg-disabled: rgb(17 24 39 / 0.24);
+  --color-surface-control: #f2f2f2;
+  --color-accent-alt: #14b8a6;
+  --color-accent-hover: #0b8577;
 
   /* Typography */
   --font-display:
@@ -41,21 +48,32 @@
     'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
     'Segoe UI Symbol', 'Noto Color Emoji';
   --font-editorial: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+  --font-mono:
+    ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
 
   /* Letter spacing */
   --tracking-display: -0.015em;
   --tracking-body: -0.011em;
   --tracking-caption: -0.008em;
+  --tracking-loose: 0.05em;
+  --tracking-looser: 0.07em;
 
   /* Line height */
   --leading-display: 1.1;
   --leading-body: 1.5;
+  --leading-compressed: 0.95;
+  --leading-editorial: 1.6;
   --font-label: var(--font-body);
+  --font-size-hero: 5rem;
   --font-size-display: 3.5rem;
   --font-size-section: 3rem;
+  --font-size-body-lg: 1.25rem;
   --font-size-body: 1rem;
+  --font-size-body-sm: 0.9375rem;
   --font-size-caption: 0.875rem;
+  --font-size-body-xs: 0.8125rem;
   --font-size-micro: 0.75rem;
+  --font-size-nano: 0.625rem;
   --font-weight-display: 600;
   --font-weight-body: 400;
   --font-weight-label: 500;
@@ -67,17 +85,33 @@
   --radius-card-lg: 0.75rem;
   --radius-pill: 9999px;
   --radius-circle: 50%;
+  --radius-xl: 2.5rem;
 
   /* Elevation */
   --shadow-card:
     0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --shadow-card-float:
     0 5px 30px 0 rgb(0 0 0 / 0.12), 0 3px 8px 0 rgb(0 0 0 / 0.06);
+  --shadow-card-warm:
+    rgb(0 0 0 / 0.02) 0 0 0 1px, rgb(0 0 0 / 0.04) 0 2px 6px, rgb(0 0 0 / 0.1) 0 4px 8px;
+  --shadow-hover: rgb(0 0 0 / 0.08) 0 4px 12px;
+  --shadow-ring: 0 0 0 1px rgb(0 0 0 / 0.1);
+  --shadow-whisper: rgb(0 0 0 / 0.05) 0 4px 24px;
+  --shadow-inset: inset 0 0 0 1px rgb(0 0 0 / 0.15);
+  --shadow-focus-ring: 0 0 0 4px #ffffff;
   --backdrop-nav: saturate(180%) blur(20px);
 
   /* Layout */
+  --spacing-section-y-sm: 2rem;
   --spacing-section-y: 4rem;
+  --spacing-section-y-lg: 6rem;
+  --spacing-section-y-hero: 8rem;
+  --spacing-card: 1.5rem;
+  --spacing-gutter: 1rem;
+  --spacing-gutter-sm: 1.5rem;
   --container-max: 75rem;
+  --container-content: 48rem;
+  --container-narrow: 32rem;
 }
 
 [data-theme='dark'] {
@@ -108,6 +142,13 @@
   --color-error: #f87171;
   --color-error-fg: #0a0a0a;
   --color-focus: #93c5fd;
+  --color-overlay: rgb(0 0 0 / 0.65);
+  --color-ghost-surface: rgb(255 255 255 / 0.08);
+  --color-ghost-border: rgb(255 255 255 / 0.3);
+  --color-fg-disabled: rgb(243 244 246 / 0.24);
+  --color-surface-control: #27272a;
+  --color-accent-alt: #5eead4;
+  --color-accent-hover: #26c7b3;
 
   --font-display:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
@@ -118,19 +159,30 @@
     'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
     'Segoe UI Symbol', 'Noto Color Emoji';
   --font-editorial: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+  --font-mono:
+    ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
 
   --tracking-display: -0.015em;
   --tracking-body: -0.011em;
   --tracking-caption: -0.008em;
+  --tracking-loose: 0.05em;
+  --tracking-looser: 0.07em;
 
   --leading-display: 1.1;
   --leading-body: 1.5;
+  --leading-compressed: 0.95;
+  --leading-editorial: 1.6;
   --font-label: var(--font-body);
+  --font-size-hero: 5rem;
   --font-size-display: 3.5rem;
   --font-size-section: 3rem;
+  --font-size-body-lg: 1.25rem;
   --font-size-body: 1rem;
+  --font-size-body-sm: 0.9375rem;
   --font-size-caption: 0.875rem;
+  --font-size-body-xs: 0.8125rem;
   --font-size-micro: 0.75rem;
+  --font-size-nano: 0.625rem;
   --font-weight-display: 600;
   --font-weight-body: 400;
   --font-weight-label: 500;
@@ -141,15 +193,31 @@
   --radius-card-lg: 0.75rem;
   --radius-pill: 9999px;
   --radius-circle: 50%;
+  --radius-xl: 2.5rem;
 
   --shadow-card:
     0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.3);
   --shadow-card-float:
     0 5px 30px 0 rgb(0 0 0 / 0.5), 0 3px 8px 0 rgb(0 0 0 / 0.3);
+  --shadow-card-warm:
+    rgb(0 0 0 / 0.15) 0 0 0 1px, rgb(0 0 0 / 0.2) 0 2px 6px, rgb(0 0 0 / 0.35) 0 4px 8px;
+  --shadow-hover: rgb(0 0 0 / 0.35) 0 4px 12px;
+  --shadow-ring: 0 0 0 1px rgb(255 255 255 / 0.12);
+  --shadow-whisper: rgb(0 0 0 / 0.25) 0 4px 24px;
+  --shadow-inset: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+  --shadow-focus-ring: 0 0 0 4px #0a0a0a;
   --backdrop-nav: saturate(180%) blur(20px);
 
+  --spacing-section-y-sm: 2rem;
   --spacing-section-y: 4rem;
+  --spacing-section-y-lg: 6rem;
+  --spacing-section-y-hero: 8rem;
+  --spacing-card: 1.5rem;
+  --spacing-gutter: 1rem;
+  --spacing-gutter-sm: 1.5rem;
   --container-max: 75rem;
+  --container-content: 48rem;
+  --container-narrow: 32rem;
 }
 
 [data-theme='sepia'] {
@@ -180,6 +248,13 @@
   --color-error: #b91c1c;
   --color-error-fg: #fffef8;
   --color-focus: #8b6914;
+  --color-overlay: rgb(67 52 34 / 0.5);
+  --color-ghost-surface: rgb(244 236 216 / 0.1);
+  --color-ghost-border: rgb(244 236 216 / 0.35);
+  --color-fg-disabled: rgb(67 52 34 / 0.24);
+  --color-surface-control: #e2d9c4;
+  --color-accent-alt: #a87d22;
+  --color-accent-hover: #9d7a1a;
 
   --font-display:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
@@ -190,19 +265,30 @@
     'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
     'Segoe UI Symbol', 'Noto Color Emoji';
   --font-editorial: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+  --font-mono:
+    ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
 
   --tracking-display: -0.015em;
   --tracking-body: -0.011em;
   --tracking-caption: -0.008em;
+  --tracking-loose: 0.05em;
+  --tracking-looser: 0.07em;
 
   --leading-display: 1.1;
   --leading-body: 1.5;
+  --leading-compressed: 0.95;
+  --leading-editorial: 1.6;
   --font-label: var(--font-body);
+  --font-size-hero: 5rem;
   --font-size-display: 3.5rem;
   --font-size-section: 3rem;
+  --font-size-body-lg: 1.25rem;
   --font-size-body: 1rem;
+  --font-size-body-sm: 0.9375rem;
   --font-size-caption: 0.875rem;
+  --font-size-body-xs: 0.8125rem;
   --font-size-micro: 0.75rem;
+  --font-size-nano: 0.625rem;
   --font-weight-display: 600;
   --font-weight-body: 400;
   --font-weight-label: 500;
@@ -213,13 +299,29 @@
   --radius-card-lg: 0.75rem;
   --radius-pill: 9999px;
   --radius-circle: 50%;
+  --radius-xl: 2.5rem;
 
   --shadow-card:
     0 1px 3px 0 rgb(67 52 34 / 0.12), 0 1px 2px -1px rgb(67 52 34 / 0.1);
   --shadow-card-float:
     0 5px 30px 0 rgb(67 52 34 / 0.16), 0 3px 8px 0 rgb(67 52 34 / 0.08);
+  --shadow-card-warm:
+    rgb(67 52 34 / 0.08) 0 0 0 1px, rgb(67 52 34 / 0.1) 0 2px 6px, rgb(67 52 34 / 0.14) 0 4px 8px;
+  --shadow-hover: rgb(67 52 34 / 0.1) 0 4px 12px;
+  --shadow-ring: 0 0 0 1px rgb(67 52 34 / 0.15);
+  --shadow-whisper: rgb(67 52 34 / 0.06) 0 4px 24px;
+  --shadow-inset: inset 0 0 0 1px rgb(67 52 34 / 0.15);
+  --shadow-focus-ring: 0 0 0 4px #f4ecd8;
   --backdrop-nav: saturate(160%) blur(16px);
 
+  --spacing-section-y-sm: 2rem;
   --spacing-section-y: 4rem;
+  --spacing-section-y-lg: 6rem;
+  --spacing-section-y-hero: 8rem;
+  --spacing-card: 1.5rem;
+  --spacing-gutter: 1rem;
+  --spacing-gutter-sm: 1.5rem;
   --container-max: 75rem;
+  --container-content: 48rem;
+  --container-narrow: 32rem;
 }

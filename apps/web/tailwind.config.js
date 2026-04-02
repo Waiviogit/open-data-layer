@@ -46,14 +46,26 @@ module.exports = {
         error: 'var(--color-error)',
         'error-fg': 'var(--color-error-fg)',
         focus: 'var(--color-focus)',
+        overlay: 'var(--color-overlay)',
+        'ghost-surface': 'var(--color-ghost-surface)',
+        'ghost-border': 'var(--color-ghost-border)',
+        'fg-disabled': 'var(--color-fg-disabled)',
+        'surface-control': 'var(--color-surface-control)',
+        'accent-alt': 'var(--color-accent-alt)',
+        'accent-hover': 'var(--color-accent-hover)',
       },
       fontFamily: {
         display: ['var(--font-display)'],
         body: ['var(--font-body)'],
         editorial: ['var(--font-editorial)'],
         label: ['var(--font-label)'],
+        mono: ['var(--font-mono)'],
       },
       fontSize: {
+        hero: [
+          'var(--font-size-hero)',
+          { lineHeight: 'var(--leading-compressed)' },
+        ],
         display: [
           'var(--font-size-display)',
           { lineHeight: 'var(--leading-display)' },
@@ -62,17 +74,33 @@ module.exports = {
           'var(--font-size-section)',
           { lineHeight: 'var(--leading-display)' },
         ],
+        'body-lg': [
+          'var(--font-size-body-lg)',
+          { lineHeight: 'var(--leading-body)' },
+        ],
         body: [
           'var(--font-size-body)',
+          { lineHeight: 'var(--leading-body)' },
+        ],
+        'body-sm': [
+          'var(--font-size-body-sm)',
           { lineHeight: 'var(--leading-body)' },
         ],
         caption: [
           'var(--font-size-caption)',
           { lineHeight: '1.43' },
         ],
+        'body-xs': [
+          'var(--font-size-body-xs)',
+          { lineHeight: '1.43' },
+        ],
         micro: [
           'var(--font-size-micro)',
           { lineHeight: '1.33' },
+        ],
+        nano: [
+          'var(--font-size-nano)',
+          { lineHeight: 'var(--leading-editorial)' },
         ],
       },
       fontWeight: {
@@ -88,10 +116,14 @@ module.exports = {
         display: 'var(--tracking-display)',
         body: 'var(--tracking-body)',
         caption: 'var(--tracking-caption)',
+        loose: 'var(--tracking-loose)',
+        looser: 'var(--tracking-looser)',
       },
       lineHeight: {
         display: 'var(--leading-display)',
         body: 'var(--leading-body)',
+        compressed: 'var(--leading-compressed)',
+        editorial: 'var(--leading-editorial)',
       },
       borderRadius: {
         btn: 'var(--radius-btn)',
@@ -99,16 +131,31 @@ module.exports = {
         'card-lg': 'var(--radius-card-lg)',
         pill: 'var(--radius-pill)',
         circle: 'var(--radius-circle)',
+        xl: 'var(--radius-xl)',
       },
       boxShadow: {
         card: 'var(--shadow-card)',
         'card-float': 'var(--shadow-card-float)',
+        'card-warm': 'var(--shadow-card-warm)',
+        hover: 'var(--shadow-hover)',
+        ring: 'var(--shadow-ring)',
+        whisper: 'var(--shadow-whisper)',
+        inset: 'var(--shadow-inset)',
+        'focus-ring': 'var(--shadow-focus-ring)',
       },
       maxWidth: {
         'container-page': 'var(--container-max)',
+        'container-content': 'var(--container-content)',
+        'container-narrow': 'var(--container-narrow)',
       },
       spacing: {
+        'section-y-sm': 'var(--spacing-section-y-sm)',
         'section-y': 'var(--spacing-section-y)',
+        'section-y-lg': 'var(--spacing-section-y-lg)',
+        'section-y-hero': 'var(--spacing-section-y-hero)',
+        'card-padding': 'var(--spacing-card)',
+        gutter: 'var(--spacing-gutter)',
+        'gutter-sm': 'var(--spacing-gutter-sm)',
       },
     },
   },
