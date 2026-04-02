@@ -123,6 +123,16 @@ When creating or editing UI in `apps/web`, follow the **design token** system so
 - **Layout rhythm:** prefer `px-gutter` / `sm:px-gutter-sm` for horizontal gutters, `py-section-y-sm`, `py-section-y`, `py-section-y-lg`, `py-section-y-hero` for vertical section spacing, `p-card-padding` / `gap-card-padding` for cards and grids, `max-w-container-page`, `max-w-container-content`, and `max-w-container-narrow` for widths — instead of ad-hoc `px-4`, `py-16`, `max-w-lg`, `max-w-6xl`.
 - **New tokens:** if a design needs a new role (color, radius, shadow, layout), add the CSS variable in `theme.css` for every theme block, extend Tailwind in `tailwind.config.js`, and update `docs/apps/web/spec/theme.md` in the same change.
 
+### Web app (`apps/web`) — Architecture
+
+Feature code follows **clean architecture** in `apps/web`: **domain**, **application**, **infrastructure**, **presentation** inside `src/modules/<feature>/`; cross-cutting types in `src/shared/`. Full spec: [`docs/apps/web/spec/architecture.md`](docs/apps/web/spec/architecture.md). Rules for Server Components, server actions, imports, `Result`, policies: [`docs/apps/web/spec/web-conventions.md`](docs/apps/web/spec/web-conventions.md).
+
+- **No runtime DI container** — compose with module barrel exports and factory functions; import from `@/modules/<name>` and `@/shared`.
+- **Import only public APIs** — consume other feature modules via `modules/<name>/index.ts`, not deep paths.
+- **Authentication vs authorization** — identity (session/cookies) is separate from **policies** (`canUpdate`, etc.); policies live in feature `domain/policies/`.
+- **Queries vs use cases** — reads (`application/queries/`) vs writes (`application/use-cases/`); ports (interfaces) in domain/application, implementations in `infrastructure/`.
+- **Typed `Result<T, E>`** — use for expected failures in server actions; see `apps/web/src/shared/domain/result.ts`.
+
 ### Testing
 
 - Jest with `ts-jest`. Unit tests: `*.spec.ts` co-located with source.
@@ -221,6 +231,7 @@ Full standards: [`docs/standards/docs-standards.md`](docs/standards/docs-standar
 - Never commit `generated/` (registry Markdown output) or edit those files by hand.
 - Never add **axios** or use it for HTTP — use **`fetch`** (e.g. in E2E tests).
 - Never hardcode ad-hoc colors or ignore design-token utilities in `apps/web` UI — follow **Web app (`apps/web`) — Design tokens** (semantic Tailwind + `theme.css`).
+- Never deep-import from `apps/web` feature modules — use each module's `index.ts` barrel only (see **Web app (`apps/web`) — Architecture**).
 
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->

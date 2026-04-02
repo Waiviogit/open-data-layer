@@ -1,4 +1,4 @@
-import { HydrationSafeAnchor } from '../components/hydration-safe-anchor';
+import { HydrationSafeAnchor } from '@/shared/presentation';
 import { HomeI18nToolbar } from './home-i18n-toolbar';
 
 export default function Index() {

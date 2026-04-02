@@ -1,8 +1,8 @@
 'use client';
 
-import { themeRegistry } from '../theme/theme-registry';
-import { useTheme } from '../theme/use-theme';
-import type { ThemePreference } from '../theme/types';
+import { themeRegistry } from '../../../theme/theme-registry';
+import { useTheme } from '../../../theme/use-theme';
+import type { ThemePreference } from '../../../theme/types';
 
 const OPTIONS: { id: ThemePreference; label: string }[] = [
   { id: 'light', label: themeRegistry.light.label },

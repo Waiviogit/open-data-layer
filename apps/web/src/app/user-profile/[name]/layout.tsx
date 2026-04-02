@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
-import { UserProfileShell } from '@/components/user-profile/user-profile-shell';
+import { UserProfileShell } from '@/modules/user-profile';
 
 import { getMockUserProfile } from './mock-user-profile';
 

@@ -5,13 +5,13 @@
 | field | value |
 |-------|-------|
 | name | UserMenu |
-| source | [`apps/web/src/components/user-profile/user-menu.tsx`](../../../../../../../apps/web/src/components/user-profile/user-menu.tsx) |
+| source | [`apps/web/src/modules/user-profile/presentation/components/user-menu.tsx`](../../../../../../../apps/web/src/modules/user-profile/presentation/components/user-menu.tsx) |
 | type | Client component |
 
 ## structure
 
-- **Primary:** horizontal list of `Link` items; active class from pathname segments after `/@:name` (see [`profile-path.ts`](../../../../../../../apps/web/src/components/user-profile/profile-path.ts)).
-- **Secondary (submenu):** when the active primary section is Posts, Wallet, Followers, or Expertise, a second row of `Link` items appears below the primary row (same header card). Labels and `aria-label` use i18n; styling uses design tokens (semantic Tailwind classes). Helpers: [`user-profile-subnav.ts`](../../../../../../../apps/web/src/components/user-profile/user-profile-subnav.ts).
+- **Primary:** horizontal list of `Link` items; active class from pathname segments after `/@:name` (see [`profile-path.ts`](../../../../../../../apps/web/src/modules/user-profile/presentation/components/profile-path.ts)).
+- **Secondary (submenu):** when the active primary section is Posts, Wallet, Followers, or Expertise, a second row of `Link` items appears below the primary row (same header card). Labels and `aria-label` use i18n; styling uses design tokens (semantic Tailwind classes). Helpers: [`user-profile-subnav.ts`](../../../../../../../apps/web/src/modules/user-profile/presentation/components/user-profile-subnav.ts).
 
 ## navigation layers
 

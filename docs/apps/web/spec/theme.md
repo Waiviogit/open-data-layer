@@ -28,7 +28,7 @@ Theming uses **`data-theme` on `<html>`** as the single source of truth for appe
 | `apps/web/src/theme/use-theme.ts`                   | `useTheme()` hook                                                       |
 | `apps/web/src/styles/theme.css`                     | `[data-theme='…']` design tokens (all dimensions)                       |
 | `apps/web/tailwind.config.js`                       | Maps tokens to Tailwind `extend` (colors, fonts, radius, shadow, etc.)    |
-| `apps/web/src/components/theme-switcher.tsx`        | UI (shows **preference**, not resolved OS theme)                        |
+| `apps/web/src/shared/presentation/components/theme-switcher.tsx` | UI (shows **preference**, not resolved OS theme) |
 | `apps/web/src/app/api/theme/route.ts`               | `PATCH` — validate body, set cookie, sync                               |
 
 ## Preference resolution

@@ -1,4 +1,4 @@
-import { ProfileRouteStub } from '@/components/user-profile/profile-route-stub';
+import { ProfileRouteStub } from '@/modules/user-profile';
 
 export default function UserProfileExpertiseObjectsPage() {
   return <ProfileRouteStub title="Expertise — objects" description="Object expertise list." />;

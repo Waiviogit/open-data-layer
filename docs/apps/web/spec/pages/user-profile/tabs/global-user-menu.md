@@ -19,7 +19,7 @@ Query details for wallet (`type`, `tab`) are centralized in [query-params-audit.
 
 ## active source
 
-- **Route:** segments after `/@:name` (base profile uses an empty first segment). **`apps/web`:** [`getSegmentsAfterAccount`](../../../../../../../apps/web/src/components/user-profile/profile-path.ts) + wallet `type` from `URLSearchParams` for the wallet submenu.
+- **Route:** segments after `/@:name` (base profile uses an empty first segment). **`apps/web`:** [`getSegmentsAfterAccount`](../../../../../../../apps/web/src/modules/user-profile/presentation/components/profile-path.ts) + wallet `type` from `URLSearchParams` for the wallet submenu.
 
 ## switching
 

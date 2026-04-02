@@ -1,4 +1,4 @@
-import { ProfileRouteStub } from '@/components/user-profile/profile-route-stub';
+import { ProfileRouteStub } from '@/modules/user-profile';
 
 type PageProps = {
   params: Promise<{ name: string; reportId: string }>;

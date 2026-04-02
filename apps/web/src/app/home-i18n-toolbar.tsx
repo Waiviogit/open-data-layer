@@ -1,6 +1,6 @@
 'use client';
 
-import { ThemeSwitcher } from '../components/theme-switcher';
+import { ThemeSwitcher } from '@/shared/presentation';
 import { LocaleSwitcher } from '../i18n/components/locale-switcher';
 import { useI18n } from '../i18n/providers/i18n-provider';
 

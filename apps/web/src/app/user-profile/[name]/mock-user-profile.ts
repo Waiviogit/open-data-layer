@@ -1,4 +1,4 @@
-import type { UserProfileShellUser } from '@/components/user-profile/types';
+import type { UserProfileShellUser } from '@/modules/user-profile';
 
 /**
  * Route-layer mock factory. Presentational components must not import this file.
