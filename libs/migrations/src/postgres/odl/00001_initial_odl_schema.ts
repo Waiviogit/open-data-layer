@@ -3,7 +3,7 @@ import { sql } from 'kysely';
 
 /**
  * Initial ODL schema: objects_core, object_updates, validity_votes, rank_votes, object_authority, accounts_current,
- * posts and post_* satellite tables.
+ * user_* tables, posts and post_* satellite tables.
  * Source: docs/spec/data-model/schema.sql. Types: @opden-data-layer/core (OdlDatabase).
  * Requires: PostGIS extension.
  */
@@ -128,12 +128,109 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       last_post              TEXT,
       last_root_post         TEXT,
       object_reputation      INT NOT NULL DEFAULT 0,
-      updated_at_unix        BIGINT
+      updated_at_unix        BIGINT,
+      alias                  TEXT,
+      profile_image          TEXT,
+      wobjects_weight        DOUBLE PRECISION NOT NULL DEFAULT 0,
+      last_posts_count       INT NOT NULL DEFAULT 0,
+      users_following_count  INT NOT NULL DEFAULT 0,
+      followers_count        INT NOT NULL DEFAULT 0,
+      stage_version          INT NOT NULL DEFAULT 0,
+      referral_status        TEXT,
+      last_activity          BIGINT
     )
   `.execute(db);
 
   await sql`CREATE INDEX idx_accounts_current_object_reputation ON accounts_current (object_reputation DESC NULLS LAST)`.execute(db);
   await sql`CREATE INDEX idx_accounts_current_hive_id ON accounts_current (hive_id) WHERE hive_id IS NOT NULL`.execute(db);
+
+  await sql`
+    CREATE TABLE user_metadata (
+      account                        TEXT NOT NULL PRIMARY KEY REFERENCES accounts_current (name) ON DELETE CASCADE,
+      notifications_last_timestamp   BIGINT NOT NULL DEFAULT 0,
+      exit_page_setting              BOOLEAN NOT NULL DEFAULT TRUE,
+      locale                         TEXT NOT NULL DEFAULT 'en-US',
+      post_locales                   JSONB NOT NULL DEFAULT '[]'::jsonb,
+      nightmode                      BOOLEAN NOT NULL DEFAULT FALSE,
+      reward_setting                 TEXT NOT NULL DEFAULT '50' CHECK (reward_setting IN ('HP', '50', 'HIVE')),
+      rewrite_links                  BOOLEAN NOT NULL DEFAULT FALSE,
+      show_nsfw_posts                BOOLEAN NOT NULL DEFAULT FALSE,
+      upvote_setting                 BOOLEAN NOT NULL DEFAULT FALSE,
+      vote_percent                   INT NOT NULL DEFAULT 5000,
+      voting_power                   BOOLEAN NOT NULL DEFAULT TRUE,
+      currency                       TEXT
+    )
+  `.execute(db);
+
+  await sql`
+    CREATE TABLE user_notification_settings (
+      account                TEXT NOT NULL PRIMARY KEY REFERENCES accounts_current (name) ON DELETE CASCADE,
+      activation_campaign    BOOLEAN NOT NULL DEFAULT TRUE,
+      deactivation_campaign  BOOLEAN NOT NULL DEFAULT TRUE,
+      follow                 BOOLEAN NOT NULL DEFAULT TRUE,
+      fill_order             BOOLEAN NOT NULL DEFAULT TRUE,
+      mention                BOOLEAN NOT NULL DEFAULT TRUE,
+      minimal_transfer       DOUBLE PRECISION NOT NULL DEFAULT 0,
+      reblog                 BOOLEAN NOT NULL DEFAULT TRUE,
+      reply                  BOOLEAN NOT NULL DEFAULT TRUE,
+      status_change          BOOLEAN NOT NULL DEFAULT TRUE,
+      transfer               BOOLEAN NOT NULL DEFAULT TRUE,
+      power_up               BOOLEAN NOT NULL DEFAULT TRUE,
+      witness_vote           BOOLEAN NOT NULL DEFAULT TRUE,
+      my_post                BOOLEAN NOT NULL DEFAULT FALSE,
+      my_comment             BOOLEAN NOT NULL DEFAULT FALSE,
+      my_like                BOOLEAN NOT NULL DEFAULT FALSE,
+      vote                   BOOLEAN NOT NULL DEFAULT TRUE,
+      downvote               BOOLEAN NOT NULL DEFAULT FALSE,
+      claim_reward           BOOLEAN NOT NULL DEFAULT FALSE
+    )
+  `.execute(db);
+
+  await sql`
+    CREATE TABLE user_referrals (
+      account      TEXT NOT NULL REFERENCES accounts_current (name) ON DELETE CASCADE,
+      agent        TEXT NOT NULL,
+      type         TEXT NOT NULL,
+      started_at   BIGINT,
+      ended_at     BIGINT,
+      PRIMARY KEY (account, agent, type)
+    )
+  `.execute(db);
+
+  await sql`CREATE INDEX idx_user_referrals_agent ON user_referrals (agent)`.execute(db);
+
+  await sql`
+    CREATE TABLE user_post_bookmarks (
+      account   TEXT NOT NULL REFERENCES accounts_current (name) ON DELETE CASCADE,
+      author    TEXT NOT NULL,
+      permlink  TEXT NOT NULL,
+      PRIMARY KEY (account, author, permlink)
+    )
+  `.execute(db);
+
+  await sql`CREATE INDEX idx_user_post_bookmarks_account ON user_post_bookmarks (account)`.execute(db);
+
+  await sql`
+    CREATE TABLE user_subscriptions (
+      follower   TEXT NOT NULL,
+      following  TEXT NOT NULL,
+      bell       BOOLEAN,
+      PRIMARY KEY (follower, following)
+    )
+  `.execute(db);
+
+  await sql`CREATE INDEX idx_user_subscriptions_following ON user_subscriptions (following)`.execute(db);
+
+  await sql`
+    CREATE TABLE user_object_follows (
+      account    TEXT NOT NULL REFERENCES accounts_current (name) ON DELETE CASCADE,
+      object_id  TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
+      bell       BOOLEAN NOT NULL DEFAULT FALSE,
+      PRIMARY KEY (account, object_id)
+    )
+  `.execute(db);
+
+  await sql`CREATE INDEX idx_user_object_follows_object_id ON user_object_follows (object_id)`.execute(db);
 
   await sql`
     CREATE TABLE posts (
@@ -280,6 +377,12 @@ export async function down(db: Kysely<unknown>): Promise<void> {
   await sql`DROP TABLE IF EXISTS post_objects`.execute(db);
   await sql`DROP TABLE IF EXISTS post_active_votes`.execute(db);
   await sql`DROP TABLE IF EXISTS posts`.execute(db);
+  await sql`DROP TABLE IF EXISTS user_object_follows`.execute(db);
+  await sql`DROP TABLE IF EXISTS user_subscriptions`.execute(db);
+  await sql`DROP TABLE IF EXISTS user_post_bookmarks`.execute(db);
+  await sql`DROP TABLE IF EXISTS user_referrals`.execute(db);
+  await sql`DROP TABLE IF EXISTS user_notification_settings`.execute(db);
+  await sql`DROP TABLE IF EXISTS user_metadata`.execute(db);
   await sql`DROP TRIGGER IF EXISTS tr_object_updates_search_vector ON object_updates`.execute(db);
   await sql`DROP FUNCTION IF EXISTS object_updates_search_vector_trigger()`.execute(db);
   await sql`DROP TABLE IF EXISTS object_authority`.execute(db);

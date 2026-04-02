@@ -1,5 +1,5 @@
 -- PostgreSQL concept schema: objects_core, object_updates, validity_votes, rank_votes,
--- posts and post_* satellite tables.
+-- accounts_current (+ Waivio columns), user_* tables, posts and post_* satellite tables.
 -- Requires: PostGIS extension for geo. No projection table; query directly via JOINs, tsvector, PostGIS.
 
 CREATE EXTENSION IF NOT EXISTS postgis;
@@ -119,7 +119,7 @@ CREATE INDEX idx_object_authority_account ON object_authority (account);
 
 -- ---------------------------------------------------------------------------
 -- accounts_current
--- Trimmed Hive account state + ODL-computed object_reputation.
+-- Hive account state + ODL-computed object_reputation + Waivio/Mongo user fields.
 -- Hive-sourced fields synced from Hive node API; object_reputation
 -- maintained incrementally by Indexer from administrative authority events.
 -- ---------------------------------------------------------------------------
@@ -135,11 +135,114 @@ CREATE TABLE accounts_current (
   last_post              TEXT,
   last_root_post         TEXT,
   object_reputation      INT NOT NULL DEFAULT 0,
-  updated_at_unix        BIGINT
+  updated_at_unix        BIGINT,
+  alias                  TEXT,
+  profile_image          TEXT,
+  wobjects_weight        DOUBLE PRECISION NOT NULL DEFAULT 0,
+  last_posts_count       INT NOT NULL DEFAULT 0,
+  users_following_count  INT NOT NULL DEFAULT 0,
+  followers_count        INT NOT NULL DEFAULT 0,
+  stage_version          INT NOT NULL DEFAULT 0,
+  referral_status        TEXT,
+  last_activity          BIGINT
 );
 
 CREATE INDEX idx_accounts_current_object_reputation ON accounts_current (object_reputation DESC NULLS LAST);
 CREATE INDEX idx_accounts_current_hive_id ON accounts_current (hive_id) WHERE hive_id IS NOT NULL;
+
+-- ---------------------------------------------------------------------------
+-- user_metadata (1:1; UserMetadataSchema minus nested notifications)
+-- ---------------------------------------------------------------------------
+CREATE TABLE user_metadata (
+  account                        TEXT NOT NULL PRIMARY KEY REFERENCES accounts_current (name) ON DELETE CASCADE,
+  notifications_last_timestamp   BIGINT NOT NULL DEFAULT 0,
+  exit_page_setting              BOOLEAN NOT NULL DEFAULT TRUE,
+  locale                         TEXT NOT NULL DEFAULT 'en-US',
+  post_locales                   JSONB NOT NULL DEFAULT '[]'::jsonb,
+  nightmode                      BOOLEAN NOT NULL DEFAULT FALSE,
+  reward_setting                 TEXT NOT NULL DEFAULT '50' CHECK (reward_setting IN ('HP', '50', 'HIVE')),
+  rewrite_links                  BOOLEAN NOT NULL DEFAULT FALSE,
+  show_nsfw_posts                BOOLEAN NOT NULL DEFAULT FALSE,
+  upvote_setting                 BOOLEAN NOT NULL DEFAULT FALSE,
+  vote_percent                   INT NOT NULL DEFAULT 5000,
+  voting_power                   BOOLEAN NOT NULL DEFAULT TRUE,
+  currency                       TEXT
+);
+
+-- ---------------------------------------------------------------------------
+-- user_notification_settings (UserNotificationsSchema)
+-- ---------------------------------------------------------------------------
+CREATE TABLE user_notification_settings (
+  account                TEXT NOT NULL PRIMARY KEY REFERENCES accounts_current (name) ON DELETE CASCADE,
+  activation_campaign    BOOLEAN NOT NULL DEFAULT TRUE,
+  deactivation_campaign  BOOLEAN NOT NULL DEFAULT TRUE,
+  follow                 BOOLEAN NOT NULL DEFAULT TRUE,
+  fill_order             BOOLEAN NOT NULL DEFAULT TRUE,
+  mention                BOOLEAN NOT NULL DEFAULT TRUE,
+  minimal_transfer       DOUBLE PRECISION NOT NULL DEFAULT 0,
+  reblog                 BOOLEAN NOT NULL DEFAULT TRUE,
+  reply                  BOOLEAN NOT NULL DEFAULT TRUE,
+  status_change          BOOLEAN NOT NULL DEFAULT TRUE,
+  transfer               BOOLEAN NOT NULL DEFAULT TRUE,
+  power_up               BOOLEAN NOT NULL DEFAULT TRUE,
+  witness_vote           BOOLEAN NOT NULL DEFAULT TRUE,
+  my_post                BOOLEAN NOT NULL DEFAULT FALSE,
+  my_comment             BOOLEAN NOT NULL DEFAULT FALSE,
+  my_like                BOOLEAN NOT NULL DEFAULT FALSE,
+  vote                   BOOLEAN NOT NULL DEFAULT TRUE,
+  downvote               BOOLEAN NOT NULL DEFAULT FALSE,
+  claim_reward           BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+-- ---------------------------------------------------------------------------
+-- user_referrals (ReferralsSchema)
+-- ---------------------------------------------------------------------------
+CREATE TABLE user_referrals (
+  account      TEXT NOT NULL REFERENCES accounts_current (name) ON DELETE CASCADE,
+  agent        TEXT NOT NULL,
+  type         TEXT NOT NULL,
+  started_at   BIGINT,
+  ended_at     BIGINT,
+  PRIMARY KEY (account, agent, type)
+);
+
+CREATE INDEX idx_user_referrals_agent ON user_referrals (agent);
+
+-- ---------------------------------------------------------------------------
+-- user_post_bookmarks (post-only bookmarks from UserMetadataSchema.bookmarks)
+-- ---------------------------------------------------------------------------
+CREATE TABLE user_post_bookmarks (
+  account   TEXT NOT NULL REFERENCES accounts_current (name) ON DELETE CASCADE,
+  author    TEXT NOT NULL,
+  permlink  TEXT NOT NULL,
+  PRIMARY KEY (account, author, permlink)
+);
+
+CREATE INDEX idx_user_post_bookmarks_account ON user_post_bookmarks (account);
+
+-- ---------------------------------------------------------------------------
+-- user_subscriptions (SubscriptionSchema: follower / following)
+-- ---------------------------------------------------------------------------
+CREATE TABLE user_subscriptions (
+  follower   TEXT NOT NULL,
+  following  TEXT NOT NULL,
+  bell       BOOLEAN,
+  PRIMARY KEY (follower, following)
+);
+
+CREATE INDEX idx_user_subscriptions_following ON user_subscriptions (following);
+
+-- ---------------------------------------------------------------------------
+-- user_object_follows (UserSchema.objects_follow + bell)
+-- ---------------------------------------------------------------------------
+CREATE TABLE user_object_follows (
+  account    TEXT NOT NULL REFERENCES accounts_current (name) ON DELETE CASCADE,
+  object_id  TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
+  bell       BOOLEAN NOT NULL DEFAULT FALSE,
+  PRIMARY KEY (account, object_id)
+);
+
+CREATE INDEX idx_user_object_follows_object_id ON user_object_follows (object_id);
 
 -- ---------------------------------------------------------------------------
 -- posts (Hive post; normalized from legacy Mongo PostSchema)

@@ -81,6 +81,7 @@ Details: [architecture overview](../architecture/overview.md).
 |-----|-------------|
 | [data-model/flow.md](data-model/flow.md) | Schema, write/read flows, indexes, comparison notes |
 | [data-model/posts.md](data-model/posts.md) | Hive posts: `posts` + satellite tables (votes, objects, reblogs, languages, links, mentions) |
+| [data-model/users.md](data-model/users.md) | Waivio users: extended `accounts_current` + `user_*` tables |
 | [data-model/schema.sql](data-model/schema.sql) | DDL sketch |
 
 ### Architecture decisions

@@ -11,6 +11,7 @@ Related files:
 - [rank-votes.ts](rank-votes.ts) — RankVoteRow
 - [schema.sql](schema.sql) — Full DDL
 - [posts.md](posts.md) — Hive `posts` and satellite tables (separate from object/update flow)
+- [users.md](users.md) — Waivio `accounts_current` extensions and `user_*` tables
 
 ## Roles of the tables
 

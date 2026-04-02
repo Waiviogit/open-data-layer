@@ -5,6 +5,7 @@
  * @see docs/spec/data-model/schema.sql
  * @see docs/spec/data-model/flow.md
  * @see docs/spec/data-model/posts.md
+ * @see docs/spec/data-model/users.md
  */
 
 import type {
@@ -25,6 +26,12 @@ export interface OdlDatabase {
   rank_votes: RankVotesTable;
   object_authority: ObjectAuthorityTable;
   accounts_current: AccountsCurrentTable;
+  user_metadata: UserMetadataTable;
+  user_notification_settings: UserNotificationSettingsTable;
+  user_referrals: UserReferralsTable;
+  user_post_bookmarks: UserPostBookmarksTable;
+  user_subscriptions: UserSubscriptionsTable;
+  user_object_follows: UserObjectFollowsTable;
   posts: PostsTable;
   post_active_votes: PostActiveVotesTable;
   post_objects: PostObjectsTable;
@@ -151,11 +158,135 @@ export interface AccountsCurrentTable {
   last_root_post: string | null;
   object_reputation: number;
   updated_at_unix: number | null;
+  /** Waivio / legacy Mongo User fields. */
+  alias: string | null;
+  profile_image: string | null;
+  wobjects_weight: number;
+  last_posts_count: number;
+  users_following_count: number;
+  followers_count: number;
+  stage_version: number;
+  referral_status: string | null;
+  /** Unix seconds; from Mongo lastActivity. */
+  last_activity: number | null;
 }
 
 export type AccountCurrent = Selectable<AccountsCurrentTable>;
 export type NewAccountCurrent = Insertable<AccountsCurrentTable>;
 export type AccountCurrentUpdate = Updateable<AccountsCurrentTable>;
+
+// ---------------------------------------------------------------------------
+// user_metadata (1:1 accounts_current; UserMetadataSchema minus nested notifications)
+// ---------------------------------------------------------------------------
+
+export interface UserMetadataTable {
+  account: string;
+  notifications_last_timestamp: number;
+  exit_page_setting: boolean;
+  locale: string;
+  post_locales: ColumnType<JsonValue, JsonValue | undefined, JsonValue>;
+  nightmode: boolean;
+  reward_setting: 'HP' | '50' | 'HIVE';
+  rewrite_links: boolean;
+  show_nsfw_posts: boolean;
+  upvote_setting: boolean;
+  vote_percent: number;
+  voting_power: boolean;
+  currency: string | null;
+}
+
+export type UserMetadata = Selectable<UserMetadataTable>;
+export type NewUserMetadata = Insertable<UserMetadataTable>;
+export type UserMetadataUpdate = Updateable<UserMetadataTable>;
+
+// ---------------------------------------------------------------------------
+// user_notification_settings (UserNotificationsSchema)
+// ---------------------------------------------------------------------------
+
+export interface UserNotificationSettingsTable {
+  account: string;
+  activation_campaign: boolean;
+  deactivation_campaign: boolean;
+  follow: boolean;
+  fill_order: boolean;
+  mention: boolean;
+  minimal_transfer: number;
+  reblog: boolean;
+  reply: boolean;
+  status_change: boolean;
+  transfer: boolean;
+  power_up: boolean;
+  witness_vote: boolean;
+  my_post: boolean;
+  my_comment: boolean;
+  my_like: boolean;
+  /** Maps Mongo `userNotifications.like` (PostgreSQL column `vote`; `like` is reserved). */
+  vote: boolean;
+  downvote: boolean;
+  claim_reward: boolean;
+}
+
+export type UserNotificationSettings = Selectable<UserNotificationSettingsTable>;
+export type NewUserNotificationSettings = Insertable<UserNotificationSettingsTable>;
+export type UserNotificationSettingsUpdate = Updateable<UserNotificationSettingsTable>;
+
+// ---------------------------------------------------------------------------
+// user_referrals (ReferralsSchema)
+// ---------------------------------------------------------------------------
+
+export interface UserReferralsTable {
+  account: string;
+  agent: string;
+  type: string;
+  started_at: number | null;
+  ended_at: number | null;
+}
+
+export type UserReferral = Selectable<UserReferralsTable>;
+export type NewUserReferral = Insertable<UserReferralsTable>;
+export type UserReferralUpdate = Updateable<UserReferralsTable>;
+
+// ---------------------------------------------------------------------------
+// user_post_bookmarks (post bookmarks from UserMetadataSchema.bookmarks)
+// ---------------------------------------------------------------------------
+
+export interface UserPostBookmarksTable {
+  account: string;
+  author: string;
+  permlink: string;
+}
+
+export type UserPostBookmark = Selectable<UserPostBookmarksTable>;
+export type NewUserPostBookmark = Insertable<UserPostBookmarksTable>;
+export type UserPostBookmarkUpdate = Updateable<UserPostBookmarksTable>;
+
+// ---------------------------------------------------------------------------
+// user_subscriptions (SubscriptionSchema: user follows user)
+// ---------------------------------------------------------------------------
+
+export interface UserSubscriptionsTable {
+  follower: string;
+  following: string;
+  bell: boolean | null;
+}
+
+export type UserSubscription = Selectable<UserSubscriptionsTable>;
+export type NewUserSubscription = Insertable<UserSubscriptionsTable>;
+export type UserSubscriptionUpdate = Updateable<UserSubscriptionsTable>;
+
+// ---------------------------------------------------------------------------
+// user_object_follows (UserSchema.objects_follow + bell)
+// ---------------------------------------------------------------------------
+
+export interface UserObjectFollowsTable {
+  account: string;
+  object_id: string;
+  bell: boolean;
+}
+
+export type UserObjectFollow = Selectable<UserObjectFollowsTable>;
+export type NewUserObjectFollow = Insertable<UserObjectFollowsTable>;
+export type UserObjectFollowUpdate = Updateable<UserObjectFollowsTable>;
 
 // ---------------------------------------------------------------------------
 // posts (Hive post body; normalized from Mongo PostSchema)

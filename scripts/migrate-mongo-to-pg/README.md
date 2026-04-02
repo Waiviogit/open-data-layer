@@ -13,6 +13,8 @@ One-off **data** migrations from Mongo export files into the ODL Postgres schema
 |--------|--------|----------------|
 | `pnpm migrate:mongo-objects` | Wobject array JSON | `objects_core`, `object_updates`, `validity_votes`, `object_authority` |
 | `pnpm migrate:mongo-posts` | Post array JSON | `posts`, `post_active_votes`, `post_objects`, `post_reblogged_users`, `post_languages`, `post_links`, `post_mentions` |
+| `pnpm migrate:mongo-users` | User array JSON | `accounts_current` (Waivio columns), `user_metadata`, `user_notification_settings`, `user_referrals`, `user_post_bookmarks`, `user_object_follows` |
+| `pnpm migrate:mongo-subscriptions` | Subscription array JSON | `user_subscriptions` |
 
 ### Objects (wobjects)
 
@@ -28,6 +30,18 @@ pnpm migrate:mongo-objects <path-to-wobjects.json> [--skip-indexes]
 pnpm migrate:mongo-posts <path-to-posts.json>
 ```
 
+### Users
+
+```bash
+pnpm migrate:mongo-users <path-to-users.json>
+```
+
+### Subscriptions
+
+```bash
+pnpm migrate:mongo-subscriptions <path-to-subscriptions.json>
+```
+
 **Breaking rename:** the old script name `migrate:mongo` was replaced by `migrate:mongo-objects`.
 
 ## Post export mapping
@@ -41,7 +55,16 @@ Source shape: legacy Mongo [`PostSchema`](../../tmp/PostSchema.js). ODL columns:
 
 Inserts use `ON CONFLICT DO NOTHING` on natural keys so re-runs are idempotent.
 
+## User export mapping
+
+Source: [`tmp/UserSchema.js`](../../tmp/UserSchema.js). ODL: [`libs/core/src/db/odl/tables.ts`](../../libs/core/src/db/odl/tables.ts).
+
+- **`user_notification_settings.vote`:** from nested JSON `user_metadata.settings.userNotifications.like` (Mongo field name `like`; stored as column `vote` because `like` is a PostgreSQL reserved word).
+- **`user_post_bookmarks`:** only entries in `user_metadata.bookmarks[]` containing `/` are split into `author` + `permlink`; others are skipped (object bookmarks not modeled).
+- **`user_object_follows`:** only rows whose `object_id` exists in `objects_core` are inserted; see migrator stats `objectFollowsSkippedNoFk`.
+- **`hive_id`, `comment_count`, `lifetime_vote_count`, `last_post`, `object_reputation`:** not present on Mongo user export; importer uses 0 / null defaults.
+
 ## Related
 
-- Spec: [`docs/spec/data-model/posts.md`](../../docs/spec/data-model/posts.md)
+- Spec: [`docs/spec/data-model/posts.md`](../../docs/spec/data-model/posts.md), [`docs/spec/data-model/users.md`](../../docs/spec/data-model/users.md)
 - Schema migrations: [`docs/operations/migrations.md`](../../docs/operations/migrations.md)
