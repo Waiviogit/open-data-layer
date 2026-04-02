@@ -17,6 +17,7 @@ import { GovernanceModule } from './domain/governance';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: ['apps/chain-indexer/.env', '.env'],
       load: [chainIndexerConfig],
     }),
     EventEmitterModule.forRoot(),

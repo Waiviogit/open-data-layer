@@ -18,6 +18,7 @@ import ipfsGatewayConfig from './config/ipfs-gateway.config';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: ['apps/ipfs-gateway/.env', '.env'],
       load: [ipfsGatewayConfig],
     }),
     ScheduleModule.forRoot(),

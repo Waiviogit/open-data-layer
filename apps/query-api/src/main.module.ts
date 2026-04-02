@@ -11,6 +11,7 @@ import queryApiConfig from './config/query-api.config';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: ['apps/query-api/.env', '.env'],
       load: [queryApiConfig],
     }),
     RedisClientModule.forRootAsync({

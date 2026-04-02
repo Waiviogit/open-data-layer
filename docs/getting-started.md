@@ -22,11 +22,28 @@ pnpm install
 
 ---
 
-## 2. Create your `.env` file
+## 2. Create your `.env` files
+
+**Workspace root** (Docker Compose, `pnpm migrate*`, shared defaults):
 
 ```bash
 cp .env.example .env
 ```
+
+**Per runnable app** (optional overrides — same keys as root win for that app):
+
+```bash
+cp apps/chain-indexer/.env.example apps/chain-indexer/.env
+cp apps/query-api/.env.example apps/query-api/.env
+cp apps/ipfs-gateway/.env.example apps/ipfs-gateway/.env
+cp apps/web/.env.example apps/web/.env
+```
+
+You only need app-level `.env` files when you want values that differ from the root `.env`. Precedence:
+
+1. Variables already set in your shell override file-based values.
+2. For Nest apps (`chain-indexer`, `query-api`, `ipfs-gateway`), `apps/<app>/.env` overrides the workspace root `.env` for the same key.
+3. Next.js reads `apps/web/.env` (and `.env.local`, etc.) from `apps/web/`; use those for web-only settings.
 
 Edit `.env` if you need non-default ports or credentials. The defaults work with the `docker-compose.yml` as-is.
 
