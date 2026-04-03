@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
 
+import type { LocaleId } from '@/i18n/types';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AVATAR_PLACEHOLDER_SRC, UserAvatar } from '@/shared/presentation';
 
@@ -41,11 +42,11 @@ function formatVoteSummary(totalCount: number, previewVoters: string[]): string 
   return `${totalCount} like this`;
 }
 
-function formatReputation(n: number | undefined): string | null {
+function formatReputation(n: number | undefined, locale: LocaleId): string | null {
   if (n == null || Number.isNaN(n)) {
     return null;
   }
-  return n.toLocaleString(undefined, {
+  return n.toLocaleString(locale, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
@@ -176,7 +177,7 @@ export function Story({ story, feedTab }: StoryProps) {
   const displayAuthor = story.authorDisplayName ?? story.authorName;
   const displayTimeIso = story.feedAt ?? story.createdAt;
   const relativeLabel = formatRelativeFeedTime(displayTimeIso, locale);
-  const repLabel = formatReputation(story.authorReputation);
+  const repLabel = formatReputation(story.authorReputation, locale);
   const voteLine =
     story.votes != null
       ? formatVoteSummary(story.votes.totalCount, story.votes.previewVoters)
