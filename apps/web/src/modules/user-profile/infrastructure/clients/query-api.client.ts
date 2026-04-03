@@ -3,7 +3,8 @@ import 'server-only';
 import { env } from '@/config/env';
 
 /**
- * Server-only fetch to query-api. 404 → `null`. Other errors throw.
+ * Server-only fetch to query-api.
+ * Returns `null` on network failures, 404, or non-OK responses (never throws).
  * Default `next.revalidate` is 60s; override via `init.next`.
  */
 export async function queryApiFetch<T>(
@@ -17,15 +18,22 @@ export async function queryApiFetch<T>(
   const nextInit = (init ?? {}) as RequestInit & {
     next?: { revalidate?: number | false; tags?: string[] };
   };
-  const res = await fetch(url, {
-    ...init,
-    next: { revalidate: 60, ...nextInit.next },
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      ...init,
+      next: { revalidate: 60, ...nextInit.next },
+    });
+  } catch (err) {
+    console.error(`[query-api] network error for ${path}:`, err);
+    return null;
+  }
   if (res.status === 404) {
     return null;
   }
   if (!res.ok) {
-    throw new Error(`query-api ${res.status}: ${path}`);
+    console.error(`[query-api] ${res.status} for ${path}`);
+    return null;
   }
   return res.json() as Promise<T>;
 }

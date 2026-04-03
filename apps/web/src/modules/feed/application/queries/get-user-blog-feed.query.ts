@@ -15,9 +15,11 @@ export async function getUserBlogFeedPageQuery(
   }
   const parsed = userBlogFeedResponseSchema.safeParse(raw);
   if (!parsed.success) {
-    throw new Error(
-      `Invalid user blog feed response: ${parsed.error.flatten().toString()}`,
+    console.error(
+      '[getUserBlogFeedPageQuery] unexpected response shape:',
+      parsed.error.flatten(),
     );
+    return { items: [], cursor: null, hasMore: false };
   }
   return {
     items: parsed.data.items.map(mapFeedStoryItemApiToView),
