@@ -3,6 +3,13 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  /* Single stable class avoids SSR/client Tailwind class-string drift in dev (hydration mismatch on next/link). */
+  .feed-story-title-link {
+    @apply text-link hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus;
+  }
+}
+
 html {
   -webkit-text-size-adjust: 100%;
   font-family: var(--font-body);
