@@ -54,6 +54,7 @@ const feedStoryItemSchema = registry.register(
     netRshares: z.string(),
     thumbnailUrl: z.string().nullable(),
     videoThumbnailUrl: z.string().nullable(),
+    videoEmbedUrl: z.string().nullable(),
     authorProfile: authorProfileSnippetSchema,
     objects: z.array(feedObjectSummarySchema),
     votes: feedVoteSummarySchema,

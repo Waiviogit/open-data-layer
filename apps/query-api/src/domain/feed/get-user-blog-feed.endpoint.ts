@@ -19,7 +19,7 @@ import {
 } from './feed.constants';
 import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
 import { extractThumbnailUrl } from './post-thumbnail';
-import { extractVideoThumbnailUrl } from './post-video-thumbnail';
+import { extractVideoEmbedUrl, extractVideoThumbnailUrl } from './post-video-thumbnail';
 import { isNsfwPost } from './post-nsfw';
 import type { UserBlogFeedBody } from './schemas/user-blog-feed.schema';
 
@@ -53,6 +53,8 @@ export interface FeedStoryItemDto {
   thumbnailUrl: string | null;
   /** Poster URL when post embeds video (json_metadata.video or video links in body). */
   videoThumbnailUrl: string | null;
+  /** Iframe `src` for inline playback when detectable (HTTPS embed URLs). */
+  videoEmbedUrl: string | null;
   authorProfile: {
     name: string;
     displayName: string | null;
@@ -219,6 +221,10 @@ export class GetUserBlogFeedEndpoint {
         netRshares: String(post.net_rshares),
         thumbnailUrl: extractThumbnailUrl(post.json_metadata ?? '', post.body ?? ''),
         videoThumbnailUrl: extractVideoThumbnailUrl(post.json_metadata ?? '', post.body ?? ''),
+        videoEmbedUrl: extractVideoEmbedUrl(post.json_metadata ?? '', post.body ?? '', {
+          author: post.author,
+          permlink: post.permlink,
+        }),
         authorProfile,
         objects,
         votes: {

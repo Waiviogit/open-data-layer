@@ -19,6 +19,7 @@ const feedStoryItemApiSchema = z.object({
   netRshares: z.string(),
   thumbnailUrl: z.string().nullable(),
   videoThumbnailUrl: z.string().nullable(),
+  videoEmbedUrl: z.string().nullable(),
   authorProfile: z.object({
     name: z.string(),
     displayName: z.string().nullable(),
@@ -56,6 +57,7 @@ export function mapFeedStoryItemApiToView(item: FeedStoryItemApi): FeedStoryView
     authorReputation: item.authorProfile.reputation,
     thumbnailUrl: item.thumbnailUrl ?? undefined,
     videoThumbnailUrl: item.videoThumbnailUrl ?? undefined,
+    videoEmbedUrl: item.videoEmbedUrl ?? undefined,
     createdAt: item.createdAt,
     feedAt: item.feedAt,
     title: item.title || undefined,

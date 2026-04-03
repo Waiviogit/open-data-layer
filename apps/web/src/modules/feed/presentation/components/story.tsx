@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
@@ -171,6 +171,7 @@ function StatButton({ icon, count, label, title }: StatButtonProps) {
 }
 
 export function Story({ story, feedTab }: StoryProps) {
+  const [videoPlaying, setVideoPlaying] = useState(false);
   const { locale } = useI18n();
   const displayAuthor = story.authorDisplayName ?? story.authorName;
   const displayTimeIso = story.feedAt ?? story.createdAt;
@@ -186,6 +187,7 @@ export function Story({ story, feedTab }: StoryProps) {
       ? story.objects.slice(0, FEED_STORY_TAGGED_OBJECT_MAX)
       : [];
   const previewMediaUrl = story.videoThumbnailUrl ?? story.thumbnailUrl;
+  const canPlayInline = Boolean(story.videoEmbedUrl);
 
   return (
     <article
@@ -283,20 +285,43 @@ export function Story({ story, feedTab }: StoryProps) {
 
         {previewMediaUrl ? (
           <div className="relative mt-3 overflow-hidden rounded-md border border-border bg-surface-control">
-            <img
-              src={previewMediaUrl}
-              alt=""
-              className="max-h-[260px] w-full object-cover"
-              loading="lazy"
-            />
-            {story.videoThumbnailUrl ? (
-              <div
-                className="pointer-events-none absolute inset-0 flex items-center justify-center"
-                aria-hidden
-              >
-                <IconPlay />
-              </div>
-            ) : null}
+            {videoPlaying && story.videoEmbedUrl ? (
+              <>
+                <iframe
+                  title={story.title ? `${story.title} — video` : 'Embedded video'}
+                  src={story.videoEmbedUrl}
+                  className="aspect-video max-h-[260px] min-h-[180px] w-full border-0 bg-black"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+                <button
+                  type="button"
+                  className="absolute right-2 top-2 rounded-md bg-overlay/90 px-2 py-1 text-caption font-medium text-fg shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  onClick={() => setVideoPlaying(false)}
+                >
+                  Close
+                </button>
+              </>
+            ) : (
+              <>
+                <img
+                  src={previewMediaUrl}
+                  alt=""
+                  className="max-h-[260px] w-full object-cover"
+                  loading="lazy"
+                />
+                {canPlayInline ? (
+                  <button
+                    type="button"
+                    className="absolute inset-0 flex items-center justify-center transition-opacity hover:opacity-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                    onClick={() => setVideoPlaying(true)}
+                    aria-label="Play video"
+                  >
+                    <IconPlay />
+                  </button>
+                ) : null}
+              </>
+            )}
           </div>
         ) : null}
 

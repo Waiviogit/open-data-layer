@@ -1,4 +1,4 @@
-import { extractVideoThumbnailUrl } from './post-video-thumbnail';
+import { extractVideoEmbedUrl, extractVideoThumbnailUrl } from './post-video-thumbnail';
 
 describe('extractVideoThumbnailUrl', () => {
   it('returns YouTube hqdefault from watch?v= URL in body', () => {
@@ -104,5 +104,80 @@ describe('extractVideoThumbnailUrl', () => {
 
   it('rejects path traversal in 3Speak watch param', () => {
     expect(extractVideoThumbnailUrl('', 'https://3speak.tv/watch?v=..%2Fevil')).toBeNull();
+  });
+});
+
+describe('extractVideoEmbedUrl', () => {
+  const ctx = { author: 'alice', permlink: 'my-post' };
+
+  it('returns YouTube embed with autoplay from body', () => {
+    expect(
+      extractVideoEmbedUrl('', 'Watch https://www.youtube.com/watch?v=dQw4w9WgXcQ today', ctx),
+    ).toBe('https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0');
+  });
+
+  it('returns Vimeo player URL from body', () => {
+    expect(extractVideoEmbedUrl('', 'https://vimeo.com/123456789', ctx)).toBe(
+      'https://player.vimeo.com/video/123456789?autoplay=1',
+    );
+  });
+
+  it('returns 3Speak embed from body', () => {
+    expect(
+      extractVideoEmbedUrl(
+        '',
+        'https://3speak.tv/watch?v=author%2Fmy-post-permlink',
+        ctx,
+      ),
+    ).toBe('https://3speak.tv/embed?v=author%2Fmy-post-permlink');
+  });
+
+  it('returns emb.d.tube from json_metadata snaphash', () => {
+    const meta = JSON.stringify({
+      video: {
+        info: { author: 'bob', permlink: 'dtube-vid', snaphash: 'QmSnap' },
+      },
+    });
+    expect(extractVideoEmbedUrl(meta, '', { author: 'alice', permlink: 'my-post' })).toBe(
+      'https://emb.d.tube/#!/bob/dtube-vid',
+    );
+  });
+
+  it('returns 3Speak embed from json_metadata platform', () => {
+    const meta = JSON.stringify({
+      video: {
+        info: { platform: '3speak', author: 'u', permlink: 'p' },
+      },
+    });
+    expect(extractVideoEmbedUrl(meta, '', ctx)).toBe(
+      'https://3speak.tv/embed?v=u%2Fp',
+    );
+  });
+
+  it('derives YouTube embed from img.youtube.com thumbnail in metadata', () => {
+    const meta = JSON.stringify({
+      video: {
+        thumbnail: 'https://img.youtube.com/vi/abcdefghijk/hqdefault.jpg',
+      },
+    });
+    expect(extractVideoEmbedUrl(meta, '', ctx)).toBe(
+      'https://www.youtube.com/embed/abcdefghijk?autoplay=1&rel=0',
+    );
+  });
+
+  it('prefers json_metadata DTube embed over body YouTube', () => {
+    const meta = JSON.stringify({
+      video: {
+        info: { snaphash: 'QmX', author: 'a', permlink: 'p' },
+        content: { videohash: 'QmV' },
+      },
+    });
+    expect(extractVideoEmbedUrl(meta, 'https://youtube.com/watch?v=abcdefghijk', ctx)).toBe(
+      'https://emb.d.tube/#!/a/p',
+    );
+  });
+
+  it('returns null when nothing matches', () => {
+    expect(extractVideoEmbedUrl('{"image":["https://x.jpg"]}', 'text only', ctx)).toBeNull();
   });
 });

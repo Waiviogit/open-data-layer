@@ -165,3 +165,122 @@ export function extractVideoThumbnailUrl(jsonMetadata: string, body: string): st
   }
   return videoThumbFromBody(body);
 }
+
+const YOUTUBE_THUMB_HOST = /img\.youtube\.com\/vi\/([a-zA-Z0-9_-]{11})\//;
+
+function extractYouTubeIdFromBody(body: string): string | null {
+  for (const re of YOUTUBE_ID_PATTERNS) {
+    const m = body.match(re);
+    if (m?.[1]) {
+      return m[1];
+    }
+  }
+  return null;
+}
+
+function extractYouTubeIdFromThumbnailUrl(url: string): string | null {
+  const m = url.match(YOUTUBE_THUMB_HOST);
+  return m?.[1] ?? null;
+}
+
+function extractVimeoIdFromBody(body: string): string | null {
+  const m = body.match(VIMEO_ID_PATTERN);
+  return m?.[1] ?? null;
+}
+
+function embedFromJsonMetadataVideo(
+  jsonMetadata: string,
+  postAuthor: string,
+  postPermlink: string,
+): string | null {
+  const parsed = tryParseJson(jsonMetadata);
+  if (typeof parsed !== 'object' || parsed === null) {
+    return null;
+  }
+  const video = (parsed as Record<string, unknown>).video;
+  if (video === null || video === undefined || typeof video !== 'object') {
+    return null;
+  }
+  const v = video as Record<string, unknown>;
+  const info = typeof v.info === 'object' && v.info !== null ? (v.info as Record<string, unknown>) : null;
+
+  let author = postAuthor;
+  let permlink = postPermlink;
+  if (info) {
+    if (typeof info.author === 'string' && info.author.trim() !== '') {
+      author = info.author.trim();
+    }
+    if (typeof info.permlink === 'string' && info.permlink.trim() !== '') {
+      permlink = info.permlink.trim();
+    }
+    const platform = info.platform;
+    if (typeof platform === 'string' && platform.toLowerCase().includes('3speak')) {
+      return `https://3speak.tv/embed?v=${encodeURIComponent(`${author}/${permlink}`)}`;
+    }
+  }
+
+  const content = v.content;
+  const videohash =
+    typeof content === 'object' &&
+    content !== null &&
+    typeof (content as Record<string, unknown>).videohash === 'string'
+      ? ((content as Record<string, unknown>).videohash as string).trim()
+      : '';
+  const snaphash =
+    info && typeof info.snaphash === 'string' ? info.snaphash.trim() : '';
+
+  if (videohash !== '' || snaphash !== '') {
+    return `https://emb.d.tube/#!/${encodeURIComponent(author)}/${encodeURIComponent(permlink)}`;
+  }
+
+  return null;
+}
+
+function embedFromBody(body: string): string | null {
+  const yt = extractYouTubeIdFromBody(body);
+  if (yt) {
+    return `https://www.youtube.com/embed/${yt}?autoplay=1&rel=0`;
+  }
+  const vm = extractVimeoIdFromBody(body);
+  if (vm) {
+    return `https://player.vimeo.com/video/${vm}?autoplay=1`;
+  }
+  const m = body.match(THREE_SPEAK_WATCH_PATTERN);
+  if (!m?.[1]) {
+    return null;
+  }
+  let path: string;
+  try {
+    path = decodeURIComponent(m[1].replace(/\+/g, ' '));
+  } catch {
+    path = m[1];
+  }
+  const trimmed = path.trim();
+  if (trimmed === '' || trimmed.includes('..')) {
+    return null;
+  }
+  return `https://3speak.tv/embed?v=${encodeURIComponent(trimmed)}`;
+}
+
+/**
+ * HTTPS URL suitable for an iframe `src` to play the detected video (autoplay on load).
+ * Uses `json_metadata.video` (DTube / 3Speak), then YouTube thumbnail URL in metadata, then body links.
+ */
+export function extractVideoEmbedUrl(
+  jsonMetadata: string,
+  body: string,
+  context: { author: string; permlink: string },
+): string | null {
+  const fromMeta = embedFromJsonMetadataVideo(jsonMetadata, context.author, context.permlink);
+  if (fromMeta) {
+    return fromMeta;
+  }
+  const metaThumb = videoThumbFromJsonMetadata(jsonMetadata);
+  if (metaThumb) {
+    const ytId = extractYouTubeIdFromThumbnailUrl(metaThumb);
+    if (ytId) {
+      return `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0`;
+    }
+  }
+  return embedFromBody(body);
+}
