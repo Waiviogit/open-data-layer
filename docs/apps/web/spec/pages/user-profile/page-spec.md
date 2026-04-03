@@ -2,6 +2,10 @@
 
 # User profile shell (`/@:name`)
 
+## Data loading
+
+Shell profile (hero counts, display name, bio, avatars) is loaded in the App Router layout via query-api. See [data-loading.md](data-loading.md).
+
 ## route_path
 
 `/@:name` with nested children under `pathScope` `/@:name` (see `src/routes/configs/routes.js` lines 402–411). Parent patterns also match optional tab and wallet segments for URL matching only.

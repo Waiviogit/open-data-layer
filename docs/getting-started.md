@@ -63,6 +63,8 @@ Key variables and their defaults:
 | `DATABASE_URL` | `postgres://postgres:postgres@localhost:5432/odl` | migrations CLI |
 | `START_BLOCK_NUMBER` | `102138605` | chain-indexer |
 | `BLOCK_NUMBER_KEY` | `chain_indexer:block_number` | chain-indexer |
+| `QUERY_API_URL` | `http://localhost:3000` | web (server — query-api base URL for profile fetch) |
+| `WEB_THEME_SYNC_URL` | *(unset)* | web (server — optional theme sync endpoint) |
 
 ---
 

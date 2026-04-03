@@ -1,3 +1,5 @@
+import { env } from '@/config/env';
+
 import type { ThemePreference } from './types';
 
 /**
@@ -7,7 +9,7 @@ import type { ThemePreference } from './types';
 export async function syncThemePreferenceToBackend(
   preference: ThemePreference,
 ): Promise<void> {
-  const url = process.env.WEB_THEME_SYNC_URL;
+  const url = env.WEB_THEME_SYNC_URL;
   if (!url || url.length === 0) {
     return;
   }

@@ -1,9 +1,7 @@
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
-import { UserProfileShell } from '@/modules/user-profile';
-
-import { getMockUserProfile } from './mock-user-profile';
+import { getUserProfileQuery, UserProfileShell } from '@/modules/user-profile';
 
 const ACCOUNT_NAME_RE = /^[a-zA-Z0-9.-]{3,32}$/;
 
@@ -19,7 +17,10 @@ export default async function UserProfileLayout({
   if (!ACCOUNT_NAME_RE.test(decoded)) {
     notFound();
   }
-  const profile = getMockUserProfile(decoded);
+  const profile = await getUserProfileQuery(decoded);
+  if (!profile) {
+    notFound();
+  }
   return (
     <Suspense fallback={null}>
       <UserProfileShell accountName={decoded} initialUser={profile}>

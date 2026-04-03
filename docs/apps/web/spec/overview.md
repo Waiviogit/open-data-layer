@@ -25,6 +25,7 @@ The **web** application is the Next.js **App Router** frontend for the Open Data
 | [theme.md](theme.md) | Theme preference, `data-theme`, CSS variables, SSR script, Tailwind |
 | [components/story-container.md](components/story-container.md) | Feed row (`StoryContainer` / `Story`), DTO, demo mocks |
 | [pages/index.md](pages/index.md) | Page-level specs directory (user profile, ...) |
+| [pages/user-profile/data-loading.md](pages/user-profile/data-loading.md) | Shell profile fetch (query-api, `QUERY_API_URL`) |
 
 ## Verification
 

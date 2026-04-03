@@ -38,6 +38,7 @@
     "react-dom": "^19.0.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
+    "server-only": "^0.0.1",
     "sharp": "^0.34.5",
     "stream-chain": "^3.6.0",
     "stream-json": "^2.0.0",
