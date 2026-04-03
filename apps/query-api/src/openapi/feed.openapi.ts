@@ -31,6 +31,7 @@ const authorProfileSnippetSchema = registry.register(
     name: z.string(),
     displayName: z.string().nullable(),
     avatarUrl: z.string().nullable(),
+    reputation: z.number(),
   }),
 );
 
@@ -51,6 +52,7 @@ const feedStoryItemSchema = registry.register(
     pendingPayout: z.string(),
     totalPayout: z.string(),
     netRshares: z.string(),
+    thumbnailUrl: z.string().nullable(),
     authorProfile: authorProfileSnippetSchema,
     objects: z.array(feedObjectSummarySchema),
     votes: feedVoteSummarySchema,

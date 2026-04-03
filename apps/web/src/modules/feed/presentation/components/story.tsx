@@ -1,29 +1,20 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import type { LocaleId } from '@/i18n/types';
 import { UserAvatar } from '@/shared/presentation';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 import type { FeedTab } from '../../domain/feed-tab';
 
+import { formatPayoutDisplay, formatRelativeFeedTime } from './story-utils';
+
 type StoryProps = {
   story: FeedStoryView;
   feedTab?: FeedTab;
 };
-
-function formatCreatedAt(iso: string, locale: LocaleId): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) {
-    return iso;
-  }
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(d);
-}
 
 function formatVoteSummary(totalCount: number, previewVoters: string[]): string | null {
   if (totalCount <= 0) {
@@ -46,15 +37,127 @@ function formatVoteSummary(totalCount: number, previewVoters: string[]): string 
   return `${totalCount} like this`;
 }
 
+function formatReputation(n: number | undefined): string | null {
+  if (n == null || Number.isNaN(n)) {
+    return null;
+  }
+  return n.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function IconThumbUp({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+    </svg>
+  );
+}
+
+function IconComment({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+function IconReblog({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M17 1l4 4-4 4" />
+      <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+      <path d="M7 23l-4-4 4-4" />
+      <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+    </svg>
+  );
+}
+
+function IconMore({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+    >
+      <circle cx="5" cy="12" r="2" />
+      <circle cx="12" cy="12" r="2" />
+      <circle cx="19" cy="12" r="2" />
+    </svg>
+  );
+}
+
+type StatButtonProps = {
+  icon: ReactNode;
+  count: number | undefined;
+  label: string;
+  title?: string | null;
+};
+
+function StatButton({ icon, count, label, title }: StatButtonProps) {
+  const showCount = count != null;
+  return (
+    <button
+      type="button"
+      className="inline-flex items-center gap-1.5 rounded-md px-1 py-1 text-caption text-muted transition-colors hover:bg-surface-control hover:text-fg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      disabled
+      aria-label={label}
+      title={title ?? undefined}
+    >
+      <span className="text-accent">{icon}</span>
+      {showCount ? <span className="font-medium text-fg-secondary">{count}</span> : null}
+    </button>
+  );
+}
+
 export function Story({ story, feedTab }: StoryProps) {
   const { locale } = useI18n();
   const displayAuthor = story.authorDisplayName ?? story.authorName;
   const displayTimeIso = story.feedAt ?? story.createdAt;
-  const dateLabel = formatCreatedAt(displayTimeIso, locale);
+  const relativeLabel = formatRelativeFeedTime(displayTimeIso, locale);
+  const repLabel = formatReputation(story.authorReputation);
   const voteLine =
     story.votes != null
       ? formatVoteSummary(story.votes.totalCount, story.votes.previewVoters)
       : null;
+  const payoutLabel = formatPayoutDisplay(story.pendingPayout, story.totalPayout);
 
   return (
     <article
@@ -62,6 +165,13 @@ export function Story({ story, feedTab }: StoryProps) {
       aria-labelledby={`story-title-${story.id}`}
       data-feed-tab={feedTab}
     >
+      {story.rebloggedBy ? (
+        <p className="mb-3 rounded-md bg-surface-control px-2 py-1 text-caption text-muted">
+          Reblogged by{' '}
+          <span className="font-medium text-fg-secondary">@{story.rebloggedBy}</span>
+        </p>
+      ) : null}
+
       <header className="flex gap-3">
         <UserAvatar
           username={story.authorName}
@@ -70,21 +180,50 @@ export function Story({ story, feedTab }: StoryProps) {
           size={40}
         />
         <div className="min-w-0 flex-1">
-          {story.rebloggedBy ? (
-            <p className="text-caption text-muted">
-              Reblogged by{' '}
-              <span className="font-medium text-fg-secondary">@{story.rebloggedBy}</span>
-            </p>
-          ) : null}
-          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
             <span className="font-weight-label text-body-sm text-fg">{displayAuthor}</span>
-            <span className="text-caption text-muted">@{story.authorName}</span>
+            {repLabel != null ? (
+              <span className="rounded bg-surface-control px-1.5 py-0.5 text-caption font-medium text-fg-secondary tabular-nums">
+                {repLabel}
+              </span>
+            ) : null}
+            <span className="text-caption text-muted">·</span>
+            <time className="text-caption text-fg-tertiary" dateTime={displayTimeIso}>
+              {relativeLabel}
+            </time>
+            {story.category ? (
+              <>
+                <span className="text-caption text-muted">·</span>
+                <span className="text-caption text-fg-tertiary">{story.category}</span>
+              </>
+            ) : null}
           </div>
-          <time className="text-caption text-fg-tertiary" dateTime={displayTimeIso}>
-            {dateLabel}
-          </time>
         </div>
       </header>
+
+      {story.objects && story.objects.length > 0 ? (
+        <ul
+          className="mt-3 flex flex-wrap gap-2 border-b border-border pb-3"
+          aria-label="Tagged objects"
+        >
+          {story.objects.map((o) => (
+            <li key={o.objectId} className="list-none">
+              <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border bg-surface-control px-2 py-0.5 text-caption text-fg-secondary">
+                {o.avatarUrl ? (
+                  <img
+                    src={o.avatarUrl}
+                    alt=""
+                    className="size-5 shrink-0 rounded-full"
+                    width={20}
+                    height={20}
+                  />
+                ) : null}
+                <span className="truncate">{o.name ?? o.objectId}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
       <div className="mt-3 min-w-0">
         {story.title ? (
@@ -107,27 +246,21 @@ export function Story({ story, feedTab }: StoryProps) {
             Post by {displayAuthor}
           </h2>
         )}
-        <p className="mt-2 whitespace-pre-wrap text-body text-fg-secondary">{story.excerpt}</p>
-        {story.objects && story.objects.length > 0 ? (
-          <ul className="mt-2 flex flex-wrap gap-2 p-0" aria-label="Tagged objects">
-            {story.objects.map((o) => (
-              <li key={o.objectId} className="list-none">
-                <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border bg-surface-control px-2 py-0.5 text-caption text-fg-secondary">
-                  {o.avatarUrl ? (
-                    <img
-                      src={o.avatarUrl}
-                      alt=""
-                      className="size-4 shrink-0 rounded-full"
-                      width={16}
-                      height={16}
-                    />
-                  ) : null}
-                  <span className="truncate">{o.name ?? o.objectId}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
+
+        {story.thumbnailUrl ? (
+          <div className="mt-3 overflow-hidden rounded-md border border-border bg-surface-control">
+            <img
+              src={story.thumbnailUrl}
+              alt=""
+              className="max-h-[260px] w-full object-cover"
+              loading="lazy"
+            />
+          </div>
         ) : null}
+
+        <p className="mt-3 min-h-[1.5em] whitespace-pre-wrap text-body text-fg-secondary line-clamp-6">
+          {story.excerpt}
+        </p>
         {story.isNsfw ? (
           <p className="mt-2 text-caption text-muted" role="status">
             NSFW
@@ -135,28 +268,32 @@ export function Story({ story, feedTab }: StoryProps) {
         ) : null}
       </div>
 
-      <footer className="mt-4 flex flex-col gap-2 border-t border-border pt-3">
-        {(story.children != null || voteLine) && (
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-caption text-muted">
-            {story.children != null ? (
-              <span>
-                {story.children} {story.children === 1 ? 'comment' : 'comments'}
-              </span>
-            ) : null}
-            {voteLine ? <span>{voteLine}</span> : null}
-          </div>
-        )}
-        <div className="flex flex-wrap gap-2">
-          <span className="rounded-btn border border-border bg-surface-control px-3 py-1.5 text-caption text-fg-disabled">
-            Like
-          </span>
-          <span className="rounded-btn border border-border bg-surface-control px-3 py-1.5 text-caption text-fg-disabled">
-            Reblog
-          </span>
-          <span className="rounded-btn border border-border bg-surface-control px-3 py-1.5 text-caption text-fg-disabled">
-            Bookmark
-          </span>
+      <footer className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
+        <div className="flex flex-wrap items-center gap-1">
+          <StatButton
+            icon={<IconThumbUp />}
+            count={story.votes?.totalCount ?? 0}
+            label="Likes"
+            title={voteLine ?? undefined}
+          />
+          <StatButton
+            icon={<IconComment />}
+            count={story.children ?? 0}
+            label="Comments"
+          />
+          <StatButton icon={<IconReblog />} count={undefined} label="Reblog" />
+          <button
+            type="button"
+            className="inline-flex items-center rounded-md px-1 py-1 text-caption text-muted transition-colors hover:bg-surface-control focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            disabled
+            aria-label="More"
+          >
+            <IconMore />
+          </button>
         </div>
+        {payoutLabel ? (
+          <span className="text-body-sm font-semibold tabular-nums text-accent">{payoutLabel}</span>
+        ) : null}
       </footer>
     </article>
   );

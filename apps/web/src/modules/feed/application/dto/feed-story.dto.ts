@@ -20,12 +20,18 @@ export const feedStoryViewSchema = z.object({
   authorDisplayName: z.string().optional(),
   /** Optional explicit avatar URL from API; when absent, UI falls back to Hive default by author name. */
   authorAvatarUrl: z.string().nullable().optional(),
+  /** Author reputation score (e.g. Hive reputation). */
+  authorReputation: z.number().optional(),
+  /** First image URL from post metadata or body (feed preview). */
+  thumbnailUrl: z.string().nullable().optional(),
   /** Primary sort/display time for the feed row (original post or reblog time). */
   createdAt: z.string().datetime({ offset: true }),
   feedAt: z.string().datetime({ offset: true }).optional(),
   title: z.string().optional(),
   excerpt: z.string(),
   isNsfw: z.boolean().optional(),
+  /** Hive post category (e.g. tag). */
+  category: z.string().nullable().optional(),
   permalinkPath: z.string().optional(),
   rebloggedBy: z.string().nullable().optional(),
   children: z.number().optional(),

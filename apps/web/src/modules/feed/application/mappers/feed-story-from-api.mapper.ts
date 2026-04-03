@@ -17,10 +17,12 @@ const feedStoryItemApiSchema = z.object({
   pendingPayout: z.string(),
   totalPayout: z.string(),
   netRshares: z.string(),
+  thumbnailUrl: z.string().nullable(),
   authorProfile: z.object({
     name: z.string(),
     displayName: z.string().nullable(),
     avatarUrl: z.string().nullable(),
+    reputation: z.number(),
   }),
   objects: z.array(
     z.object({
@@ -50,11 +52,14 @@ export function mapFeedStoryItemApiToView(item: FeedStoryItemApi): FeedStoryView
     authorName: item.author,
     authorDisplayName: item.authorProfile.displayName ?? undefined,
     authorAvatarUrl: item.authorProfile.avatarUrl ?? undefined,
+    authorReputation: item.authorProfile.reputation,
+    thumbnailUrl: item.thumbnailUrl ?? undefined,
     createdAt: item.createdAt,
     feedAt: item.feedAt,
     title: item.title || undefined,
     excerpt: item.excerpt,
     isNsfw: item.isNsfw,
+    category: item.category,
     permalinkPath: `/@${item.author}/${item.permlink}`,
     rebloggedBy: item.rebloggedBy,
     children: item.children,

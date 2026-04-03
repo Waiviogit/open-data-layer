@@ -15,6 +15,7 @@ import { GovernanceResolverService } from '../governance';
 import { decodeFeedCursor, encodeFeedCursor } from './feed-cursor';
 import { FEED_OBJECT_UPDATE_TYPES } from './feed.constants';
 import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
+import { extractThumbnailUrl } from './post-thumbnail';
 import { isNsfwPost } from './post-nsfw';
 import type { UserBlogFeedBody } from './schemas/user-blog-feed.schema';
 
@@ -45,10 +46,12 @@ export interface FeedStoryItemDto {
   pendingPayout: string;
   totalPayout: string;
   netRshares: string;
+  thumbnailUrl: string | null;
   authorProfile: {
     name: string;
     displayName: string | null;
     avatarUrl: string | null;
+    reputation: number;
   };
   objects: FeedObjectSummaryDto[];
   votes: FeedVoteSummaryDto;
@@ -158,11 +161,13 @@ export class GetUserBlogFeedEndpoint {
             name: profile.name,
             displayName: profile.displayName,
             avatarUrl: profile.avatarUrl,
+            reputation: profile.reputation,
           }
         : {
             name: row.author,
             displayName: null,
             avatarUrl: null,
+            reputation: 0,
           };
 
       const excerpt = truncateExcerpt(stripHtmlForExcerpt(post.body ?? ''));
@@ -196,6 +201,7 @@ export class GetUserBlogFeedEndpoint {
         pendingPayout: post.pending_payout_value ?? '',
         totalPayout: post.total_payout_value ?? '',
         netRshares: String(post.net_rshares),
+        thumbnailUrl: extractThumbnailUrl(post.json_metadata ?? '', post.body ?? ''),
         authorProfile,
         objects,
         votes: {

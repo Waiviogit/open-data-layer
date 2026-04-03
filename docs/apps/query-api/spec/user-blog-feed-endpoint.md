@@ -45,7 +45,8 @@ JSON object (Zod-validated):
 | `pendingPayout` | string | `posts.pending_payout_value` |
 | `totalPayout` | string | `posts.total_payout_value` |
 | `netRshares` | string | `posts.net_rshares` (bigint as string) |
-| `authorProfile` | object | From `accounts_current` via batch `findByNames` — `name`, `displayName`, `avatarUrl` |
+| `thumbnailUrl` | string \| null | First image: `json_metadata.image[0]`, else first markdown/HTML image in `posts.body` |
+| `authorProfile` | object | From `accounts_current` via batch `findByNames` — `name`, `displayName`, `avatarUrl`, `reputation` (`object_reputation`) |
 | `objects` | array | Resolved `post_objects` rows with `name` / `avatar` from object view resolution |
 | `votes` | object | `totalCount`, `previewVoters` (top voters by `rshares`) from `post_active_votes` |
 
