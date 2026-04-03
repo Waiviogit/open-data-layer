@@ -47,8 +47,19 @@ JSON object (Zod-validated):
 | `netRshares` | string | `posts.net_rshares` (bigint as string) |
 | `thumbnailUrl` | string \| null | First image: `json_metadata.image[0]`, else first markdown/HTML image in `posts.body` |
 | `authorProfile` | object | From `accounts_current` via batch `findByNames` — `name`, `displayName`, `avatarUrl`, `reputation` (`object_reputation`) |
-| `objects` | array | Resolved `post_objects` rows with `name` / `avatar` from object view resolution |
+| `objects` | array | Tagged objects for the post — see [Tagged objects](#tagged-objects-objects) |
 | `votes` | object | `totalCount`, `previewVoters` (top voters by `rshares`) from `post_active_votes` |
+
+### Tagged objects (`objects`)
+
+Each item links a post to ODL objects via `post_objects`. The API returns **at most** `FEED_TAGGED_OBJECT_DISPLAY_LIMIT` entries (**4**), defined in `apps/query-api/src/domain/feed/feed.constants.ts`.
+
+**Sort order (stable tie-break: `object_id` ascending):**
+
+1. **Avatar first** — rows where resolved governance view exposes a non-empty **avatar** update rank above rows without an avatar.
+2. **Then by `objects_core.weight` descending** — higher object weight first; `NULL` weight sorts last within the same avatar tier.
+
+Resolution uses the same object-view pipeline as elsewhere (`name` / `avatar` update types only for feed cards). Implementation: `sortAndLimitFeedObjectSummaries` in `get-user-blog-feed.endpoint.ts`.
 
 ## Cursor format
 

@@ -44,10 +44,12 @@ Validated with `feedStoryViewSchema`. Core fields: `id`, `authorName`, optional 
 
 **Blog feed extras:** `rebloggedBy`, `children`, `pendingPayout`, `totalPayout`, `netRshares`, `objects` (tagged ODL summaries), `votes` (`totalCount`, `previewVoters`).
 
+**Tagged object chips:** The API returns objects already sorted and capped (avatar priority, then `objects_core.weight`, max **4** per post — see [user-blog-feed-endpoint.md](../../../query-api/spec/user-blog-feed-endpoint.md)). The `Story` component applies `FEED_STORY_TAGGED_OBJECT_MAX` (`story-utils.ts`, same numeric limit) so the UI never renders more than four chips.
+
 ## Layout (v1)
 
 - Header: [`UserAvatar`](avatar.md); when `rebloggedBy` is set, a **reblog line** (“Reblogged by @account”); display name, `@author`, formatted timestamp (`feedAt` when present, else `createdAt`).
-- Body: optional linked title, excerpt; **object chips** (name + optional avatar) when `objects` is non-empty; optional NSFW line.
+- Body: optional linked title, excerpt; **object chips** (name + optional avatar; up to four) when `objects` is non-empty; optional NSFW line.
 - Footer: comment count and **vote summary** (e.g. `@a, @b and N more liked this`) when data is present; disabled placeholders for like / reblog / bookmark (interactions to be wired later).
 
 ## Out of scope (later)

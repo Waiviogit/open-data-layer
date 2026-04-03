@@ -13,7 +13,10 @@ import { mapAccountToUserProfileView } from '../users/account-mapper';
 import type { UserProfileView } from '../users/user-profile.types';
 import { GovernanceResolverService } from '../governance';
 import { decodeFeedCursor, encodeFeedCursor } from './feed-cursor';
-import { FEED_OBJECT_UPDATE_TYPES } from './feed.constants';
+import {
+  FEED_OBJECT_UPDATE_TYPES,
+  FEED_TAGGED_OBJECT_DISPLAY_LIMIT,
+} from './feed.constants';
 import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
 import { extractThumbnailUrl } from './post-thumbnail';
 import { isNsfwPost } from './post-nsfw';
@@ -137,8 +140,12 @@ export class GetUserBlogFeedEndpoint {
     );
 
     let viewsByObjectId = new Map<string, ResolvedObjectView>();
+    const weightByObjectId = new Map<string, number | null>();
     if (objectIds.length > 0) {
       const { objects, voterReputations } = await this.aggregatedObjectRepo.loadByObjectIds(objectIds);
+      for (const o of objects) {
+        weightByObjectId.set(o.core.object_id, o.core.weight);
+      }
       const views = this.objectViewService.resolve(objects, voterReputations, {
         update_types: [...FEED_OBJECT_UPDATE_TYPES],
         locale,
@@ -176,15 +183,21 @@ export class GetUserBlogFeedEndpoint {
       const objectsForPost = postObjects.filter(
         (o) => o.author === row.author && o.permlink === row.permlink,
       );
-      const objects: FeedObjectSummaryDto[] = objectsForPost.map((o) => {
+      const objectSummariesWithWeight = objectsForPost.map((o) => {
         const view = viewsByObjectId.get(o.object_id);
+        const avatarUrl = view ? pickSingleText(view, UPDATE_TYPES.AVATAR) : null;
         return {
           objectId: o.object_id,
           objectType: o.object_type,
           name: view ? pickSingleText(view, UPDATE_TYPES.NAME) : null,
-          avatarUrl: view ? pickSingleText(view, UPDATE_TYPES.AVATAR) : null,
+          avatarUrl,
+          weight: weightByObjectId.get(o.object_id) ?? null,
         };
       });
+      const objects = sortAndLimitFeedObjectSummaries(
+        objectSummariesWithWeight,
+        FEED_TAGGED_OBJECT_DISPLAY_LIMIT,
+      );
 
       return {
         id: `${row.author}/${row.permlink}`,
@@ -236,4 +249,39 @@ function pickSingleText(view: ResolvedObjectView, updateType: string): string | 
   }
   const v = field.values[0];
   return v?.value_text ?? null;
+}
+
+/**
+ * Feed chips: prefer objects with a resolved avatar, then higher `objects_core.weight`,
+ * then stable id. Only the first `limit` are returned.
+ */
+function sortAndLimitFeedObjectSummaries(
+  items: Array<{
+    objectId: string;
+    objectType: string | null;
+    name: string | null;
+    avatarUrl: string | null;
+    weight: number | null;
+  }>,
+  limit: number,
+): FeedObjectSummaryDto[] {
+  const sorted = [...items].sort((a, b) => {
+    const ha = a.avatarUrl ? 1 : 0;
+    const hb = b.avatarUrl ? 1 : 0;
+    if (ha !== hb) {
+      return hb - ha;
+    }
+    const wa = a.weight ?? Number.NEGATIVE_INFINITY;
+    const wb = b.weight ?? Number.NEGATIVE_INFINITY;
+    if (wa !== wb) {
+      return wb - wa;
+    }
+    return a.objectId.localeCompare(b.objectId);
+  });
+  return sorted.slice(0, limit).map(({ objectId, objectType, name, avatarUrl }) => ({
+    objectId,
+    objectType,
+    name,
+    avatarUrl,
+  }));
 }

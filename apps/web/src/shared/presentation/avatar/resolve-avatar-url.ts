@@ -25,3 +25,6 @@ export function resolveAvatarUrl(input: ResolveAvatarUrlInput): string | null {
   const variant = input.size > 64 ? 'large' : 'small';
   return `${HIVE_AVATAR_BASE}/${name}/avatar/${variant}`;
 }
+
+/** Public-folder path; served by Next.js at /images/avatar-placeholder.webp */
+export const AVATAR_PLACEHOLDER_SRC = '/images/avatar-placeholder.webp';

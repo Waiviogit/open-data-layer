@@ -99,6 +99,19 @@ function toFloatOrNull(v: unknown): number | null {
   return null;
 }
 
+/** `post_objects.percent` is INT; Mongo wobjects may use floats (e.g. 12.5). */
+function toIntOrNull(v: unknown): number | null {
+  const n = toFloatOrNull(v);
+  if (n == null) {
+    return null;
+  }
+  const r = Math.round(n);
+  if (!Number.isSafeInteger(r)) {
+    return null;
+  }
+  return r;
+}
+
 function parseMongoDate(u: unknown): number | null {
   if (u instanceof Date) {
     return Math.floor(u.getTime() / 1000);
@@ -546,7 +559,7 @@ class MongoPostsMigrator {
         author,
         permlink,
         object_id: objectId,
-        percent: w.percent ?? null,
+        percent: toIntOrNull(w.percent),
         tagged: w.tagged?.trim() ?? null,
         object_type: w.object_type?.trim() ?? null,
       });

@@ -4,12 +4,16 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { UserAvatar } from '@/shared/presentation';
+import { AVATAR_PLACEHOLDER_SRC, UserAvatar } from '@/shared/presentation';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 import type { FeedTab } from '../../domain/feed-tab';
 
-import { formatPayoutDisplay, formatRelativeFeedTime } from './story-utils';
+import {
+  FEED_STORY_TAGGED_OBJECT_MAX,
+  formatPayoutDisplay,
+  formatRelativeFeedTime,
+} from './story-utils';
 
 type StoryProps = {
   story: FeedStoryView;
@@ -158,6 +162,10 @@ export function Story({ story, feedTab }: StoryProps) {
       ? formatVoteSummary(story.votes.totalCount, story.votes.previewVoters)
       : null;
   const payoutLabel = formatPayoutDisplay(story.pendingPayout, story.totalPayout);
+  const taggedObjects =
+    story.objects && story.objects.length > 0
+      ? story.objects.slice(0, FEED_STORY_TAGGED_OBJECT_MAX)
+      : [];
 
   return (
     <article
@@ -199,31 +207,37 @@ export function Story({ story, feedTab }: StoryProps) {
             ) : null}
           </div>
         </div>
+        {taggedObjects.length > 0 ? (
+          <ul
+            className="flex max-w-[10rem] shrink-0 flex-wrap content-start justify-end gap-1.5 sm:max-w-none"
+            aria-label="Tagged objects"
+          >
+            {taggedObjects.map((o) => (
+              <li key={o.objectId} className="list-none" title={o.name ?? o.objectId}>
+                <span className="flex size-9 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-control ring-1 ring-border/60">
+                  {o.avatarUrl ? (
+                    <img
+                      src={o.avatarUrl}
+                      alt=""
+                      className="size-full object-cover"
+                      width={36}
+                      height={36}
+                    />
+                  ) : (
+                    <img
+                      src={AVATAR_PLACEHOLDER_SRC}
+                      alt=""
+                      className="size-full object-cover"
+                      width={36}
+                      height={36}
+                    />
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </header>
-
-      {story.objects && story.objects.length > 0 ? (
-        <ul
-          className="mt-3 flex flex-wrap gap-2 border-b border-border pb-3"
-          aria-label="Tagged objects"
-        >
-          {story.objects.map((o) => (
-            <li key={o.objectId} className="list-none">
-              <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border bg-surface-control px-2 py-0.5 text-caption text-fg-secondary">
-                {o.avatarUrl ? (
-                  <img
-                    src={o.avatarUrl}
-                    alt=""
-                    className="size-5 shrink-0 rounded-full"
-                    width={20}
-                    height={20}
-                  />
-                ) : null}
-                <span className="truncate">{o.name ?? o.objectId}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-      ) : null}
 
       <div className="mt-3 min-w-0">
         {story.title ? (

@@ -1,5 +1,8 @@
 import type { LocaleId } from '@/i18n/types';
 
+/** Match query-api `FEED_TAGGED_OBJECT_DISPLAY_LIMIT` (feed.constants.ts). */
+export const FEED_STORY_TAGGED_OBJECT_MAX = 4;
+
 /**
  * Relative time for feed cards; falls back to medium date for older posts.
  */
