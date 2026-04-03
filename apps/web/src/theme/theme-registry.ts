@@ -11,4 +11,16 @@ export const themeRegistry = {
     label: 'Sepia',
     description: 'Warm reading mode',
   },
+  apple: {
+    label: 'Apple',
+    description: 'Neutral marketing preset — Apple blue accent, SF-style type',
+  },
+  airbnb: {
+    label: 'Airbnb',
+    description: 'White canvas, Rausch red accent, Cereal-style type, warm shadows',
+  },
+  waivio: {
+    label: 'Waivio',
+    description: 'Dense feed UI — orange accent, Inter, flat cards, gray chrome',
+  },
 } as const;

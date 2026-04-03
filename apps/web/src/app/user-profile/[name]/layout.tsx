@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
 import { getUserProfileQuery, UserProfileShell } from '@/modules/user-profile';
+import { HomeI18nToolbar } from '@/app/home-i18n-toolbar';
 
 const ACCOUNT_NAME_RE = /^[a-zA-Z0-9.-]{3,32}$/;
 
@@ -23,6 +24,7 @@ export default async function UserProfileLayout({
   }
   return (
     <Suspense fallback={null}>
+      <HomeI18nToolbar />
       <UserProfileShell accountName={decoded} initialUser={profile}>
         {children}
       </UserProfileShell>

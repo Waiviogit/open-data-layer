@@ -6,6 +6,9 @@ export const themePreferenceSchema = z.enum([
   'light',
   'dark',
   'sepia',
+  'apple',
+  'airbnb',
+  'waivio',
   'system',
 ]);
 

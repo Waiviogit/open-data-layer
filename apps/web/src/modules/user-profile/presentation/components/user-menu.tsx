@@ -74,7 +74,7 @@ function subNavLinkClass(active: boolean) {
   return [
     'inline-flex items-center rounded-btn px-2.5 py-1.5 text-caption font-medium transition-colors',
     active
-      ? 'bg-tertiary text-fg'
+      ? 'bg-tertiary text-tertiary-fg'
       : 'text-muted hover:bg-surface/80 hover:text-fg',
   ].join(' ');
 }

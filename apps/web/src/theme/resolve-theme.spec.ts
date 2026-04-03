@@ -27,6 +27,45 @@ describe('resolveTheme', () => {
     });
   });
 
+  it('resolves apple from cookie', () => {
+    const r = resolveTheme({
+      userPreference: null,
+      cookiePreference: 'apple',
+      systemPrefersDark: false,
+    });
+    expect(r).toEqual({
+      preference: 'apple',
+      resolvedTheme: 'apple',
+      source: 'cookie',
+    });
+  });
+
+  it('resolves airbnb from cookie', () => {
+    const r = resolveTheme({
+      userPreference: null,
+      cookiePreference: 'airbnb',
+      systemPrefersDark: false,
+    });
+    expect(r).toEqual({
+      preference: 'airbnb',
+      resolvedTheme: 'airbnb',
+      source: 'cookie',
+    });
+  });
+
+  it('resolves waivio from cookie', () => {
+    const r = resolveTheme({
+      userPreference: null,
+      cookiePreference: 'waivio',
+      systemPrefersDark: false,
+    });
+    expect(r).toEqual({
+      preference: 'waivio',
+      resolvedTheme: 'waivio',
+      source: 'cookie',
+    });
+  });
+
   it('resolves system to dark when systemPrefersDark is true', () => {
     const r = resolveTheme({
       userPreference: null,

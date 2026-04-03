@@ -2,6 +2,8 @@
 
 :root,
 [data-theme='light'] {
+  /* Native form controls (select dropdown, etc.) match page tokens */
+  color-scheme: light;
   /* Colors */
   --color-bg: #ffffff;
   --color-fg: #111827;
@@ -115,6 +117,7 @@
 }
 
 [data-theme='dark'] {
+  color-scheme: dark;
   --color-bg: #0a0a0a;
   --color-fg: #f3f4f6;
   --color-fg-secondary: rgb(243 244 246 / 0.7);
@@ -221,6 +224,7 @@
 }
 
 [data-theme='sepia'] {
+  color-scheme: light;
   --color-bg: #f4ecd8;
   --color-fg: #433422;
   --color-fg-secondary: rgb(67 52 34 / 0.7);
@@ -319,6 +323,313 @@
   --spacing-section-y-lg: 6rem;
   --spacing-section-y-hero: 8rem;
   --spacing-card: 1.5rem;
+  --spacing-gutter: 1rem;
+  --spacing-gutter-sm: 1.5rem;
+  --container-max: 75rem;
+  --container-content: 48rem;
+  --container-narrow: 32rem;
+}
+
+/* Apple-inspired marketing preset: light gray canvas, single blue accent, tight display type */
+[data-theme='apple'] {
+  color-scheme: light;
+  --color-bg: #f5f5f7;
+  --color-fg: #1d1d1f;
+  --color-fg-secondary: rgb(0 0 0 / 0.8);
+  --color-fg-tertiary: rgb(0 0 0 / 0.48);
+  --color-muted: rgb(0 0 0 / 0.48);
+  --color-link: #0066cc;
+  --color-border: rgb(0 0 0 / 0.08);
+  --color-border-strong: #1d1d1f;
+  --color-surface: #ffffff;
+  --color-surface-alt: #fafafc;
+  --color-surface-raised: #ffffff;
+  --color-heading: #1d1d1f;
+  --color-accent: #0071e3;
+  --color-accent-fg: #ffffff;
+  --color-cta-secondary-bg: #1d1d1f;
+  --color-cta-secondary-fg: #ffffff;
+  --color-code-bg: #1d1d1f;
+  --color-code-fg: #f5f5f7;
+  --color-nav-bg: rgb(0 0 0 / 0.8);
+  --color-nav-fg: #ffffff;
+  --color-secondary: #1d1d1f;
+  --color-secondary-fg: #ffffff;
+  --color-tertiary: #272729;
+  --color-tertiary-fg: #ffffff;
+  --color-error: #ff3b30;
+  --color-error-fg: #ffffff;
+  --color-focus: #0071e3;
+  --color-overlay: rgb(0 0 0 / 0.5);
+  --color-ghost-surface: rgb(255 255 255 / 0.32);
+  --color-ghost-border: rgb(255 255 255 / 0.35);
+  --color-fg-disabled: rgb(0 0 0 / 0.48);
+  --color-surface-control: #fafafc;
+  --color-accent-alt: #2997ff;
+  --color-accent-hover: #0077ed;
+
+  --font-display:
+    'SF Pro Display', 'SF Pro Icons', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-body:
+    'SF Pro Text', 'SF Pro Icons', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-editorial: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+  --font-mono:
+    ui-monospace, 'SF Mono', 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+
+  --tracking-display: -0.005em;
+  --tracking-body: -0.022em;
+  --tracking-caption: -0.016em;
+  --tracking-loose: 0.012em;
+  --tracking-looser: 0.02em;
+
+  --leading-display: 1.1;
+  --leading-body: 1.47;
+  --leading-compressed: 1.07;
+  --leading-editorial: 1.47;
+  --font-label: var(--font-body);
+  --font-size-hero: 3.5rem;
+  --font-size-display: 2.5rem;
+  --font-size-section: 1.75rem;
+  --font-size-body-lg: 1.3125rem;
+  --font-size-body: 1.0625rem;
+  --font-size-body-sm: 1rem;
+  --font-size-caption: 0.875rem;
+  --font-size-body-xs: 0.8125rem;
+  --font-size-micro: 0.75rem;
+  --font-size-nano: 0.625rem;
+  --font-weight-display: 600;
+  --font-weight-body: 400;
+  --font-weight-label: 500;
+  --font-weight-strong: 600;
+
+  --radius-btn: 0.5rem;
+  --radius-card: 0.5rem;
+  --radius-card-lg: 0.75rem;
+  --radius-pill: 980px;
+  --radius-circle: 50%;
+  --radius-xl: 0.75rem;
+
+  --shadow-card: rgb(0 0 0 / 0.22) 3px 5px 30px 0;
+  --shadow-card-float: rgb(0 0 0 / 0.22) 3px 5px 30px 0;
+  --shadow-card-warm:
+    rgb(0 0 0 / 0.06) 0 0 0 1px, rgb(0 0 0 / 0.08) 0 2px 8px, rgb(0 0 0 / 0.12) 0 4px 16px;
+  --shadow-hover: rgb(0 0 0 / 0.12) 0 4px 16px;
+  --shadow-ring: 0 0 0 1px rgb(0 0 0 / 0.08);
+  --shadow-whisper: rgb(0 0 0 / 0.06) 0 4px 24px;
+  --shadow-inset: inset 0 0 0 1px rgb(0 0 0 / 0.15);
+  --shadow-focus-ring: 0 0 0 4px #f5f5f7;
+  --backdrop-nav: saturate(180%) blur(20px);
+
+  --spacing-section-y-sm: 2rem;
+  --spacing-section-y: 4rem;
+  --spacing-section-y-lg: 6rem;
+  --spacing-section-y-hero: 8rem;
+  --spacing-card: 1.5rem;
+  --spacing-gutter: 1rem;
+  --spacing-gutter-sm: 1.5rem;
+  --container-max: 61.25rem;
+  --container-content: 48rem;
+  --container-narrow: 32rem;
+}
+
+/* Airbnb-inspired preset: white canvas, Rausch red, three-layer card shadows, generous radius */
+[data-theme='airbnb'] {
+  color-scheme: light;
+  --color-bg: #ffffff;
+  --color-fg: #222222;
+  --color-fg-secondary: #6a6a6a;
+  --color-fg-tertiary: #6a6a6a;
+  --color-muted: #6a6a6a;
+  --color-link: #428bff;
+  --color-border: #c1c1c1;
+  --color-border-strong: #222222;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f7f7f7;
+  --color-surface-raised: #ffffff;
+  --color-heading: #222222;
+  --color-accent: #ff385c;
+  --color-accent-fg: #ffffff;
+  --color-cta-secondary-bg: #222222;
+  --color-cta-secondary-fg: #ffffff;
+  --color-code-bg: #f2f2f2;
+  --color-code-fg: #222222;
+  --color-nav-bg: rgb(255 255 255 / 0.92);
+  --color-nav-fg: #222222;
+  --color-secondary: #460479;
+  --color-secondary-fg: #ffffff;
+  --color-tertiary: #f2f2f2;
+  --color-tertiary-fg: #222222;
+  --color-error: #c13515;
+  --color-error-fg: #ffffff;
+  --color-focus: #222222;
+  --color-overlay: rgb(0 0 0 / 0.5);
+  --color-ghost-surface: rgb(255 255 255 / 0.92);
+  --color-ghost-border: rgb(0 0 0 / 0.08);
+  --color-fg-disabled: rgb(0 0 0 / 0.24);
+  --color-surface-control: #f2f2f2;
+  --color-accent-alt: #428bff;
+  --color-accent-hover: #e00b41;
+
+  --font-display:
+    'Airbnb Cereal VF', Circular, -apple-system, system-ui, Roboto, 'Helvetica Neue', sans-serif;
+  --font-body:
+    'Airbnb Cereal VF', Circular, -apple-system, system-ui, Roboto, 'Helvetica Neue', sans-serif;
+  --font-editorial: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+  --font-mono:
+    ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+
+  --tracking-display: -0.02em;
+  --tracking-body: 0em;
+  --tracking-caption: -0.01em;
+  --tracking-loose: 0.02em;
+  --tracking-looser: 0.04em;
+
+  --leading-display: 1.18;
+  --leading-body: 1.43;
+  --leading-compressed: 1.18;
+  --leading-editorial: 1.43;
+  --font-label: var(--font-body);
+  --font-size-hero: 2.5rem;
+  --font-size-display: 1.375rem;
+  --font-size-section: 1.75rem;
+  --font-size-body-lg: 1rem;
+  --font-size-body: 0.875rem;
+  --font-size-body-sm: 0.8125rem;
+  --font-size-caption: 0.875rem;
+  --font-size-body-xs: 0.8125rem;
+  --font-size-micro: 0.75rem;
+  --font-size-nano: 0.6875rem;
+  --font-weight-display: 700;
+  --font-weight-body: 400;
+  --font-weight-label: 500;
+  --font-weight-strong: 600;
+
+  --radius-btn: 0.5rem;
+  --radius-card: 1.25rem;
+  --radius-card-lg: 2rem;
+  --radius-pill: 9999px;
+  --radius-circle: 50%;
+  --radius-xl: 2rem;
+
+  --shadow-card:
+    rgb(0 0 0 / 0.02) 0 0 0 1px, rgb(0 0 0 / 0.04) 0 2px 6px, rgb(0 0 0 / 0.1) 0 4px 8px;
+  --shadow-card-float:
+    rgb(0 0 0 / 0.02) 0 0 0 1px, rgb(0 0 0 / 0.04) 0 2px 6px, rgb(0 0 0 / 0.1) 0 4px 8px;
+  --shadow-card-warm:
+    rgb(0 0 0 / 0.02) 0 0 0 1px, rgb(0 0 0 / 0.04) 0 2px 6px, rgb(0 0 0 / 0.1) 0 4px 8px;
+  --shadow-hover: rgb(0 0 0 / 0.08) 0 4px 12px;
+  --shadow-ring: 0 0 0 1px rgb(0 0 0 / 0.08);
+  --shadow-whisper: rgb(0 0 0 / 0.05) 0 4px 24px;
+  --shadow-inset: inset 0 0 0 1px rgb(0 0 0 / 0.12);
+  --shadow-focus-ring: 0 0 0 4px #ffffff;
+  --backdrop-nav: saturate(180%) blur(20px);
+
+  --spacing-section-y-sm: 2rem;
+  --spacing-section-y: 4rem;
+  --spacing-section-y-lg: 6rem;
+  --spacing-section-y-hero: 8rem;
+  --spacing-card: 1.5rem;
+  --spacing-gutter: 1rem;
+  --spacing-gutter-sm: 1.5rem;
+  --container-max: 70rem;
+  --container-content: 48rem;
+  --container-narrow: 32rem;
+}
+
+/* Waivio-style preset: data-dense feed UI, orange accent, flat surfaces, thin borders */
+[data-theme='waivio'] {
+  color-scheme: light;
+  --color-bg: #f5f6f7;
+  --color-fg: #333333;
+  --color-fg-secondary: #8c8c8c;
+  --color-fg-tertiary: #bfbfbf;
+  --color-muted: #bfbfbf;
+  --color-link: #ff7849;
+  --color-border: #e6e6e6;
+  --color-border-strong: #8c8c8c;
+  --color-surface: #ffffff;
+  --color-surface-alt: #fafafa;
+  --color-surface-raised: #ffffff;
+  --color-heading: #333333;
+  --color-accent: #ff7849;
+  --color-accent-fg: #ffffff;
+  --color-cta-secondary-bg: #ffffff;
+  --color-cta-secondary-fg: #333333;
+  --color-code-bg: #f5f6f7;
+  --color-code-fg: #333333;
+  --color-nav-bg: rgb(255 255 255 / 0.96);
+  --color-nav-fg: #333333;
+  --color-secondary: #ececec;
+  --color-secondary-fg: #333333;
+  --color-tertiary: #ececec;
+  --color-tertiary-fg: #333333;
+  --color-error: #f44336;
+  --color-error-fg: #ffffff;
+  --color-focus: #ff7849;
+  --color-overlay: rgb(0 0 0 / 0.45);
+  --color-ghost-surface: rgb(255 255 255 / 0.92);
+  --color-ghost-border: #e6e6e6;
+  --color-fg-disabled: #bfbfbf;
+  --color-surface-control: #f5f6f7;
+  --color-accent-alt: #ff8f68;
+  --color-accent-hover: #e86a3d;
+
+  --font-display:
+    Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-body:
+    Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-editorial: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+  --font-mono:
+    ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+
+  --tracking-display: -0.01em;
+  --tracking-body: 0em;
+  --tracking-caption: 0em;
+  --tracking-loose: 0.02em;
+  --tracking-looser: 0.04em;
+
+  --leading-display: 1.25;
+  --leading-body: 1.5;
+  --leading-compressed: 1.2;
+  --leading-editorial: 1.5;
+  --font-label: var(--font-body);
+  --font-size-hero: 1.5rem;
+  --font-size-display: 1.25rem;
+  --font-size-section: 1.125rem;
+  --font-size-body-lg: 0.9375rem;
+  --font-size-body: 0.875rem;
+  --font-size-body-sm: 0.8125rem;
+  --font-size-caption: 0.8125rem;
+  --font-size-body-xs: 0.8125rem;
+  --font-size-micro: 0.75rem;
+  --font-size-nano: 0.6875rem;
+  --font-weight-display: 600;
+  --font-weight-body: 400;
+  --font-weight-label: 500;
+  --font-weight-strong: 600;
+
+  --radius-btn: 0.375rem;
+  --radius-card: 0.5rem;
+  --radius-card-lg: 0.5rem;
+  --radius-pill: 9999px;
+  --radius-circle: 50%;
+  --radius-xl: 0.5rem;
+
+  --shadow-card: 0 0 0 1px #e6e6e6;
+  --shadow-card-float: 0 0 0 1px #e6e6e6;
+  --shadow-card-warm: 0 0 0 1px #e6e6e6;
+  --shadow-hover: rgb(0 0 0 / 0.04) 0 1px 3px;
+  --shadow-ring: 0 0 0 1px #e6e6e6;
+  --shadow-whisper: rgb(0 0 0 / 0.03) 0 1px 2px;
+  --shadow-inset: inset 0 0 0 1px #e6e6e6;
+  --shadow-focus-ring: 0 0 0 3px #ffffff;
+  --backdrop-nav: saturate(120%) blur(12px);
+
+  --spacing-section-y-sm: 1.5rem;
+  --spacing-section-y: 3rem;
+  --spacing-section-y-lg: 4rem;
+  --spacing-section-y-hero: 5rem;
+  --spacing-card: 1rem;
   --spacing-gutter: 1rem;
   --spacing-gutter-sm: 1.5rem;
   --container-max: 75rem;

@@ -31,6 +31,7 @@ export function LocaleSwitcher() {
         disabled={pending}
         value={current}
         onChange={(e) => onChange(e.target.value as LocaleId)}
+        className="min-w-[12rem] max-w-full rounded-btn border border-border bg-surface-raised py-1.5 pl-2 pr-8 text-fg shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus disabled:opacity-60"
       >
         {locales.map((l) => (
           <option key={l.id} value={l.id}>
