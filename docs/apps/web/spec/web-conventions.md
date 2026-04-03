@@ -1,6 +1,6 @@
 # web — development conventions
 
-**Back:** [web overview](overview.md) · **Related:** [architecture](architecture.md)
+**Back:** [web overview](overview.md) · **Related:** [architecture](architecture.md), [images](images.md)
 
 Actionable rules for `apps/web`. Full layering: [architecture.md](architecture.md).
 

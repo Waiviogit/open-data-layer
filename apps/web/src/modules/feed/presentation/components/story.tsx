@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
+import { useState, type ReactNode } from 'react';
 
 import type { LocaleId } from '@/i18n/types';
 import { useI18n } from '@/i18n/providers/i18n-provider';
@@ -239,20 +240,22 @@ export function Story({ story, feedTab }: StoryProps) {
               <li key={o.objectId} className="list-none" title={o.name ?? o.objectId}>
                 <span className="flex size-9 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-control ring-1 ring-border/60">
                   {o.avatarUrl ? (
-                    <img
+                    <Image
                       src={o.avatarUrl}
                       alt=""
                       className="size-full object-cover"
                       width={36}
                       height={36}
+                      sizes="36px"
                     />
                   ) : (
-                    <img
+                    <Image
                       src={AVATAR_PLACEHOLDER_SRC}
                       alt=""
                       className="size-full object-cover"
                       width={36}
                       height={36}
+                      sizes="36px"
                     />
                   )}
                 </span>
@@ -285,13 +288,13 @@ export function Story({ story, feedTab }: StoryProps) {
         )}
 
         {previewMediaUrl ? (
-          <div className="relative mt-3 overflow-hidden rounded-md border border-border bg-surface-control">
+          <div className="relative mt-3 aspect-video max-h-[260px] min-h-[180px] w-full overflow-hidden rounded-md border border-border bg-surface-control">
             {videoPlaying && story.videoEmbedUrl ? (
               <>
                 <iframe
                   title={story.title ? `${story.title} — video` : 'Embedded video'}
                   src={story.videoEmbedUrl}
-                  className="aspect-video max-h-[260px] min-h-[180px] w-full border-0 bg-black"
+                  className="h-full w-full min-h-[180px] border-0 bg-black"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                 />
@@ -305,11 +308,12 @@ export function Story({ story, feedTab }: StoryProps) {
               </>
             ) : (
               <>
-                <img
+                <Image
                   src={previewMediaUrl}
                   alt=""
-                  className="max-h-[260px] w-full object-cover"
-                  loading="lazy"
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-cover"
                 />
                 {canPlayInline ? (
                   <button

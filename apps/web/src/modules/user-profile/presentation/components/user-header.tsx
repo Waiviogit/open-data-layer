@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { UserAvatar } from '@/shared/presentation';
 
@@ -33,13 +35,20 @@ export function UserHeader({
     <div className="relative">
       <div
         className={[
-          'h-36 w-full overflow-hidden rounded-t-card border-b border-border bg-surface',
+          'relative h-36 w-full overflow-hidden rounded-t-card border-b border-border bg-surface',
           hasCover && coverImage ? '' : 'bg-gradient-to-br from-accent/30 to-surface',
         ].join(' ')}
         aria-hidden={!hasCover}
       >
         {hasCover && coverImage ? (
-          <img src={coverImage} alt="" className="h-full w-full object-cover" />
+          <Image
+            src={coverImage}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
         ) : null}
       </div>
 

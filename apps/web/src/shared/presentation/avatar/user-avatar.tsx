@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
 
 import { AVATAR_PLACEHOLDER_SRC, resolveAvatarUrl } from './resolve-avatar-url';
@@ -37,46 +38,46 @@ export function UserAvatar({
 
   const showFallback = imageFailed || !src;
 
+  const shapeClass = isSquare ? 'rounded-btn' : 'rounded-circle';
+
+  /** Locks the box in flex layouts: default `align-items: stretch` would vertically stretch the avatar row. */
   const dimensionStyle = {
     width: size,
     minWidth: size,
     height: size,
+    minHeight: size,
   } as const;
 
-  const shapeClass = isSquare ? 'rounded-btn' : 'rounded-circle';
+  const commonClassName = [
+    'self-start shrink-0 border-4 border-bg object-cover shadow-card',
+    shapeClass,
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   if (showFallback) {
     return (
-      <img
+      <Image
         src={AVATAR_PLACEHOLDER_SRC}
         alt={label}
         width={size}
         height={size}
-        className={[
-          'shrink-0 border-4 border-bg object-cover shadow-card',
-          shapeClass,
-          className,
-        ]
-          .filter(Boolean)
-          .join(' ')}
+        sizes={`${size}px`}
+        className={commonClassName}
         style={dimensionStyle}
       />
     );
   }
 
   return (
-    <img
+    <Image
       src={src}
       alt={label}
       width={size}
       height={size}
-      className={[
-        'shrink-0 border-4 border-bg object-cover shadow-card',
-        shapeClass,
-        className,
-      ]
-        .filter(Boolean)
-        .join(' ')}
+      sizes={`${size}px`}
+      className={commonClassName}
       style={dimensionStyle}
       onError={onError}
     />

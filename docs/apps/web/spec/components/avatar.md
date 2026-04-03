@@ -4,7 +4,7 @@
 
 ## Purpose
 
-`UserAvatar` renders a fixed-size portrait for a Hive account: optional explicit image URL from API/feed, otherwise a default Hive CDN URL. Falls back to **initials** when there is no resolvable URL or the image fails to load (`onError`).
+`UserAvatar` renders a fixed-size portrait for a Hive account: optional explicit image URL from API/feed, otherwise a default Hive CDN URL. Falls back to the **placeholder** image when there is no resolvable URL or the image fails to load (`onError`).
 
 ## Code locations
 
@@ -21,7 +21,7 @@
 |-------|--------|
 | `avatarUrl` non-empty | Trimmed string used as `src` (same as query-api / feed DTO). |
 | No explicit URL | `https://images.hive.blog/u/{username}/avatar/small` if `size <= 64`, else `.../large`. |
-| Empty `username` and no `avatarUrl` | `null` (initials-only fallback). |
+| Empty `username` and no `avatarUrl` | `null` (component shows placeholder image). |
 
 No image proxy or guest-specific URL branches in this slice; see `tmp/avatar.md` for legacy parity notes.
 
@@ -36,7 +36,7 @@ No image proxy or guest-specific URL branches in this slice; see `tmp/avatar.md`
 | `className` | Extra classes (e.g. `text-lg font-semibold` on profile). |
 | `isSquare` | Square vs circular (`rounded-btn` vs `rounded-circle`). |
 
-Uses plain `<img>` (MVP) to avoid `next/image` `remotePatterns` setup.
+Renders with **`next/image`** (`width` / `height` / `sizes`); see [images](../images.md). On load failure, falls back to the placeholder image.
 
 ## Usage
 

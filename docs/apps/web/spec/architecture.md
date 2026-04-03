@@ -1,6 +1,6 @@
 # web — application architecture
 
-**Back:** [web overview](overview.md) · **Related:** [web conventions](web-conventions.md), [i18n](i18n.md), [theme](theme.md)
+**Back:** [web overview](overview.md) · **Related:** [web conventions](web-conventions.md), [i18n](i18n.md), [theme](theme.md), [images](images.md)
 
 Normative layout for feature code in `apps/web`. The App Router (`src/app/`) stays **thin**: route files orchestrate queries and server actions; domain and application logic live under `src/modules/` and `src/shared/`.
 

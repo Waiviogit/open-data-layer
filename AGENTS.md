@@ -123,6 +123,10 @@ When creating or editing UI in `apps/web`, follow the **design token** system so
 - **Layout rhythm:** prefer `px-gutter` / `sm:px-gutter-sm` for horizontal gutters, `py-section-y-sm`, `py-section-y`, `py-section-y-lg`, `py-section-y-hero` for vertical section spacing, `p-card-padding` / `gap-card-padding` for cards and grids, `max-w-container-page`, `max-w-container-content`, and `max-w-container-narrow` for widths — instead of ad-hoc `px-4`, `py-16`, `max-w-lg`, `max-w-6xl`.
 - **New tokens:** if a design needs a new role (color, radius, shadow, layout), add the CSS variable in `theme.css` for every theme block, extend Tailwind in `tailwind.config.js`, and update `docs/apps/web/spec/theme.md` in the same change.
 
+### Web app (`apps/web`) — Images
+
+- Use **`next/image`** for user-facing raster content (avatars, feed thumbnails, covers). Use inline SVG or `<img>` for icons and decorative graphics. Markdown/HTML body images may stay plain `<img>` with `loading="lazy"`. Spec: [`docs/apps/web/spec/images.md`](docs/apps/web/spec/images.md).
+
 ### Web app (`apps/web`) — Architecture
 
 Feature code follows **clean architecture** in `apps/web`: **domain**, **application**, **infrastructure**, **presentation** inside `src/modules/<feature>/`; cross-cutting types in `src/shared/`. Full spec: [`docs/apps/web/spec/architecture.md`](docs/apps/web/spec/architecture.md). Rules for Server Components, server actions, imports, `Result`, policies: [`docs/apps/web/spec/web-conventions.md`](docs/apps/web/spec/web-conventions.md).
