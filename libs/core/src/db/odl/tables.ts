@@ -296,7 +296,7 @@ export interface PostsTable {
   author: string;
   permlink: string;
   hive_id: number | null;
-  author_reputation: number;
+  author_reputation: bigint;
   author_weight: number;
   parent_author: string;
   parent_permlink: string;
@@ -337,9 +337,9 @@ export interface PostsTable {
   total_vote_weight: bigint | null;
   promoted: string | null;
   body_length: number | null;
-  net_rshares_WAIV: number;
-  total_payout_WAIV: number;
-  total_rewards_WAIV: number;
+  net_rshares_waiv: number;
+  total_payout_waiv: number;
+  total_rewards_waiv: number;
   /** Unix seconds for chronological feeds and sorting. */
   created_unix: number;
 }

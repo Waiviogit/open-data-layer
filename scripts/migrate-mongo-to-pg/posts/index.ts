@@ -84,6 +84,21 @@ function toBigIntOrNull(n: unknown): bigint | null {
   return toBigInt(n);
 }
 
+/** Mongo exports may use fractional weights/percent or stringified decimals. */
+function toFloatOrNull(v: unknown): number | null {
+  if (v == null || v === '') {
+    return null;
+  }
+  if (typeof v === 'number' && Number.isFinite(v)) {
+    return v;
+  }
+  if (typeof v === 'string') {
+    const n = Number.parseFloat(v.trim());
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
 function parseMongoDate(u: unknown): number | null {
   if (u instanceof Date) {
     return Math.floor(u.getTime() / 1000);
@@ -458,7 +473,7 @@ class MongoPostsMigrator {
       author,
       permlink,
       hive_id: doc.id ?? null,
-      author_reputation: doc.author_reputation ?? 0,
+      author_reputation: toBigInt(doc.author_reputation),
       author_weight: doc.author_weight ?? 0,
       parent_author: strOrEmpty(doc.parent_author),
       parent_permlink: strOrEmpty(doc.parent_permlink),
@@ -498,9 +513,9 @@ class MongoPostsMigrator {
       total_vote_weight: toBigIntOrNull(doc.total_vote_weight),
       promoted: strOrNull(doc.promoted),
       body_length: doc.body_length ?? null,
-      net_rshares_WAIV: doc.net_rshares_WAIV ?? 0,
-      total_payout_WAIV: doc.total_payout_WAIV ?? 0,
-      total_rewards_WAIV: doc.total_rewards_WAIV ?? 0,
+      net_rshares_waiv: doc.net_rshares_WAIV ?? 0,
+      total_payout_waiv: doc.total_payout_WAIV ?? 0,
+      total_rewards_waiv: doc.total_rewards_WAIV ?? 0,
       created_unix: createdUnix,
     };
 
@@ -515,10 +530,10 @@ class MongoPostsMigrator {
         author,
         permlink,
         voter,
-        weight: v.weight ?? null,
-        percent: v.percent ?? null,
+        weight: toFloatOrNull(v.weight),
+        percent: toFloatOrNull(v.percent),
         rshares: toBigIntOrNull(v.rshares),
-        rshares_waiv: v.rsharesWAIV ?? null,
+        rshares_waiv: toFloatOrNull(v.rsharesWAIV),
       });
     }
 
