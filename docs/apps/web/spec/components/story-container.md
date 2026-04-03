@@ -28,11 +28,11 @@
 
 ## `FeedStoryView` (DTO)
 
-Validated with `feedStoryViewSchema`. Fields include: `id`, `authorName`, optional `authorDisplayName`, `createdAt` (ISO datetime string), optional `title`, `excerpt`, optional `isNsfw`, optional `permalinkPath`.
+Validated with `feedStoryViewSchema`. Fields include: `id`, `authorName`, optional `authorDisplayName`, optional `authorAvatarUrl` (nullable; explicit URL from API when present), `createdAt` (ISO datetime string), optional `title`, `excerpt`, optional `isNsfw`, optional `permalinkPath`.
 
 ## Layout (v1)
 
-- Header: avatar placeholder, display name, `@author`, formatted timestamp.
+- Header: [`UserAvatar`](avatar.md) (explicit `authorAvatarUrl` or Hive default by `authorName`), display name, `@author`, formatted timestamp.
 - Body: optional linked title, excerpt; optional NSFW note (rules not fully implemented).
 - Footer: disabled placeholders for like / reblog / bookmark (interactions to be wired later).
 

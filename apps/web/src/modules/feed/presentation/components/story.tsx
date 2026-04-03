@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { UserAvatar } from '@/shared/presentation';
+
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 import type { FeedTab } from '../../domain/feed-tab';
 
@@ -30,9 +32,11 @@ export function Story({ story, feedTab }: StoryProps) {
       data-feed-tab={feedTab}
     >
       <header className="flex gap-3">
-        <div
-          className="size-10 shrink-0 rounded-circle bg-tertiary"
-          aria-hidden
+        <UserAvatar
+          username={story.authorName}
+          avatarUrl={story.authorAvatarUrl}
+          displayName={displayAuthor}
+          size={40}
         />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">

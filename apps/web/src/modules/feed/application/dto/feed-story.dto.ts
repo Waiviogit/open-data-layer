@@ -6,6 +6,8 @@ export const feedStoryViewSchema = z.object({
   id: z.string().min(1),
   authorName: z.string().min(1),
   authorDisplayName: z.string().optional(),
+  /** Optional explicit avatar URL from API; when absent, UI falls back to Hive default by author name. */
+  authorAvatarUrl: z.string().nullable().optional(),
   createdAt: z.string().datetime({ offset: true }),
   title: z.string().optional(),
   excerpt: z.string(),

@@ -21,6 +21,8 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
           id: 'mock-post-1',
           authorName: 'demo',
           authorDisplayName: 'Demo',
+          authorAvatarUrl:
+            'https://images.hive.blog/u/demo/avatar/small',
           createdAt: t1,
           title: 'Mock post — Open Data Layer',
           excerpt:

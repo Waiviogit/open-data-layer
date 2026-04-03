@@ -1,6 +1,7 @@
 'use client';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { UserAvatar } from '@/shared/presentation';
 
 import type { UserProfileShellUser } from './types';
 
@@ -28,7 +29,7 @@ export function UserHeader({
   onFollowClick,
 }: UserHeaderProps) {
   const { t } = useI18n();
-  const initials = user.displayName.slice(0, 2).toUpperCase();
+  const hasCoverPhoto = Boolean(hasCover && coverImage);
 
   return (
     <div className="relative">
@@ -45,13 +46,19 @@ export function UserHeader({
       </div>
 
       <div className="relative -mt-12 flex flex-col gap-4 px-gutter pb-4 sm:flex-row sm:items-end sm:px-gutter-sm">
-        <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border-4 border-bg bg-bg text-lg font-semibold text-fg shadow-card">
-          {isHeroLoading ? (
+        {isHeroLoading ? (
+          <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border-4 border-bg bg-bg shadow-card">
             <span className="h-8 w-8 animate-pulse rounded-full bg-surface" />
-          ) : (
-            <span aria-label={user.displayName}>{initials}</span>
-          )}
-        </div>
+          </div>
+        ) : (
+          <UserAvatar
+            username={username}
+            avatarUrl={user.avatarUrl}
+            displayName={user.displayName}
+            size={96}
+            className="text-lg font-semibold"
+          />
+        )}
 
         <div className="min-w-0 flex-1 pb-1">
           {isHeroLoading ? (
@@ -62,8 +69,26 @@ export function UserHeader({
           ) : (
             <>
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="truncate text-2xl font-semibold text-fg">{user.displayName}</h1>
-                <span className="text-sm text-muted">@{username}</span>
+                <h1
+                  className={[
+                    'truncate text-2xl font-semibold',
+                    hasCoverPhoto
+                      ? 'text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.85),0_0_12px_rgba(0,0,0,0.35)]'
+                      : 'text-fg',
+                  ].join(' ')}
+                >
+                  {user.displayName}
+                </h1>
+                <span
+                  className={[
+                    'text-sm',
+                    hasCoverPhoto
+                      ? 'text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]'
+                      : 'text-muted',
+                  ].join(' ')}
+                >
+                  @{username}
+                </span>
                 {isGuest ? (
                   <span className="rounded-btn bg-surface px-2 py-0.5 text-xs capitalize text-muted">
                     {t('guest')}

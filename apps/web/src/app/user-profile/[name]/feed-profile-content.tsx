@@ -20,9 +20,6 @@ export function FeedProfileContent({ accountName, feedTab }: FeedProfileContentP
           Feed
         </h2>
         <p className="mt-2 text-sm text-muted">No items to show yet.</p>
-        <p className="mt-1 text-sm text-fg-tertiary">
-          Sample rows appear only for the <span className="font-mono text-fg-secondary">@demo</span> account.
-        </p>
       </section>
     );
   }

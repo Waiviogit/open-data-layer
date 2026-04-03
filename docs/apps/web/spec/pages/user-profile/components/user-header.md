@@ -1,47 +1,31 @@
 # UserHeader
 
+**Back:** [web overview](../../../overview.md) · **Related:** [user-hero.md](user-hero.md), [../page-spec.md](../page-spec.md), [avatar](../../../components/avatar.md)
+
 ## metadata
 
 | field | value |
 |-------|-------|
 | name | UserHeader |
-| source | `src/client/user/UserHeader/UserHeader.js` |
-| type | Class/functional header block |
+| source | `apps/web/src/modules/user-profile/presentation/components/user-header.tsx` |
+| type | Client component — profile hero band (cover + avatar row + actions) |
 
 ## structure
 
-- Avatar, name, meta, follow/mute UI, edit profile link for own user.
+- Cover image (when `coverImage` set).
+- **Avatar:** shared [`UserAvatar`](../../../components/avatar.md) with `user.avatarUrl` from query-api (`UserProfileShellUser`), `username`, `displayName: user.displayName`, `size` 96px; loading skeleton while `isHeroLoading`.
+- Display name, `@username`, guest badge, bio, follower/following/post counts.
+- Actions: follow, edit profile, transfer (placeholders wired).
 
 ## inputs
 
-- `user`, `username`, `isSameUser`, `coverImage`, `hasCover`, `isActive`, `isGuest`.
+- `user`, `username`, `isSameUser`, `isGuest`, `hasCover`, `coverImage`, `isHeroLoading`, `onTransferClick`, `onFollowClick`.
 
-## state
+## Data
 
-- Local UI state for popovers/menus as implemented.
-
-## actions
-
-- Follow/unfollow, mute, bell — via connected actions and `UserPopoverMenu`.
-
-## rendering
-
-- Cover + profile row.
-
-## emitted events
-
-- Social actions to Redux/API.
+- `user.avatarUrl` is populated by the profile query (see [data-loading.md](../data-loading.md)).
 
 ## References
 
 - [user-hero.md](user-hero.md)
 - [../page-spec.md](../page-spec.md)
-
-```yaml
-integration_contract:
-  input_data: User object, session user, moderator flags.
-  emitted_actions: Follow, mute, notifications.
-  controlled_by_state: User slice, auth.
-  affected_by_route: none.
-  affected_by_query: none.
-```
