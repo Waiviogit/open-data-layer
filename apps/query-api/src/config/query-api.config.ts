@@ -17,5 +17,8 @@ export default () => {
     redis: {
       uri: env.REDIS_URI,
     },
+    governance: {
+      objectId: env.GOVERNANCE_OBJECT_ID,
+    },
   };
 };

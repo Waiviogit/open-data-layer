@@ -1,8 +1,3 @@
-/**
- * This is not a production server yet!
- * This is only a minimal backend to get started.
- */
-
 import './openapi/registry';
 import { Logger, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -16,6 +11,16 @@ async function bootstrap() {
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: '1',
+  });
+  app.enableCors({
+    origin: true,
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept-Language',
+      'X-Locale',
+      'X-Governance-Object-Id',
+    ],
   });
   setupSwagger(app);
   const port = process.env.PORT || 3000;

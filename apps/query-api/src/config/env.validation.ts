@@ -8,6 +8,7 @@ export const queryApiConfigSchema = z.object({
   POSTGRES_USER: z.string().min(1).optional().default('postgres'),
   POSTGRES_PASSWORD: z.string().optional(),
   POSTGRES_POOL_MAX: z.coerce.number().optional().default(10),
+  GOVERNANCE_OBJECT_ID: z.string().optional().default(''),
 });
 
 export type QueryApiConfig = z.infer<typeof queryApiConfigSchema>;

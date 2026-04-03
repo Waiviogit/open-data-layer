@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { OBJECT_TYPES } from '@opden-data-layer/core';
 import type { AggregatedObject } from '@opden-data-layer/objects-domain';
 import {
@@ -10,6 +11,7 @@ import {
 import { AggregatedObjectRepository } from '../../repositories';
 import { assembleSnapshot } from './assemble-snapshot';
 import { GOVERNANCE_UPDATE_TYPES } from './governance.constants';
+import { mergeGovernanceSnapshots } from './merge-governance-snapshots';
 
 @Injectable()
 export class GovernanceResolverService {
@@ -18,6 +20,7 @@ export class GovernanceResolverService {
   constructor(
     private readonly aggregatedObjectRepo: AggregatedObjectRepository,
     private readonly objectViewService: ObjectViewService,
+    private readonly config: ConfigService,
   ) {}
 
   async resolve(objectId: string): Promise<GovernanceSnapshot> {
@@ -53,6 +56,25 @@ export class GovernanceResolverService {
     await this.applyModeratorMuteStub(snapshot);
     applyWhitelistToMuted(snapshot);
     return snapshot;
+  }
+
+  /**
+   * Resolves platform governance from config, optionally merges with a header-specified governance object.
+   */
+  async resolveMergedForObjectView(optionalHeaderObjectId?: string): Promise<GovernanceSnapshot> {
+    const governanceObjectId = (this.config.get<string>('governance.objectId') ?? '').trim();
+    const base =
+      governanceObjectId.length > 0
+        ? await this.resolve(governanceObjectId)
+        : DEFAULT_GOVERNANCE_SNAPSHOT;
+
+    const headerId = optionalHeaderObjectId?.trim() ?? '';
+    if (headerId.length === 0) {
+      return base;
+    }
+
+    const overlay = await this.resolve(headerId);
+    return mergeGovernanceSnapshots(overlay, base);
   }
 
   private resolveFilteredView(agg: AggregatedObject, voterReputations: Map<string, number>) {

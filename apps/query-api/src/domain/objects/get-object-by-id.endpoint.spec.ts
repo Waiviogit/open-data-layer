@@ -1,7 +1,19 @@
-import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
-import { ObjectViewService } from '@opden-data-layer/objects-domain';
+import type { GovernanceSnapshot, ResolvedObjectView } from '@opden-data-layer/objects-domain';
+import { DEFAULT_GOVERNANCE_SNAPSHOT, ObjectViewService } from '@opden-data-layer/objects-domain';
 import { AggregatedObjectRepository } from '../../repositories';
+import { GovernanceResolverService } from '../governance';
 import { GetObjectByIdEndpoint } from './get-object-by-id.endpoint';
+
+function createEndpointDeps(overrides?: {
+  resolveMerged?: GovernanceSnapshot;
+}) {
+  const governanceResolver = {
+    resolveMergedForObjectView: jest.fn().mockImplementation(() =>
+      Promise.resolve(overrides?.resolveMerged ?? DEFAULT_GOVERNANCE_SNAPSHOT),
+    ),
+  } as unknown as GovernanceResolverService;
+  return { governanceResolver };
+}
 
 describe('GetObjectByIdEndpoint', () => {
   it('returns null when repository returns no object', async () => {
@@ -14,8 +26,9 @@ describe('GetObjectByIdEndpoint', () => {
     const viewService = {
       resolve: jest.fn(),
     } as unknown as ObjectViewService;
+    const { governanceResolver } = createEndpointDeps();
 
-    const endpoint = new GetObjectByIdEndpoint(repo, viewService);
+    const endpoint = new GetObjectByIdEndpoint(repo, viewService, governanceResolver);
     const result = await endpoint.execute({
       objectId: 'missing',
       updateTypes: ['name'],
@@ -24,6 +37,7 @@ describe('GetObjectByIdEndpoint', () => {
 
     expect(result).toBeNull();
     expect(viewService.resolve).not.toHaveBeenCalled();
+    expect(governanceResolver.resolveMergedForObjectView).not.toHaveBeenCalled();
   });
 
   it('returns resolved view when object exists', async () => {
@@ -52,8 +66,9 @@ describe('GetObjectByIdEndpoint', () => {
     const viewService = {
       resolve: jest.fn().mockReturnValue([mockView]),
     } as unknown as ObjectViewService;
+    const { governanceResolver } = createEndpointDeps();
 
-    const endpoint = new GetObjectByIdEndpoint(repo, viewService);
+    const endpoint = new GetObjectByIdEndpoint(repo, viewService, governanceResolver);
     const result = await endpoint.execute({
       objectId: 'o1',
       updateTypes: ['name'],
@@ -62,6 +77,7 @@ describe('GetObjectByIdEndpoint', () => {
     });
 
     expect(result).toEqual(mockView);
+    expect(governanceResolver.resolveMergedForObjectView).toHaveBeenCalledWith(undefined);
     expect(viewService.resolve).toHaveBeenCalledWith(
       expect.any(Array),
       expect.any(Map),
@@ -69,6 +85,7 @@ describe('GetObjectByIdEndpoint', () => {
         update_types: ['name'],
         locale: 'en-US',
         include_rejected: true,
+        governance: DEFAULT_GOVERNANCE_SNAPSHOT,
       }),
     );
   });
@@ -122,8 +139,9 @@ describe('GetObjectByIdEndpoint', () => {
     const viewService = {
       resolve: jest.fn().mockReturnValue([mockView]),
     } as unknown as ObjectViewService;
+    const { governanceResolver } = createEndpointDeps();
 
-    const endpoint = new GetObjectByIdEndpoint(repo, viewService);
+    const endpoint = new GetObjectByIdEndpoint(repo, viewService, governanceResolver);
     await endpoint.execute({
       objectId: 'o1',
       updateTypes: [],
@@ -135,9 +153,100 @@ describe('GetObjectByIdEndpoint', () => {
       expect.any(Map),
       expect.objectContaining({
         update_types: expect.arrayContaining(['title', 'description']),
+        governance: DEFAULT_GOVERNANCE_SNAPSHOT,
       }),
     );
     const call = (viewService.resolve as jest.Mock).mock.calls[0];
     expect(call[2].update_types).toHaveLength(2);
+  });
+
+  it('uses governance from resolveMergedForObjectView when platform governance is configured', async () => {
+    const customGovernance = {
+      ...DEFAULT_GOVERNANCE_SNAPSHOT,
+      admins: ['admin-from-gov'],
+    };
+    const mockView: ResolvedObjectView = {
+      object_id: 'o1',
+      object_type: 'x',
+      creator: 'c',
+      weight: null,
+      meta_group_id: null,
+      fields: {},
+    };
+    const repo = {
+      loadByObjectIds: jest.fn().mockResolvedValue({
+        objects: [
+          {
+            core: { object_id: 'o1', object_type: 'x', creator: 'c' },
+            updates: [],
+            validity_votes: [],
+            rank_votes: [],
+            authorities: [],
+          },
+        ],
+        voterReputations: new Map(),
+      }),
+    } as unknown as AggregatedObjectRepository;
+    const viewService = {
+      resolve: jest.fn().mockReturnValue([mockView]),
+    } as unknown as ObjectViewService;
+    const { governanceResolver } = createEndpointDeps({
+      resolveMerged: customGovernance,
+    });
+
+    const endpoint = new GetObjectByIdEndpoint(repo, viewService, governanceResolver);
+    await endpoint.execute({
+      objectId: 'o1',
+      updateTypes: ['name'],
+      locale: 'en-US',
+    });
+
+    expect(governanceResolver.resolveMergedForObjectView).toHaveBeenCalledWith(undefined);
+    expect(viewService.resolve).toHaveBeenCalledWith(
+      expect.any(Array),
+      expect.any(Map),
+      expect.objectContaining({
+        governance: customGovernance,
+      }),
+    );
+  });
+
+  it('passes header governance id to resolveMergedForObjectView', async () => {
+    const mockView: ResolvedObjectView = {
+      object_id: 'o1',
+      object_type: 'x',
+      creator: 'c',
+      weight: null,
+      meta_group_id: null,
+      fields: {},
+    };
+    const repo = {
+      loadByObjectIds: jest.fn().mockResolvedValue({
+        objects: [
+          {
+            core: { object_id: 'o1', object_type: 'x', creator: 'c' },
+            updates: [],
+            validity_votes: [],
+            rank_votes: [],
+            authorities: [],
+          },
+        ],
+        voterReputations: new Map(),
+      }),
+    } as unknown as AggregatedObjectRepository;
+    const viewService = {
+      resolve: jest.fn().mockReturnValue([mockView]),
+    } as unknown as ObjectViewService;
+    const { governanceResolver } = createEndpointDeps();
+
+    const endpoint = new GetObjectByIdEndpoint(repo, viewService, governanceResolver);
+    await endpoint.execute({
+      objectId: 'o1',
+      updateTypes: ['name'],
+      locale: 'en-US',
+      governanceObjectIdFromHeader: 'hdr-gov',
+    });
+
+    expect(governanceResolver.resolveMergedForObjectView).toHaveBeenCalledWith('hdr-gov');
   });
 });

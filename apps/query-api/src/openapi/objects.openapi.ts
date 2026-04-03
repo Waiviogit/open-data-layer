@@ -78,6 +78,10 @@ registry.registerPath({
       'x-locale': z.string().optional().openapi({
         description: 'When valid, overrides `Accept-Language`.',
       }),
+      'x-governance-object-id': z.string().optional().openapi({
+        description:
+          'Optional governance object ID; resolved and merged with platform governance from `GOVERNANCE_OBJECT_ID`.',
+      }),
     }),
     body: {
       content: {
