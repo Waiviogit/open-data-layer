@@ -13,7 +13,6 @@ export type UserHeaderProps = {
   hasCover: boolean;
   coverImage: string | null;
   isHeroLoading: boolean;
-  onTransferClick: () => void;
   onFollowClick: () => void;
 };
 
@@ -25,7 +24,6 @@ export function UserHeader({
   hasCover,
   coverImage,
   isHeroLoading,
-  onTransferClick,
   onFollowClick,
 }: UserHeaderProps) {
   const { t } = useI18n();
@@ -122,13 +120,6 @@ export function UserHeader({
               {t('edit_profile')}
             </button>
           ) : null}
-          <button
-            type="button"
-            onClick={onTransferClick}
-            className="rounded-btn border border-border px-4 py-2 text-sm font-medium text-fg hover:bg-surface"
-          >
-            {t('transfer')}
-          </button>
         </div>
       </div>
     </div>

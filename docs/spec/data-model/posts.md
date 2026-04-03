@@ -84,7 +84,7 @@ erDiagram
 
 **Implementation note:** Use a **pushdown `UNION ALL`** so each branch applies the **keyset cursor** and `LIMIT` under its own index (`posts(author, created_unix DESC)` and `post_reblogged_users(account, reblogged_at_unix DESC)`), then merge at most `2 × (limit + 1)` rows in the outer query. A naive single `UNION ALL` sorted globally materializes large intermediate sets.
 
-Only **root posts** (`depth = 0`) are included in the “blog” branch. Reblogs join `post_reblogged_users` to `posts`.
+Only **root posts** are included in the “blog” branch: **`depth` is null or 0**, or **`TRIM(COALESCE(parent_* , '')) = ''`** for both parents (Hive convention). Different importers populate one or the other; the query **OR**s these so feeds are not empty when only one signal is present. Reblogs join `post_reblogged_users` to `posts` with the same root filter on `p`.
 
 **Cursor:** Composite keyset `(feed_at, author, permlink)` — encode/decode in the application layer (opaque to clients). **Dedup:** If a user reblogs their own post, the same `(author, permlink)` can appear in both branches; keep the first row after merge (higher `feed_at`).
 
@@ -94,7 +94,11 @@ Example shape (pseudocode; omit the `WHERE` tuple on the first page):
 (
   SELECT author, permlink, created_unix AS feed_at, NULL::text AS reblogged_by
   FROM posts
-  WHERE author = $account AND depth = 0
+  WHERE author = $account
+    AND (
+      depth IS NULL OR depth = 0
+      OR (TRIM(COALESCE(parent_author, '')) = '' AND TRIM(COALESCE(parent_permlink, '')) = '')
+    )
     AND (created_unix, author, permlink) < ($cursor_feed_at, $cursor_author, $cursor_permlink)
   ORDER BY created_unix DESC, author DESC, permlink DESC
   LIMIT $limit + 1

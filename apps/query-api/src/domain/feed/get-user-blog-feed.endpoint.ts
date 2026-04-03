@@ -215,7 +215,7 @@ export class GetUserBlogFeedEndpoint {
     if (hasMore && pageRows.length > 0) {
       const last = pageRows[pageRows.length - 1];
       nextCursor = encodeFeedCursor({
-        feedAt: last.feed_at,
+        feedAt: Number(last.feed_at),
         author: last.author,
         permlink: last.permlink,
       });

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 const cursorPayloadSchema = z.object({
-  feedAt: z.number().int(),
+  feedAt: z.coerce.number().int(),
   author: z.string().min(1),
   permlink: z.string().min(1),
 });

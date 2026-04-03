@@ -57,10 +57,6 @@ export function UserProfileShell({
     return () => window.clearTimeout(t);
   }, [accountName]);
 
-  const onTransferClick = useCallback(() => {
-    /* wire to openTransfer / wallet modals */
-  }, []);
-
   const onFollowClick = useCallback(() => {
     /* wire to follow action */
   }, []);
@@ -78,7 +74,6 @@ export function UserProfileShell({
         hasCover={hasCover}
         coverImage={coverImage}
         isHeroLoading={isHeroLoading}
-        onTransferClick={onTransferClick}
         onFollowClick={onFollowClick}
         pathname={pathname}
         search={search}

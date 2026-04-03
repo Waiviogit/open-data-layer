@@ -93,8 +93,13 @@ export function UserMenu({ accountName, pathname, search }: UserMenuProps) {
   const walletType = getWalletTypeFromSearch(search);
   const submenuVariant = getSubmenuVariant(pathname);
 
-  const items: { key: string; href: string; label: string; active: boolean }[] =
-    [
+  const items: {
+    key: string;
+    href: string;
+    label: string;
+    active: boolean;
+    mobileOnly?: boolean;
+  }[] = [
       {
         key: 'feed',
         href: base,
@@ -148,6 +153,7 @@ export function UserMenu({ accountName, pathname, search }: UserMenuProps) {
         href: `${base}/about`,
         label: t('about'),
         active: isActive(rest, 'about'),
+        mobileOnly: true,
       },
     ];
 
@@ -161,7 +167,9 @@ export function UserMenu({ accountName, pathname, search }: UserMenuProps) {
           <Link
             key={item.key}
             href={item.href}
-            className={navLinkClass(item.active)}
+            className={[navLinkClass(item.active), item.mobileOnly ? 'lg:hidden' : '']
+              .filter(Boolean)
+              .join(' ')}
             prefetch={false}
           >
             {item.label}

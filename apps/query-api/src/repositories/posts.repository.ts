@@ -41,10 +41,19 @@ export class PostsRepository {
     cursor: { feedAt: number; author: string; permlink: string } | null,
     limitPlusOne: number,
   ): Promise<FeedBranchRow[]> {
+    // Root posts: match either Hive depth (0/null) or empty parents. Imports disagree on which is set.
     let qb = this.db
       .selectFrom('posts')
       .where('author', '=', account)
-      .where((eb) => eb.or([eb('depth', '=', 0), eb('depth', 'is', null)]))
+      .where((eb) =>
+        eb.or([
+          eb.or([eb('depth', '=', 0), eb('depth', 'is', null)]),
+          eb.and([
+            sql<boolean>`TRIM(COALESCE(parent_author, '')) = ''`,
+            sql<boolean>`TRIM(COALESCE(parent_permlink, '')) = ''`,
+          ]),
+        ]),
+      )
       .select([
         'author',
         'permlink',
@@ -84,6 +93,15 @@ export class PostsRepository {
         join.onRef('r.author', '=', 'p.author').onRef('r.permlink', '=', 'p.permlink'),
       )
       .where('r.account', '=', account)
+      .where((eb) =>
+        eb.or([
+          eb.or([eb('p.depth', '=', 0), eb('p.depth', 'is', null)]),
+          eb.and([
+            sql<boolean>`TRIM(COALESCE(p.parent_author, '')) = ''`,
+            sql<boolean>`TRIM(COALESCE(p.parent_permlink, '')) = ''`,
+          ]),
+        ]),
+      )
       .select([
         sql<string>`p.author`.as('author'),
         sql<string>`p.permlink`.as('permlink'),
