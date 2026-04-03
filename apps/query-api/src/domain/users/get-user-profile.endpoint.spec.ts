@@ -1,4 +1,4 @@
-import { parsePostingMetadata } from './get-user-profile.endpoint';
+import { parsePostingMetadata } from './parse-posting-metadata';
 
 describe('parsePostingMetadata', () => {
   it('returns null for null or empty', () => {

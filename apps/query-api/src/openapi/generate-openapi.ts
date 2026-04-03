@@ -2,6 +2,7 @@ import { OpenApiGeneratorV31 } from '@asteasolutions/zod-to-openapi';
 import { registry } from './registry';
 import './objects.openapi';
 import './users.openapi';
+import './feed.openapi';
 
 export function generateOpenApiDocument() {
   return new OpenApiGeneratorV31(registry.definitions).generateDocument({

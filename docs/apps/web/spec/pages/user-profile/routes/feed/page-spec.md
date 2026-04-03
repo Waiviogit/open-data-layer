@@ -93,7 +93,8 @@ N/A.
 ## apps/web (Next.js)
 
 - Center content for these routes is `FeedProfileContent` → `FeedList` → `StoryContainer` / `Story`. See [story-container.md](../../../../components/story-container.md).
-- Mock feed rows: `apps/web/src/app/user-profile/[name]/mock-feed.ts` (sample data for `@demo` only).
+- **Posts tab:** `POST /api/v1/users/:name/blog` (query-api) via `getUserBlogFeedPageQuery` → `BlogFeedPostsList` with cursor-based **Load more** (`loadMoreUserBlogFeedAction`).
+- **Other tabs:** mock feed rows in `apps/web/src/app/user-profile/[name]/mock-feed.ts` (sample data for `@demo` only).
 
 ## References
 

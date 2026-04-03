@@ -20,6 +20,17 @@ export class AccountsCurrentRepository {
       .executeTakeFirst();
   }
 
+  async findByNames(names: string[]): Promise<AccountCurrent[]> {
+    if (names.length === 0) {
+      return [];
+    }
+    return this.db
+      .selectFrom('accounts_current')
+      .where('name', 'in', names)
+      .selectAll()
+      .execute();
+  }
+
   async find(criteria: Partial<AccountCurrent>) {
     let query = this.db.selectFrom('accounts_current');
 

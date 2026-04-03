@@ -1,5 +1,6 @@
-import { FeedList, type FeedTab } from '@/modules/feed';
+import { FeedList, getUserBlogFeedPageQuery, type FeedTab } from '@/modules/feed';
 
+import { BlogFeedPostsList } from './blog-feed-posts-list';
 import { getMockFeedItems } from './mock-feed';
 
 type FeedProfileContentProps = {
@@ -7,7 +8,14 @@ type FeedProfileContentProps = {
   feedTab: FeedTab;
 };
 
-export function FeedProfileContent({ accountName, feedTab }: FeedProfileContentProps) {
+export async function FeedProfileContent({ accountName, feedTab }: FeedProfileContentProps) {
+  if (feedTab === 'posts') {
+    const page = await getUserBlogFeedPageQuery(accountName);
+    return (
+      <BlogFeedPostsList accountName={accountName} initialPage={page} feedTab={feedTab} />
+    );
+  }
+
   const items = getMockFeedItems(accountName, feedTab);
 
   if (items.length === 0) {

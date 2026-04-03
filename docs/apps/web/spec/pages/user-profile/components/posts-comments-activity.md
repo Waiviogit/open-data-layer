@@ -22,7 +22,8 @@
 
 ## actions
 
-- Feed actions delegated to children (`getUserProfileBlogPosts`, etc.).
+- Legacy: feed actions delegated to children (`getUserProfileBlogPosts`, etc.).
+- **apps/web:** the **posts** tab uses `getUserBlogFeedPageQuery` / `loadMoreUserBlogFeedAction` against query-api (`POST /api/v1/users/:name/blog`). Other tabs still use `mock-feed` for demo data.
 
 ## rendering
 
@@ -30,7 +31,7 @@
 
 ## emitted events
 
-- Feed fetches via children.
+- Feed fetches via children (legacy) or query-api blog feed (Next posts tab).
 
 ## References
 

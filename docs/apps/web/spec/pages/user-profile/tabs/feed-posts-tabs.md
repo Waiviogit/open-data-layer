@@ -16,6 +16,10 @@ Posts, Threads (non-guest), Comments, Mentions, Activity — [`PostsCommentsActi
 
 - **Center** only.
 
+## Next.js posts tab
+
+The **posts** tab loads the account blog from query-api: `POST /api/v1/users/:name/blog` with optional `limit` and opaque `cursor` pagination (see [user-blog-feed-endpoint.md](../../../../../query-api/spec/user-blog-feed-endpoint.md)).
+
 ## References
 
 - [../routes/feed/page-spec.md](../routes/feed/page-spec.md)
@@ -27,5 +31,5 @@ integration_contract:
   emitted_actions: Implicit child data fetch on tab.
   controlled_by_state: Route param 0.
   affected_by_route: '' | threads | comments | mentions | activity.
-  affected_by_query: tags on posts via UserBlog.
+  affected_by_query: tags on posts via UserBlog (legacy); Next posts tab uses blog feed API body cursor.
 ```
