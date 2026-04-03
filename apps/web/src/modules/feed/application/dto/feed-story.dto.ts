@@ -24,6 +24,8 @@ export const feedStoryViewSchema = z.object({
   authorReputation: z.number().optional(),
   /** First image URL from post metadata or body (feed preview). */
   thumbnailUrl: z.string().nullable().optional(),
+  /** Video poster URL when post embeds video (metadata or body); UI prefers this over thumbnailUrl. */
+  videoThumbnailUrl: z.string().nullable().optional(),
   /** Primary sort/display time for the feed row (original post or reblog time). */
   createdAt: z.string().datetime({ offset: true }),
   feedAt: z.string().datetime({ offset: true }).optional(),

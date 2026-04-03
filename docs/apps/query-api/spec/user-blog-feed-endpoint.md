@@ -46,6 +46,7 @@ JSON object (Zod-validated):
 | `totalPayout` | string | `posts.total_payout_value` |
 | `netRshares` | string | `posts.net_rshares` (bigint as string) |
 | `thumbnailUrl` | string \| null | First image: `json_metadata.image[0]`, else first markdown/HTML image in `posts.body` |
+| `videoThumbnailUrl` | string \| null | Video poster when detectable: `json_metadata.video` (DTube / 3Speak IPFS or `thumbnail`), else YouTube / Vimeo / 3Speak links in `posts.body` |
 | `authorProfile` | object | From `accounts_current` via batch `findByNames` — `name`, `displayName`, `avatarUrl`, `reputation` (`object_reputation`) |
 | `objects` | array | Tagged objects for the post — see [Tagged objects](#tagged-objects-objects) |
 | `votes` | object | `totalCount`, `previewVoters` (top voters by `rshares`) from `post_active_votes` |

@@ -53,6 +53,7 @@ const feedStoryItemSchema = registry.register(
     totalPayout: z.string(),
     netRshares: z.string(),
     thumbnailUrl: z.string().nullable(),
+    videoThumbnailUrl: z.string().nullable(),
     authorProfile: authorProfileSnippetSchema,
     objects: z.array(feedObjectSummarySchema),
     votes: feedVoteSummarySchema,

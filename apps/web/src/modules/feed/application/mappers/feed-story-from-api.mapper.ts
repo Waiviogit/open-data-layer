@@ -18,6 +18,7 @@ const feedStoryItemApiSchema = z.object({
   totalPayout: z.string(),
   netRshares: z.string(),
   thumbnailUrl: z.string().nullable(),
+  videoThumbnailUrl: z.string().nullable(),
   authorProfile: z.object({
     name: z.string(),
     displayName: z.string().nullable(),
@@ -54,6 +55,7 @@ export function mapFeedStoryItemApiToView(item: FeedStoryItemApi): FeedStoryView
     authorAvatarUrl: item.authorProfile.avatarUrl ?? undefined,
     authorReputation: item.authorProfile.reputation,
     thumbnailUrl: item.thumbnailUrl ?? undefined,
+    videoThumbnailUrl: item.videoThumbnailUrl ?? undefined,
     createdAt: item.createdAt,
     feedAt: item.feedAt,
     title: item.title || undefined,

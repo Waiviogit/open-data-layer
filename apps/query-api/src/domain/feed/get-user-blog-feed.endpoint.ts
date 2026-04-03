@@ -19,6 +19,7 @@ import {
 } from './feed.constants';
 import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
 import { extractThumbnailUrl } from './post-thumbnail';
+import { extractVideoThumbnailUrl } from './post-video-thumbnail';
 import { isNsfwPost } from './post-nsfw';
 import type { UserBlogFeedBody } from './schemas/user-blog-feed.schema';
 
@@ -50,6 +51,8 @@ export interface FeedStoryItemDto {
   totalPayout: string;
   netRshares: string;
   thumbnailUrl: string | null;
+  /** Poster URL when post embeds video (json_metadata.video or video links in body). */
+  videoThumbnailUrl: string | null;
   authorProfile: {
     name: string;
     displayName: string | null;
@@ -215,6 +218,7 @@ export class GetUserBlogFeedEndpoint {
         totalPayout: post.total_payout_value ?? '',
         netRshares: String(post.net_rshares),
         thumbnailUrl: extractThumbnailUrl(post.json_metadata ?? '', post.body ?? ''),
+        videoThumbnailUrl: extractVideoThumbnailUrl(post.json_metadata ?? '', post.body ?? ''),
         authorProfile,
         objects,
         votes: {

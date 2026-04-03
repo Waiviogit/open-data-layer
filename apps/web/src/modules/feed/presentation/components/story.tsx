@@ -128,6 +128,25 @@ function IconMore({ className }: { className?: string }) {
   );
 }
 
+function IconPlay() {
+  return (
+    <span
+      className="inline-flex items-center justify-center rounded-circle bg-overlay/80 p-3 shadow-card"
+      aria-hidden
+    >
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        className="ml-0.5 text-white drop-shadow-lg"
+      >
+        <path d="M8 5v14l11-7L8 5z" />
+      </svg>
+    </span>
+  );
+}
+
 type StatButtonProps = {
   icon: ReactNode;
   count: number | undefined;
@@ -166,6 +185,7 @@ export function Story({ story, feedTab }: StoryProps) {
     story.objects && story.objects.length > 0
       ? story.objects.slice(0, FEED_STORY_TAGGED_OBJECT_MAX)
       : [];
+  const previewMediaUrl = story.videoThumbnailUrl ?? story.thumbnailUrl;
 
   return (
     <article
@@ -261,14 +281,22 @@ export function Story({ story, feedTab }: StoryProps) {
           </h2>
         )}
 
-        {story.thumbnailUrl ? (
-          <div className="mt-3 overflow-hidden rounded-md border border-border bg-surface-control">
+        {previewMediaUrl ? (
+          <div className="relative mt-3 overflow-hidden rounded-md border border-border bg-surface-control">
             <img
-              src={story.thumbnailUrl}
+              src={previewMediaUrl}
               alt=""
               className="max-h-[260px] w-full object-cover"
               loading="lazy"
             />
+            {story.videoThumbnailUrl ? (
+              <div
+                className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                aria-hidden
+              >
+                <IconPlay />
+              </div>
+            ) : null}
           </div>
         ) : null}
 
