@@ -6,7 +6,7 @@
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `GET` | `/api/v1/users/:name/profile` | Public profile fields for the web shell (`UserProfileView`). |
+| `GET` | `/query/v1/users/:name/profile` | Public profile fields for the web shell (`UserProfileView`). |
 
 Path parameter `name` is the Hive account name (same constraints as legacy URLs: 3–32 chars, `[a-zA-Z0-9.-]`).
 
@@ -36,7 +36,7 @@ JSON object:
 
 ## OpenAPI
 
-Documented in the app’s generated OpenAPI registry (`openapi/users.openapi.ts`); Swagger UI: `/api/v1/docs` on the running server.
+Documented in the app’s generated OpenAPI registry (`openapi/users.openapi.ts`); Swagger UI: `/query/v1/docs` on the running server.
 
 ## See also
 

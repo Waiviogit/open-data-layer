@@ -18,7 +18,7 @@ Posts, Threads (non-guest), Comments, Mentions, Activity — [`PostsCommentsActi
 
 ## Next.js posts tab
 
-The **posts** tab loads the account blog from query-api: `POST /api/v1/users/:name/blog` with optional `limit` and opaque `cursor` pagination (see [user-blog-feed-endpoint.md](../../../../../query-api/spec/user-blog-feed-endpoint.md)).
+The **posts** tab loads the account blog from query-api: `POST /query/v1/users/:name/blog` with optional `limit` and opaque `cursor` pagination (see [user-blog-feed-endpoint.md](../../../../../query-api/spec/user-blog-feed-endpoint.md)).
 
 ## References
 

@@ -12,7 +12,7 @@ export async function fetchUserBlogFeed(
   accountName: string,
   body: { limit?: number; cursor?: string },
 ): Promise<UserBlogFeedResponse | null> {
-  const path = `/api/v1/users/${encodeURIComponent(accountName)}/blog`;
+  const path = `/query/v1/users/${encodeURIComponent(accountName)}/blog`;
   return queryApiFetch<UserBlogFeedResponse>(path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

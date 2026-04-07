@@ -30,11 +30,13 @@ The **web** application is the Next.js **App Router** frontend for the Open Data
 | [components/avatar.md](components/avatar.md) | Shared `UserAvatar`, `resolveAvatarUrl` (profile + feed) |
 | [pages/index.md](pages/index.md) | Page-level specs directory (user profile, ...) |
 | [pages/user-profile/data-loading.md](pages/user-profile/data-loading.md) | Shell profile fetch (query-api, `QUERY_API_URL`) |
+| [auth.md](auth.md) | Auth BFF, httpOnly cookies, `modules/auth`, wallet facade |
 
 ## Verification
 
 | Command | Purpose |
 |---------|---------|
-| `pnpm nx dev web` | Local dev server |
+| `pnpm nx dev web` | Local dev server (Turbopack) |
+| `pnpm dev:web:webpack` | Dev with **webpack** — use if `next dev` hits **JavaScript heap out of memory** (often after long sessions / Turbopack+HMR growth). Optionally set `NODE_OPTIONS=--max-old-space-size=8192` (or higher) before the command; delete `apps/web/.next` and restart |
 | `pnpm nx build web` | Production build |
 | `pnpm nx test web` | Unit tests |

@@ -46,7 +46,7 @@ const accountNameParam = z
 
 registry.registerPath({
   method: 'get',
-  path: '/api/v1/users/{name}/profile',
+  path: '/query/v1/users/{name}/profile',
   summary: 'Get user profile by account name',
   description:
     'Loads `accounts_current` by `name`, maps display fields from `alias`, `profile_image`, and parsed `posting_json_metadata`.',

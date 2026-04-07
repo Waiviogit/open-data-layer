@@ -6,7 +6,7 @@ import { MainModule } from './main.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(MainModule);
-  const globalPrefix = 'api';
+  const globalPrefix = 'query';
   app.setGlobalPrefix(globalPrefix);
   app.enableVersioning({
     type: VersioningType.URI,
@@ -26,7 +26,7 @@ async function bootstrap() {
   const port = process.env.PORT || 3000;
   await app.listen(port);
   Logger.log(
-    `🚀 Application is running on: http://localhost:${port}/${globalPrefix}/v1`,
+    `Application is running on: http://localhost:${port}/${globalPrefix}/v1`,
   );
   Logger.log(
     `OpenAPI docs: http://localhost:${port}/${globalPrefix}/v1/docs`,

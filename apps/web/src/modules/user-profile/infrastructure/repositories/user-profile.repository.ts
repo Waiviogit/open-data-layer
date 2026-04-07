@@ -6,7 +6,7 @@ import { queryApiFetch } from '../clients/query-api.client';
 export function createHttpUserProfileRepository(): UserProfileRepository {
   return {
     async findByName(name: string): Promise<UserProfileView | null> {
-      const path = `/api/v1/users/${encodeURIComponent(name)}/profile`;
+      const path = `/query/v1/users/${encodeURIComponent(name)}/profile`;
       const data = await queryApiFetch<unknown>(path);
       if (data === null) {
         return null;

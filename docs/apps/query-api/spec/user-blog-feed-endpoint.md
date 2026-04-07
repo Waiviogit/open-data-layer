@@ -6,7 +6,7 @@
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/api/v1/users/:name/blog` | Paginated newest-first **blog** feed: root posts by the account plus posts they reblogged, merged by `feedAt` (original `created_unix` or `reblogged_at_unix`). |
+| `POST` | `/query/v1/users/:name/blog` | Paginated newest-first **blog** feed: root posts by the account plus posts they reblogged, merged by `feedAt` (original `created_unix` or `reblogged_at_unix`). |
 
 Path parameter `name` is the Hive account name (3–32 chars, `[a-zA-Z0-9.-]`).
 
@@ -75,7 +75,7 @@ Opaque **base64url** JSON: `{ feedAt: number, author: string, permlink: string }
 
 ## OpenAPI
 
-Registered in `openapi/feed.openapi.ts`; Swagger UI: `/api/v1/docs` on the running server.
+Registered in `openapi/feed.openapi.ts`; Swagger UI: `/query/v1/docs` on the running server.
 
 ## See also
 

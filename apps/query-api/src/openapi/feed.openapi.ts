@@ -95,7 +95,7 @@ const accountNameParam = z
 
 registry.registerPath({
   method: 'post',
-  path: '/api/v1/users/{name}/blog',
+  path: '/query/v1/users/{name}/blog',
   summary: 'User blog feed (posts and reblogs)',
   description:
     'Paginated newest-first feed: root posts by author plus reblogs, merged by time. Cursor is opaque (base64url JSON).',

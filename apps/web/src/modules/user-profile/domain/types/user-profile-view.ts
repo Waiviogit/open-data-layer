@@ -1,4 +1,4 @@
-/** Read model returned by query-api `GET /api/v1/users/:name/profile`. */
+/** Read model returned by query-api `GET /query/v1/users/:name/profile`. */
 export type UserProfileView = {
   name: string;
   displayName: string;

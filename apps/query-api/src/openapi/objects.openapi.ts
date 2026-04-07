@@ -65,7 +65,7 @@ const resolveObjectRequestSchema = registry.register('ResolveObjectBody', resolv
 
 registry.registerPath({
   method: 'post',
-  path: '/api/v1/objects/resolve',
+  path: '/query/v1/objects/resolve',
   summary: 'Resolve object view by id',
   description:
     'Loads aggregated DB rows for `object_id`, applies `ObjectViewService` with the given `update_types` and locale (from headers). When `update_types` is omitted or empty, every update type present on the object is resolved. Returns a `ResolvedObjectView` or 404 when the object does not exist.',

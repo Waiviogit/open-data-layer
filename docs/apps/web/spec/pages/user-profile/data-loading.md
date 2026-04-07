@@ -22,7 +22,7 @@ If the query returns `null`, the layout calls `notFound()` (HTTP 404).
 
 HTTP call (via `queryApiFetch` in `apps/web/src/modules/user-profile/infrastructure/clients/query-api.client.ts`, which reads `env.QUERY_API_URL`):
 
-`GET {QUERY_API_URL}/api/v1/users/{name}/profile`
+`GET {QUERY_API_URL}/query/v1/users/{name}/profile`
 
 - Uses Next.js extended `fetch` with default `next: { revalidate: 60 }` (seconds).
 - Response `404` → `null` (user missing).

@@ -10,8 +10,8 @@ Read-path API — governance masking, object resolution (via shared domain libra
 | [Specification index](../../spec/README.md) | Governance, vote semantics |
 | [Objects domain](../../spec/objects-domain.md) | ResolvedView assembly |
 | [Governance resolution](../../spec/governance-resolution.md) | Masks and snapshots |
-| [User profile endpoint](spec/users-profile-endpoint.md) | `GET /api/v1/users/:name/profile` |
-| [User blog feed endpoint](spec/user-blog-feed-endpoint.md) | `POST /api/v1/users/:name/blog` |
+| [User profile endpoint](spec/users-profile-endpoint.md) | `GET /query/v1/users/:name/profile` |
+| [User blog feed endpoint](spec/user-blog-feed-endpoint.md) | `POST /query/v1/users/:name/blog` |
 
 ## App code
 

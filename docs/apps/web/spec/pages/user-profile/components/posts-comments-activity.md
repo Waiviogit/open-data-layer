@@ -23,7 +23,7 @@
 ## actions
 
 - Legacy: feed actions delegated to children (`getUserProfileBlogPosts`, etc.).
-- **apps/web:** the **posts** tab uses `getUserBlogFeedPageQuery` / `loadMoreUserBlogFeedAction` against query-api (`POST /api/v1/users/:name/blog`). Other tabs still use `mock-feed` for demo data.
+- **apps/web:** the **posts** tab uses `getUserBlogFeedPageQuery` / `loadMoreUserBlogFeedAction` against query-api (`POST /query/v1/users/:name/blog`). Other tabs still use `mock-feed` for demo data.
 
 ## rendering
 

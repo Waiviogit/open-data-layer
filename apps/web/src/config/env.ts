@@ -11,6 +11,29 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((v) => (v?.trim() ? v.trim() : 'http://localhost:7000')),
+  /** auth-api base URL (BFF proxies to this). */
+  AUTH_API_BASE_URL: z
+    .string()
+    .optional()
+    .transform((v) => (v?.trim() ? v.trim() : 'http://localhost:7100')),
+  /**
+   * Same secret as auth-api `JWT_SECRET` — used server-side only to verify access cookies.
+   */
+  AUTH_JWT_SECRET: z
+    .string()
+    .optional()
+    .transform((v) => {
+      const t = v?.trim();
+      if (!t) {
+        return undefined;
+      }
+      if (t.length < 16) {
+        throw new Error(
+          'AUTH_JWT_SECRET must be at least 16 characters when set',
+        );
+      }
+      return t;
+    }),
   WEB_THEME_SYNC_URL: z
     .string()
     .optional()

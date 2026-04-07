@@ -9,6 +9,8 @@ export type UserId = string;
 
 export interface CurrentUser {
   readonly id: UserId;
+  /** Hive account name (same as id when auth is Hive-based). */
+  readonly username: string;
   /** Application role slug; extend when RBAC is defined. */
   readonly role: string;
 }
