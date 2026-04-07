@@ -5,11 +5,13 @@ export const shellModeRegistry = {
   },
   twitter: {
     label: 'Twitter',
-    description: 'Narrow left rail, wider right rail, tighter feed gaps',
+    description:
+      'Vertical nav in left rail, wider right rail, tighter feed gaps, no profile hero',
   },
   instagram: {
     label: 'Instagram',
-    description: 'Icon rail, no right rail, tight grid gaps',
+    description:
+      'Full-width profile, no sidebars, image preview grid, minimal nav',
   },
   compact: {
     label: 'Compact',

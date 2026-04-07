@@ -4,5 +4,11 @@ export type { UserBlogFeedPage } from './application/dto/user-blog-feed-page.dto
 export { getUserBlogFeedPageQuery } from './application/queries/get-user-blog-feed.query';
 export { FEED_TABS } from './domain/feed-tab';
 export type { FeedTab } from './domain/feed-tab';
-export { FeedList, Story, StoryContainer } from './presentation';
-export type { StoryContainerProps } from './presentation';
+export {
+  FeedList,
+  FeedPostGrid,
+  Story,
+  StoryContainer,
+  StoryPreviewTile,
+} from './presentation';
+export type { FeedPostGridProps, StoryContainerProps, StoryPreviewTileProps } from './presentation';

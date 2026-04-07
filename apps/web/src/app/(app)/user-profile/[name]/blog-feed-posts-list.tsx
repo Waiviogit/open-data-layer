@@ -4,8 +4,9 @@ import { useState, useTransition } from 'react';
 
 import type { UserBlogFeedPage } from '@/modules/feed/application/dto/user-blog-feed-page.dto';
 import type { FeedTab } from '@/modules/feed/domain/feed-tab';
-import { FeedList } from '@/modules/feed/presentation';
+import { FeedList, FeedPostGrid } from '@/modules/feed/presentation';
 import { FeedColumn } from '@/shared/presentation/layout';
+import { shouldUsePostGrid, useShellMode } from '@/shell-mode';
 
 import { loadMoreUserBlogFeedAction } from './blog-feed.actions';
 
@@ -20,10 +21,13 @@ export function BlogFeedPostsList({
   initialPage,
   feedTab,
 }: BlogFeedPostsListProps) {
+  const { resolvedMode } = useShellMode();
   const [items, setItems] = useState(initialPage.items);
   const [cursor, setCursor] = useState(initialPage.cursor);
   const [hasMore, setHasMore] = useState(initialPage.hasMore);
   const [pending, startTransition] = useTransition();
+  const useInstagramGrid =
+    shouldUsePostGrid(resolvedMode) && feedTab === 'posts';
 
   if (items.length === 0) {
     return (
@@ -41,7 +45,11 @@ export function BlogFeedPostsList({
 
   return (
     <FeedColumn>
-      <FeedList items={items} feedTab={feedTab} />
+      {useInstagramGrid ? (
+        <FeedPostGrid items={items} />
+      ) : (
+        <FeedList items={items} feedTab={feedTab} />
+      )}
       {hasMore ? (
         <div className="flex justify-center">
           <button

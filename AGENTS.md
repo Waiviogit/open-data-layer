@@ -123,6 +123,16 @@ When creating or editing UI in `apps/web`, follow the **design token** system so
 - **Layout rhythm:** prefer `px-gutter` / `sm:px-gutter-sm` for horizontal gutters, `py-section-y-sm`, `py-section-y`, `py-section-y-lg`, `py-section-y-hero` for vertical section spacing, `p-card-padding` / `gap-card-padding` for cards and grids, `max-w-container-page`, `max-w-container-content`, and `max-w-container-narrow` for widths — instead of ad-hoc `px-4`, `py-16`, `max-w-lg`, `max-w-6xl`.
 - **New tokens:** if a design needs a new role (color, radius, shadow, layout), add the CSS variable in `theme.css` for every theme block, extend Tailwind in `tailwind.config.js`, and update `docs/apps/web/spec/theme.md` in the same change.
 
+### Web app (`apps/web`) — Shell mode compatibility
+
+Shell mode (`data-shell-mode` on `<html>`) adjusts structural tokens and optional profile/feed UI. Full spec: [`docs/apps/web/spec/shell-mode.md`](docs/apps/web/spec/shell-mode.md).
+
+- **Imports:** use the [`@/shell-mode`](apps/web/src/shell-mode/index.ts) barrel only — do not deep-import `use-shell-mode` or other module files.
+- **Behavior checks:** use helpers from `shell-mode-features.ts` (`shouldHideHero`, `shouldUsePostGrid`, `getVisibleMenuKeys`, `shouldCenterMenu`) instead of `resolvedMode === '…'`.
+- **Visibility:** prefer CSS toggles (`.shell-hide-<mode>` / `.shell-show-<mode>` in `theme.css`) when the subtree is the same across modes; use JS (`return null` or conditional render) when component trees differ, the hidden subtree is heavy, or nav/data must be filtered.
+- **Layout:** use `--shell-left-width`, `--shell-right-width`, and `--spacing-card` in grid templates so shell presets adjust widths without ad-hoc breakpoints.
+- **New behavior:** add a helper in `shell-mode-features.ts` (and CSS in `theme.css` when needed), not scattered mode string checks in feature components.
+
 ### Web app (`apps/web`) — Images
 
 - Use **`next/image`** for user-facing raster content (avatars, feed thumbnails, covers). Use inline SVG or `<img>` for icons and decorative graphics. Markdown/HTML body images may stay plain `<img>` with `loading="lazy"`. Spec: [`docs/apps/web/spec/images.md`](docs/apps/web/spec/images.md).

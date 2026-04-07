@@ -22,29 +22,33 @@ export default async function UserProfileMainShellLayout({
   return (
     <div
       className={[
-        'mt-card-padding grid grid-cols-1 gap-card-padding',
+        'shell-profile-grid mt-card-padding grid grid-cols-1 gap-card-padding',
         'lg:grid-cols-[minmax(0,var(--shell-left-width))_minmax(0,1fr)_minmax(0,var(--shell-right-width))]',
       ].join(' ')}
     >
       <HiddenBelow breakpoint="lg">
-        <div className="shell-hide-twitter">
-          <StickyRegion offset="0">
-            <LeftSidebar />
-          </StickyRegion>
-        </div>
-        <div className="shell-show-twitter">
-          <FixedRegion>
-            <UserMenuVerticalRail accountName={accountName} />
-          </FixedRegion>
+        <div className="shell-profile-left-rail shell-hide-instagram">
+          <div className="shell-hide-twitter">
+            <StickyRegion offset="0">
+              <LeftSidebar />
+            </StickyRegion>
+          </div>
+          <div className="shell-show-twitter">
+            <FixedRegion>
+              <UserMenuVerticalRail accountName={accountName} />
+            </FixedRegion>
+          </div>
         </div>
       </HiddenBelow>
 
       <main className="min-h-[12rem] min-w-0">{children}</main>
 
       <HiddenBelow breakpoint="lg">
-        <StickyRegion offset="0">
-          <RightSidebar accountName={accountName} />
-        </StickyRegion>
+        <div className="shell-hide-instagram">
+          <StickyRegion offset="0">
+            <RightSidebar accountName={accountName} />
+          </StickyRegion>
+        </div>
       </HiddenBelow>
     </div>
   );

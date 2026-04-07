@@ -1,8 +1,10 @@
 'use client';
 
-import { shellModeRegistry } from '../../../shell-mode/shell-mode-registry';
-import { useShellMode } from '../../../shell-mode/use-shell-mode';
-import type { ShellModePreference } from '../../../shell-mode/types';
+import {
+  shellModeRegistry,
+  useShellMode,
+  type ShellModePreference,
+} from '@/shell-mode';
 
 const OPTIONS: { id: ShellModePreference; label: string }[] = [
   { id: 'default', label: shellModeRegistry.default.label },

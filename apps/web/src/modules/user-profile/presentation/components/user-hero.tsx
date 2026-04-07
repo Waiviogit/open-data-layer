@@ -3,6 +3,8 @@
 import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
 
+import { shouldHideHero, useShellMode } from '@/shell-mode';
+
 import type { UserHeaderProps } from './user-header';
 import { UserHeader } from './user-header';
 import { UserMenuSkeleton } from './user-menu-skeleton';
@@ -20,15 +22,20 @@ type UserHeroProps = UserHeaderProps & {
 
 export function UserHero(props: UserHeroProps) {
   const { pathname, search, ...headerProps } = props;
+  const { resolvedMode } = useShellMode();
   const navCtx = useMemo(
     () => ({ pathname, search }),
     [pathname, search],
   );
 
+  if (shouldHideHero(resolvedMode)) {
+    return null;
+  }
+
   return (
     <header className="overflow-hidden rounded-card border border-border bg-bg shadow-card">
       <UserHeader {...headerProps} />
-      <div className="shell-hide-twitter px-gutter pb-3 sm:px-gutter-sm">
+      <div className="px-gutter pb-3 sm:px-gutter-sm">
         <UserProfileNavContext.Provider value={navCtx}>
           <UserMenuClient
             accountName={headerProps.username}

@@ -3,6 +3,11 @@
 import Link from 'next/link';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import {
+  getVisibleMenuKeys,
+  shouldCenterMenu,
+  useShellMode,
+} from '@/shell-mode';
 
 import { getSegmentsAfterAccount } from './profile-path';
 import {
@@ -112,6 +117,8 @@ export function UserMenu({
   direction = 'horizontal',
 }: UserMenuProps) {
   const { t } = useI18n();
+  const { resolvedMode } = useShellMode();
+  const visibleMenuKeys = getVisibleMenuKeys(resolvedMode);
   const rest = getSegmentsAfterAccount(pathname);
   const base = `/@${accountName}`;
   const walletType = getWalletTypeFromSearch(search);
@@ -181,13 +188,29 @@ export function UserMenu({
       },
     ];
 
+  const primaryItems = visibleMenuKeys
+    ? items.filter((item) => visibleMenuKeys.has(item.key))
+    : items;
+
   const isVertical = direction === 'vertical';
-  const primaryNavClass = isVertical
-    ? 'flex flex-col gap-0.5'
-    : 'flex flex-wrap gap-1 border-t border-border pt-3';
-  const subNavClass = isVertical
-    ? 'flex flex-col gap-0.5'
-    : 'mt-2 flex flex-wrap gap-1 border-t border-border pt-2';
+  const instagramCenteredRow =
+    shouldCenterMenu(resolvedMode) && !isVertical ? 'justify-center' : '';
+
+  const primaryNavClass = [
+    isVertical ? 'flex flex-col gap-0.5' : 'flex flex-wrap gap-1 border-t border-border pt-3',
+    instagramCenteredRow,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  const subNavClass = [
+    isVertical
+      ? 'flex flex-col gap-0.5'
+      : 'mt-2 flex flex-wrap gap-1 border-t border-border pt-2',
+    instagramCenteredRow,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div className={isVertical ? 'space-y-1' : 'space-y-0'}>
@@ -195,7 +218,7 @@ export function UserMenu({
         className={primaryNavClass}
         aria-label={t('user_profile_nav_aria')}
       >
-        {items.map((item) => (
+        {primaryItems.map((item) => (
           <Link
             key={item.key}
             href={item.href}
@@ -212,7 +235,7 @@ export function UserMenu({
         ))}
       </nav>
 
-      {submenuVariant === 'feed' ? (
+      {submenuVariant === 'feed' && visibleMenuKeys == null ? (
         <nav
           className={subNavClass}
           aria-label={t('user_profile_submenu_feed_aria')}

@@ -212,7 +212,7 @@ Do not scatter one-off hex values in components; extend tokens instead.
 ## `global.css` constraints
 
 - Import `../styles/theme.css` **before** `@tailwind` directives (required for Turbopack).
-- **Colors:** use `var(--color-*)` (or derived tokens like `--color-code-*`), not raw `rgba`/`hsla` literals, except where documented as temporary (e.g. Nx welcome scaffold marked with `TODO`).
+- **Colors:** use `var(--color-*)` (or derived tokens like `--color-code-*`), not raw `rgba`/`hsla` literals, except where documented as temporary.
 - **Typography:** root font stack uses `var(--font-body)`.
 
 ## Verification

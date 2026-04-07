@@ -663,7 +663,6 @@
 
 /* Shell mode presets — override structural tokens without component changes */
 [data-shell-mode='twitter'] {
-  --shell-left-width: 14rem;
   --shell-right-width: 20rem;
   --spacing-card: 0.5rem;
 }
@@ -675,9 +674,46 @@
 [data-shell-mode='twitter'] .shell-show-twitter { display: block; }
 
 [data-shell-mode='instagram'] {
-  --shell-left-width: 4rem;
+  --shell-left-width: 0rem;
   --shell-right-width: 0rem;
   --spacing-card: 0.25rem;
+}
+
+/*
+ * Profile + grid overrides use `html[data-shell-mode='instagram']` so specificity
+ * wins over Tailwind utilities on the same elements without `!important`.
+ */
+html[data-shell-mode='instagram'] .shell-profile-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+html[data-shell-mode='instagram'] .shell-hide-instagram {
+  display: none;
+}
+
+/* Post preview grid: column count follows main width (not viewport-only Tailwind utilities) */
+html[data-shell-mode='instagram'] .instagram-post-grid {
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+  html[data-shell-mode='instagram'] .instagram-post-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  html[data-shell-mode='instagram'] .instagram-post-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  html[data-shell-mode='instagram'] .instagram-post-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
 }
 
 [data-shell-mode='compact'] {
