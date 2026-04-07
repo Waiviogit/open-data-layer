@@ -32,3 +32,6 @@ export type { LayoutContextValue, ContentArrangement } from './context/layout-co
 
 export { useLayout } from './hooks/use-layout';
 export { useMediaQuery } from './hooks/use-breakpoint';
+
+export { BREAKPOINTS } from './breakpoints';
+export type { Breakpoint } from './breakpoints';

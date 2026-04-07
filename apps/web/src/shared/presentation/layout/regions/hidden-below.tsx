@@ -8,7 +8,10 @@ export type HiddenBelowProps = {
   className?: string;
 };
 
-const BREAKPOINT_VISIBLE: Record<HiddenBelowBreakpoint, string> = {
+export const hiddenBelowClassForBreakpoint: Record<
+  HiddenBelowBreakpoint,
+  string
+> = {
   sm: 'hidden sm:block',
   md: 'hidden md:block',
   lg: 'hidden lg:block',
@@ -24,7 +27,11 @@ export function HiddenBelow({
   className = '',
 }: HiddenBelowProps) {
   return (
-    <div className={[BREAKPOINT_VISIBLE[breakpoint], className].join(' ')}>
+    <div
+      className={[hiddenBelowClassForBreakpoint[breakpoint], className].join(
+        ' ',
+      )}
+    >
       {children}
     </div>
   );

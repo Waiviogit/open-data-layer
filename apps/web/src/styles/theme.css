@@ -660,3 +660,22 @@
   --shell-right-width: 14rem;
   --shell-bottom-height: 3.5rem;
 }
+
+/* Shell mode presets — override structural tokens without component changes */
+[data-shell-mode='twitter'] {
+  --shell-left-width: 4.5rem;
+  --shell-right-width: 20rem;
+  --spacing-card: 0;
+}
+
+[data-shell-mode='instagram'] {
+  --shell-left-width: 4rem;
+  --shell-right-width: 0rem;
+  --spacing-card: 0.25rem;
+}
+
+[data-shell-mode='compact'] {
+  --shell-left-width: 3.5rem;
+  --shell-right-width: 12rem;
+  --spacing-card: 0.75rem;
+}

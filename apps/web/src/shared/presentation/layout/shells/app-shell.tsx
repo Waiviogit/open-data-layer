@@ -12,7 +12,8 @@ export type AppShellProps = {
   className?: string;
 };
 
-function gridClassForSlots(
+/** Exported for unit tests and tooling. */
+export function gridClassForSlots(
   hasLeft: boolean,
   hasRight: boolean,
 ): string {

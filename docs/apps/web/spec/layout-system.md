@@ -10,12 +10,15 @@ This spec describes **structural** layout only (zones, breakpoints, scroll/stick
 - **Regions** — reusable wrappers (`StickyRegion`, `HiddenBelow`, drawers) for rails and sidebars.
 - **Content arrangements** — inner layout of the primary column (`FeedColumn`, `CardGrid`, `MasonryGrid`, `CenteredArticle`).
 - **Layout state** — `LayoutProvider` for client-only UI (sidebar toggles, feed vs grid mode) without a global store.
+- **Shell mode** — optional `data-shell-mode` presets that override structural tokens (rail widths, card rhythm); see [shell-mode.md](shell-mode.md).
 
 ## Where to look
 
 | Path | Role |
 | ---- | ---- |
-| `apps/web/src/shared/presentation/layout/` | Barrel exports: shells, regions, arrangements, `LayoutProvider` |
+| `apps/web/src/shared/presentation/layout/` | Barrel exports: shells, regions, arrangements, `LayoutProvider`, `BREAKPOINTS` |
+| `apps/web/src/shell-mode/` | Shell mode types, cookie, resolution, `ShellModeProvider` (see [shell-mode.md](shell-mode.md)) |
+| `apps/web/src/app/(app)/dev/showcase/page.tsx` | Dev **showcase** — layout primitives, switchers, token sampler (`/dev/showcase`) |
 | `apps/web/src/app/(app)/layout.tsx` | `LayoutProvider` + `AppShell` + placeholder `AppHeader` / `BottomNav` |
 | `apps/web/src/app/(public)/layout.tsx` | `PublicShell` — centered narrow column |
 | `apps/web/src/app/(immersive)/layout.tsx` | `ImmersiveShell` — fullscreen, no chrome |
@@ -51,9 +54,29 @@ Override grid with `gridTemplateClassName` on `AppShell` when a route needs a no
 | Component | Behavior |
 | --------- | -------- |
 | `FeedColumn` | `flex flex-col gap-card-padding` — single-column feeds and lists. |
-| `CardGrid` | Responsive CSS grid; `columns` per breakpoint (`base`, `sm`, …). |
+| `CardGrid` | Responsive CSS grid; `columns` per breakpoint (`base`, `sm`, …). Dynamic column classes are **safelisted** in `tailwind.config.js`. |
 | `MasonryGrid` | CSS `columns` with `column-gap` token; children may need `break-inside-avoid`. |
 | `CenteredArticle` | `max-w-container-content` centered article column. |
+
+### Switching arrangements (Layout context)
+
+Use `useLayout().setContentArrangement` to switch between `feed`, `grid`, and `masonry` for client-driven profile or feed UIs. This is **UI state** only — route-level shells and CSS grids still own the outer frame.
+
+## Shell mode
+
+Structural presets (`default`, `twitter`, `instagram`, `compact`) set `data-shell-mode` on `<html>` and override tokens such as `--shell-left-width` / `--spacing-card`. Full flow and how to add a mode: [shell-mode.md](shell-mode.md).
+
+## Breakpoints
+
+`BREAKPOINTS` in `shared/presentation/layout/breakpoints.ts` matches Tailwind defaults (`sm` … `2xl`) as CSS length strings for `useMediaQuery` and documentation.
+
+## Layout presets (documentation)
+
+`PROFILE_LAYOUT_PRESETS` in `modules/user-profile/presentation/layout-presets.ts` documents **valid combinations** of arrangement + sidebar flags for profile-style pages. It is **not** wired into the layout runtime — use as a reference for agents and implementers.
+
+## Showcase page
+
+Visit **`/dev/showcase`** for live examples: shells, regions, arrangements, `ThemeSwitcher`, `ShellModeSwitcher`, `LocaleSwitcher`, and a token sampler.
 
 ## Layout context
 
@@ -76,6 +99,10 @@ Throws if used outside `LayoutProvider`.
 1. **Shell** — add a small presentational component under `shared/presentation/layout/shells/`, export from `layout/index.ts`, attach a route group `layout.tsx` if it maps to a URL family.
 2. **Arrangement** — add under `arrangements/`, export from the barrel, document in this file.
 3. **Tokens** — if new structural sizes are needed, add CSS variables to **every** `[data-theme='…']` block in `theme.css` and extend Tailwind in the same change; update [theme.md](theme.md).
+
+## Tests
+
+Co-located `*.spec.ts` files cover `gridClassForSlots`, `HiddenBelow` classes, `buildCardGridClassName` (see `card-grid-classname.ts`), and `resolveShellMode`. `apps/web/jest.config.cts` extends the Nx preset with a `ts-jest` transform that includes `.tsx` so layout components can be imported in tests.
 
 ## Imports
 

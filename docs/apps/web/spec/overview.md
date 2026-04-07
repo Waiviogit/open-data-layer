@@ -24,6 +24,7 @@ The **web** application is the Next.js **App Router** frontend for the Open Data
 | [i18n.md](i18n.md) | Locale resolution, messages, cookies, SSR, RTL |
 | [theme.md](theme.md) | Theme preference, `data-theme`, CSS variables, SSR script, Tailwind |
 | [layout-system.md](layout-system.md) | Route-group shells, layout primitives, content arrangements, `LayoutProvider` |
+| [shell-mode.md](shell-mode.md) | Shell mode preference, `data-shell-mode`, structural token overrides |
 | [images.md](images.md) | `next/image` usage, `remotePatterns`, `sizes`, `priority`, UGC |
 | [components/story-container.md](components/story-container.md) | Feed row (`StoryContainer` / `Story`), DTO, demo mocks |
 | [components/avatar.md](components/avatar.md) | Shared `UserAvatar`, `resolveAvatarUrl` (profile + feed) |

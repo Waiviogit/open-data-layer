@@ -4,6 +4,8 @@ import { isRTL } from '../i18n/domain/is-rtl';
 import { I18nProvider } from '../i18n/providers/i18n-provider';
 import { getRequestLocale } from '../i18n/runtime/get-request-locale';
 import { loadMessages } from '../i18n/runtime/load-messages';
+import { getServerShellModeResolution } from '../shell-mode/get-server-shell-mode-resolution';
+import { ShellModeProvider } from '../shell-mode/shell-mode-provider';
 import { getServerThemeResolution } from '../theme/get-server-theme-resolution';
 import { ThemeProvider } from '../theme/theme-provider';
 import { ThemeScript } from '../theme/theme-script';
@@ -22,6 +24,7 @@ export default async function RootLayout({
   const messages = await loadMessages(locale);
   const dir = isRTL(locale) ? 'rtl' : 'ltr';
   const themeResolution = await getServerThemeResolution();
+  const shellModeResolution = await getServerShellModeResolution();
   const isSystemPreference = themeResolution.preference === 'system';
 
   return (
@@ -32,15 +35,18 @@ export default async function RootLayout({
       {...(!isSystemPreference
         ? { 'data-theme': themeResolution.resolvedTheme }
         : {})}
+      data-shell-mode={shellModeResolution.resolvedMode}
     >
       <head>
         {isSystemPreference ? <ThemeScript /> : null}
       </head>
       <body className="min-h-screen bg-bg text-fg antialiased">
         <ThemeProvider initialResolution={themeResolution}>
-          <I18nProvider locale={locale} messages={messages}>
-            {children}
-          </I18nProvider>
+          <ShellModeProvider initialResolution={shellModeResolution}>
+            <I18nProvider locale={locale} messages={messages}>
+              {children}
+            </I18nProvider>
+          </ShellModeProvider>
         </ThemeProvider>
       </body>
     </html>
