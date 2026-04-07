@@ -184,8 +184,14 @@ Prefer `shadow-card` over `shadow-sm` and `shadow-card-float` over `shadow-lg` s
 | `--container-max` | `max-w-container-page` | Max page / dashboard width |
 | `--container-content` | `max-w-container-content` | Prose / reading column width |
 | `--container-narrow` | `max-w-container-narrow` | Forms, focused single-column layouts |
+| `--shell-header-height` | `min-h-shell-header`, `h-shell-header`, `top-shell-header` | App header / sticky offset |
+| `--shell-left-width` | `w-shell-left`, `min-w-shell-left` | Left rail / drawer width |
+| `--shell-right-width` | `w-shell-right`, `min-w-shell-right` | Right rail width |
+| `--shell-bottom-height` | `h-shell-bottom`, `min-h-shell-bottom` | Mobile bottom nav height |
 
 Prefer these over raw `px-4` / `py-16` / `max-w-lg` when building page shells so layout rhythm tracks the active theme preset.
+
+See [layout-system.md](layout-system.md) for how shells and regions use these tokens.
 
 ## Design preset
 

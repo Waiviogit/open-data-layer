@@ -269,7 +269,11 @@ export function Story({ story, feedTab }: StoryProps) {
         {story.title ? (
           story.permalinkPath ? (
             <h2 id={`story-title-${story.id}`} className="text-body-lg font-semibold text-heading">
-              <Link href={story.permalinkPath} className="feed-story-title-link">
+              <Link
+                href={story.permalinkPath}
+                className="feed-story-title-link"
+                suppressHydrationWarning
+              >
                 {story.title}
               </Link>
             </h2>

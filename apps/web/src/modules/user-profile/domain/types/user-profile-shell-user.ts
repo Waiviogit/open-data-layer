@@ -1,4 +1,4 @@
-/** Props shape for `UserProfileShell` / hero (shell-only fields). */
+/** Props shape for profile hero / shell (shell-only fields). */
 export type UserProfileShellUser = {
   id: string;
   name: string;

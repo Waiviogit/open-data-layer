@@ -114,6 +114,10 @@
   --container-max: 75rem;
   --container-content: 48rem;
   --container-narrow: 32rem;
+  --shell-header-height: 3.5rem;
+  --shell-left-width: 14rem;
+  --shell-right-width: 14rem;
+  --shell-bottom-height: 3.5rem;
 }
 
 [data-theme='dark'] {
@@ -221,6 +225,10 @@
   --container-max: 75rem;
   --container-content: 48rem;
   --container-narrow: 32rem;
+  --shell-header-height: 3.5rem;
+  --shell-left-width: 14rem;
+  --shell-right-width: 14rem;
+  --shell-bottom-height: 3.5rem;
 }
 
 [data-theme='sepia'] {
@@ -328,6 +336,10 @@
   --container-max: 75rem;
   --container-content: 48rem;
   --container-narrow: 32rem;
+  --shell-header-height: 3.5rem;
+  --shell-left-width: 14rem;
+  --shell-right-width: 14rem;
+  --shell-bottom-height: 3.5rem;
 }
 
 /* Apple-inspired marketing preset: light gray canvas, single blue accent, tight display type */
@@ -430,6 +442,10 @@
   --container-max: 61.25rem;
   --container-content: 48rem;
   --container-narrow: 32rem;
+  --shell-header-height: 3.5rem;
+  --shell-left-width: 14rem;
+  --shell-right-width: 14rem;
+  --shell-bottom-height: 3.5rem;
 }
 
 /* Airbnb-inspired preset: white canvas, Rausch red, three-layer card shadows, generous radius */
@@ -534,6 +550,10 @@
   --container-max: 70rem;
   --container-content: 48rem;
   --container-narrow: 32rem;
+  --shell-header-height: 3.5rem;
+  --shell-left-width: 14rem;
+  --shell-right-width: 14rem;
+  --shell-bottom-height: 3.5rem;
 }
 
 /* Waivio-style preset: data-dense feed UI, orange accent, flat surfaces, thin borders */
@@ -635,4 +655,8 @@
   --container-max: 75rem;
   --container-content: 48rem;
   --container-narrow: 32rem;
+  --shell-header-height: 3.5rem;
+  --shell-left-width: 14rem;
+  --shell-right-width: 14rem;
+  --shell-bottom-height: 3.5rem;
 }
