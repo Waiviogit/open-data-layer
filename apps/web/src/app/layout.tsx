@@ -8,7 +8,6 @@ import { ShellModeProvider } from '@/shell-mode';
 import { getServerShellModeResolution } from '@/shell-mode/server';
 import { getServerThemeResolution } from '../theme/get-server-theme-resolution';
 import { ThemeProvider } from '../theme/theme-provider';
-import { ThemeScript } from '../theme/theme-script';
 
 export const metadata = {
   title: 'Welcome to web',
@@ -25,21 +24,15 @@ export default async function RootLayout({
   const dir = isRTL(locale) ? 'rtl' : 'ltr';
   const themeResolution = await getServerThemeResolution();
   const shellModeResolution = await getServerShellModeResolution();
-  const isSystemPreference = themeResolution.preference === 'system';
 
   return (
     <html
       lang={locale}
       dir={dir}
       suppressHydrationWarning
-      {...(!isSystemPreference
-        ? { 'data-theme': themeResolution.resolvedTheme }
-        : {})}
+      data-theme={themeResolution.resolvedTheme}
       data-shell-mode={shellModeResolution.resolvedMode}
     >
-      <head>
-        {isSystemPreference ? <ThemeScript /> : null}
-      </head>
       <body className="min-h-screen bg-bg text-fg antialiased">
         <ThemeProvider initialResolution={themeResolution}>
           <ShellModeProvider initialResolution={shellModeResolution}>

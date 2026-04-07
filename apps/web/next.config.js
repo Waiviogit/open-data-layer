@@ -8,6 +8,19 @@ const { composePlugins, withNx } = require('@nx/next');
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
  **/
 const nextConfig = {
+  // Request Client Hints so SSR can resolve `system` theme via `Sec-CH-Prefers-Color-Scheme`
+  // (see get-server-theme-resolution.ts). Without this, the server often defaults to light.
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'Accept-CH', value: 'Sec-CH-Prefers-Color-Scheme' },
+          { key: 'Vary', value: 'Sec-CH-Prefers-Color-Scheme' },
+        ],
+      },
+    ];
+  },
   // Minimal self-contained output for Docker (see apps/web/Dockerfile).
   // On Windows, local `next build` may fail copying standalone symlinks (EPERM); use Docker/WSL or Developer Mode.
   output: 'standalone',

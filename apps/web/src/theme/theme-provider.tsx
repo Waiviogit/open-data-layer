@@ -5,9 +5,14 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
 } from 'react';
+
+/** Avoids SSR warnings for `useLayoutEffect` while applying theme before paint on the client. */
+const useIsomorphicLayoutEffect =
+  typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 import { setThemePreference } from './actions';
 import type { ThemeId, ThemePreference, ThemeResolution } from './types';
@@ -38,7 +43,7 @@ export function ThemeProvider({
     initialResolution.source,
   );
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (preference !== 'system') {
       document.documentElement.dataset.theme = preference;
       setResolvedTheme(preference);

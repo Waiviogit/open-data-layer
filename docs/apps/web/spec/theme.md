@@ -7,8 +7,8 @@ Theming uses **`data-theme` on `<html>`** as the single source of truth for appe
 ## Normative goals
 
 - Resolve the active **preference** on the **server** (root layout) from cookie and optional user settings; persist **preference**, not the resolved `ThemeId`.
-- **SSR:** For non-`system` preferences, set `data-theme` on `<html>` to the resolved `ThemeId`. For `system`, omit `data-theme` on the server and inject a **synchronous** inline script in `<head>` that sets `data-theme` from `matchMedia('(prefers-color-scheme: dark)')` before paint (no flicker).
-- **Client:** `ThemeProvider` keeps **preference** in React state; applies `document.documentElement.dataset.theme` to the **resolved** theme; subscribes to `matchMedia` only while `preference === 'system'`.
+- **SSR:** Always set `data-theme` on `<html>` to the resolved `ThemeId` (including for `system`, using `Sec-CH-Prefers-Color-Scheme` when the browser sends it). The app sends `Accept-CH` (see `next.config.js`) so SSR can match the OS. **Do not** omit `data-theme` for `system` and rely on a separate pre-paint script: React hydration would reconcile `<html>` and strip the script-set attribute, causing dark → light flashes.
+- **Client:** `ThemeProvider` keeps **preference** in React state; applies `document.documentElement.dataset.theme` to the **resolved** theme in `useLayoutEffect` (sync before paint); subscribes to `matchMedia` only while `preference === 'system'`.
 - **Tailwind:** Use semantic utilities (`bg-bg`, `text-fg`, `bg-secondary`, `text-error`, `outline-focus`, `text-hero`, `text-display`, `font-weight-display`, `rounded-card`, `rounded-xl`, `shadow-card`, `shadow-card-warm`, `font-body`, `font-mono`, etc.). Avoid hardcoded palette hex values and fixed Tailwind default scale for radii/shadows when a tokenized utility exists.
 
 ## Module layout
@@ -25,7 +25,6 @@ Theming uses **`data-theme` on `<html>`** as the single source of truth for appe
 | `apps/web/src/theme/theme-user-sync.ts`             | Optional `WEB_THEME_SYNC_URL` PATCH                                     |
 | `apps/web/src/theme/actions.ts`                     | `'use server'` — `setThemePreference` (validate, set cookie, optional sync) |
 | `apps/web/src/theme/theme-provider.tsx`             | Client provider + `matchMedia` for `system`                             |
-| `apps/web/src/theme/theme-script.tsx`               | Inline head script when preference is `system`                          |
 | `apps/web/src/theme/use-theme.ts`                   | `useTheme()` hook                                                       |
 | `apps/web/src/styles/theme.css`                     | `[data-theme='…']` design tokens (all dimensions)                       |
 | `apps/web/tailwind.config.js`                       | Maps tokens to Tailwind `extend` (colors, fonts, radius, shadow, etc.)    |
