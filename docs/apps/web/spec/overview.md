@@ -13,7 +13,7 @@ The **web** application is the Next.js **App Router** frontend for the Open Data
 | Framework | Next.js (App Router), React |
 | App root | `apps/web/` |
 | Entry layout | `apps/web/src/app/layout.tsx` |
-| API routes | Under `src/app/api/` |
+| Server actions / cookies | Theme, shell mode, and locale use `'use server'` modules (e.g. `theme/actions.ts`, `shell-mode/actions.ts`, `i18n/runtime/cookies.ts`). Add `src/app/api/` route handlers only when you need external HTTP endpoints. |
 
 ## Feature specs
 

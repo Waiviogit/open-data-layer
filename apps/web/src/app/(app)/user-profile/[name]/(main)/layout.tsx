@@ -1,8 +1,13 @@
 import {
+  FixedRegion,
   HiddenBelow,
   StickyRegion,
 } from '@/shared/presentation/layout';
-import { LeftSidebar, RightSidebar } from '@/modules/user-profile';
+import {
+  LeftSidebar,
+  RightSidebar,
+  UserMenuVerticalRail,
+} from '@/modules/user-profile';
 
 export default async function UserProfileMainShellLayout({
   children,
@@ -22,9 +27,16 @@ export default async function UserProfileMainShellLayout({
       ].join(' ')}
     >
       <HiddenBelow breakpoint="lg">
-        <StickyRegion offset="0">
-          <LeftSidebar />
-        </StickyRegion>
+        <div className="shell-hide-twitter">
+          <StickyRegion offset="0">
+            <LeftSidebar />
+          </StickyRegion>
+        </div>
+        <div className="shell-show-twitter">
+          <FixedRegion>
+            <UserMenuVerticalRail accountName={accountName} />
+          </FixedRegion>
+        </div>
       </HiddenBelow>
 
       <main className="min-h-[12rem] min-w-0">{children}</main>

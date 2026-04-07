@@ -9,6 +9,7 @@ import {
   useState,
 } from 'react';
 
+import { setThemePreference } from './actions';
 import type { ThemeId, ThemePreference, ThemeResolution } from './types';
 
 type ThemeContextValue = {
@@ -59,11 +60,7 @@ export function ThemeProvider({
     const previous = preference;
     setPreferenceState(next);
 
-    const res = await fetch('/api/theme', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ preference: next }),
-    });
+    const res = await setThemePreference(next);
 
     if (!res.ok) {
       setPreferenceState(previous);

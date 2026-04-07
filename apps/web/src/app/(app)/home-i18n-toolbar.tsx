@@ -1,6 +1,6 @@
 'use client';
 
-import { ThemeSwitcher } from '@/shared/presentation';
+import { ShellModeSwitcher, ThemeSwitcher } from '@/shared/presentation';
 import { LocaleSwitcher } from '@/i18n/components/locale-switcher';
 
 export function HomeI18nToolbar() {
@@ -9,6 +9,7 @@ export function HomeI18nToolbar() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <LocaleSwitcher />
       </div>
+      <ShellModeSwitcher />
       <ThemeSwitcher />
     </div>
   );

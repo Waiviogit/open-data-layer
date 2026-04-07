@@ -663,10 +663,16 @@
 
 /* Shell mode presets — override structural tokens without component changes */
 [data-shell-mode='twitter'] {
-  --shell-left-width: 4.5rem;
+  --shell-left-width: 14rem;
   --shell-right-width: 20rem;
-  --spacing-card: 0;
+  --spacing-card: 0.5rem;
 }
+
+/* Shell mode visibility: swap components without JS */
+.shell-hide-twitter { display: block; }
+.shell-show-twitter { display: none; }
+[data-shell-mode='twitter'] .shell-hide-twitter { display: none; }
+[data-shell-mode='twitter'] .shell-show-twitter { display: block; }
 
 [data-shell-mode='instagram'] {
   --shell-left-width: 4rem;

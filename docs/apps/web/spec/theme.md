@@ -23,13 +23,13 @@ Theming uses **`data-theme` on `<html>`** as the single source of truth for appe
 | `apps/web/src/theme/get-user-theme-preference.ts`   | Stub until auth; returns `null`                                         |
 | `apps/web/src/theme/get-server-theme-resolution.ts` | Cookie + user + optional `Sec-CH-Prefers-Color-Scheme` → `resolveTheme` |
 | `apps/web/src/theme/theme-user-sync.ts`             | Optional `WEB_THEME_SYNC_URL` PATCH                                     |
+| `apps/web/src/theme/actions.ts`                     | `'use server'` — `setThemePreference` (validate, set cookie, optional sync) |
 | `apps/web/src/theme/theme-provider.tsx`             | Client provider + `matchMedia` for `system`                             |
 | `apps/web/src/theme/theme-script.tsx`               | Inline head script when preference is `system`                          |
 | `apps/web/src/theme/use-theme.ts`                   | `useTheme()` hook                                                       |
 | `apps/web/src/styles/theme.css`                     | `[data-theme='…']` design tokens (all dimensions)                       |
 | `apps/web/tailwind.config.js`                       | Maps tokens to Tailwind `extend` (colors, fonts, radius, shadow, etc.)    |
 | `apps/web/src/shared/presentation/components/theme-switcher.tsx` | UI (shows **preference**, not resolved OS theme) |
-| `apps/web/src/app/api/theme/route.ts`               | `PATCH` — validate body, set cookie, sync                               |
 
 ## Preference resolution
 

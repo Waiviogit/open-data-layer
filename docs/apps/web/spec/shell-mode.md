@@ -2,7 +2,7 @@
 
 **Back:** [web overview](overview.md) · **Related:** [layout system](layout-system.md), [theme](theme.md)
 
-Shell mode adjusts **structural** layout tokens (rail widths, card rhythm) via **`data-shell-mode` on `<html>`**, without changing components. It mirrors the theme stack: cookie, server resolution, client provider, API route, and optional UI switcher.
+Shell mode adjusts **structural** layout tokens (rail widths, card rhythm) via **`data-shell-mode` on `<html>`**, without changing components. It mirrors the theme stack: cookie, server resolution, client provider, **server action** for persistence, and optional UI switcher.
 
 ## Module layout
 
@@ -14,18 +14,18 @@ Shell mode adjusts **structural** layout tokens (rail widths, card rhythm) via *
 | `apps/web/src/shell-mode/shell-mode-cookie.constants.ts` | Cookie name `app_shell_mode`, Zod schema, max-age |
 | `apps/web/src/shell-mode/shell-mode-cookie.ts` | Server read/write for the cookie |
 | `apps/web/src/shell-mode/get-server-shell-mode-resolution.ts` | Cookie → `resolveShellMode()` |
-| `apps/web/src/shell-mode/shell-mode-provider.tsx` | Client: sync `dataset.shellMode`, `PATCH /api/shell-mode` |
+| `apps/web/src/shell-mode/actions.ts` | `'use server'` — `setShellModePreference` (validate, set cookie) |
+| `apps/web/src/shell-mode/shell-mode-provider.tsx` | Client: sync `dataset.shellMode`, call `setShellModePreference` |
 | `apps/web/src/shell-mode/use-shell-mode.ts` | `useShellMode()` hook |
-| `apps/web/src/styles/theme.css` | `[data-shell-mode='…']` token overrides |
+| `apps/web/src/styles/theme.css` | `[data-shell-mode='…']` token overrides + `.shell-hide-twitter` / `.shell-show-twitter` |
 | `apps/web/src/shared/presentation/components/shell-mode-switcher.tsx` | Button group |
-| `apps/web/src/app/api/shell-mode/route.ts` | `PATCH` — validate body, set cookie |
 
 ## Available modes
 
 | Mode | Effect (defaults; see `theme.css`) |
 | ---- | ----------------------------------- |
 | `default` | Base theme shell tokens (no extra block). |
-| `twitter` | Narrower left rail, wider right rail, tighter card gap. |
+| `twitter` | Wider right rail; `--spacing-card` slightly tighter than default. On **user profile** `(main)` routes, the same `UserMenu` appears **vertically** in the left rail; the hero’s horizontal menu is hidden via CSS (see below). |
 | `instagram` | Icon-style left rail, no right rail, small card gap. |
 | `compact` | Denser rails and card rhythm. |
 
@@ -33,7 +33,16 @@ Shell mode adjusts **structural** layout tokens (rail widths, card rhythm) via *
 
 1. **Server** — `getServerShellModeResolution()` reads the cookie; invalid values fall back to `default`.
 2. **SSR** — Root layout sets `data-shell-mode={resolvedMode}` on `<html>`.
-3. **Client** — `ShellModeProvider` keeps preference in sync and updates the cookie via `PATCH /api/shell-mode` when the user changes mode.
+3. **Client** — `ShellModeProvider` updates React state and calls **`setShellModePreference`** (server action) so the cookie matches the user’s choice. **`data-shell-mode` on `<html>` updates immediately** from client state, so layout does not wait for a full navigation.
+
+## Twitter profile: CSS visibility (no second menu)
+
+Profile shells render **both** the default left sidebar and the vertical `UserMenu` rail; visibility is toggled with classes defined in `theme.css`:
+
+- **`shell-hide-twitter`** — visible in non-Twitter modes; **`display: none`** when `[data-shell-mode='twitter']`.
+- **`shell-show-twitter`** — hidden by default; **`display: block`** when `[data-shell-mode='twitter']`.
+
+That keeps a **single** `UserMenu` implementation (horizontal in the hero vs vertical in the rail) and avoids server-only cookie reads for “which variant to mount,” so switching shell mode updates the UI without a refresh.
 
 ## Adding a new mode
 

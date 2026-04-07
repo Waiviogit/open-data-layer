@@ -11,6 +11,8 @@ export type { ImmersiveShellProps } from './shells/immersive-shell';
 
 export { StickyRegion } from './regions/sticky-region';
 export type { StickyRegionProps } from './regions/sticky-region';
+export { FixedRegion } from './regions/fixed-region';
+export type { FixedRegionProps } from './regions/fixed-region';
 export { HiddenBelow } from './regions/hidden-below';
 export type { HiddenBelowProps, HiddenBelowBreakpoint } from './regions/hidden-below';
 export { CollapsibleRegion } from './regions/collapsible-region';

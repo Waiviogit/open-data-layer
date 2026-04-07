@@ -28,7 +28,7 @@ export function UserHero(props: UserHeroProps) {
   return (
     <header className="overflow-hidden rounded-card border border-border bg-bg shadow-card">
       <UserHeader {...headerProps} />
-      <div className="px-gutter pb-3 sm:px-gutter-sm">
+      <div className="shell-hide-twitter px-gutter pb-3 sm:px-gutter-sm">
         <UserProfileNavContext.Provider value={navCtx}>
           <UserMenuClient
             accountName={headerProps.username}

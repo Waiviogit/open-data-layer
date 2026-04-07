@@ -11,10 +11,13 @@ import {
   isFeedSectionActive,
 } from './user-profile-subnav';
 
+export type UserMenuDirection = 'horizontal' | 'vertical';
+
 type UserMenuProps = {
   accountName: string;
   pathname: string;
   search: string;
+  direction?: UserMenuDirection;
 };
 
 const WALLET_TYPES = ['WAIV', 'HIVE', 'ENGINE', 'rebalancing'] as const;
@@ -61,7 +64,15 @@ function isActive(
   }
 }
 
-function navLinkClass(active: boolean) {
+function navLinkClass(active: boolean, vertical: boolean) {
+  if (vertical) {
+    return [
+      'flex w-full items-center rounded-btn px-3 py-2.5 text-sm font-medium transition-colors',
+      active
+        ? 'bg-surface text-fg'
+        : 'text-muted hover:bg-surface/80 hover:text-fg',
+    ].join(' ');
+  }
   return [
     'inline-flex items-center rounded-btn px-3 py-2 text-sm font-medium transition-colors',
     active
@@ -70,7 +81,15 @@ function navLinkClass(active: boolean) {
   ].join(' ');
 }
 
-function subNavLinkClass(active: boolean) {
+function subNavLinkClass(active: boolean, vertical: boolean) {
+  if (vertical) {
+    return [
+      'flex w-full items-center rounded-btn px-3 py-2 text-caption font-medium transition-colors pl-5',
+      active
+        ? 'bg-tertiary text-tertiary-fg'
+        : 'text-muted hover:bg-surface/80 hover:text-fg',
+    ].join(' ');
+  }
   return [
     'inline-flex items-center rounded-btn px-2.5 py-1.5 text-caption font-medium transition-colors',
     active
@@ -86,7 +105,12 @@ function getFeedSubActive(rest: string[], segment: 'posts' | string): boolean {
   return (rest[0] ?? '') === segment;
 }
 
-export function UserMenu({ accountName, pathname, search }: UserMenuProps) {
+export function UserMenu({
+  accountName,
+  pathname,
+  search,
+  direction = 'horizontal',
+}: UserMenuProps) {
   const { t } = useI18n();
   const rest = getSegmentsAfterAccount(pathname);
   const base = `/@${accountName}`;
@@ -157,17 +181,28 @@ export function UserMenu({ accountName, pathname, search }: UserMenuProps) {
       },
     ];
 
+  const isVertical = direction === 'vertical';
+  const primaryNavClass = isVertical
+    ? 'flex flex-col gap-0.5'
+    : 'flex flex-wrap gap-1 border-t border-border pt-3';
+  const subNavClass = isVertical
+    ? 'flex flex-col gap-0.5'
+    : 'mt-2 flex flex-wrap gap-1 border-t border-border pt-2';
+
   return (
-    <div className="space-y-0">
+    <div className={isVertical ? 'space-y-1' : 'space-y-0'}>
       <nav
-        className="flex flex-wrap gap-1 border-t border-border pt-3"
+        className={primaryNavClass}
         aria-label={t('user_profile_nav_aria')}
       >
         {items.map((item) => (
           <Link
             key={item.key}
             href={item.href}
-            className={[navLinkClass(item.active), item.mobileOnly ? 'lg:hidden' : '']
+            className={[
+              navLinkClass(item.active, isVertical),
+              !isVertical && item.mobileOnly ? 'lg:hidden' : '',
+            ]
               .filter(Boolean)
               .join(' ')}
             prefetch={false}
@@ -179,40 +214,40 @@ export function UserMenu({ accountName, pathname, search }: UserMenuProps) {
 
       {submenuVariant === 'feed' ? (
         <nav
-          className="mt-2 flex flex-wrap gap-1 border-t border-border pt-2"
+          className={subNavClass}
           aria-label={t('user_profile_submenu_feed_aria')}
         >
           <Link
             href={base}
-            className={subNavLinkClass(getFeedSubActive(rest, 'posts'))}
+            className={subNavLinkClass(getFeedSubActive(rest, 'posts'), isVertical)}
             prefetch={false}
           >
             {t('posts')}
           </Link>
           <Link
             href={`${base}/threads`}
-            className={subNavLinkClass(getFeedSubActive(rest, 'threads'))}
+            className={subNavLinkClass(getFeedSubActive(rest, 'threads'), isVertical)}
             prefetch={false}
           >
             {t('threads')}
           </Link>
           <Link
             href={`${base}/comments`}
-            className={subNavLinkClass(getFeedSubActive(rest, 'comments'))}
+            className={subNavLinkClass(getFeedSubActive(rest, 'comments'), isVertical)}
             prefetch={false}
           >
             {t('comments')}
           </Link>
           <Link
             href={`${base}/mentions`}
-            className={subNavLinkClass(getFeedSubActive(rest, 'mentions'))}
+            className={subNavLinkClass(getFeedSubActive(rest, 'mentions'), isVertical)}
             prefetch={false}
           >
             {t('mentions')}
           </Link>
           <Link
             href={`${base}/activity`}
-            className={subNavLinkClass(getFeedSubActive(rest, 'activity'))}
+            className={subNavLinkClass(getFeedSubActive(rest, 'activity'), isVertical)}
             prefetch={false}
           >
             {t('activity')}
@@ -222,7 +257,7 @@ export function UserMenu({ accountName, pathname, search }: UserMenuProps) {
 
       {submenuVariant === 'wallet' ? (
         <nav
-          className="mt-2 flex flex-wrap gap-1 border-t border-border pt-2"
+          className={subNavClass}
           aria-label={t('user_profile_submenu_wallet_aria')}
         >
           {WALLET_TYPES.map((type) => {
@@ -235,7 +270,7 @@ export function UserMenu({ accountName, pathname, search }: UserMenuProps) {
               <Link
                 key={type}
                 href={href}
-                className={subNavLinkClass(active)}
+                className={subNavLinkClass(active, isVertical)}
                 prefetch={false}
               >
                 {type === 'WAIV'
@@ -253,19 +288,19 @@ export function UserMenu({ accountName, pathname, search }: UserMenuProps) {
 
       {submenuVariant === 'followers' ? (
         <nav
-          className="mt-2 flex flex-wrap gap-1 border-t border-border pt-2"
+          className={subNavClass}
           aria-label={t('user_profile_submenu_followers_aria')}
         >
           <Link
             href={`${base}/followers`}
-            className={subNavLinkClass((rest[0] ?? '') === 'followers')}
+            className={subNavLinkClass((rest[0] ?? '') === 'followers', isVertical)}
             prefetch={false}
           >
             {t('followers')}
           </Link>
           <Link
             href={`${base}/following`}
-            className={subNavLinkClass((rest[0] ?? '') === 'following')}
+            className={subNavLinkClass((rest[0] ?? '') === 'following', isVertical)}
             prefetch={false}
           >
             {t('following')}
@@ -274,6 +309,7 @@ export function UserMenu({ accountName, pathname, search }: UserMenuProps) {
             href={`${base}/following-objects`}
             className={subNavLinkClass(
               (rest[0] ?? '') === 'following-objects',
+              isVertical,
             )}
             prefetch={false}
           >
@@ -284,13 +320,14 @@ export function UserMenu({ accountName, pathname, search }: UserMenuProps) {
 
       {submenuVariant === 'expertise' ? (
         <nav
-          className="mt-2 flex flex-wrap gap-1 border-t border-border pt-2"
+          className={subNavClass}
           aria-label={t('user_profile_submenu_expertise_aria')}
         >
           <Link
             href={`${base}/expertise-hashtags`}
             className={subNavLinkClass(
               (rest[0] ?? '') === 'expertise-hashtags',
+              isVertical,
             )}
             prefetch={false}
           >
@@ -300,6 +337,7 @@ export function UserMenu({ accountName, pathname, search }: UserMenuProps) {
             href={`${base}/expertise-objects`}
             className={subNavLinkClass(
               (rest[0] ?? '') === 'expertise-objects',
+              isVertical,
             )}
             prefetch={false}
           >

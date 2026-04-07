@@ -9,6 +9,7 @@ import {
   useState,
 } from 'react';
 
+import { setShellModePreference } from './actions';
 import type { ShellModeId, ShellModePreference, ShellModeResolution } from './types';
 
 type ShellModeContextValue = {
@@ -46,11 +47,7 @@ export function ShellModeProvider({
     setPreferenceState(next);
     setResolvedMode(next);
 
-    const res = await fetch('/api/shell-mode', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ preference: next }),
-    });
+    const res = await setShellModePreference(next);
 
     if (!res.ok) {
       setPreferenceState(previous);
