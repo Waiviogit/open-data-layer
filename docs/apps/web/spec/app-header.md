@@ -12,13 +12,17 @@ Global chrome for the `(app)` route group: brand link, search field with debounc
 |------|----------|
 | Brand | Link to `/`; on small screens hidden while mobile search is expanded. |
 | Search | `lg+`: always visible. Below `lg`: expand/collapse via toggle; when expanded, session actions are hidden on mobile only (desktop actions stay visible). |
-| Actions | `HeaderActions`: `LoginDialog` + `LocaleSwitcher` when logged out; profile (`/user-profile/:name`) + logout when logged in. |
+| Actions | `HeaderActions`: `LoginDialog` + `LocaleSwitcher` when logged out; profile (`/@:name`) + logout when logged in. |
 
 Sticky bar: `sticky top-0 z-40`, `min-h-shell-header`, nav tokens (`bg-nav-bg`, `border-border`, `backdrop-filter: var(--backdrop-nav)`).
 
 ## Session
 
 `createCookieAuthContextProvider().getUser()` in the `(app)` layout passes `{ username }` or `null` into the header. No global client auth context.
+
+## Profile link
+
+The profile control uses the public path `/@:name`. [`next.config.js` `rewrites`](../../../../apps/web/next.config.js) map `/@:account` and `/@:account/:path*` to `/user-profile/...`; the address bar stays `/@…`.
 
 ## Shell mode
 

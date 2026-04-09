@@ -56,7 +56,7 @@ export function HeaderActions({ user }: HeaderActionsProps) {
   return (
     <div className="flex shrink-0 items-center gap-2">
       <Link
-        href={`/user-profile/${encodeURIComponent(user.username)}`}
+        href={`/@${encodeURIComponent(user.username)}`}
         className="rounded-btn px-2 py-1.5 font-label text-body-sm text-link hover:underline"
       >
         {t('my_profile')}

@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { WALLET_PROVIDERS } from '../../domain/wallet-providers';
 import type { WalletProviderId } from '../../domain/types';
@@ -28,9 +29,10 @@ export function LoginDialog({ open, onClose }: LoginDialogProps) {
     return null;
   }
 
-  return (
+  /** Portaled to `document.body` so `position: fixed` is not trapped by ancestors with `backdrop-filter` / transforms (e.g. app header). */
+  const dialog = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-overlay p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="login-dialog-title"
@@ -70,4 +72,10 @@ export function LoginDialog({ open, onClose }: LoginDialogProps) {
       </div>
     </div>
   );
+
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  return createPortal(dialog, document.body);
 }
