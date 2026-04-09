@@ -20,6 +20,16 @@ Canonical public URLs use **`/@account/permlink`** (`next.config.js` rewrites th
 
 `BlogPostScreen` accepts `variant="modal" | "page"`. Tagged objects appear **below** the HTML body (section title `feed_post_tagged_objects`), then NSFW notice if any, then the stats footer (votes, comments, payout, overflow).
 
+## Post body HTML
+
+Server-side `sanitizePostHtml` (`apps/web/src/shared/infrastructure/sanitize-post-html.ts`) prepares the body for `dangerouslySetInnerHTML`:
+
+- If the raw body already looks like HTML (block/inline tags such as `p`, `a`, `img`, …), it is **sanitized only** (no markdown).
+- Otherwise the body is treated as markdown/plain text and passed through **`marked`** (`gfm`, `breaks`), then sanitized.
+- Standalone **YouTube** watch / `youtu.be` URLs are replaced with an embed iframe inside `.blog-post-youtube-embed` (styles in `apps/web/src/app/global.css`).
+
+Feed story cards still use `Story` for previews; full post views do **not** show a separate hero video above the body — video appears inline from the body content.
+
 ## Related files
 
 - Article page (hard nav): `apps/web/src/app/(app)/user-profile/[name]/(article)/[permlink]/page.tsx`

@@ -114,6 +114,8 @@
   --container-max: 75rem;
   --container-content: 48rem;
   --container-narrow: 32rem;
+  /* Full post modal + article column (matches post modal shell row cap) */
+  --container-post: 53.75rem;
   --shell-header-height: 3.5rem;
   --shell-left-width: 14rem;
   --shell-right-width: 14rem;
@@ -225,6 +227,8 @@
   --container-max: 75rem;
   --container-content: 48rem;
   --container-narrow: 32rem;
+  /* Full post modal + article column (matches post modal shell row cap) */
+  --container-post: 53.75rem;
   --shell-header-height: 3.5rem;
   --shell-left-width: 14rem;
   --shell-right-width: 14rem;
@@ -336,6 +340,8 @@
   --container-max: 75rem;
   --container-content: 48rem;
   --container-narrow: 32rem;
+  /* Full post modal + article column (matches post modal shell row cap) */
+  --container-post: 53.75rem;
   --shell-header-height: 3.5rem;
   --shell-left-width: 14rem;
   --shell-right-width: 14rem;
@@ -442,6 +448,8 @@
   --container-max: 61.25rem;
   --container-content: 48rem;
   --container-narrow: 32rem;
+  /* Full post modal + article column (matches post modal shell row cap) */
+  --container-post: 53.75rem;
   --shell-header-height: 3.5rem;
   --shell-left-width: 14rem;
   --shell-right-width: 14rem;
@@ -550,6 +558,8 @@
   --container-max: 70rem;
   --container-content: 48rem;
   --container-narrow: 32rem;
+  /* Full post modal + article column (matches post modal shell row cap) */
+  --container-post: 53.75rem;
   --shell-header-height: 3.5rem;
   --shell-left-width: 14rem;
   --shell-right-width: 14rem;
@@ -655,6 +665,8 @@
   --container-max: 75rem;
   --container-content: 48rem;
   --container-narrow: 32rem;
+  /* Full post modal + article column (matches post modal shell row cap) */
+  --container-post: 53.75rem;
   --shell-header-height: 3.5rem;
   --shell-left-width: 14rem;
   --shell-right-width: 14rem;

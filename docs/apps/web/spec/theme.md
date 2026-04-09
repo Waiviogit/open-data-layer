@@ -183,6 +183,7 @@ Prefer `shadow-card` over `shadow-sm` and `shadow-card-float` over `shadow-lg` s
 | `--container-max` | `max-w-container-page` | Max page / dashboard width |
 | `--container-content` | `max-w-container-content` | Prose / reading column width |
 | `--container-narrow` | `max-w-container-narrow` | Forms, focused single-column layouts |
+| `--container-post` | `max-w-container-post` | Full post article + post modal content row width (~860px) |
 | `--shell-header-height` | `min-h-shell-header`, `h-shell-header`, `top-shell-header` | App header / sticky offset |
 | `--shell-left-width` | `w-shell-left`, `min-w-shell-left` | Left rail / drawer width |
 | `--shell-right-width` | `w-shell-right`, `min-w-shell-right` | Right rail width |

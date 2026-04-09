@@ -154,6 +154,7 @@ module.exports = {
         'container-page': 'var(--container-max)',
         'container-content': 'var(--container-content)',
         'container-narrow': 'var(--container-narrow)',
+        'container-post': 'var(--container-post)',
       },
       spacing: {
         'section-y-sm': 'var(--spacing-section-y-sm)',

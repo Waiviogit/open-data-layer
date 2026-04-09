@@ -114,7 +114,7 @@ export function PostInterceptModalShell({ children }: PostInterceptModalShellPro
           Inner: card + pills sit side-by-side, centered as a unit.
           max-w caps the total width; on smaller screens the pills collapse.
         */}
-        <div className="flex w-full max-w-[860px] items-start gap-3">
+        <div className="flex w-full max-w-container-post items-start gap-3">
           {/* Modal card */}
           <div
             role="dialog"

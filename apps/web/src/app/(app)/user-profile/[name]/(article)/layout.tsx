@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
  */
 export default function ArticleGroupLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="mx-auto w-full max-w-container-narrow px-gutter py-section-y-sm sm:px-gutter-sm">
+    <div className="mx-auto w-full max-w-container-post px-6 py-section-y-sm sm:px-8">
       {children}
     </div>
   );

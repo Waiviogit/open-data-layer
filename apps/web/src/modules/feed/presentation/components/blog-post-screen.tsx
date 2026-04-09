@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AVATAR_PLACEHOLDER_SRC, UserAvatar } from '@/shared/presentation';
@@ -82,25 +82,6 @@ function IconReblog({ className }: { className?: string }) {
       <path d="M7 23l-4-4 4-4" />
       <path d="M21 13v2a4 4 0 0 1-4 4H3" />
     </svg>
-  );
-}
-
-function IconPlay() {
-  return (
-    <span
-      className="inline-flex items-center justify-center rounded-circle bg-overlay/80 p-3 shadow-card"
-      aria-hidden
-    >
-      <svg
-        width="28"
-        height="28"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        className="ml-0.5 text-white drop-shadow-lg"
-      >
-        <path d="M8 5v14l11-7L8 5z" />
-      </svg>
-    </span>
   );
 }
 
@@ -187,7 +168,6 @@ export function BlogPostScreen({
   bodyHtmlSafe,
   currentUsername,
 }: BlogPostScreenProps) {
-  const [videoPlaying, setVideoPlaying] = useState(false);
   const { locale } = useI18n();
   const displayAuthor = story.authorDisplayName ?? story.authorName;
   const displayTimeIso = story.feedAt ?? story.createdAt;
@@ -199,8 +179,6 @@ export function BlogPostScreen({
       : null;
   const payoutLabel = formatPayoutDisplay(story.pendingPayout, story.totalPayout);
   const taggedObjects = story.objects ?? [];
-  const previewMediaUrl = story.videoThumbnailUrl ?? story.thumbnailUrl;
-  const canPlayInline = Boolean(story.videoEmbedUrl);
   const isOwnPost = viewerIsAuthor(currentUsername, story.authorName);
   const editorSearch = new URLSearchParams({
     author: story.authorName,
@@ -287,51 +265,7 @@ export function BlogPostScreen({
           ) : null}
         </header>
 
-        {/* Video / thumbnail */}
-        {previewMediaUrl ? (
-          <div className={`relative w-full overflow-hidden rounded-md border border-border bg-surface-control ${isModal ? 'mt-5 aspect-video' : 'mt-4 aspect-video max-h-[260px] min-h-[180px]'}`}>
-            {videoPlaying && story.videoEmbedUrl ? (
-              <>
-                <iframe
-                  title={story.title ? `${story.title} — video` : 'Embedded video'}
-                  src={story.videoEmbedUrl}
-                  className="h-full w-full min-h-[180px] border-0 bg-black"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
-                <button
-                  type="button"
-                  className="absolute right-2 top-2 rounded-md bg-overlay/90 px-2 py-1 text-caption font-medium text-fg shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                  onClick={() => setVideoPlaying(false)}
-                >
-                  Close
-                </button>
-              </>
-            ) : (
-              <>
-                <Image
-                  src={previewMediaUrl}
-                  alt=""
-                  fill
-                  sizes="(max-width: 640px) 100vw, 700px"
-                  className="object-cover"
-                />
-                {canPlayInline ? (
-                  <button
-                    type="button"
-                    className="absolute inset-0 flex items-center justify-center transition-opacity hover:opacity-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                    onClick={() => setVideoPlaying(true)}
-                    aria-label="Play video"
-                  >
-                    <IconPlay />
-                  </button>
-                ) : null}
-              </>
-            )}
-          </div>
-        ) : null}
-
-        {/* Body */}
+        {/* Body — video/thumbnails for full post come from sanitized HTML (YouTube URLs → embeds). Feed cards use Story. */}
         <div
           className={[
             'blog-post-body min-w-0 text-fg leading-body',
