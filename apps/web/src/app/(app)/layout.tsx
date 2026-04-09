@@ -1,3 +1,4 @@
+import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 import {
   AppHeader,
   AppShell,
@@ -5,15 +6,19 @@ import {
   LayoutProvider,
 } from '@/shared/presentation/layout';
 
-export default function AppRouteGroupLayout({
+export default async function AppRouteGroupLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const auth = createCookieAuthContextProvider();
+  const current = await auth.getUser();
+  const headerUser = current ? { username: current.username } : null;
+
   return (
     <LayoutProvider>
       <AppShell
-        header={<AppHeader />}
+        header={<AppHeader user={headerUser} />}
         bottomNav={<BottomNav />}
         className="py-section-y-sm"
       >

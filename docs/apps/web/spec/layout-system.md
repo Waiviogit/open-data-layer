@@ -19,7 +19,7 @@ This spec describes **structural** layout only (zones, breakpoints, scroll/stick
 | `apps/web/src/shared/presentation/layout/` | Barrel exports: shells, regions, arrangements, `LayoutProvider`, `BREAKPOINTS` |
 | `apps/web/src/shell-mode/` | Shell mode types, cookie, resolution, `ShellModeProvider` (see [shell-mode.md](shell-mode.md)) |
 | `apps/web/src/app/(app)/dev/showcase/page.tsx` | Dev **showcase** — layout primitives, switchers, token sampler (`/dev/showcase`) |
-| `apps/web/src/app/(app)/layout.tsx` | `LayoutProvider` + `AppShell` + placeholder `AppHeader` / `BottomNav` |
+| `apps/web/src/app/(app)/layout.tsx` | `LayoutProvider` + `AppShell` + [`AppHeader`](app-header.md) / `BottomNav` |
 | `apps/web/src/app/(public)/layout.tsx` | `PublicShell` — centered narrow column |
 | `apps/web/src/app/(immersive)/layout.tsx` | `ImmersiveShell` — fullscreen, no chrome |
 | `apps/web/src/app/(app)/user-profile/[name]/layout.tsx` | Profile hero + `children` (no grid; grid lives in nested layouts) |
