@@ -10,9 +10,18 @@ import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { AutoLinkPlugin } from '@lexical/react/LexicalAutoLinkPlugin';
+import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
-import { LineBreakNode, ParagraphNode, TextNode } from 'lexical';
-import { useMemo } from 'react';
+import {
+  $createParagraphNode,
+  $createTextNode,
+  $getRoot,
+  LineBreakNode,
+  ParagraphNode,
+  TextNode,
+} from 'lexical';
+import { useEffect, useMemo, useRef } from 'react';
 
 import { EditorInsertCaretOverlay } from './editor-insert-menu';
 
@@ -56,6 +65,35 @@ function Placeholder({ text }: { text: string }) {
   );
 }
 
+function InitialPlainTextPlugin({ text }: { text: string }) {
+  const [editor] = useLexicalComposerContext();
+  const applied = useRef(false);
+
+  useEffect(() => {
+    if (applied.current) {
+      return;
+    }
+    const trimmed = text.trim();
+    if (!trimmed) {
+      applied.current = true;
+      return;
+    }
+    applied.current = true;
+    editor.update(() => {
+      const root = $getRoot();
+      root.clear();
+      const lines = trimmed.split('\n');
+      for (const line of lines) {
+        const p = $createParagraphNode();
+        p.append($createTextNode(line));
+        root.append(p);
+      }
+    });
+  }, [editor, text]);
+
+  return null;
+}
+
 function LexicalAutoLinkConfigured() {
   const matchers = useMemo(
     () => [createLinkMatcherWithRegExp(URL_REG_EXP, (text) => text)],
@@ -64,9 +102,36 @@ function LexicalAutoLinkConfigured() {
   return <AutoLinkPlugin matchers={matchers} />;
 }
 
-function EditorInner({ bodyPlaceholder }: { bodyPlaceholder: string }) {
+function PlainTextOnChangePlugin({
+  onPlainTextChange,
+}: {
+  onPlainTextChange?: (text: string) => void;
+}) {
+  return (
+    <OnChangePlugin
+      ignoreSelectionChange
+      onChange={(editorState) => {
+        editorState.read(() => {
+          onPlainTextChange?.($getRoot().getTextContent());
+        });
+      }}
+    />
+  );
+}
+
+function EditorInner({
+  bodyPlaceholder,
+  initialPlainText,
+  onPlainTextChange,
+}: {
+  bodyPlaceholder: string;
+  initialPlainText?: string;
+  onPlainTextChange?: (text: string) => void;
+}) {
   return (
     <>
+      {initialPlainText ? <InitialPlainTextPlugin text={initialPlainText} /> : null}
+      <PlainTextOnChangePlugin onPlainTextChange={onPlainTextChange} />
       <RichTextPlugin
         contentEditable={
           <ContentEditable
@@ -89,9 +154,17 @@ function EditorInner({ bodyPlaceholder }: { bodyPlaceholder: string }) {
 
 export type LexicalEditorProps = {
   bodyPlaceholder: string;
+  /** One-time plain-text seed (e.g. draft body from query-api). */
+  initialPlainText?: string;
+  /** Fired when plain-text content changes (for autosave). */
+  onPlainTextChange?: (text: string) => void;
 };
 
-export function LexicalPostEditor({ bodyPlaceholder }: LexicalEditorProps) {
+export function LexicalPostEditor({
+  bodyPlaceholder,
+  initialPlainText,
+  onPlainTextChange,
+}: LexicalEditorProps) {
   const initialConfig = useMemo(
     () => ({
       namespace: 'PostEditor',
@@ -117,7 +190,11 @@ export function LexicalPostEditor({ bodyPlaceholder }: LexicalEditorProps) {
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <div className="relative w-full min-h-[12rem] overflow-visible rounded-card border border-border bg-surface shadow-card">
-        <EditorInner bodyPlaceholder={bodyPlaceholder} />
+        <EditorInner
+          bodyPlaceholder={bodyPlaceholder}
+          initialPlainText={initialPlainText}
+          onPlainTextChange={onPlainTextChange}
+        />
         <EditorInsertCaretOverlay />
       </div>
     </LexicalComposer>

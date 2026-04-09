@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   useEffect,
   useId,
@@ -94,9 +94,19 @@ export type LoggedInHeaderActionsProps = {
   user: AppHeaderUser;
 };
 
+function menuNavLinkClassName(active: boolean): string {
+  return [
+    'app-header-menu-feed-link',
+    active ? 'text-heading font-weight-label' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
 export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
   const { t } = useI18n();
   const router = useRouter();
+  const pathname = usePathname();
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -105,6 +115,9 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
   const [logoutPending, setLogoutPending] = useState(false);
 
   const feedHref = `/@${encodeURIComponent(user.username)}`;
+  const profileAboutHref = `/@${encodeURIComponent(user.username)}/about`;
+  const profileMainPath = `/user-profile/${user.username}`;
+  const profileAboutPath = `/user-profile/${user.username}/about`;
   const comingSoon = t('app_header_coming_soon');
 
   useEffect(() => {
@@ -211,7 +224,8 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
             <Link
               href={feedHref}
               role="menuitem"
-              className="app-header-menu-feed-link"
+              aria-current={pathname === profileMainPath ? 'page' : undefined}
+              className={menuNavLinkClassName(pathname === profileMainPath)}
               onClick={() => setMenuOpen(false)}
               suppressHydrationWarning
             >
@@ -219,10 +233,37 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
             </Link>
             <MenuRowDisabled title={comingSoon}>{t('earn')}</MenuRowDisabled>
             <MenuRowDisabled title={comingSoon}>{t('tools')}</MenuRowDisabled>
-            <MenuRowDisabled title={comingSoon}>{t('drafts')}</MenuRowDisabled>
-            <MenuRowDisabled title={comingSoon}>{t('my_profile')}</MenuRowDisabled>
+            <Link
+              href="/drafts"
+              role="menuitem"
+              aria-current={pathname === '/drafts' ? 'page' : undefined}
+              className={menuNavLinkClassName(pathname === '/drafts')}
+              onClick={() => setMenuOpen(false)}
+              suppressHydrationWarning
+            >
+              {t('drafts')}
+            </Link>
+            <Link
+              href={profileAboutHref}
+              role="menuitem"
+              aria-current={pathname === profileAboutPath ? 'page' : undefined}
+              className={menuNavLinkClassName(pathname === profileAboutPath)}
+              onClick={() => setMenuOpen(false)}
+              suppressHydrationWarning
+            >
+              {t('my_profile')}
+            </Link>
             <MenuRowDisabled title={comingSoon}>{t('wallet')}</MenuRowDisabled>
-            <MenuRowDisabled title={comingSoon}>{t('settings')}</MenuRowDisabled>
+            <Link
+              href="/settings"
+              role="menuitem"
+              aria-current={pathname === '/settings' ? 'page' : undefined}
+              className={menuNavLinkClassName(pathname === '/settings')}
+              onClick={() => setMenuOpen(false)}
+              suppressHydrationWarning
+            >
+              {t('settings')}
+            </Link>
             <button
               type="button"
               role="menuitem"

@@ -14,12 +14,14 @@ type BlogFeedPostsListProps = {
   accountName: string;
   initialPage: UserBlogFeedPage;
   feedTab: FeedTab;
+  currentUsername: string | null;
 };
 
 export function BlogFeedPostsList({
   accountName,
   initialPage,
   feedTab,
+  currentUsername,
 }: BlogFeedPostsListProps) {
   const { resolvedMode } = useShellMode();
   const [items, setItems] = useState(initialPage.items);
@@ -48,7 +50,7 @@ export function BlogFeedPostsList({
       {useInstagramGrid ? (
         <FeedPostGrid items={items} />
       ) : (
-        <FeedList items={items} feedTab={feedTab} />
+        <FeedList items={items} feedTab={feedTab} currentUsername={currentUsername} />
       )}
       {hasMore ? (
         <div className="flex justify-center">

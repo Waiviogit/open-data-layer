@@ -16,10 +16,12 @@ import {
   formatPayoutDisplay,
   formatRelativeFeedTime,
 } from './story-utils';
+import { StoryOverflowMenu } from './story-overflow-menu';
 
 type StoryProps = {
   story: FeedStoryView;
   feedTab?: FeedTab;
+  currentUsername: string | null;
 };
 
 function formatVoteSummary(totalCount: number, previewVoters: string[]): string | null {
@@ -113,23 +115,6 @@ function IconReblog({ className }: { className?: string }) {
   );
 }
 
-function IconMore({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden
-    >
-      <circle cx="5" cy="12" r="2" />
-      <circle cx="12" cy="12" r="2" />
-      <circle cx="19" cy="12" r="2" />
-    </svg>
-  );
-}
-
 function IconPlay() {
   return (
     <span
@@ -172,7 +157,17 @@ function StatButton({ icon, count, label, title }: StatButtonProps) {
   );
 }
 
-export function Story({ story, feedTab }: StoryProps) {
+function viewerIsAuthor(
+  viewer: string | null,
+  author: string,
+): boolean {
+  if (viewer == null || viewer === '') {
+    return false;
+  }
+  return viewer.trim().toLowerCase() === author.trim().toLowerCase();
+}
+
+export function Story({ story, feedTab, currentUsername }: StoryProps) {
   const [videoPlaying, setVideoPlaying] = useState(false);
   const { locale } = useI18n();
   const displayAuthor = story.authorDisplayName ?? story.authorName;
@@ -190,6 +185,12 @@ export function Story({ story, feedTab }: StoryProps) {
       : [];
   const previewMediaUrl = story.videoThumbnailUrl ?? story.thumbnailUrl;
   const canPlayInline = Boolean(story.videoEmbedUrl);
+  const isOwnPost = viewerIsAuthor(currentUsername, story.authorName);
+  const editorSearch = new URLSearchParams({
+    author: story.authorName,
+    permlink: story.permlink,
+  });
+  const editHref = `/editor?${editorSearch.toString()}`;
 
   return (
     <article
@@ -355,14 +356,12 @@ export function Story({ story, feedTab }: StoryProps) {
             label="Comments"
           />
           <StatButton icon={<IconReblog />} count={undefined} label="Reblog" />
-          <button
-            type="button"
-            className="inline-flex items-center rounded-md px-1 py-1 text-caption text-muted transition-colors hover:bg-surface-control focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-            disabled
-            aria-label="More"
-          >
-            <IconMore />
-          </button>
+          <StoryOverflowMenu
+            authorName={story.authorName}
+            editHref={editHref}
+            currentUsername={currentUsername}
+            isOwnPost={isOwnPost}
+          />
         </div>
         {payoutLabel ? (
           <span className="text-body-sm font-semibold tabular-nums text-accent">{payoutLabel}</span>

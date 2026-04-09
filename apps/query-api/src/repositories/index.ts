@@ -8,3 +8,4 @@ export { ObjectAuthorityRepository } from './object-authority.repository';
 export { AggregatedObjectRepository } from './aggregated-object.repository';
 export { PostsRepository } from './posts.repository';
 export type { FeedBranchRow, PostVoteSummary } from './posts.repository';
+export { UserPostDraftsRepository } from './user-post-drafts.repository';

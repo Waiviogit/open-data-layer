@@ -9,6 +9,8 @@ export const queryApiConfigSchema = z.object({
   POSTGRES_PASSWORD: z.string().optional(),
   POSTGRES_POOL_MAX: z.coerce.number().optional().default(10),
   GOVERNANCE_OBJECT_ID: z.string().optional().default(''),
+  /** Must match auth-api JWT_SECRET for access token verification. */
+  JWT_SECRET: z.string().min(1),
 });
 
 export type QueryApiConfig = z.infer<typeof queryApiConfigSchema>;

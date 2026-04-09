@@ -19,6 +19,12 @@ import type {
 type JsonPrimitive = string | number | boolean | null;
 export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
 
+/** Hive post beneficiary: `{ account: string; weight: number }`. */
+export interface HiveBeneficiary {
+  account: string;
+  weight: number;
+}
+
 export interface OdlDatabase {
   objects_core: ObjectsCoreTable;
   object_updates: ObjectUpdatesTable;
@@ -39,6 +45,7 @@ export interface OdlDatabase {
   post_languages: PostLanguagesTable;
   post_links: PostLinksTable;
   post_mentions: PostMentionsTable;
+  user_post_drafts: UserPostDraftsTable;
 }
 
 // ---------------------------------------------------------------------------
@@ -330,7 +337,7 @@ export interface PostsTable {
   allow_votes: boolean | null;
   allow_curation_rewards: boolean | null;
   /** Hive beneficiaries; small array stored inline. */
-  beneficiaries: ColumnType<JsonValue, JsonValue | undefined, JsonValue>;
+  beneficiaries: ColumnType<HiveBeneficiary[], HiveBeneficiary[] | undefined, HiveBeneficiary[]>;
   url: string | null;
   pending_payout_value: string;
   total_pending_payout_value: string;
@@ -442,3 +449,24 @@ export interface PostMentionsTable {
 export type PostMention = Selectable<PostMentionsTable>;
 export type NewPostMention = Insertable<PostMentionsTable>;
 export type PostMentionUpdate = Updateable<PostMentionsTable>;
+
+// ---------------------------------------------------------------------------
+// user_post_drafts
+// ---------------------------------------------------------------------------
+
+export interface UserPostDraftsTable {
+  author: string;
+  draft_id: string;
+  title: string;
+  body: string;
+  json_metadata: ColumnType<JsonValue, JsonValue | undefined, JsonValue>;
+  parent_author: string;
+  parent_permlink: string;
+  permlink: string | null;
+  beneficiaries: ColumnType<HiveBeneficiary[], HiveBeneficiary[] | undefined, HiveBeneficiary[]>;
+  last_updated: number;
+}
+
+export type UserPostDraft = Selectable<UserPostDraftsTable>;
+export type NewUserPostDraft = Insertable<UserPostDraftsTable>;
+export type UserPostDraftUpdate = Updateable<UserPostDraftsTable>;

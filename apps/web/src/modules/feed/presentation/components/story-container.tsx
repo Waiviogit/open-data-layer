@@ -5,11 +5,12 @@ import { Story } from './story';
 export type StoryContainerProps = {
   story: FeedStoryView;
   feedTab?: FeedTab;
+  currentUsername: string | null;
 };
 
 /**
  * Thin container: maps feed context onto {@link Story}. No client store — data comes from the server.
  */
-export function StoryContainer({ story, feedTab }: StoryContainerProps) {
-  return <Story story={story} feedTab={feedTab} />;
+export function StoryContainer({ story, feedTab, currentUsername }: StoryContainerProps) {
+  return <Story story={story} feedTab={feedTab} currentUsername={currentUsername} />;
 }

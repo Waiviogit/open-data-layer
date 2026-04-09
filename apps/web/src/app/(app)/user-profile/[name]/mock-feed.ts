@@ -20,6 +20,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
         {
           id: 'mock-post-1',
           authorName: 'demo',
+          permlink: 'mock-post-1',
           authorDisplayName: 'Demo',
           authorAvatarUrl:
             'https://images.hive.blog/u/demo/avatar/small',
@@ -33,6 +34,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
         {
           id: 'mock-post-2',
           authorName: 'alice',
+          permlink: 'mock-post-2',
           authorDisplayName: 'Alice',
           createdAt: t2,
           title: 'Second mock row (another author)',
@@ -45,6 +47,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
         {
           id: 'mock-thread-1',
           authorName: 'demo',
+          permlink: 'mock-thread-1',
           createdAt: t1,
           title: 'Mock thread root',
           excerpt: 'Threads tab mock — conversation preview text goes here.',
@@ -56,6 +59,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
         {
           id: 'mock-comment-1',
           authorName: 'demo',
+          permlink: 'mock-comment-1',
           createdAt: t2,
           title: 'Re: Mock thread root',
           excerpt: 'Comments tab mock — excerpt of the reply body.',
@@ -67,6 +71,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
         {
           id: 'mock-mention-1',
           authorName: 'bob',
+          permlink: 'mock-mention-1',
           authorDisplayName: 'Bob',
           createdAt: t1,
           title: 'Post mentioning @demo',
@@ -79,6 +84,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
         {
           id: 'mock-activity-1',
           authorName: 'demo',
+          permlink: 'mock-activity-1',
           createdAt: t2,
           title: 'Vote on a post',
           excerpt: 'Activity tab mock — e.g. vote, follow, or transfer event summary.',
@@ -87,6 +93,7 @@ export function getMockFeedItems(accountName: string, tab: FeedTab): FeedStoryVi
         {
           id: 'mock-activity-2',
           authorName: 'demo',
+          permlink: 'mock-activity-2',
           createdAt: t1,
           title: 'Started following @alice',
           excerpt: 'Second activity row for layout check.',

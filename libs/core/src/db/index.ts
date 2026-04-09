@@ -1,5 +1,6 @@
 export type {
   JsonValue,
+  HiveBeneficiary,
   AccountCurrent,
   AccountCurrentUpdate,
   NewAccountCurrent,
@@ -57,5 +58,8 @@ export type {
   PostMention,
   PostMentionUpdate,
   NewPostMention,
+  UserPostDraft,
+  UserPostDraftUpdate,
+  NewUserPostDraft,
 } from './odl/tables';
 export type { OdlDatabase } from './odl/database';

@@ -27,6 +27,8 @@ The **web** application is the Next.js **App Router** frontend for the Open Data
 | [shell-mode.md](shell-mode.md) | Shell mode preference, `data-shell-mode`, structural token overrides |
 | [images.md](images.md) | `next/image` usage, `remotePatterns`, `sizes`, `priority`, UGC |
 | [components/story-container.md](components/story-container.md) | Feed row (`StoryContainer` / `Story`), DTO, demo mocks |
+| [components/story-overflow-menu.md](components/story-overflow-menu.md) | ⋯ menu on story cards, edit → editor + draft load |
+| [editor-drafts.md](editor-drafts.md) | Editor sidebar (last drafts), autosave, `/drafts` bulk delete |
 | [components/avatar.md](components/avatar.md) | Shared `UserAvatar`, `resolveAvatarUrl` (profile + feed) |
 | [pages/index.md](pages/index.md) | Page-level specs directory (user profile, ...) |
 | [pages/user-profile/data-loading.md](pages/user-profile/data-loading.md) | Shell profile fetch (query-api, `QUERY_API_URL`) |

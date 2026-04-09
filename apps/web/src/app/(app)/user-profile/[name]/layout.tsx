@@ -1,7 +1,5 @@
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-
-import { HomeI18nToolbar } from '@/app/(app)/home-i18n-toolbar';
 import { getUserProfileQuery, UserProfileHeroClient } from '@/modules/user-profile';
 
 const ACCOUNT_NAME_RE = /^[a-zA-Z0-9.-]{3,32}$/;
@@ -24,7 +22,6 @@ export default async function UserProfileLayout({
   }
   return (
     <Suspense fallback={null}>
-      <HomeI18nToolbar />
       <UserProfileHeroClient accountName={decoded} initialUser={profile} />
       {children}
     </Suspense>

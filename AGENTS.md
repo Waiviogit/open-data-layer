@@ -137,6 +137,12 @@ Shell mode (`data-shell-mode` on `<html>`) adjusts structural tokens and optiona
 
 - Use **`next/image`** for user-facing raster content (avatars, feed thumbnails, covers). Use inline SVG or `<img>` for icons and decorative graphics. Markdown/HTML body images may stay plain `<img>` with `loading="lazy"`. Spec: [`docs/apps/web/spec/images.md`](docs/apps/web/spec/images.md).
 
+### Web app (`apps/web`) — React hydration
+
+- **SSR + client components:** The server HTML for a Client Component’s first paint must match what React computes on the client before effects run. Avoid **non-deterministic** output in that tree: `Date.now()`, `Math.random()`, locale/time formatting that differs between server and client (e.g. `Intl.RelativeTimeFormat` / “3 minutes ago” at hydration time), or branching on `typeof window`.
+- **Relative times:** Prefer a stable placeholder until `useEffect` (then set formatted text), pass a string from an RSC parent, or use a small helper like `HydrationSafeRelativeTime` in the editor module. Do not call `formatDraftRelativeTime` (or similar) directly in the initial render of a hydrated subtree.
+- **Browser extensions:** Password managers and similar tools may inject attributes on `<a>` (e.g. extra `class` values) before React hydrates, causing attribute mismatches on `next/link`. For purely navigational links where this is expected, **`suppressHydrationWarning`** on the `Link` is acceptable. Do not use it to hide real bugs in app code.
+
 ### Web app (`apps/web`) — Architecture
 
 Feature code follows **clean architecture** in `apps/web`: **domain**, **application**, **infrastructure**, **presentation** inside `src/modules/<feature>/`; cross-cutting types in `src/shared/`. Full spec: [`docs/apps/web/spec/architecture.md`](docs/apps/web/spec/architecture.md). Rules for Server Components, server actions, imports, `Result`, policies: [`docs/apps/web/spec/web-conventions.md`](docs/apps/web/spec/web-conventions.md).

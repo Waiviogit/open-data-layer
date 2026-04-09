@@ -389,3 +389,27 @@ CREATE TABLE post_mentions (
 );
 
 CREATE INDEX idx_post_mentions_account ON post_mentions (account);
+
+-- ---------------------------------------------------------------------------
+-- user_post_drafts (editor drafts; optional link to Hive post via permlink)
+-- ---------------------------------------------------------------------------
+CREATE TABLE user_post_drafts (
+  author           TEXT NOT NULL,
+  draft_id         TEXT NOT NULL,
+  title            TEXT NOT NULL DEFAULT '',
+  body             TEXT NOT NULL DEFAULT '',
+  json_metadata    JSONB NOT NULL DEFAULT '{}'::jsonb,
+  parent_author    TEXT NOT NULL DEFAULT '',
+  parent_permlink  TEXT NOT NULL DEFAULT '',
+  permlink         TEXT,
+  beneficiaries    JSONB NOT NULL DEFAULT '[]'::jsonb,
+  last_updated     BIGINT NOT NULL,
+  PRIMARY KEY (author, draft_id)
+);
+
+CREATE UNIQUE INDEX idx_user_post_drafts_author_permlink_unique
+  ON user_post_drafts (author, permlink)
+  WHERE permlink IS NOT NULL;
+
+CREATE INDEX idx_user_post_drafts_author_last_updated
+  ON user_post_drafts (author, last_updated DESC, draft_id DESC);

@@ -1,5 +1,6 @@
 import { FeedList, getUserBlogFeedPageQuery, type FeedTab } from '@/modules/feed';
 import { FeedColumn } from '@/shared/presentation/layout';
+import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 
 import { BlogFeedPostsList } from './blog-feed-posts-list';
 import { getMockFeedItems } from './mock-feed';
@@ -10,10 +11,19 @@ type FeedProfileContentProps = {
 };
 
 export async function FeedProfileContent({ accountName, feedTab }: FeedProfileContentProps) {
+  const auth = createCookieAuthContextProvider();
+  const currentUser = await auth.getUser();
+  const currentUsername = currentUser?.username ?? null;
+
   if (feedTab === 'posts') {
     const page = await getUserBlogFeedPageQuery(accountName);
     return (
-      <BlogFeedPostsList accountName={accountName} initialPage={page} feedTab={feedTab} />
+      <BlogFeedPostsList
+        accountName={accountName}
+        initialPage={page}
+        feedTab={feedTab}
+        currentUsername={currentUsername}
+      />
     );
   }
 
@@ -37,7 +47,7 @@ export async function FeedProfileContent({ accountName, feedTab }: FeedProfileCo
 
   return (
     <FeedColumn>
-      <FeedList items={items} feedTab={feedTab} />
+      <FeedList items={items} feedTab={feedTab} currentUsername={currentUsername} />
     </FeedColumn>
   );
 }

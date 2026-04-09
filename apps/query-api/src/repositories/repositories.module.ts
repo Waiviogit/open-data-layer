@@ -7,6 +7,7 @@ import { AccountsCurrentRepository } from './accounts-current.repository';
 import { ObjectAuthorityRepository } from './object-authority.repository';
 import { AggregatedObjectRepository } from './aggregated-object.repository';
 import { PostsRepository } from './posts.repository';
+import { UserPostDraftsRepository } from './user-post-drafts.repository';
 
 @Module({
   providers: [
@@ -18,6 +19,7 @@ import { PostsRepository } from './posts.repository';
     ObjectAuthorityRepository,
     AggregatedObjectRepository,
     PostsRepository,
+    UserPostDraftsRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -28,6 +30,7 @@ import { PostsRepository } from './posts.repository';
     ObjectAuthorityRepository,
     AggregatedObjectRepository,
     PostsRepository,
+    UserPostDraftsRepository,
   ],
 })
 export class RepositoriesModule {}

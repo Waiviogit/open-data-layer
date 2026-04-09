@@ -1,3 +1,4 @@
+import { LoginModalProvider } from '@/modules/auth';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 import {
   AppHeader,
@@ -17,13 +18,15 @@ export default async function AppRouteGroupLayout({
 
   return (
     <LayoutProvider>
-      <AppShell
-        header={<AppHeader user={headerUser} />}
-        bottomNav={<BottomNav />}
-        className="py-section-y-sm"
-      >
-        {children}
-      </AppShell>
+      <LoginModalProvider>
+        <AppShell
+          header={<AppHeader user={headerUser} />}
+          bottomNav={<BottomNav />}
+          className="py-section-y-sm"
+        >
+          {children}
+        </AppShell>
+      </LoginModalProvider>
     </LayoutProvider>
   );
 }

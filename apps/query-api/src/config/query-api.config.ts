@@ -20,5 +20,8 @@ export default () => {
     governance: {
       objectId: env.GOVERNANCE_OBJECT_ID,
     },
+    jwt: {
+      secret: env.JWT_SECRET,
+    },
   };
 };

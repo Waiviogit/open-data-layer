@@ -52,6 +52,7 @@ export function mapFeedStoryItemApiToView(item: FeedStoryItemApi): FeedStoryView
   return {
     id: item.id,
     authorName: item.author,
+    permlink: item.permlink,
     authorDisplayName: item.authorProfile.displayName ?? undefined,
     authorAvatarUrl: item.authorProfile.avatarUrl ?? undefined,
     authorReputation: item.authorProfile.reputation,
