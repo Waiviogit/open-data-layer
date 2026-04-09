@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Global chrome for the `(app)` route group: brand link, search field with debounced MVP stub (no backend), and session actions (sign-in + locale when logged out; profile link + logout when logged in). Implemented as `AppHeader` in `@/modules/app-header`, mounted from [`apps/web/src/app/(app)/layout.tsx`](../../../../apps/web/src/app/(app)/layout.tsx).
+Global chrome for the `(app)` route group: brand link, search field with debounced MVP stub (no backend), and session actions. Implemented as `AppHeader` in `@/modules/app-header`, mounted from [`apps/web/src/app/(app)/layout.tsx`](../../../../apps/web/src/app/(app)/layout.tsx).
 
 ## Layout
 
@@ -12,9 +12,20 @@ Global chrome for the `(app)` route group: brand link, search field with debounc
 |------|----------|
 | Brand | Link to `/`; on small screens hidden while mobile search is expanded. |
 | Search | `lg+`: always visible. Below `lg`: expand/collapse via toggle; when expanded, session actions are hidden on mobile only (desktop actions stay visible). |
-| Actions | `HeaderActions`: `LoginDialog` + `LocaleSwitcher` when logged out; profile (`/@:name`) + logout when logged in. |
+| Actions (logged out) | `LoginDialog` + `LocaleSwitcher`. |
+| Actions (logged in) | [`LoggedInHeaderActions`](../../../../apps/web/src/modules/app-header/presentation/components/logged-in-header-actions.tsx): **write** icon links to [`/editor`](../../../../apps/web/src/app/(app)/editor/page.tsx); notifications icon (disabled, “coming soon”); avatar as link to `/@:username`; chevron opens account menu. |
 
-Sticky bar: `sticky top-0 z-40`, `min-h-shell-header`, nav tokens (`bg-nav-bg`, `border-border`, `backdrop-filter: var(--backdrop-nav)`).
+### Logged-in account menu (MVP)
+
+| Item | Behavior |
+|------|----------|
+| My feed | Link to `/@:username` (profile posts feed). |
+| Earn, Tools, Drafts, Profile, Wallet, Settings | Disabled placeholders. |
+| Logout | `POST /api/auth/logout` + `router.refresh()`. |
+
+The **notifications** header button remains a disabled placeholder (same “coming soon” tooltip via `app_header_coming_soon`). See [editor.md](editor.md) for the write flow.
+
+Sticky bar: `sticky top-0 z-40`, `min-h-shell-header`, nav tokens (`bg-nav-bg`, `border-border`, `backdrop-filter: var(--backdrop-nav)`). Account dropdown panel uses `z-[60]` so it stacks above the bar.
 
 ## Session
 
@@ -31,8 +42,9 @@ Global header does **not** use profile-only helpers (`shouldHideHero`, etc.). It
 ## MVP limits
 
 - Search does not call query-api; dropdown shows a placeholder after debounce.
-- No notifications, editor shortcut, or overflow menu (legacy `HeaderButton` scope).
+- Notifications in the header is non-functional until wired.
+- Account menu: only **My feed** and **Logout** navigate or sign out; other rows are inert.
 
 ## i18n
 
-Message keys prefixed with `app_header_*` (see `en-US.json`); brand copy uses `app_header_brand_text`.
+Message keys prefixed with `app_header_*` (see `en-US.json`); brand copy uses `app_header_brand_text`. Logged-in labels reuse shared keys (`my_feed`, `write_post`, `notifications`, `earn`, etc.).

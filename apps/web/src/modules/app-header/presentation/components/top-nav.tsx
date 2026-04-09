@@ -157,8 +157,10 @@ export function TopNav({ user }: TopNavProps) {
       >
         <Link
           href="/"
-          className="inline-flex items-center gap-2 font-display text-body font-weight-label text-heading hover:text-link"
+          className="app-header-brand-link"
           aria-label={t('app_header_brand_aria')}
+          // Wallet extensions (e.g. Keychain) inject classes on anchors before hydration completes.
+          suppressHydrationWarning
         >
           <span aria-hidden className="rounded-btn bg-accent px-2 py-1 text-caption text-accent-fg">
             ODL

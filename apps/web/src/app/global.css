@@ -8,6 +8,18 @@
   .feed-story-title-link {
     @apply text-link hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus;
   }
+
+  .app-header-brand-link {
+    @apply inline-flex items-center gap-2 font-display text-body font-weight-label text-heading hover:text-link;
+  }
+
+  .app-header-avatar-link {
+    @apply inline-flex shrink-0 rounded-circle text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus;
+  }
+
+  .app-header-menu-feed-link {
+    @apply block w-full px-3 py-2 text-start text-body-sm text-fg hover:bg-ghost-surface;
+  }
 }
 
 html {
