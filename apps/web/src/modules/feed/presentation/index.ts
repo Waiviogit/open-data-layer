@@ -1,3 +1,5 @@
+export { BlogPostScreen } from './components/blog-post-screen';
+export { PostInterceptModalShell } from './components/post-intercept-modal-shell';
 export { FeedList } from './components/feed-list';
 export { FeedPostGrid } from './components/feed-post-grid';
 export type { FeedPostGridProps } from './components/feed-post-grid';

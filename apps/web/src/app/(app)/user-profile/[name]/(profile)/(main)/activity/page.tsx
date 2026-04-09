@@ -1,4 +1,4 @@
-import { FeedProfileContent } from '../../feed-profile-content';
+import { FeedProfileContent } from '../../../feed-profile-content';
 
 export default async function UserProfileActivityPage({
   params,

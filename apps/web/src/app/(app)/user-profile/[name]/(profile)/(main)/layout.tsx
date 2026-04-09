@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import {
   FixedRegion,
   HiddenBelow,
@@ -13,7 +15,7 @@ export default async function UserProfileMainShellLayout({
   children,
   params,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   params: Promise<{ name: string }>;
 }) {
   const { name } = await params;

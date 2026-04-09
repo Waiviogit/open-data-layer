@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState, type ReactNode } from 'react';
 
-import type { LocaleId } from '@/i18n/types';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AVATAR_PLACEHOLDER_SRC, UserAvatar } from '@/shared/presentation';
 
@@ -15,6 +14,8 @@ import {
   FEED_STORY_TAGGED_OBJECT_MAX,
   formatPayoutDisplay,
   formatRelativeFeedTime,
+  formatReputation,
+  formatVoteSummary,
 } from './story-utils';
 import { StoryOverflowMenu } from './story-overflow-menu';
 
@@ -23,37 +24,6 @@ type StoryProps = {
   feedTab?: FeedTab;
   currentUsername: string | null;
 };
-
-function formatVoteSummary(totalCount: number, previewVoters: string[]): string | null {
-  if (totalCount <= 0) {
-    return null;
-  }
-  const a = previewVoters[0];
-  const b = previewVoters[1];
-  if (totalCount === 1) {
-    return a ? `@${a} liked this` : `${totalCount} like`;
-  }
-  if (totalCount === 2) {
-    if (a && b) {
-      return `@${a} and @${b} liked this`;
-    }
-    return `${totalCount} like this`;
-  }
-  if (a && b) {
-    return `@${a}, @${b} and ${totalCount - 2} more liked this`;
-  }
-  return `${totalCount} like this`;
-}
-
-function formatReputation(n: number | undefined, locale: LocaleId): string | null {
-  if (n == null || Number.isNaN(n)) {
-    return null;
-  }
-  return n.toLocaleString(locale, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
 
 function IconThumbUp({ className }: { className?: string }) {
   return (
@@ -266,80 +236,105 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
         ) : null}
       </header>
 
-      <div className="mt-3 min-w-0">
-        {story.title ? (
-          story.permalinkPath ? (
-            <h2 id={`story-title-${story.id}`} className="text-body-lg font-semibold text-heading">
-              <Link
-                href={story.permalinkPath}
-                className="feed-story-title-link"
-                suppressHydrationWarning
-              >
-                {story.title}
-              </Link>
-            </h2>
-          ) : (
-            <h2 id={`story-title-${story.id}`} className="text-body-lg font-semibold text-heading">
+      <div className="relative mt-3 min-w-0">
+        {story.permalinkPath != null && !videoPlaying ? (
+          <Link
+            href={story.permalinkPath}
+            className="absolute inset-0 z-[5] cursor-pointer rounded-md"
+            aria-label={
+              story.title?.trim()
+                ? `View post: ${story.title.trim()}`
+                : `View post by @${story.authorName}`
+            }
+          >
+            <span className="sr-only">
+              {story.title?.trim() ? story.title.trim() : `Post by @${story.authorName}`}
+            </span>
+          </Link>
+        ) : null}
+
+        <div
+          className={[
+            'relative z-10 space-y-3',
+            story.permalinkPath != null && !videoPlaying ? 'pointer-events-none' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
+          {story.title ? (
+            <h2
+              id={`story-title-${story.id}`}
+              className={[
+                'text-body-lg font-semibold',
+                story.permalinkPath ? 'feed-story-title-link' : 'text-heading',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            >
               {story.title}
             </h2>
-          )
-        ) : (
-          <h2 id={`story-title-${story.id}`} className="sr-only">
-            Post by {displayAuthor}
-          </h2>
-        )}
+          ) : (
+            <h2 id={`story-title-${story.id}`} className="sr-only">
+              Post by {displayAuthor}
+            </h2>
+          )}
 
-        {previewMediaUrl ? (
-          <div className="relative mt-3 aspect-video max-h-[260px] min-h-[180px] w-full overflow-hidden rounded-md border border-border bg-surface-control">
-            {videoPlaying && story.videoEmbedUrl ? (
-              <>
-                <iframe
-                  title={story.title ? `${story.title} — video` : 'Embedded video'}
-                  src={story.videoEmbedUrl}
-                  className="h-full w-full min-h-[180px] border-0 bg-black"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
-                <button
-                  type="button"
-                  className="absolute right-2 top-2 rounded-md bg-overlay/90 px-2 py-1 text-caption font-medium text-fg shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                  onClick={() => setVideoPlaying(false)}
-                >
-                  Close
-                </button>
-              </>
-            ) : (
-              <>
-                <Image
-                  src={previewMediaUrl}
-                  alt=""
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-cover"
-                />
-                {canPlayInline ? (
+          {previewMediaUrl ? (
+            <div className="relative aspect-video max-h-[260px] min-h-[180px] w-full overflow-hidden rounded-md border border-border bg-surface-control">
+              {videoPlaying && story.videoEmbedUrl ? (
+                <>
+                  <iframe
+                    title={story.title ? `${story.title} — video` : 'Embedded video'}
+                    src={story.videoEmbedUrl}
+                    className="h-full w-full min-h-[180px] border-0 bg-black"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  />
                   <button
                     type="button"
-                    className="absolute inset-0 flex items-center justify-center transition-opacity hover:opacity-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                    onClick={() => setVideoPlaying(true)}
-                    aria-label="Play video"
+                    className="absolute right-2 top-2 z-30 rounded-md bg-overlay/90 px-2 py-1 text-caption font-medium text-fg shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                    onClick={() => setVideoPlaying(false)}
                   >
-                    <IconPlay />
+                    Close
                   </button>
-                ) : null}
-              </>
-            )}
-          </div>
-        ) : null}
+                </>
+              ) : (
+                <>
+                  <Image
+                    src={previewMediaUrl}
+                    alt=""
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover"
+                  />
+                  {canPlayInline ? (
+                    <button
+                      type="button"
+                      className="pointer-events-auto absolute inset-0 z-20 flex items-center justify-center transition-opacity hover:opacity-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setVideoPlaying(true);
+                      }}
+                      aria-label="Play video"
+                    >
+                      <IconPlay />
+                    </button>
+                  ) : null}
+                </>
+              )}
+            </div>
+          ) : null}
 
-        <p className="mt-3 min-h-[1.5em] whitespace-pre-wrap text-body text-fg-secondary line-clamp-6">
-          {story.excerpt}
-        </p>
-        {story.isNsfw ? (
-          <p className="mt-2 text-caption text-muted" role="status">
-            NSFW
+          <p className="min-h-[1.5em] whitespace-pre-wrap text-body text-fg-secondary line-clamp-6">
+            {story.excerpt}
           </p>
-        ) : null}
+          {story.isNsfw ? (
+            <p className="text-caption text-muted" role="status">
+              NSFW
+            </p>
+          ) : null}
+        </div>
       </div>
 
       <footer className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">

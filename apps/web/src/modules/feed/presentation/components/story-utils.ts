@@ -3,6 +3,37 @@ import type { LocaleId } from '@/i18n/types';
 /** Match query-api `FEED_TAGGED_OBJECT_DISPLAY_LIMIT` (feed.constants.ts). */
 export const FEED_STORY_TAGGED_OBJECT_MAX = 4;
 
+export function formatVoteSummary(totalCount: number, previewVoters: string[]): string | null {
+  if (totalCount <= 0) {
+    return null;
+  }
+  const a = previewVoters[0];
+  const b = previewVoters[1];
+  if (totalCount === 1) {
+    return a ? `@${a} liked this` : `${totalCount} like`;
+  }
+  if (totalCount === 2) {
+    if (a && b) {
+      return `@${a} and @${b} liked this`;
+    }
+    return `${totalCount} like this`;
+  }
+  if (a && b) {
+    return `@${a}, @${b} and ${totalCount - 2} more liked this`;
+  }
+  return `${totalCount} like this`;
+}
+
+export function formatReputation(n: number | undefined, locale: LocaleId): string | null {
+  if (n == null || Number.isNaN(n)) {
+    return null;
+  }
+  return n.toLocaleString(locale, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 /**
  * Relative time for feed cards; falls back to medium date for older posts.
  */

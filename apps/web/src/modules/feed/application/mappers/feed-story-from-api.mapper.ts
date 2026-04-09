@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import type { FeedStoryView } from '../dto/feed-story.dto';
 
-const feedStoryItemApiSchema = z.object({
+export const feedStoryItemApiSchema = z.object({
   id: z.string(),
   author: z.string(),
   permlink: z.string(),
@@ -40,6 +40,11 @@ const feedStoryItemApiSchema = z.object({
   }),
 });
 
+/** Single-post endpoint: same as feed item plus full `body`. */
+export const singlePostApiSchema = feedStoryItemApiSchema.extend({
+  body: z.string(),
+});
+
 export const userBlogFeedResponseSchema = z.object({
   items: z.array(feedStoryItemApiSchema),
   cursor: z.string().nullable(),
@@ -65,7 +70,8 @@ export function mapFeedStoryItemApiToView(item: FeedStoryItemApi): FeedStoryView
     excerpt: item.excerpt,
     isNsfw: item.isNsfw,
     category: item.category,
-    permalinkPath: `/@${item.author}/${item.permlink}`,
+    /** Public URL `/@author/permlink` (rewritten to `user-profile/...`); post route is `(profile)/(main)/[permlink]` for modal intercept. */
+    permalinkPath: `/@${encodeURIComponent(item.author)}/${encodeURIComponent(item.permlink)}`,
     rebloggedBy: item.rebloggedBy,
     children: item.children,
     pendingPayout: item.pendingPayout,

@@ -6,10 +6,11 @@ import { ObjectsModule } from '../domain/objects';
 import { UsersModule } from '../domain/users';
 import { ObjectsController } from './objects.controller';
 import { UserPostDraftsController } from './user-post-drafts.controller';
+import { PostsController } from './posts.controller';
 import { UsersController } from './users.controller';
 
 @Module({
   imports: [ObjectsModule, UsersModule, FeedModule, DraftsModule, AuthModule],
-  controllers: [ObjectsController, UsersController, UserPostDraftsController],
+  controllers: [ObjectsController, UsersController, PostsController, UserPostDraftsController],
 })
 export class ControllersModule {}

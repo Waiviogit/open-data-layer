@@ -1,10 +1,14 @@
 import { notFound } from 'next/navigation';
-import { Suspense } from 'react';
-import { getUserProfileQuery, UserProfileHeroClient } from '@/modules/user-profile';
+
+import { getUserProfileQuery } from '@/modules/user-profile';
 
 const ACCOUNT_NAME_RE = /^[a-zA-Z0-9.-]{3,32}$/;
 
-export default async function UserProfileLayout({
+/**
+ * Validates `[name]` for all routes under `/user-profile/[name]/…` (profile shell and articles).
+ * Profile hero lives only under `(profile)/layout.tsx`.
+ */
+export default async function UserProfileNameLayout({
   children,
   params,
 }: {
@@ -20,10 +24,5 @@ export default async function UserProfileLayout({
   if (!profile) {
     notFound();
   }
-  return (
-    <Suspense fallback={null}>
-      <UserProfileHeroClient accountName={decoded} initialUser={profile} />
-      {children}
-    </Suspense>
-  );
+  return <>{children}</>;
 }

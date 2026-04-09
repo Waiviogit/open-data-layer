@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { UPDATE_TYPES } from '@opden-data-layer/core';
 import type { Post } from '@opden-data-layer/core';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
@@ -14,62 +13,23 @@ import type { UserProfileView } from '../users/user-profile.types';
 import { GovernanceResolverService } from '../governance';
 import { decodeFeedCursor, encodeFeedCursor } from './feed-cursor';
 import {
-  FEED_OBJECT_UPDATE_TYPES,
-  FEED_TAGGED_OBJECT_DISPLAY_LIMIT,
-} from './feed.constants';
+  mapPostObjectsToTaggedRowsWithWeight,
+  sortAndLimitFeedObjectSummaries,
+} from './feed-object-summaries';
+import { FEED_OBJECT_UPDATE_TYPES, FEED_TAGGED_OBJECT_DISPLAY_LIMIT } from './feed.constants';
+import type { FeedStoryItemDto, UserBlogFeedResponse } from './feed-story-dtos';
 import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
 import { extractThumbnailUrl } from './post-thumbnail';
 import { extractVideoEmbedUrl, extractVideoThumbnailUrl } from './post-video-thumbnail';
 import { isNsfwPost } from './post-nsfw';
 import type { UserBlogFeedBody } from './schemas/user-blog-feed.schema';
 
-export interface FeedObjectSummaryDto {
-  objectId: string;
-  objectType: string | null;
-  name: string | null;
-  avatarUrl: string | null;
-}
-
-export interface FeedVoteSummaryDto {
-  totalCount: number;
-  previewVoters: string[];
-}
-
-export interface FeedStoryItemDto {
-  id: string;
-  author: string;
-  permlink: string;
-  title: string;
-  excerpt: string;
-  createdAt: string;
-  feedAt: string;
-  rebloggedBy: string | null;
-  isNsfw: boolean;
-  category: string | null;
-  children: number;
-  pendingPayout: string;
-  totalPayout: string;
-  netRshares: string;
-  thumbnailUrl: string | null;
-  /** Poster URL when post embeds video (json_metadata.video or video links in body). */
-  videoThumbnailUrl: string | null;
-  /** Iframe `src` for inline playback when detectable (HTTPS embed URLs). */
-  videoEmbedUrl: string | null;
-  authorProfile: {
-    name: string;
-    displayName: string | null;
-    avatarUrl: string | null;
-    reputation: number;
-  };
-  objects: FeedObjectSummaryDto[];
-  votes: FeedVoteSummaryDto;
-}
-
-export interface UserBlogFeedResponse {
-  items: FeedStoryItemDto[];
-  cursor: string | null;
-  hasMore: boolean;
-}
+export type {
+  FeedObjectSummaryDto,
+  FeedStoryItemDto,
+  FeedVoteSummaryDto,
+  UserBlogFeedResponse,
+} from './feed-story-dtos';
 
 @Injectable()
 export class GetUserBlogFeedEndpoint {
@@ -188,19 +148,13 @@ export class GetUserBlogFeedEndpoint {
       const objectsForPost = postObjects.filter(
         (o) => o.author === row.author && o.permlink === row.permlink,
       );
-      const objectSummariesWithWeight = objectsForPost.map((o) => {
-        const view = viewsByObjectId.get(o.object_id);
-        const avatarUrl = view ? pickSingleText(view, UPDATE_TYPES.AVATAR) : null;
-        return {
-          objectId: o.object_id,
-          objectType: o.object_type,
-          name: view ? pickSingleText(view, UPDATE_TYPES.NAME) : null,
-          avatarUrl,
-          weight: weightByObjectId.get(o.object_id) ?? null,
-        };
-      });
+      const withWeight = mapPostObjectsToTaggedRowsWithWeight(
+        objectsForPost,
+        viewsByObjectId,
+        weightByObjectId,
+      );
       const objects = sortAndLimitFeedObjectSummaries(
-        objectSummariesWithWeight,
+        withWeight,
         FEED_TAGGED_OBJECT_DISPLAY_LIMIT,
       );
 
@@ -250,48 +204,4 @@ export class GetUserBlogFeedEndpoint {
       hasMore,
     };
   }
-}
-
-function pickSingleText(view: ResolvedObjectView, updateType: string): string | null {
-  const field = view.fields[updateType];
-  if (!field || field.cardinality !== 'single') {
-    return null;
-  }
-  const v = field.values[0];
-  return v?.value_text ?? null;
-}
-
-/**
- * Feed chips: prefer objects with a resolved avatar, then higher `objects_core.weight`,
- * then stable id. Only the first `limit` are returned.
- */
-function sortAndLimitFeedObjectSummaries(
-  items: Array<{
-    objectId: string;
-    objectType: string | null;
-    name: string | null;
-    avatarUrl: string | null;
-    weight: number | null;
-  }>,
-  limit: number,
-): FeedObjectSummaryDto[] {
-  const sorted = [...items].sort((a, b) => {
-    const ha = a.avatarUrl ? 1 : 0;
-    const hb = b.avatarUrl ? 1 : 0;
-    if (ha !== hb) {
-      return hb - ha;
-    }
-    const wa = a.weight ?? Number.NEGATIVE_INFINITY;
-    const wb = b.weight ?? Number.NEGATIVE_INFINITY;
-    if (wa !== wb) {
-      return wb - wa;
-    }
-    return a.objectId.localeCompare(b.objectId);
-  });
-  return sorted.slice(0, limit).map(({ objectId, objectType, name, avatarUrl }) => ({
-    objectId,
-    objectType,
-    name,
-    avatarUrl,
-  }));
 }

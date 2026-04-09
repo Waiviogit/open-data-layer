@@ -9,8 +9,10 @@ import {
 
 export default async function AppRouteGroupLayout({
   children,
+  modal,
 }: {
   children: React.ReactNode;
+  modal: React.ReactNode;
 }) {
   const auth = createCookieAuthContextProvider();
   const current = await auth.getUser();
@@ -26,6 +28,7 @@ export default async function AppRouteGroupLayout({
         >
           {children}
         </AppShell>
+        {modal}
       </LoginModalProvider>
     </LayoutProvider>
   );

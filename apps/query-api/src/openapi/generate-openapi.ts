@@ -3,6 +3,7 @@ import { registry } from './registry';
 import './objects.openapi';
 import './users.openapi';
 import './feed.openapi';
+import './posts.openapi';
 import './user-post-drafts.openapi';
 
 export function generateOpenApiDocument() {
