@@ -240,6 +240,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
         {story.permalinkPath != null && !videoPlaying ? (
           <Link
             href={story.permalinkPath}
+            suppressHydrationWarning
             className="absolute inset-0 z-[5] cursor-pointer rounded-md"
             aria-label={
               story.title?.trim()

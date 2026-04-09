@@ -7,6 +7,14 @@ const feedObjectChipSchema = z.object({
   objectType: z.string().nullable(),
   name: z.string().nullable(),
   avatarUrl: z.string().nullable(),
+  /** Plain excerpt for linked-object cards (single-post); omitted in feed chip responses. */
+  description: z.string().nullable().optional(),
+  /** Primary rating text for display (single-post). */
+  rating: z.string().nullable().optional(),
+  /** Up to two category labels (single-post). */
+  categoryItems: z.array(z.string()).optional(),
+  /** When viewer has administrative authority on the object (single-post with `?viewer=`). */
+  hasAdministrativeAuthority: z.boolean().optional(),
 });
 
 const feedVoteSummarySchema = z.object({

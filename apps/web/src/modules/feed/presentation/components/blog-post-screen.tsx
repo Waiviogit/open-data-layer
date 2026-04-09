@@ -1,10 +1,9 @@
 'use client';
 
-import Image from 'next/image';
 import type { ReactNode } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { AVATAR_PLACEHOLDER_SRC, UserAvatar } from '@/shared/presentation';
+import { UserAvatar } from '@/shared/presentation';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 
@@ -14,6 +13,7 @@ import {
   formatReputation,
   formatVoteSummary,
 } from './story-utils';
+import { LinkedObjectsSection } from './linked-objects-section';
 import { StoryOverflowMenu } from './story-overflow-menu';
 
 export type BlogPostScreenVariant = 'page' | 'modal';
@@ -113,53 +113,6 @@ function viewerIsAuthor(viewer: string | null, author: string): boolean {
     return false;
   }
   return viewer.trim().toLowerCase() === author.trim().toLowerCase();
-}
-
-function TaggedObjectsSection({ objects }: { objects: NonNullable<FeedStoryView['objects']> }) {
-  const { t } = useI18n();
-  if (objects.length === 0) {
-    return null;
-  }
-  return (
-    <section className="mt-8 border-t border-border pt-6" aria-labelledby="post-tagged-objects-heading">
-      <h2
-        id="post-tagged-objects-heading"
-        className="font-label text-section text-heading tracking-body"
-      >
-        {t('feed_post_tagged_objects')}
-      </h2>
-      <ul
-        className="mt-3 flex flex-wrap gap-3"
-        aria-label={t('feed_post_tagged_objects')}
-      >
-        {objects.map((o) => (
-          <li key={o.objectId} className="list-none" title={o.name ?? o.objectId}>
-            <span className="flex size-11 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-control ring-1 ring-border/60">
-              {o.avatarUrl ? (
-                <Image
-                  src={o.avatarUrl}
-                  alt=""
-                  className="size-full object-cover"
-                  width={44}
-                  height={44}
-                  sizes="44px"
-                />
-              ) : (
-                <Image
-                  src={AVATAR_PLACEHOLDER_SRC}
-                  alt=""
-                  className="size-full object-cover"
-                  width={44}
-                  height={44}
-                  sizes="44px"
-                />
-              )}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
 }
 
 export function BlogPostScreen({
@@ -285,7 +238,7 @@ export function BlogPostScreen({
           dangerouslySetInnerHTML={{ __html: bodyHtmlSafe }}
         />
 
-        <TaggedObjectsSection objects={taggedObjects} />
+        <LinkedObjectsSection objects={taggedObjects} />
 
         {story.isNsfw ? (
           <p className="mt-2 text-caption text-muted" role="status">

@@ -1,15 +1,20 @@
 import { Injectable } from '@nestjs/common';
+import { POST_LINKED_OBJECT_UPDATE_TYPES } from '@opden-data-layer/core';
 import type { Post } from '@opden-data-layer/core';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
-import { AggregatedObjectRepository, AccountsCurrentRepository, PostsRepository } from '../../repositories';
+import {
+  AggregatedObjectRepository,
+  AccountsCurrentRepository,
+  ObjectAuthorityRepository,
+  PostsRepository,
+} from '../../repositories';
 import { mapAccountToUserProfileView } from '../users/account-mapper';
 import { GovernanceResolverService } from '../governance';
 import {
-  mapPostObjectsToTaggedRowsWithWeight,
-  sortFeedObjectSummaries,
+  mapPostObjectsToLinkedDetailRows,
+  sortLinkedObjectSummaries,
 } from './feed-object-summaries';
-import { FEED_OBJECT_UPDATE_TYPES } from './feed.constants';
 import type { SinglePostViewDto } from './feed-story-dtos';
 import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
 import { extractThumbnailUrl } from './post-thumbnail';
@@ -22,6 +27,7 @@ export class GetPostByKeyEndpoint {
     private readonly postsRepo: PostsRepository,
     private readonly accounts: AccountsCurrentRepository,
     private readonly aggregatedObjectRepo: AggregatedObjectRepository,
+    private readonly objectAuthorityRepo: ObjectAuthorityRepository,
     private readonly objectViewService: ObjectViewService,
     private readonly governanceResolver: GovernanceResolverService,
   ) {}
@@ -31,6 +37,7 @@ export class GetPostByKeyEndpoint {
     permlink: string,
     locale: string,
     governanceObjectIdFromHeader?: string,
+    viewerAccount?: string,
   ): Promise<SinglePostViewDto | null> {
     const key = { author, permlink };
     const [postRows, postObjects, voteMap] = await Promise.all([
@@ -50,6 +57,7 @@ export class GetPostByKeyEndpoint {
       voteMap,
       locale,
       governanceObjectIdFromHeader,
+      viewerAccount,
     );
   }
 
@@ -59,6 +67,7 @@ export class GetPostByKeyEndpoint {
     voteMap: Map<string, { totalCount: number; previewVoters: string[] }>,
     locale: string,
     governanceObjectIdFromHeader: string | undefined,
+    viewerAccount: string | undefined,
   ): Promise<SinglePostViewDto> {
     const pk = `${post.author}\0${post.permlink}`;
     const accountRow = await this.accounts.findByName(post.author);
@@ -97,7 +106,7 @@ export class GetPostByKeyEndpoint {
         weightByObjectId.set(o.core.object_id, o.core.weight);
       }
       const views = this.objectViewService.resolve(objects, voterReputations, {
-        update_types: [...FEED_OBJECT_UPDATE_TYPES],
+        update_types: [...POST_LINKED_OBJECT_UPDATE_TYPES],
         locale,
         include_rejected: false,
         governance,
@@ -105,12 +114,22 @@ export class GetPostByKeyEndpoint {
       viewsByObjectId = new Map(views.map((v, i) => [objects[i].core.object_id, v]));
     }
 
-    const withWeight = mapPostObjectsToTaggedRowsWithWeight(
+    const detailRows = mapPostObjectsToLinkedDetailRows(
       objectsForPost,
       viewsByObjectId,
       weightByObjectId,
     );
-    const objects = sortFeedObjectSummaries(withWeight);
+
+    let administrativeIds = new Set<string>();
+    if (viewerAccount && objectIds.length > 0) {
+      const ids = await this.objectAuthorityRepo.findAdministrativeObjectIdsForAccount(
+        viewerAccount,
+        objectIds,
+      );
+      administrativeIds = new Set(ids);
+    }
+
+    const objects = sortLinkedObjectSummaries(detailRows, administrativeIds);
 
     const createdAt = new Date(post.created_unix * 1000).toISOString();
 

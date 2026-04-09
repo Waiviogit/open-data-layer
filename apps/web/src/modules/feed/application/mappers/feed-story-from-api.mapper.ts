@@ -32,6 +32,10 @@ export const feedStoryItemApiSchema = z.object({
       objectType: z.string().nullable(),
       name: z.string().nullable(),
       avatarUrl: z.string().nullable(),
+      description: z.string().nullable().optional(),
+      rating: z.string().nullable().optional(),
+      categoryItems: z.array(z.string()).optional(),
+      hasAdministrativeAuthority: z.boolean().optional(),
     }),
   ),
   votes: z.object({
@@ -77,7 +81,16 @@ export function mapFeedStoryItemApiToView(item: FeedStoryItemApi): FeedStoryView
     pendingPayout: item.pendingPayout,
     totalPayout: item.totalPayout,
     netRshares: item.netRshares,
-    objects: item.objects,
+    objects: item.objects.map((o) => ({
+      objectId: o.objectId,
+      objectType: o.objectType,
+      name: o.name,
+      avatarUrl: o.avatarUrl,
+      description: o.description ?? null,
+      rating: o.rating ?? null,
+      categoryItems: o.categoryItems ?? [],
+      hasAdministrativeAuthority: o.hasAdministrativeAuthority ?? false,
+    })),
     votes: item.votes,
   };
 }

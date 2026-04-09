@@ -100,3 +100,8 @@ export { UPDATE_WHITELIST } from './updates/whitelist';
 export { UPDATE_OBJECT_CONTROL } from './updates/object-control';
 export { UPDATE_INHERITS_FROM } from './updates/inherits-from';
 export { UPDATE_VALIDITY_CUTOFF } from './updates/validity-cutoff';
+
+export {
+  POST_LINKED_OBJECT_UPDATE_TYPES,
+  type PostLinkedObjectUpdateType,
+} from './post-linked-object-update-types';

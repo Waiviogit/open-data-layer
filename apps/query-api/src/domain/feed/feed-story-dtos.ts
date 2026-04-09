@@ -3,6 +3,14 @@ export interface FeedObjectSummaryDto {
   objectType: string | null;
   name: string | null;
   avatarUrl: string | null;
+  /** Plain text excerpt for linked-object cards (full post); null when absent. */
+  description: string | null;
+  /** Primary rating text after ranking (full post); null when absent. */
+  rating: string | null;
+  /** Up to two category_item labels (value), most recent by event_seq (full post). */
+  categoryItems: string[];
+  /** True when `viewer` query matches an administrative authority row for this object. */
+  hasAdministrativeAuthority: boolean;
 }
 
 export interface FeedVoteSummaryDto {

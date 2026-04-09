@@ -16,8 +16,9 @@ export async function getSinglePostQuery(
   author: string,
   permlink: string,
   locale: string,
+  viewer?: string | null,
 ): Promise<BlogPostPayload | null> {
-  const raw = await fetchSinglePost(author, permlink, { locale });
+  const raw = await fetchSinglePost(author, permlink, { locale, viewer });
   if (!raw) {
     return null;
   }

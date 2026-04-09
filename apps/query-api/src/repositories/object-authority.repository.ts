@@ -54,4 +54,21 @@ export class ObjectAuthorityRepository {
       .returningAll()
       .executeTakeFirst();
   }
+
+  /**
+   * Object ids where `account` holds `administrative` authority (for linked-object heart UI).
+   */
+  async findAdministrativeObjectIdsForAccount(account: string, objectIds: string[]): Promise<string[]> {
+    if (objectIds.length === 0) {
+      return [];
+    }
+    const rows = await this.db
+      .selectFrom('object_authority')
+      .where('account', '=', account)
+      .where('authority_type', '=', 'administrative')
+      .where('object_id', 'in', objectIds)
+      .select('object_id')
+      .execute();
+    return rows.map((r) => r.object_id);
+  }
 }

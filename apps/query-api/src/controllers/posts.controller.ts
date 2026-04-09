@@ -1,6 +1,7 @@
-import { Controller, Get, NotFoundException, Param } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param, Query } from '@nestjs/common';
 import { ReqLocale } from '@opden-data-layer/core';
 import { GetPostByKeyEndpoint, type SinglePostViewDto } from '../domain/feed';
+import { parseOptionalViewerQuery } from '../domain/feed/viewer-query';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
 
 @Controller({ path: 'posts', version: '1' })
@@ -13,12 +14,15 @@ export class PostsController {
     @Param('permlink') permlink: string,
     @ReqLocale() locale: string,
     @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @Query('viewer') viewerRaw: string | undefined,
   ): Promise<SinglePostViewDto> {
+    const viewer = parseOptionalViewerQuery(viewerRaw);
     const result = await this.getPostByKey.execute(
       author,
       permlink,
       locale,
       governanceObjectIdFromHeader,
+      viewer,
     );
     if (!result) {
       throw new NotFoundException(`Post not found: ${author}/${permlink}`);

@@ -18,7 +18,11 @@ Canonical public URLs use **`/@account/permlink`** (`next.config.js` rewrites th
 
 ## Content layout
 
-`BlogPostScreen` accepts `variant="modal" | "page"`. Tagged objects appear **below** the HTML body (section title `feed_post_tagged_objects`), then NSFW notice if any, then the stats footer (votes, comments, payout, overflow).
+`BlogPostScreen` accepts `variant="modal" | "page"`. **Linked objects** (tagged Waivio objects) appear **below** the HTML body in a collapsible section (`feed_linked_objects`), with one card per object: avatar, name, type · category labels, optional rating row, excerpt, and a heart indicator when the signed-in viewer has **administrative authority** on that object (see query API).
+
+## Single-post API (`?viewer=`)
+
+`getSinglePostQuery` calls `GET /query/v1/posts/:author/:permlink` with an optional **`viewer`** query parameter set to the current Hive account when the user is logged in. The query-api uses it to populate `hasAdministrativeAuthority` on each object in `objects[]` and to resolve richer linked-object fields (`description`, `rating`, `categoryItems`) for the post view. Unauthenticated requests omit `viewer`; authority and some fields fall back to defaults.
 
 ## Post body HTML
 

@@ -14,12 +14,17 @@ export default async function UserBlogPostPage({
   const accountName = decodeURIComponent(name);
   const permlinkDecoded = decodeURIComponent(permlink);
   const locale = await getRequestLocale();
-  const post = await getSinglePostQuery(accountName, permlinkDecoded, locale);
+  const auth = createCookieAuthContextProvider();
+  const currentUser = await auth.getUser();
+  const post = await getSinglePostQuery(
+    accountName,
+    permlinkDecoded,
+    locale,
+    currentUser?.username ?? null,
+  );
   if (!post) {
     notFound();
   }
-  const auth = createCookieAuthContextProvider();
-  const currentUser = await auth.getUser();
 
   return (
     <FeedColumn>
