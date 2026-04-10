@@ -85,7 +85,7 @@ export function StoryCommentEditor({ story, currentUsername }: StoryCommentEdito
           bodyPlaceholder="Write your comment…"
           onPlainTextChange={setBodyPlain}
         />
-        <div className="pointer-events-none absolute bottom-2 end-2 z-[65]">
+        <div className="pointer-events-none absolute end-2 top-1/2 z-[65] -translate-y-1/2">
           <button
             type="button"
             onClick={() => void onSubmit()}

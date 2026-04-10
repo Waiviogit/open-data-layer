@@ -266,11 +266,18 @@ function scheduleMeasure(fn: () => void) {
   });
 }
 
+export type EditorInsertCaretOverlayProps = {
+  /** Single-line bar (e.g. comment): pin (+) to vertical center instead of caret line. */
+  pinInsertCenterVertical?: boolean;
+};
+
 /**
  * Positions the insert control on the left edge (straddling the border) and
  * vertically aligned with the current caret / active line.
  */
-export function EditorInsertCaretOverlay() {
+export function EditorInsertCaretOverlay({
+  pinInsertCenterVertical = false,
+}: EditorInsertCaretOverlayProps = {}) {
   const [editor] = useLexicalComposerContext();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -291,6 +298,9 @@ export function EditorInsertCaretOverlay() {
   const comingSoon = t('app_header_coming_soon');
 
   const measurePosition = useCallback(() => {
+    if (pinInsertCenterVertical) {
+      return;
+    }
     const container = containerRef.current;
     const root = editor.getRootElement();
     if (!container || !root) {
@@ -314,16 +324,22 @@ export function EditorInsertCaretOverlay() {
     const topPx = centerY - containerRect.top - INSERT_BTN_RADIUS;
     const maxTop = container.clientHeight - INSERT_BTN_SIZE_PX - 8;
     setButtonTop(Math.max(8, Math.min(maxTop, topPx)));
-  }, [editor]);
+  }, [editor, pinInsertCenterVertical]);
 
   useLayoutEffect(() => {
+    if (pinInsertCenterVertical) {
+      return;
+    }
     scheduleMeasure(measurePosition);
     return editor.registerUpdateListener(() => {
       scheduleMeasure(measurePosition);
     });
-  }, [editor, measurePosition]);
+  }, [editor, measurePosition, pinInsertCenterVertical]);
 
   useEffect(() => {
+    if (pinInsertCenterVertical) {
+      return;
+    }
     const onSel = () => scheduleMeasure(measurePosition);
     document.addEventListener('selectionchange', onSel);
     const root = editor.getRootElement();
@@ -341,7 +357,7 @@ export function EditorInsertCaretOverlay() {
       root?.removeEventListener('click', onRootActivity);
       window.removeEventListener('resize', measurePosition);
     };
-  }, [editor, measurePosition]);
+  }, [editor, measurePosition, pinInsertCenterVertical]);
 
   useEffect(() => {
     setPortalReady(true);
@@ -400,8 +416,13 @@ export function EditorInsertCaretOverlay() {
       <div ref={containerRef} className="pointer-events-none absolute inset-0 z-[5] overflow-visible">
       <div
         ref={shellRef}
-        className="pointer-events-auto absolute start-0 z-[60] -translate-x-1/2"
-        style={{ top: buttonTop }}
+        className={[
+          'pointer-events-auto absolute start-0 z-[60] -translate-x-1/2',
+          pinInsertCenterVertical ? 'top-1/2 -translate-y-1/2' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        style={pinInsertCenterVertical ? undefined : { top: buttonTop }}
       >
         <button
           ref={insertButtonRef}

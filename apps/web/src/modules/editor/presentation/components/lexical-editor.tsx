@@ -57,9 +57,22 @@ const lexicalTheme = {
   },
 };
 
-function Placeholder({ text }: { text: string }) {
+function Placeholder({
+  text,
+  compact,
+  pillChrome,
+}: {
+  text: string;
+  compact?: boolean;
+  pillChrome?: boolean;
+}) {
   return (
-    <div className="pointer-events-none absolute start-8 top-3 text-body text-fg-tertiary select-none">
+    <div
+      className={[
+        'pointer-events-none absolute text-body text-fg-tertiary select-none',
+        pillChrome ? 'start-10 top-1/2 -translate-y-1/2' : compact ? 'start-8 top-2' : 'start-8 top-3',
+      ].join(' ')}
+    >
       {text}
     </div>
   );
@@ -133,9 +146,16 @@ function EditorInner({
   /** Extra bottom padding for a control (e.g. send) overlaid in the corner. */
   compactBottomInset?: boolean;
 }) {
-  const minHeightClass = compact ? 'min-h-[3rem]' : 'min-h-[12rem]';
-  const verticalPadClass =
-    compact && compactBottomInset ? 'pt-3 pb-12' : 'py-3';
+  const pillChrome = Boolean(compact && compactBottomInset);
+
+  const minHeightClass = pillChrome
+    ? 'min-h-11 max-h-32 resize-y overflow-y-auto'
+    : compact
+      ? 'min-h-[2rem]'
+      : 'min-h-[12rem]';
+  const verticalPadClass = pillChrome ? 'py-1.5' : compact ? 'py-2' : 'py-3';
+  const padHorizontalClass = pillChrome ? 'ps-10 pe-4' : 'px-4 ps-8';
+
   return (
     <>
       {initialPlainText ? <InitialPlainTextPlugin text={initialPlainText} /> : null}
@@ -144,14 +164,17 @@ function EditorInner({
         contentEditable={
           <ContentEditable
             className={[
-              'relative resize-y px-4 ps-8 text-body text-fg outline-none',
+              'relative resize-y text-body text-fg outline-none',
+              padHorizontalClass,
               verticalPadClass,
               minHeightClass,
               'focus-visible:outline-none',
             ].join(' ')}
           />
         }
-        placeholder={<Placeholder text={bodyPlaceholder} />}
+        placeholder={
+          <Placeholder text={bodyPlaceholder} compact={compact} pillChrome={pillChrome} />
+        }
         ErrorBoundary={LexicalErrorBoundary}
       />
       <HistoryPlugin />
@@ -181,10 +204,17 @@ export function LexicalPostEditor({
   compact,
   compactBottomInset,
 }: LexicalEditorProps) {
+  const pillChrome = Boolean(compact && compactBottomInset);
+
   const initialConfig = useMemo(
     () => ({
       namespace: 'PostEditor',
-      theme: lexicalTheme,
+      theme: {
+        ...lexicalTheme,
+        paragraph: pillChrome
+          ? 'mb-0 text-body text-fg font-weight-body leading-snug'
+          : lexicalTheme.paragraph,
+      },
       onError: (error: Error) => {
         console.error(error);
       },
@@ -200,10 +230,14 @@ export function LexicalPostEditor({
         AutoLinkNode,
       ],
     }),
-    [],
+    [pillChrome],
   );
 
-  const shellMinClass = compact ? 'min-h-[3rem]' : 'min-h-[12rem]';
+  const shellMinClass = pillChrome
+    ? 'min-h-11 max-h-32'
+    : compact
+      ? 'min-h-[2rem]'
+      : 'min-h-[12rem]';
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <div
@@ -219,7 +253,7 @@ export function LexicalPostEditor({
           compact={compact}
           compactBottomInset={compactBottomInset}
         />
-        <EditorInsertCaretOverlay />
+        <EditorInsertCaretOverlay pinInsertCenterVertical={pillChrome} />
       </div>
     </LexicalComposer>
   );
