@@ -7,13 +7,20 @@ import type {
   WalletProviderId,
 } from '../domain/types';
 import type { IAuthBffClient } from '../application/ports/auth-api.port';
+import type { IHiveSigner } from '../application/ports/hive-signer.port';
 import { signBufferWithKeychain } from './providers/keychain-provider';
 import { redirectToHiveSigner } from './providers/hivesigner-provider';
+import { createHiveAuthSigner } from './signers/hiveauth-signer';
+import { createKeychainSigner } from './signers/keychain-signer';
+import { createHiveSignerSigner } from './signers/hivesigner-signer';
 
 export class DefaultWalletFacade implements WalletFacade {
   private activeProvider: WalletProviderId | null = null;
 
-  constructor(private readonly bff: IAuthBffClient) {}
+  constructor(
+    private readonly bff: IAuthBffClient,
+    private readonly signers: ReadonlyMap<WalletProviderId, IHiveSigner>,
+  ) {}
 
   async login(providerId: WalletProviderId, username: string): Promise<void> {
     this.activeProvider = providerId;
@@ -49,13 +56,19 @@ export class DefaultWalletFacade implements WalletFacade {
     if (!this.activeProvider) {
       throw new Error('Not logged in');
     }
-    void input;
-    throw new Error(
-      'Broadcast not implemented yet — provider: ' + this.activeProvider,
-    );
+    const signer = this.signers.get(this.activeProvider);
+    if (!signer) {
+      throw new Error('No signer for provider: ' + this.activeProvider);
+    }
+    return signer.sign(input);
   }
 }
 
 export function createWalletFacade(bff: IAuthBffClient): WalletFacade {
-  return new DefaultWalletFacade(bff);
+  const signers = new Map<WalletProviderId, IHiveSigner>([
+    ['keychain', createKeychainSigner()],
+    ['hivesigner', createHiveSignerSigner()],
+    ['hiveauth', createHiveAuthSigner()],
+  ]);
+  return new DefaultWalletFacade(bff, signers);
 }

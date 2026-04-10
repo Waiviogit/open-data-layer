@@ -9,6 +9,16 @@ type KeychainResponse = {
   result?: KeychainSignBufferResult;
 };
 
+/** Broadcast callback — result shape varies by Keychain version; see keychain-signer extraction. */
+export type KeychainBroadcastResponse = {
+  success: boolean;
+  error?: string;
+  result?: unknown;
+};
+
+/** Hive Keychain wire operation tuple (operation name + payload). */
+export type KeychainWireOperation = readonly [string, Record<string, unknown>];
+
 export type HiveKeychainWindow = Window & {
   hive_keychain?: {
     requestSignBuffer: (
@@ -16,6 +26,13 @@ export type HiveKeychainWindow = Window & {
       message: string,
       keyType: string,
       callback: (response: KeychainResponse) => void,
+    ) => void;
+    requestBroadcast: (
+      account: string,
+      operations: KeychainWireOperation[],
+      key: 'Posting' | 'Active' | 'Memo',
+      callback: (response: KeychainBroadcastResponse) => void,
+      rpc?: string | null,
     ) => void;
   };
 };

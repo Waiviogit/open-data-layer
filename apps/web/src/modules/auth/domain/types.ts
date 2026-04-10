@@ -1,3 +1,5 @@
+import type { HiveOperationPayload } from './hive-operations';
+
 export type WalletProviderId = 'keychain' | 'hiveauth' | 'hivesigner';
 
 export type WalletProviderCategory = 'extension' | 'mobile' | 'web';
@@ -9,10 +11,8 @@ export interface WalletProviderMeta {
   readonly isCustodial: boolean;
 }
 
-/** Minimal broadcast payload; expand when wiring dhive operations. */
-export interface BroadcastTransactionInput {
-  readonly operations: readonly unknown[];
-}
+/** Normalized Hive operations; signers map to provider wire format. */
+export type BroadcastTransactionInput = HiveOperationPayload;
 
 export interface BroadcastTransactionResult {
   readonly transactionId: string;

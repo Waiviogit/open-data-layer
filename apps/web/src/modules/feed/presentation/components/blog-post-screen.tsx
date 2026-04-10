@@ -249,7 +249,9 @@ export function BlogPostScreen({
         </header>
 
         {/* Body — video/thumbnails for full post come from sanitized HTML (YouTube URLs → embeds). Feed cards use Story. */}
+        {/* suppressHydrationWarning: browser may normalize serialized HTML vs prop string; extensions may touch the subtree. */}
         <div
+          suppressHydrationWarning
           className={[
             'blog-post-body min-w-0 text-fg leading-body',
             isModal ? 'mt-5 text-[0.9375rem]' : 'mt-6 text-body',

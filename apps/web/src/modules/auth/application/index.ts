@@ -3,6 +3,7 @@ export type {
   ChallengeResponse,
   SessionResponse,
 } from './ports/auth-api.port';
+export type { IHiveSigner } from './ports/hive-signer.port';
 export {
   createLoginUseCase,
   createHiveAuthVerifyUseCase,

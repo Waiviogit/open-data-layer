@@ -18,4 +18,8 @@ See `apps/web/.env.example`: `AUTH_API_BASE_URL`, `AUTH_JWT_SECRET`.
 
 ## Wallet facade
 
-`WalletFacade` (`createWalletFacade`) exposes `login(provider, username)` and `broadcast` (placeholder until dhive broadcast is wired). Providers: Keychain, HiveAuth (manual `authData` step in UI), HiveSigner (redirect).
+`WalletFacade` (`createWalletFacade`) exposes `login(provider, username)` and `broadcast`.
+
+- **Operations:** Domain builders (`buildVoteOp`, `buildCommentOp`, `buildCommentOptionsOp`, `buildCustomJsonOp`, `buildReblogOp`) produce a normalized `BroadcastTransactionInput` (`HiveOperationPayload`).
+- **Signing:** `DefaultWalletFacade` dispatches to an `IHiveSigner` for the active provider. Keychain uses `hive_keychain.requestBroadcast`; HiveSigner and HiveAuth signers are stubs until wired.
+- **Providers:** Keychain, HiveAuth (manual `authData` step in UI), HiveSigner (redirect).
