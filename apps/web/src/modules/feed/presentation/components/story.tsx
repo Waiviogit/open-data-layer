@@ -2,10 +2,14 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { AVATAR_PLACEHOLDER_SRC, UserAvatar } from '@/shared/presentation';
+import {
+  AVATAR_PLACEHOLDER_SRC,
+  shouldUnoptimizeRemoteImage,
+  UserAvatar,
+} from '@/shared/presentation';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 import type { FeedTab } from '../../domain/feed-tab';
@@ -174,6 +178,7 @@ function viewerIsAuthor(
 
 export function Story({ story, feedTab, currentUsername }: StoryProps) {
   const [videoPlaying, setVideoPlaying] = useState(false);
+  const [previewMediaFailed, setPreviewMediaFailed] = useState(false);
   const { locale } = useI18n();
   const displayAuthor = story.authorDisplayName ?? story.authorName;
   const displayTimeIso = story.feedAt ?? story.createdAt;
@@ -190,6 +195,10 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
       : [];
   const previewMediaUrl = story.videoThumbnailUrl ?? story.thumbnailUrl;
   const canPlayInline = Boolean(story.videoEmbedUrl);
+
+  useEffect(() => {
+    setPreviewMediaFailed(false);
+  }, [previewMediaUrl]);
   const isOwnPost = viewerIsAuthor(currentUsername, story.authorName);
   const editorSearch = new URLSearchParams({
     author: story.authorName,
@@ -253,6 +262,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
                       width={36}
                       height={36}
                       sizes="36px"
+                      unoptimized={shouldUnoptimizeRemoteImage(o.avatarUrl)}
                     />
                   ) : (
                     <Image
@@ -336,13 +346,24 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
                 </>
               ) : (
                 <>
-                  <Image
-                    src={previewMediaUrl}
-                    alt=""
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover"
-                  />
+                  {previewMediaFailed ? (
+                    <div
+                      className="flex h-full min-h-[180px] w-full items-center justify-center bg-surface-control text-caption text-muted"
+                      role="status"
+                    >
+                      Preview unavailable
+                    </div>
+                  ) : (
+                    <Image
+                      src={previewMediaUrl}
+                      alt=""
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover"
+                      unoptimized={shouldUnoptimizeRemoteImage(previewMediaUrl)}
+                      onError={() => setPreviewMediaFailed(true)}
+                    />
+                  )}
                   {canPlayInline ? (
                     <button
                       type="button"

@@ -1,3 +1,4 @@
+export { shouldUnoptimizeRemoteImage } from './image/should-unoptimize-remote-image';
 export { AVATAR_PLACEHOLDER_SRC, resolveAvatarUrl } from './avatar';
 export type { ResolveAvatarUrlInput, UserAvatarProps } from './avatar';
 export { UserAvatar } from './avatar';

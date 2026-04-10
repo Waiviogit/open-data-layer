@@ -3,7 +3,7 @@
 import Image from 'next/image';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { AVATAR_PLACEHOLDER_SRC } from '@/shared/presentation';
+import { AVATAR_PLACEHOLDER_SRC, shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 
@@ -139,6 +139,7 @@ function LinkedObjectCard({ object: o }: { object: LinkedObject }) {
                 width={56}
                 height={56}
                 sizes="56px"
+                unoptimized={shouldUnoptimizeRemoteImage(o.avatarUrl)}
               />
             ) : (
               <Image

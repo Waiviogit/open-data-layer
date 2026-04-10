@@ -3,7 +3,7 @@
 import Image from 'next/image';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { UserAvatar } from '@/shared/presentation';
+import { shouldUnoptimizeRemoteImage, UserAvatar } from '@/shared/presentation';
 
 import type { UserProfileShellUser } from './types';
 
@@ -48,6 +48,7 @@ export function UserHeader({
             priority
             sizes="100vw"
             className="object-cover"
+            unoptimized={shouldUnoptimizeRemoteImage(coverImage)}
           />
         ) : null}
       </div>

@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
 
+import { shouldUnoptimizeRemoteImage } from '../image/should-unoptimize-remote-image';
 import { AVATAR_PLACEHOLDER_SRC, resolveAvatarUrl } from './resolve-avatar-url';
 
 export type UserAvatarProps = {
@@ -79,6 +80,7 @@ export function UserAvatar({
       sizes={`${size}px`}
       className={commonClassName}
       style={dimensionStyle}
+      unoptimized={shouldUnoptimizeRemoteImage(src)}
       onError={onError}
     />
   );

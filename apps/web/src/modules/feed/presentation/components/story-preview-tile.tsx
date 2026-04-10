@@ -2,6 +2,9 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+
+import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 
@@ -42,17 +45,31 @@ export function StoryPreviewTile({ story }: StoryPreviewTileProps) {
   const previewMediaUrl = story.videoThumbnailUrl ?? story.thumbnailUrl;
   const showVideoBadge = Boolean(story.videoEmbedUrl ?? story.videoThumbnailUrl);
   const label = tileLabel(story);
+  const [previewFailed, setPreviewFailed] = useState(false);
+
+  useEffect(() => {
+    setPreviewFailed(false);
+  }, [previewMediaUrl]);
 
   const inner = (
     <div className="relative aspect-square w-full overflow-hidden bg-surface-control">
-      {previewMediaUrl ? (
+      {previewMediaUrl && !previewFailed ? (
         <Image
           src={previewMediaUrl}
           alt=""
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 16vw"
           className="object-cover"
+          unoptimized={shouldUnoptimizeRemoteImage(previewMediaUrl)}
+          onError={() => setPreviewFailed(true)}
         />
+      ) : previewMediaUrl && previewFailed ? (
+        <div
+          className="flex h-full w-full items-center justify-center px-2 text-center text-caption text-muted"
+          role="status"
+        >
+          <span className="line-clamp-3">{label}</span>
+        </div>
       ) : (
         <div
           className="flex h-full w-full items-center justify-center bg-surface-control text-caption text-muted"

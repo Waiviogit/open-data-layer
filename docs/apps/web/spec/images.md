@@ -45,6 +45,7 @@ Use **`fill`** when the visual box is defined by a parent (`relative` + height/a
 ## Fallback and errors
 
 - For components that swap to a placeholder when loading fails (e.g. `UserAvatar`), keep **`onError`** + React state: on error, render the placeholder `Image` (or branch) instead of the remote URL.
+- Some hosts (e.g. **`img.3speakcontent.co`**) can fail the optimizer’s **server-side** `fetch` (DNS / network). Use **`shouldUnoptimizeRemoteImage(src)`** from `@/shared/presentation` and pass **`unoptimized`** to `Image` for those URLs so the browser loads the asset directly; pair with **`onError`** where a visible fallback is needed (e.g. feed preview media).
 
 ## Markdown content
 

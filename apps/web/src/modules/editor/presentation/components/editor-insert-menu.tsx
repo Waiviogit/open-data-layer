@@ -10,6 +10,7 @@ import {
   useState,
   type ComponentType,
 } from 'react';
+import { createPortal } from 'react-dom';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
@@ -275,8 +276,15 @@ export function EditorInsertCaretOverlay() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [buttonTop, setButtonTop] = useState(12);
+  const [insertPanelCoords, setInsertPanelCoords] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+  const [portalReady, setPortalReady] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const shellRef = useRef<HTMLDivElement>(null);
+  const insertButtonRef = useRef<HTMLButtonElement>(null);
+  const insertPanelRef = useRef<HTMLDivElement>(null);
   const insertTitleId = useId();
   const insertPanelId = useId();
   const searchInputId = useId();
@@ -336,14 +344,43 @@ export function EditorInsertCaretOverlay() {
   }, [editor, measurePosition]);
 
   useEffect(() => {
+    setPortalReady(true);
+  }, []);
+
+  const updateInsertPanelCoords = useCallback(() => {
+    const btn = insertButtonRef.current;
+    if (!btn) {
+      setInsertPanelCoords(null);
+      return;
+    }
+    const r = btn.getBoundingClientRect();
+    setInsertPanelCoords({ top: r.bottom + 8, left: r.left + r.width / 2 });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setInsertPanelCoords(null);
+      return;
+    }
+    updateInsertPanelCoords();
+    window.addEventListener('resize', updateInsertPanelCoords);
+    window.addEventListener('scroll', updateInsertPanelCoords, true);
+    return () => {
+      window.removeEventListener('resize', updateInsertPanelCoords);
+      window.removeEventListener('scroll', updateInsertPanelCoords, true);
+    };
+  }, [open, updateInsertPanelCoords]);
+
+  useEffect(() => {
     if (!open) {
       return;
     }
     function onDocMouseDown(e: MouseEvent) {
-      const el = shellRef.current;
-      if (el && !el.contains(e.target as Node)) {
-        setOpen(false);
+      const t = e.target as Node;
+      if (shellRef.current?.contains(t) || insertPanelRef.current?.contains(t)) {
+        return;
       }
+      setOpen(false);
     }
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
@@ -359,13 +396,15 @@ export function EditorInsertCaretOverlay() {
   }, [open]);
 
   return (
-    <div ref={containerRef} className="pointer-events-none absolute inset-0 z-[5] overflow-visible">
+    <>
+      <div ref={containerRef} className="pointer-events-none absolute inset-0 z-[5] overflow-visible">
       <div
         ref={shellRef}
         className="pointer-events-auto absolute start-0 z-[60] -translate-x-1/2"
         style={{ top: buttonTop }}
       >
         <button
+          ref={insertButtonRef}
           type="button"
           aria-expanded={open}
           aria-haspopup="dialog"
@@ -382,11 +421,21 @@ export function EditorInsertCaretOverlay() {
         >
           <IconPlus />
         </button>
-
-        {open ? (
+      </div>
+    </div>
+    {portalReady &&
+    open &&
+    insertPanelCoords &&
+    typeof document !== 'undefined'
+      ? createPortal(
           <div
+            ref={insertPanelRef}
             id={insertPanelId}
-            className="absolute start-1/2 top-full z-[70] mt-2 w-[min(100vw-2rem,20rem)] -translate-x-1/2 rounded-card border border-border bg-surface p-3 shadow-card"
+            className={[
+              'fixed z-[80] w-[min(100vw-2rem,20rem)] -translate-x-1/2 rounded-card border border-border',
+              'bg-surface p-3 shadow-card',
+            ].join(' ')}
+            style={{ top: insertPanelCoords.top, left: insertPanelCoords.left }}
             role="dialog"
             aria-modal="true"
             aria-labelledby={insertTitleId}
@@ -428,9 +477,10 @@ export function EditorInsertCaretOverlay() {
                 ].join(' ')}
               />
             </div>
-          </div>
-        ) : null}
-      </div>
-    </div>
+          </div>,
+          document.body,
+        )
+      : null}
+    </>
   );
 }
