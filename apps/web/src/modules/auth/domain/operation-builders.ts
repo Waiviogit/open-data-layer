@@ -6,6 +6,18 @@ import type {
   VoteOp,
 } from './hive-operations';
 
+/** Extension id 0: comment payout beneficiaries (Hive `comment_payout_beneficiaries`). */
+export type CommentOptionsBeneficiary = {
+  readonly account: string;
+  readonly weight: number;
+};
+
+export function buildCommentOptionsBeneficiaryExtension(
+  beneficiaries: readonly CommentOptionsBeneficiary[],
+): readonly [number, { beneficiaries: readonly CommentOptionsBeneficiary[] }] {
+  return [0, { beneficiaries: [...beneficiaries] }];
+}
+
 export function buildVoteOp(
   voter: string,
   author: string,
@@ -42,6 +54,7 @@ export function buildCommentOptionsOp(input: {
   max_accepted_payout: string;
   allow_votes: boolean;
   allow_curation_rewards: boolean;
+  percent_hbd?: number;
   extensions?: readonly unknown[];
 }): CommentOptionsOp {
   return {
@@ -51,6 +64,7 @@ export function buildCommentOptionsOp(input: {
     max_accepted_payout: input.max_accepted_payout,
     allow_votes: input.allow_votes,
     allow_curation_rewards: input.allow_curation_rewards,
+    ...(input.percent_hbd !== undefined ? { percent_hbd: input.percent_hbd } : {}),
     extensions: input.extensions ?? [],
   };
 }

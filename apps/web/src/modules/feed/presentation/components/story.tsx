@@ -17,6 +17,7 @@ import {
   formatReputation,
   formatVoteSummary,
 } from './story-utils';
+import { StoryCommentEditor } from './story-comment-editor';
 import { StoryOverflowMenu } from './story-overflow-menu';
 
 type StoryProps = {
@@ -400,6 +401,9 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
           <span className="text-body-sm font-semibold tabular-nums text-accent">{payoutLabel}</span>
         ) : null}
       </footer>
+      {currentUsername ? (
+        <StoryCommentEditor story={story} currentUsername={currentUsername} />
+      ) : null}
     </article>
   );
 }

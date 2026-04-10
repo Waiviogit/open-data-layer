@@ -9,12 +9,14 @@ Actionable rules for `apps/web`. Full layering: [architecture.md](architecture.m
 - **`src/config/env.ts`** is the single place for server-side environment variables used by the web app. It uses **`import 'server-only'`** and **Zod** (`parse` at module load) so invalid configuration fails fast and Client Components cannot import it by accident.
 - To add a variable: extend the Zod schema, use `env` in infrastructure or server-only code, document it in `apps/web/.env.example`, and add a row to [getting started](../../../getting-started.md) if it matters for local dev.
 - Do not scatter `process.env` across `modules/` — keep discovery and validation centralized.
+- **Public Hive metadata** (`NEXT_PUBLIC_HIVE_JSON_*` for `json_metadata` defaults): read only via [`src/config/hive-json-metadata-public.ts`](../../../apps/web/src/config/hive-json-metadata-public.ts) (`getHiveJsonMetadataDefaults()`), not ad hoc in modules.
 
 ## Placement
 
 | You need | Put it in |
 |----------|-----------|
 | Server env variable (read in Node / Server Components / route handlers) | `src/config/env.ts` — Zod schema + `export const env`; add the key to `apps/web/.env.example`. Do **not** read `process.env` in feature modules. |
+| `NEXT_PUBLIC_*` defaults for Hive `community` / `app` | `src/config/hive-json-metadata-public.ts` + `apps/web/.env.example` |
 | Entity, value object, invariant | `modules/<name>/domain/` |
 | “Can user X do Y?” rule | `modules/<name>/domain/policies/` |
 | Read orchestration | `modules/<name>/application/queries/` |

@@ -30,6 +30,8 @@ export type CommentOptionsOp = {
   readonly max_accepted_payout: string;
   readonly allow_votes: boolean;
   readonly allow_curation_rewards: boolean;
+  /** HBD share in basis points (10000 = 100%). Omitted on chain uses default. */
+  readonly percent_hbd?: number;
   readonly extensions: readonly unknown[];
 };
 

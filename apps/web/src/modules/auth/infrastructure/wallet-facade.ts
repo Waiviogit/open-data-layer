@@ -22,6 +22,10 @@ export class DefaultWalletFacade implements WalletFacade {
     private readonly signers: ReadonlyMap<WalletProviderId, IHiveSigner>,
   ) {}
 
+  setActiveProvider(provider: WalletProviderId | null): void {
+    this.activeProvider = provider;
+  }
+
   async login(providerId: WalletProviderId, username: string): Promise<void> {
     this.activeProvider = providerId;
     const ch = await this.bff.challenge({ provider: providerId, username });

@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 
-import { createAuthBffClient, createWalletFacade } from '../../infrastructure';
-
-const bff = createAuthBffClient();
-const facade = createWalletFacade(bff);
+import {
+  getWalletFacade,
+  ODL_WALLET_PROVIDER_SESSION_KEY,
+} from '../../infrastructure/wallet-facade.client';
 
 export type KeychainLoginProps = {
   onLoginSuccess?: () => void;
@@ -21,7 +21,12 @@ export function KeychainLogin({ onLoginSuccess }: KeychainLoginProps) {
     setError(null);
     setPending(true);
     try {
-      await facade.login('keychain', username.trim());
+      await getWalletFacade().login('keychain', username.trim());
+      try {
+        sessionStorage.setItem(ODL_WALLET_PROVIDER_SESSION_KEY, 'keychain');
+      } catch {
+        // ignore quota / private mode
+      }
       onLoginSuccess?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');

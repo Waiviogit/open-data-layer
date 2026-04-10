@@ -4,6 +4,7 @@ import type { IHiveSigner } from '../../application/ports/hive-signer.port';
 import type { HiveOperation, HiveOperationPayload } from '../../domain/hive-operations';
 import type { BroadcastTransactionResult } from '../../domain/types';
 import type { KeychainWireOperation, HiveKeychainWindow } from '../providers/keychain-provider';
+import { wireCommentOptionsPayload } from '../../domain/hive-operation-wire';
 
 function resolveSigningAccount(operations: readonly HiveOperation[]): string {
   if (operations.length === 0) {
@@ -70,17 +71,7 @@ function toWireOperation(op: HiveOperation): KeychainWireOperation {
         },
       ];
     case 'comment_options':
-      return [
-        'comment_options',
-        {
-          author: op.author,
-          permlink: op.permlink,
-          max_accepted_payout: op.max_accepted_payout,
-          allow_votes: op.allow_votes,
-          allow_curation_rewards: op.allow_curation_rewards,
-          extensions: [...op.extensions],
-        },
-      ];
+      return ['comment_options', wireCommentOptionsPayload(op)];
     case 'custom_json':
       return [
         'custom_json',

@@ -123,11 +123,14 @@ function EditorInner({
   bodyPlaceholder,
   initialPlainText,
   onPlainTextChange,
+  compact,
 }: {
   bodyPlaceholder: string;
   initialPlainText?: string;
   onPlainTextChange?: (text: string) => void;
+  compact?: boolean;
 }) {
+  const minHeightClass = compact ? 'min-h-[3rem]' : 'min-h-[12rem]';
   return (
     <>
       {initialPlainText ? <InitialPlainTextPlugin text={initialPlainText} /> : null}
@@ -136,7 +139,8 @@ function EditorInner({
         contentEditable={
           <ContentEditable
             className={[
-              'relative min-h-[12rem] resize-y px-4 py-3 ps-8 text-body text-fg outline-none',
+              'relative resize-y px-4 py-3 ps-8 text-body text-fg outline-none',
+              minHeightClass,
               'focus-visible:outline-none',
             ].join(' ')}
           />
@@ -158,12 +162,15 @@ export type LexicalEditorProps = {
   initialPlainText?: string;
   /** Fired when plain-text content changes (for autosave). */
   onPlainTextChange?: (text: string) => void;
+  /** Shorter editor chrome (e.g. inline comment under a feed story). */
+  compact?: boolean;
 };
 
 export function LexicalPostEditor({
   bodyPlaceholder,
   initialPlainText,
   onPlainTextChange,
+  compact,
 }: LexicalEditorProps) {
   const initialConfig = useMemo(
     () => ({
@@ -187,13 +194,20 @@ export function LexicalPostEditor({
     [],
   );
 
+  const shellMinClass = compact ? 'min-h-[3rem]' : 'min-h-[12rem]';
   return (
     <LexicalComposer initialConfig={initialConfig}>
-      <div className="relative w-full min-h-[12rem] overflow-visible rounded-card border border-border bg-surface shadow-card">
+      <div
+        className={[
+          'relative w-full overflow-visible rounded-card border border-border bg-surface shadow-card',
+          shellMinClass,
+        ].join(' ')}
+      >
         <EditorInner
           bodyPlaceholder={bodyPlaceholder}
           initialPlainText={initialPlainText}
           onPlainTextChange={onPlainTextChange}
+          compact={compact}
         />
         <EditorInsertCaretOverlay />
       </div>
