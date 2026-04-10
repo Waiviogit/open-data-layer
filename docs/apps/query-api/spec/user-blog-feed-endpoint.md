@@ -10,6 +10,14 @@
 
 Path parameter `name` is the Hive account name (3–32 chars, `[a-zA-Z0-9.-]`).
 
+## Request headers (optional)
+
+| Header | Role |
+|--------|------|
+| `Accept-Language` / `X-Locale` | Locale for object resolution (same as other feed routes). |
+| `X-Governance-Object-Id` | Optional governance merge for object views. |
+| `X-Viewer` | Optional Hive account of the viewer; when set, each item’s `votes.voted` reflects whether they have an active vote on that post. |
+
 ## Request body: `UserBlogFeedBody`
 
 JSON object (Zod-validated):
@@ -50,7 +58,7 @@ JSON object (Zod-validated):
 | `videoEmbedUrl` | string \| null | HTTPS iframe `src` for inline playback when derivable (YouTube / Vimeo / 3Speak / DTube embed patterns); `null` when only a poster URL is known |
 | `authorProfile` | object | From `accounts_current` via batch `findByNames` — `name`, `displayName`, `avatarUrl`, `reputation` (`object_reputation`) |
 | `objects` | array | Tagged objects for the post — see [Tagged objects](#tagged-objects-objects) |
-| `votes` | object | `totalCount`, `previewVoters` (top voters by `rshares`) from `post_active_votes` |
+| `votes` | object | `totalCount`, `previewVoters` (top voters by `rshares`), and `voted` (boolean: viewer from `X-Viewer` has an active vote) from `post_active_votes` |
 
 ### Tagged objects (`objects`)
 

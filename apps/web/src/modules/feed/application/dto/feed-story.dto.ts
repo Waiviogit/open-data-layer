@@ -13,13 +13,14 @@ const feedObjectChipSchema = z.object({
   rating: z.string().nullable().optional(),
   /** Up to two category labels (single-post). */
   categoryItems: z.array(z.string()).optional(),
-  /** When viewer has administrative authority on the object (single-post with `?viewer=`). */
+  /** When viewer has administrative authority on the object (single-post with `X-Viewer`). */
   hasAdministrativeAuthority: z.boolean().optional(),
 });
 
 const feedVoteSummarySchema = z.object({
   totalCount: z.number(),
   previewVoters: z.array(z.string()),
+  voted: z.boolean().optional().default(false),
 });
 
 export const feedStoryViewSchema = z.object({

@@ -46,6 +46,7 @@ export class GetUserBlogFeedEndpoint {
     body: UserBlogFeedBody,
     locale: string,
     governanceObjectIdFromHeader?: string,
+    viewerAccount?: string,
   ): Promise<UserBlogFeedResponse | null> {
     const accountRow = await this.accounts.findByName(accountName);
     if (!accountRow) {
@@ -84,7 +85,7 @@ export class GetUserBlogFeedEndpoint {
     const [postRows, postObjects, voteMap] = await Promise.all([
       this.postsRepo.findPostsByKeys(keys),
       this.postsRepo.findPostObjectsByKeys(keys),
-      this.postsRepo.findActiveVoteSummaries(keys),
+      this.postsRepo.findActiveVoteSummaries(keys, viewerAccount),
     ]);
 
     const postByKey = new Map<string, Post>();
@@ -143,7 +144,7 @@ export class GetUserBlogFeedEndpoint {
           };
 
       const excerpt = truncateExcerpt(stripHtmlForExcerpt(post.body ?? ''));
-      const votes = voteMap.get(pk) ?? { totalCount: 0, previewVoters: [] };
+      const votes = voteMap.get(pk) ?? { totalCount: 0, previewVoters: [], voted: false };
 
       const objectsForPost = postObjects.filter(
         (o) => o.author === row.author && o.permlink === row.permlink,
@@ -184,6 +185,7 @@ export class GetUserBlogFeedEndpoint {
         votes: {
           totalCount: votes.totalCount,
           previewVoters: votes.previewVoters,
+          voted: votes.voted,
         },
       };
     });

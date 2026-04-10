@@ -8,6 +8,7 @@ import {
   AccountsCurrentRepository,
   ObjectAuthorityRepository,
   PostsRepository,
+  type PostVoteSummary,
 } from '../../repositories';
 import { mapAccountToUserProfileView } from '../users/account-mapper';
 import { GovernanceResolverService } from '../governance';
@@ -43,7 +44,7 @@ export class GetPostByKeyEndpoint {
     const [postRows, postObjects, voteMap] = await Promise.all([
       this.postsRepo.findPostsByKeys([key]),
       this.postsRepo.findPostObjectsByKeys([key]),
-      this.postsRepo.findActiveVoteSummaries([key]),
+      this.postsRepo.findActiveVoteSummaries([key], viewerAccount),
     ]);
 
     const post = postRows[0];
@@ -64,7 +65,7 @@ export class GetPostByKeyEndpoint {
   private async mapPostToSingleView(
     post: Post,
     postObjects: Awaited<ReturnType<PostsRepository['findPostObjectsByKeys']>>,
-    voteMap: Map<string, { totalCount: number; previewVoters: string[] }>,
+    voteMap: Map<string, PostVoteSummary>,
     locale: string,
     governanceObjectIdFromHeader: string | undefined,
     viewerAccount: string | undefined,
@@ -87,7 +88,7 @@ export class GetPostByKeyEndpoint {
         };
 
     const excerpt = truncateExcerpt(stripHtmlForExcerpt(post.body ?? ''));
-    const votes = voteMap.get(pk) ?? { totalCount: 0, previewVoters: [] };
+    const votes = voteMap.get(pk) ?? { totalCount: 0, previewVoters: [], voted: false };
 
     const objectsForPost = postObjects.filter(
       (o) => o.author === post.author && o.permlink === post.permlink,
@@ -160,6 +161,7 @@ export class GetPostByKeyEndpoint {
       votes: {
         totalCount: votes.totalCount,
         previewVoters: votes.previewVoters,
+        voted: votes.voted,
       },
     };
   }

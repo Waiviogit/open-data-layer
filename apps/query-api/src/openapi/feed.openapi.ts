@@ -12,6 +12,7 @@ const feedVoteSummarySchema = registry.register(
   z.object({
     totalCount: z.number().int(),
     previewVoters: z.array(z.string()),
+    voted: z.boolean(),
   }),
 );
 
@@ -105,6 +106,11 @@ registry.registerPath({
       'accept-language': z.string().optional(),
       'x-locale': z.string().optional(),
       'x-governance-object-id': z.string().optional(),
+      'x-viewer': z.string().optional().openapi({
+        description:
+          'Optional Hive account of the viewer; when set, each item `votes.voted` reflects whether they have an active vote.',
+        example: 'alice',
+      }),
     }),
     body: {
       content: {

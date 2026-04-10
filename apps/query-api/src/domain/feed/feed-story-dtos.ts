@@ -9,13 +9,15 @@ export interface FeedObjectSummaryDto {
   rating: string | null;
   /** Up to two category_item labels (value), most recent by event_seq (full post). */
   categoryItems: string[];
-  /** True when `viewer` query matches an administrative authority row for this object. */
+  /** True when `X-Viewer` matches an administrative authority row for this object. */
   hasAdministrativeAuthority: boolean;
 }
 
 export interface FeedVoteSummaryDto {
   totalCount: number;
   previewVoters: string[];
+  /** True when the viewer (see `X-Viewer`) has an active vote on this post. */
+  voted: boolean;
 }
 
 export interface FeedStoryItemDto {

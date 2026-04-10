@@ -44,6 +44,22 @@ function IconThumbUp({ className }: { className?: string }) {
   );
 }
 
+/** Solid fill — use with `text-accent` when the viewer has voted (matches active like control). */
+function IconThumbUpFilled({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+    >
+      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+    </svg>
+  );
+}
+
 function IconComment({ className }: { className?: string }) {
   return (
     <svg
@@ -109,10 +125,27 @@ type StatButtonProps = {
   count: number | undefined;
   label: string;
   title?: string | null;
+  /** When `false`, icon uses muted tone (e.g. vote not cast). Omit or `true` for accent. */
+  iconActive?: boolean;
+  /** When `true`, vote count uses accent (e.g. viewer has voted). */
+  countAccent?: boolean;
+  /** Optional `aria-pressed` for vote state. */
+  ariaPressed?: boolean;
 };
 
-function StatButton({ icon, count, label, title }: StatButtonProps) {
+function StatButton({
+  icon,
+  count,
+  label,
+  title,
+  iconActive,
+  countAccent,
+  ariaPressed,
+}: StatButtonProps) {
   const showCount = count != null;
+  const iconToneClass = iconActive === false ? 'text-muted' : 'text-accent';
+  const countClass =
+    countAccent === true ? 'font-medium tabular-nums text-accent' : 'font-medium tabular-nums text-fg-secondary';
   return (
     <button
       type="button"
@@ -120,9 +153,10 @@ function StatButton({ icon, count, label, title }: StatButtonProps) {
       disabled
       aria-label={label}
       title={title ?? undefined}
+      aria-pressed={ariaPressed}
     >
-      <span className="text-accent">{icon}</span>
-      {showCount ? <span className="font-medium text-fg-secondary">{count}</span> : null}
+      <span className={iconToneClass}>{icon}</span>
+      {showCount ? <span className={countClass}>{count}</span> : null}
     </button>
   );
 }
@@ -341,10 +375,13 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
       <footer className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
         <div className="flex flex-wrap items-center gap-1">
           <StatButton
-            icon={<IconThumbUp />}
+            icon={story.votes?.voted ? <IconThumbUpFilled /> : <IconThumbUp />}
             count={story.votes?.totalCount ?? 0}
             label="Likes"
             title={voteLine ?? undefined}
+            iconActive={story.votes?.voted === true}
+            countAccent={story.votes?.voted === true}
+            ariaPressed={story.votes != null ? story.votes.voted : undefined}
           />
           <StatButton
             icon={<IconComment />}

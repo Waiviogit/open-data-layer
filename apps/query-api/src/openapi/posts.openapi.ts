@@ -49,6 +49,7 @@ const singlePostViewSchema = registry.register(
     votes: z.object({
       totalCount: z.number().int(),
       previewVoters: z.array(z.string()),
+      voted: z.boolean(),
     }),
   }),
 );
@@ -82,36 +83,23 @@ const permlinkParam = z
     example: 'my-post-title',
   });
 
-const viewerQuery = z
-  .string()
-  .min(1)
-  .max(32)
-  .regex(/^[a-zA-Z0-9.-]+$/)
-  .optional()
-  .openapi({
-    param: {
-      name: 'viewer',
-      in: 'query',
-      required: false,
-    },
-    description:
-      'Hive account viewing the post; when set, linked objects include `hasAdministrativeAuthority` for administrative object_authority rows.',
-    example: 'alice',
-  });
-
 registry.registerPath({
   method: 'get',
   path: '/query/v1/posts/{author}/{permlink}',
   summary: 'Single post by author and permlink',
   description:
-    'Full post body plus tagged objects (resolved fields for linked-object cards when available) and active vote summary. Optional `viewer` sets administrative heart state per object. Not found when the post row is missing.',
+    'Full post body plus tagged objects (resolved fields for linked-object cards when available) and active vote summary. Optional `X-Viewer` sets administrative heart state per object. Not found when the post row is missing.',
   request: {
     params: z.object({ author: authorParam, permlink: permlinkParam }),
-    query: z.object({ viewer: viewerQuery }),
     headers: z.object({
       'accept-language': z.string().optional(),
       'x-locale': z.string().optional(),
       'x-governance-object-id': z.string().optional(),
+      'x-viewer': z.string().optional().openapi({
+        description:
+          'Hive account viewing the post; when set, linked objects include `hasAdministrativeAuthority` for administrative object_authority rows.',
+        example: 'alice',
+      }),
     }),
   },
   responses: {

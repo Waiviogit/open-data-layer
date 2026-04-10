@@ -127,7 +127,7 @@ describe('GetPostByKeyEndpoint', () => {
     postsRepo.findPostsByKeys.mockResolvedValue([p]);
     postsRepo.findPostObjectsByKeys.mockResolvedValue([]);
     postsRepo.findActiveVoteSummaries.mockResolvedValue(
-      new Map([['alice\0my-post', { totalCount: 0, previewVoters: [] }]]),
+      new Map([['alice\0my-post', { totalCount: 0, previewVoters: [], voted: false }]]),
     );
     accounts.findByName.mockResolvedValue(null);
 
@@ -158,7 +158,7 @@ describe('GetPostByKeyEndpoint', () => {
     postsRepo.findPostsByKeys.mockResolvedValue([p]);
     postsRepo.findPostObjectsByKeys.mockResolvedValue([postObject]);
     postsRepo.findActiveVoteSummaries.mockResolvedValue(
-      new Map([['alice\0my-post', { totalCount: 0, previewVoters: [] }]]),
+      new Map([['alice\0my-post', { totalCount: 0, previewVoters: [], voted: false }]]),
     );
     accounts.findByName.mockResolvedValue(null);
     aggregatedObjectRepo.loadByObjectIds.mockResolvedValue({
@@ -202,7 +202,7 @@ describe('GetPostByKeyEndpoint', () => {
     postsRepo.findPostsByKeys.mockResolvedValue([p]);
     postsRepo.findPostObjectsByKeys.mockResolvedValue([postObject]);
     postsRepo.findActiveVoteSummaries.mockResolvedValue(
-      new Map([['alice\0my-post', { totalCount: 0, previewVoters: [] }]]),
+      new Map([['alice\0my-post', { totalCount: 0, previewVoters: [], voted: false }]]),
     );
     accounts.findByName.mockResolvedValue(null);
     aggregatedObjectRepo.loadByObjectIds.mockResolvedValue({

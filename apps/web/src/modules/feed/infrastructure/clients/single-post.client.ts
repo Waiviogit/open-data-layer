@@ -7,16 +7,14 @@ export async function fetchSinglePost(
   permlink: string,
   init?: { locale?: string; viewer?: string | null },
 ): Promise<unknown | null> {
-  const search = new URLSearchParams();
-  if (init?.viewer != null && init.viewer.trim() !== '') {
-    search.set('viewer', init.viewer.trim());
-  }
-  const qs = search.toString();
-  const path = `/query/v1/posts/${encodeURIComponent(author)}/${encodeURIComponent(permlink)}${qs ? `?${qs}` : ''}`;
+  const path = `/query/v1/posts/${encodeURIComponent(author)}/${encodeURIComponent(permlink)}`;
   const headers: Record<string, string> = {};
   if (init?.locale) {
     headers['X-Locale'] = init.locale;
     headers['Accept-Language'] = init.locale;
+  }
+  if (init?.viewer != null && init.viewer.trim() !== '') {
+    headers['X-Viewer'] = init.viewer.trim();
   }
   return queryApiFetch(path, { headers });
 }

@@ -11,6 +11,7 @@ import {
   type UserProfileView,
 } from '../domain/users';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
+import { ReqViewer } from '../http/viewer-header.decorator';
 import { ZodBodyPipe } from '../pipes';
 
 @Controller({ path: 'users', version: '1' })
@@ -35,12 +36,14 @@ export class UsersController {
     @Body(new ZodBodyPipe(userBlogFeedBodySchema)) body: UserBlogFeedBody,
     @ReqLocale() locale: string,
     @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
   ): Promise<UserBlogFeedResponse> {
     const result = await this.getUserBlogFeed.execute(
       name,
       body,
       locale,
       governanceObjectIdFromHeader,
+      viewer,
     );
     if (!result) {
       throw new NotFoundException(`User not found: ${name}`);

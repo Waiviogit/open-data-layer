@@ -15,6 +15,8 @@ export interface FeedBranchRow {
 export interface PostVoteSummary {
   totalCount: number;
   previewVoters: string[];
+  /** True when the optional viewer account has an active vote on this post. */
+  voted: boolean;
 }
 
 const PREVIEW_VOTER_LIMIT = 3;
@@ -164,8 +166,12 @@ export class PostsRepository {
       .execute();
   }
 
+  /**
+   * Vote counts, top voters by rshares, and whether `viewerAccount` voted — one scan of `post_active_votes`.
+   */
   async findActiveVoteSummaries(
     keys: { author: string; permlink: string }[],
+    viewerAccount?: string,
   ): Promise<Map<string, PostVoteSummary>> {
     const result = new Map<string, PostVoteSummary>();
     if (keys.length === 0) {
@@ -175,28 +181,11 @@ export class PostsRepository {
     const pairKey = (a: string, p: string) => `${a}\0${p}`;
 
     for (const k of keys) {
-      result.set(pairKey(k.author, k.permlink), { totalCount: 0, previewVoters: [] });
-    }
-
-    const counts = await this.db
-      .selectFrom('post_active_votes')
-      .where((eb) =>
-        eb.or(
-          keys.map((k) =>
-            eb.and([eb('author', '=', k.author), eb('permlink', '=', k.permlink)]),
-          ),
-        ),
-      )
-      .groupBy(['author', 'permlink'])
-      .select((eb) => ['author', 'permlink', eb.fn.countAll<number>().as('cnt')])
-      .execute();
-
-    for (const row of counts) {
-      const pk = pairKey(row.author, row.permlink);
-      const existing = result.get(pk);
-      if (existing) {
-        existing.totalCount = Number(row.cnt);
-      }
+      result.set(pairKey(k.author, k.permlink), {
+        totalCount: 0,
+        previewVoters: [],
+        voted: false,
+      });
     }
 
     const whereSql = sql.join(
@@ -204,25 +193,44 @@ export class PostsRepository {
       sql` OR `,
     );
 
-    const preview = await sql<{ author: string; permlink: string; voter: string }>`
-      SELECT author, permlink, voter
+    const viewerTrimmed = viewerAccount?.trim() ?? '';
+    const viewerVotedExpr =
+      viewerTrimmed.length > 0
+        ? sql`BOOL_OR(LOWER(TRIM(voter)) = LOWER(${viewerTrimmed})) OVER (PARTITION BY author, permlink)`
+        : sql`false`;
+
+    const rows = await sql<{
+      author: string;
+      permlink: string;
+      voter: string;
+      cnt: string | number;
+      viewer_voted: boolean;
+    }>`
+      SELECT author, permlink, voter, cnt, viewer_voted
       FROM (
-        SELECT author, permlink, voter,
+        SELECT
+          author,
+          permlink,
+          voter,
+          COUNT(*) OVER (PARTITION BY author, permlink) AS cnt,
           ROW_NUMBER() OVER (
             PARTITION BY author, permlink
             ORDER BY COALESCE(rshares, 0) DESC NULLS LAST, voter ASC
-          ) AS rn
+          ) AS rn,
+          ${viewerVotedExpr} AS viewer_voted
         FROM post_active_votes
         WHERE ${whereSql}
       ) t
       WHERE rn <= ${PREVIEW_VOTER_LIMIT}
     `.execute(this.db);
 
-    const previewRows = preview.rows as { author: string; permlink: string; voter: string }[];
-    for (const row of previewRows) {
+    const data = rows.rows;
+    for (const row of data) {
       const pk = pairKey(row.author, row.permlink);
       const existing = result.get(pk);
       if (existing) {
+        existing.totalCount = Number(row.cnt);
+        existing.voted = Boolean(row.viewer_voted);
         existing.previewVoters.push(row.voter);
       }
     }

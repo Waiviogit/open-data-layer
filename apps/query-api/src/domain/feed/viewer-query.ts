@@ -2,7 +2,7 @@
 const VIEWER_ACCOUNT_PATTERN = /^[a-zA-Z0-9.-]+$/;
 
 /**
- * Optional `viewer` query: Hive account viewing the post (for administrative heart on linked objects).
+ * Optional Hive account viewing the post (for administrative heart on linked objects), e.g. from `X-Viewer`.
  * Returns `undefined` when absent or invalid (invalid values are ignored, not rejected).
  */
 export function parseOptionalViewerQuery(raw: string | string[] | undefined): string | undefined {

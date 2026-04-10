@@ -41,6 +41,7 @@ export const feedStoryItemApiSchema = z.object({
   votes: z.object({
     totalCount: z.number(),
     previewVoters: z.array(z.string()),
+    voted: z.boolean().optional().default(false),
   }),
 });
 

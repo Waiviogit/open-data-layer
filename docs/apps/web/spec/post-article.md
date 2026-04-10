@@ -20,9 +20,9 @@ Canonical public URLs use **`/@account/permlink`** (`next.config.js` rewrites th
 
 `BlogPostScreen` accepts `variant="modal" | "page"`. **Linked objects** (tagged Waivio objects) appear **below** the HTML body in a collapsible section (`feed_linked_objects`), with one card per object: avatar, name, type · category labels, optional rating row, excerpt, and a heart indicator when the signed-in viewer has **administrative authority** on that object (see query API).
 
-## Single-post API (`?viewer=`)
+## Single-post API (`X-Viewer`)
 
-`getSinglePostQuery` calls `GET /query/v1/posts/:author/:permlink` with an optional **`viewer`** query parameter set to the current Hive account when the user is logged in. The query-api uses it to populate `hasAdministrativeAuthority` on each object in `objects[]` and to resolve richer linked-object fields (`description`, `rating`, `categoryItems`) for the post view. Unauthenticated requests omit `viewer`; authority and some fields fall back to defaults.
+`getSinglePostQuery` calls `GET /query/v1/posts/:author/:permlink` with an optional **`X-Viewer`** header set to the current Hive account when the user is logged in. The query-api uses it to populate `hasAdministrativeAuthority` on each object in `objects[]`, richer linked-object fields (`description`, `rating`, `categoryItems`), and **`votes.voted`** when the viewer has an active on-chain vote. Unauthenticated requests omit the header; authority, `voted`, and some fields fall back to defaults. The profile **posts** tab uses the same header on `POST /query/v1/users/:name/blog` so feed cards can show the voted state on the like control.
 
 ## Post body HTML
 

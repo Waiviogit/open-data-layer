@@ -16,7 +16,7 @@ export async function FeedProfileContent({ accountName, feedTab }: FeedProfileCo
   const currentUsername = currentUser?.username ?? null;
 
   if (feedTab === 'posts') {
-    const page = await getUserBlogFeedPageQuery(accountName);
+    const page = await getUserBlogFeedPageQuery(accountName, {}, currentUsername);
     return (
       <BlogFeedPostsList
         accountName={accountName}
