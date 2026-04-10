@@ -19,51 +19,16 @@ import {
   formatPayoutDisplay,
   formatRelativeFeedTime,
   formatReputation,
-  formatVoteSummary,
 } from './story-utils';
 import { StoryCommentEditor } from './story-comment-editor';
 import { StoryOverflowMenu } from './story-overflow-menu';
+import { StoryVoteButton } from './story-vote-button';
 
 type StoryProps = {
   story: FeedStoryView;
   feedTab?: FeedTab;
   currentUsername: string | null;
 };
-
-function IconThumbUp({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-    </svg>
-  );
-}
-
-/** Solid fill — use with `text-accent` when the viewer has voted (matches active like control). */
-function IconThumbUpFilled({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden
-    >
-      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
-    </svg>
-  );
-}
 
 function IconComment({ className }: { className?: string }) {
   return (
@@ -184,10 +149,6 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
   const displayTimeIso = story.feedAt ?? story.createdAt;
   const relativeLabel = formatRelativeFeedTime(displayTimeIso, locale);
   const repLabel = formatReputation(story.authorReputation, locale);
-  const voteLine =
-    story.votes != null
-      ? formatVoteSummary(story.votes.totalCount, story.votes.previewVoters)
-      : null;
   const payoutLabel = formatPayoutDisplay(story.pendingPayout, story.totalPayout);
   const taggedObjects =
     story.objects && story.objects.length > 0
@@ -396,14 +357,11 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
 
       <footer className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
         <div className="flex flex-wrap items-center gap-1">
-          <StatButton
-            icon={story.votes?.voted ? <IconThumbUpFilled /> : <IconThumbUp />}
-            count={story.votes?.totalCount ?? 0}
-            label="Likes"
-            title={voteLine ?? undefined}
-            iconActive={story.votes?.voted === true}
-            countAccent={story.votes?.voted === true}
-            ariaPressed={story.votes != null ? story.votes.voted : undefined}
+          <StoryVoteButton
+            authorName={story.authorName}
+            permlink={story.permlink}
+            votes={story.votes}
+            currentUsername={currentUsername}
           />
           <StatButton
             icon={<IconComment />}

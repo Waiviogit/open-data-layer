@@ -14,7 +14,8 @@ export type StoryCommentEditorProps = {
   currentUsername: string;
 };
 
-function IconArrowUp({ className }: { className?: string }) {
+/** Matches insert (+) control styling in `EditorInsertCaretOverlay` — soft circular control. */
+function IconSendChevron({ className }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -28,7 +29,7 @@ function IconArrowUp({ className }: { className?: string }) {
       strokeLinejoin="round"
       aria-hidden
     >
-      <path d="M12 19V5M5 12l7-7 7 7" />
+      <path d="M9 18l6-6-6-6" />
     </svg>
   );
 }
@@ -76,22 +77,31 @@ export function StoryCommentEditor({ story, currentUsername }: StoryCommentEdito
 
   return (
     <div className="mt-4 border-t border-border pt-3">
-      <LexicalPostEditor
-        key={editorKey}
-        compact
-        bodyPlaceholder="Write your comment…"
-        onPlainTextChange={setBodyPlain}
-      />
-      <div className="mt-2 flex items-center justify-end">
-        <button
-          type="button"
-          onClick={() => void onSubmit()}
-          disabled={!canSubmit}
-          aria-label="Submit comment"
-          className="inline-flex size-10 shrink-0 items-center justify-center rounded-btn border border-border bg-accent text-accent-fg hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <IconArrowUp />
-        </button>
+      <div className="relative">
+        <LexicalPostEditor
+          key={editorKey}
+          compact
+          compactBottomInset
+          bodyPlaceholder="Write your comment…"
+          onPlainTextChange={setBodyPlain}
+        />
+        <div className="pointer-events-none absolute bottom-2 end-2 z-[65]">
+          <button
+            type="button"
+            onClick={() => void onSubmit()}
+            disabled={!canSubmit}
+            aria-label="Submit comment"
+            className={[
+              'pointer-events-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-circle border border-border',
+              'bg-bg text-fg-secondary shadow-none',
+              'hover:bg-ghost-surface',
+              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
+              'disabled:cursor-not-allowed disabled:opacity-50',
+            ].join(' ')}
+          >
+            <IconSendChevron />
+          </button>
+        </div>
       </div>
       {error ? (
         <p className="mt-2 text-body-sm text-error" role="alert">

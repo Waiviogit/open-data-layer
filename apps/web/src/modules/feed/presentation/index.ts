@@ -8,3 +8,5 @@ export { StoryPreviewTile } from './components/story-preview-tile';
 export type { StoryPreviewTileProps } from './components/story-preview-tile';
 export { StoryContainer } from './components/story-container';
 export type { StoryContainerProps } from './components/story-container';
+export { StoryVoteButton } from './components/story-vote-button';
+export type { StoryVoteButtonProps } from './components/story-vote-button';

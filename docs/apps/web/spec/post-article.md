@@ -18,7 +18,7 @@ Canonical public URLs use **`/@account/permlink`** (`next.config.js` rewrites th
 
 ## Content layout
 
-`BlogPostScreen` accepts `variant="modal" | "page"`. **Linked objects** (tagged Waivio objects) appear **below** the HTML body in a collapsible section (`feed_linked_objects`), with one card per object: avatar, name, type · category labels, optional rating row, excerpt, and a heart indicator when the signed-in viewer has **administrative authority** on that object (see query API).
+`BlogPostScreen` accepts `variant="modal" | "page"`. The footer includes the same **`StoryVoteButton`** like control as feed cards (Hive `vote` op via wallet broadcast; see [feed.md](feed.md) “Likes”). **Linked objects** (tagged Waivio objects) appear **below** the HTML body in a collapsible section (`feed_linked_objects`), with one card per object: avatar, name, type · category labels, optional rating row, excerpt, and a heart indicator when the signed-in viewer has **administrative authority** on that object (see query API).
 
 ## Single-post API (`X-Viewer`)
 

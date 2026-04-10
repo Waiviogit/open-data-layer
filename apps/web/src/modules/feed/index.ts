@@ -4,6 +4,12 @@ export type { UserBlogFeedPage } from './application/dto/user-blog-feed-page.dto
 export { getUserBlogFeedPageQuery } from './application/queries/get-user-blog-feed.query';
 export { getSinglePostQuery } from './application/queries/get-single-post.query';
 export type { BlogPostPayload } from './application/queries/get-single-post.query';
+export type { VoteWeightContext } from './domain/vote-weight';
+export {
+  defaultResolveVoteWeight,
+  HIVE_VOTE_WEIGHT_CLEAR,
+  HIVE_VOTE_WEIGHT_FULL,
+} from './domain/vote-weight';
 export { FEED_TABS } from './domain/feed-tab';
 export type { FeedTab } from './domain/feed-tab';
 export {
@@ -14,5 +20,11 @@ export {
   Story,
   StoryContainer,
   StoryPreviewTile,
+  StoryVoteButton,
 } from './presentation';
-export type { FeedPostGridProps, StoryContainerProps, StoryPreviewTileProps } from './presentation';
+export type {
+  FeedPostGridProps,
+  StoryContainerProps,
+  StoryPreviewTileProps,
+  StoryVoteButtonProps,
+} from './presentation';

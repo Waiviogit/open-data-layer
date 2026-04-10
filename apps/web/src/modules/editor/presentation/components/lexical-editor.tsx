@@ -124,13 +124,18 @@ function EditorInner({
   initialPlainText,
   onPlainTextChange,
   compact,
+  compactBottomInset,
 }: {
   bodyPlaceholder: string;
   initialPlainText?: string;
   onPlainTextChange?: (text: string) => void;
   compact?: boolean;
+  /** Extra bottom padding for a control (e.g. send) overlaid in the corner. */
+  compactBottomInset?: boolean;
 }) {
   const minHeightClass = compact ? 'min-h-[3rem]' : 'min-h-[12rem]';
+  const verticalPadClass =
+    compact && compactBottomInset ? 'pt-3 pb-12' : 'py-3';
   return (
     <>
       {initialPlainText ? <InitialPlainTextPlugin text={initialPlainText} /> : null}
@@ -139,7 +144,8 @@ function EditorInner({
         contentEditable={
           <ContentEditable
             className={[
-              'relative resize-y px-4 py-3 ps-8 text-body text-fg outline-none',
+              'relative resize-y px-4 ps-8 text-body text-fg outline-none',
+              verticalPadClass,
               minHeightClass,
               'focus-visible:outline-none',
             ].join(' ')}
@@ -164,6 +170,8 @@ export type LexicalEditorProps = {
   onPlainTextChange?: (text: string) => void;
   /** Shorter editor chrome (e.g. inline comment under a feed story). */
   compact?: boolean;
+  /** When `compact`, reserve bottom space for an overlaid action (e.g. send). */
+  compactBottomInset?: boolean;
 };
 
 export function LexicalPostEditor({
@@ -171,6 +179,7 @@ export function LexicalPostEditor({
   initialPlainText,
   onPlainTextChange,
   compact,
+  compactBottomInset,
 }: LexicalEditorProps) {
   const initialConfig = useMemo(
     () => ({
@@ -208,6 +217,7 @@ export function LexicalPostEditor({
           initialPlainText={initialPlainText}
           onPlainTextChange={onPlainTextChange}
           compact={compact}
+          compactBottomInset={compactBottomInset}
         />
         <EditorInsertCaretOverlay />
       </div>
