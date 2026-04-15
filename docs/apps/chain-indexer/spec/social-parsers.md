@@ -11,8 +11,8 @@ Deterministic handling of Hive operations that drive the social graph and profil
 | Hive operation | Handler | Persistence |
 |----------------|---------|-------------|
 | `custom_json` with `id: "follow"` | `FollowSocialService` / `ReblogSocialService` | `user_subscriptions`, `user_account_mutes`, `accounts_current` counters, `post_reblogged_users` (reblog branch) |
-| `account_update` | `AccountProfileUpdateService` | `accounts_current` (`alias`, `profile_image`, raw metadata strings) — **update only**, no insert |
-| `create_account`, `create_claimed_account` | `AccountEnsureService` | Minimal `accounts_current` row if absent |
+| `account_update` | `AccountProfileUpdateService` | `accounts_current` (`alias`, `profile_image`, raw metadata strings) when row exists; if **no row**, enqueue [account sync](account-sync.md) |
+| `create_account`, `create_claimed_account` | `AccountEnsureService` | Minimal `accounts_current` row if absent; then enqueue [account sync](account-sync.md) |
 
 ## Signer
 

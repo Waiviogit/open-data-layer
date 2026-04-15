@@ -99,3 +99,29 @@ export type ReblogToType = {
 export type CommentStateType = {
   content: Record<string, HiveContentType>;
 };
+
+/** Subset of `condenser_api.get_accounts` result used for indexer sync. */
+export type HiveAccountType = {
+  id: number;
+  name: string;
+  json_metadata: string;
+  posting_json_metadata: string;
+  created: string;
+  comment_count: number;
+  lifetime_vote_count: number;
+  post_count: number;
+  last_post: string;
+  last_root_post: string;
+};
+
+/** One row from `condenser_api.get_followers` / `get_following`. */
+export type HiveFollowRelation = {
+  follower: string;
+  following: string;
+  what: string[];
+};
+
+/** One row from `bridge.get_follow_list` (muted). */
+export type HiveMutedAccount = {
+  name: string;
+};

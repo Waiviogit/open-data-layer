@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AccountsCurrentRepository } from '../../repositories/accounts-current.repository';
+import { AccountSyncQueueRepository } from '../../repositories/account-sync-queue.repository';
 import type { NewAccountCurrent } from '@opden-data-layer/core';
 
 function extractNewAccountName(payload: Record<string, unknown>): string | null {
@@ -15,7 +16,10 @@ function extractNewAccountName(payload: Record<string, unknown>): string | null 
 export class AccountEnsureService {
   private readonly logger = new Logger(AccountEnsureService.name);
 
-  constructor(private readonly accounts: AccountsCurrentRepository) {}
+  constructor(
+    private readonly accounts: AccountsCurrentRepository,
+    private readonly accountSyncQueue: AccountSyncQueueRepository,
+  ) {}
 
   async ensureFromCreateAccountPayload(payload: Record<string, unknown>): Promise<void> {
     const name = extractNewAccountName(payload);
@@ -23,6 +27,8 @@ export class AccountEnsureService {
       return;
     }
     await this.ensureUserExists(name);
+    const enqueuedAt = Math.floor(Date.now() / 1000);
+    await this.accountSyncQueue.enqueue(name, enqueuedAt);
   }
 
   async ensureUserExists(name: string, updatedAtUnix?: number): Promise<void> {

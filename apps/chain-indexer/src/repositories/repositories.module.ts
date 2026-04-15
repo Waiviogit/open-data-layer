@@ -10,6 +10,7 @@ import { PostsRepository } from './posts.repository';
 import { SocialGraphRepository } from './social-graph.repository';
 import { ThreadsRepository } from './threads.repository';
 import { PostSyncQueueRepository } from './post-sync-queue.repository';
+import { AccountSyncQueueRepository } from './account-sync-queue.repository';
 
 @Module({
   providers: [
@@ -24,6 +25,7 @@ import { PostSyncQueueRepository } from './post-sync-queue.repository';
     SocialGraphRepository,
     ThreadsRepository,
     PostSyncQueueRepository,
+    AccountSyncQueueRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -37,6 +39,7 @@ import { PostSyncQueueRepository } from './post-sync-queue.repository';
     SocialGraphRepository,
     ThreadsRepository,
     PostSyncQueueRepository,
+    AccountSyncQueueRepository,
   ],
 })
 export class RepositoriesModule {}

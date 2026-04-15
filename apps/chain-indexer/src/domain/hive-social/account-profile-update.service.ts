@@ -1,31 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AccountsCurrentRepository } from '../../repositories/accounts-current.repository';
+import { AccountSyncQueueRepository } from '../../repositories/account-sync-queue.repository';
 import type { AccountCurrentUpdate } from '@opden-data-layer/core';
-
-function parseJsonObject(raw: string): Record<string, unknown> | null {
-  try {
-    const v = JSON.parse(raw) as unknown;
-    return v && typeof v === 'object' && !Array.isArray(v)
-      ? (v as Record<string, unknown>)
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-function profileFromParsed(parsed: Record<string, unknown>): {
-  alias: string;
-  profile_image: string | null;
-} {
-  const profile = parsed['profile'];
-  if (!profile || typeof profile !== 'object' || Array.isArray(profile)) {
-    return { alias: '', profile_image: null };
-  }
-  const p = profile as Record<string, unknown>;
-  const name = typeof p['name'] === 'string' ? p['name'] : '';
-  const img = typeof p['profile_image'] === 'string' ? p['profile_image'] : null;
-  return { alias: name, profile_image: img };
-}
+import { parseJsonObject, profileAliasAndImageFromHiveStrings } from './account-hive-metadata.util';
 
 /**
  * Hive `account_update` → display fields on accounts_current only (no upsert).
@@ -35,7 +12,10 @@ function profileFromParsed(parsed: Record<string, unknown>): {
 export class AccountProfileUpdateService {
   private readonly logger = new Logger(AccountProfileUpdateService.name);
 
-  constructor(private readonly accounts: AccountsCurrentRepository) {}
+  constructor(
+    private readonly accounts: AccountsCurrentRepository,
+    private readonly accountSyncQueue: AccountSyncQueueRepository,
+  ) {}
 
   async handleAccountUpdate(payload: Record<string, unknown>): Promise<void> {
     const account =
@@ -61,7 +41,7 @@ export class AccountProfileUpdateService {
         this.logger.warn(`account_update: invalid posting_json_metadata for ${account}`);
         return;
       }
-      const { alias, profile_image } = profileFromParsed(parsed);
+      const { alias, profile_image } = profileAliasAndImageFromHiveStrings(pjm, jm ?? '');
       update = {
         posting_json_metadata: pjm,
         alias,
@@ -73,7 +53,7 @@ export class AccountProfileUpdateService {
         this.logger.warn(`account_update: invalid json_metadata for ${account}`);
         return;
       }
-      const { alias, profile_image } = profileFromParsed(parsed);
+      const { alias, profile_image } = profileAliasAndImageFromHiveStrings('', jm);
       update = {
         json_metadata: jm,
         alias,
@@ -85,8 +65,10 @@ export class AccountProfileUpdateService {
 
     const row = await this.accounts.findByName(account);
     if (!row) {
+      const enqueuedAt = Math.floor(Date.now() / 1000);
+      await this.accountSyncQueue.enqueue(account, enqueuedAt);
       this.logger.debug(
-        `account_update: no accounts_current row for ${account}; skip (no upsert)`,
+        `account_update: no accounts_current row for ${account}; enqueued account sync`,
       );
       return;
     }

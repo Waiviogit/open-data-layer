@@ -73,5 +73,8 @@ export type {
   PostSyncQueueRow,
   PostSyncQueueRowUpdate,
   NewPostSyncQueueRow,
+  AccountSyncQueueRow,
+  AccountSyncQueueRowUpdate,
+  NewAccountSyncQueueRow,
 } from './odl/tables';
 export type { OdlDatabase } from './odl/database';

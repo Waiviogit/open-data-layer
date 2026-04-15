@@ -2,11 +2,13 @@ import { Injectable, Inject } from '@nestjs/common';
 import type { Kysely } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
+import type { HiveAccountType } from '@opden-data-layer/clients';
 import type {
   AccountCurrent,
   NewAccountCurrent,
   AccountCurrentUpdate,
 } from '@opden-data-layer/core';
+import { profileAliasAndImageFromHiveStrings } from '../domain/hive-social/account-hive-metadata.util';
 
 @Injectable()
 export class AccountsCurrentRepository {
@@ -101,6 +103,53 @@ export class AccountsCurrentRepository {
       .values(row)
       .returningAll()
       .executeTakeFirstOrThrow();
+  }
+
+  /**
+   * Upserts Hive-sourced account fields from `condenser_api.get_accounts`.
+   * Does not overwrite ODL-managed columns: object_reputation, wobjects_weight, stage_version,
+   * referral_status, last_activity, last_posts_count, users_following_count, followers_count.
+   */
+  async upsertFromHive(hive: HiveAccountType): Promise<void> {
+    const now = Math.floor(Date.now() / 1000);
+    const jm = typeof hive.json_metadata === 'string' ? hive.json_metadata : '';
+    const pjm =
+      typeof hive.posting_json_metadata === 'string' ? hive.posting_json_metadata : '';
+    const { alias, profile_image } = profileAliasAndImageFromHiveStrings(pjm, jm);
+
+    const hiveFields = {
+      hive_id: hive.id,
+      json_metadata: jm.length > 0 ? jm : null,
+      posting_json_metadata: pjm.length > 0 ? pjm : null,
+      created: hive.created?.trim() ? hive.created : null,
+      comment_count: Math.trunc(Number(hive.comment_count)) || 0,
+      lifetime_vote_count: Math.trunc(Number(hive.lifetime_vote_count)) || 0,
+      post_count: Math.trunc(Number(hive.post_count)) || 0,
+      last_post: hive.last_post?.trim() ? hive.last_post : null,
+      last_root_post: hive.last_root_post?.trim() ? hive.last_root_post : null,
+      updated_at_unix: now,
+      alias: alias.length > 0 ? alias : null,
+      profile_image,
+    };
+
+    const insertRow: NewAccountCurrent = {
+      name: hive.name,
+      ...hiveFields,
+      object_reputation: 0,
+      wobjects_weight: 0,
+      last_posts_count: 0,
+      users_following_count: 0,
+      followers_count: 0,
+      stage_version: 0,
+      referral_status: null,
+      last_activity: null,
+    };
+
+    await this.db
+      .insertInto('accounts_current')
+      .values(insertRow)
+      .onConflict((oc) => oc.column('name').doUpdateSet(hiveFields))
+      .execute();
   }
 
   async delete(name: string) {

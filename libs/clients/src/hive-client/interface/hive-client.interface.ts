@@ -1,5 +1,12 @@
 import { SignedBlock } from '@hiveio/dhive/lib/chain/block';
-import { ActiveVotesType, CommentStateType, HiveContentType } from '../type';
+import {
+  ActiveVotesType,
+  CommentStateType,
+  HiveAccountType,
+  HiveContentType,
+  HiveFollowRelation,
+  HiveMutedAccount,
+} from '../type';
 import { CommentOptionsOperation } from '@hiveio/dhive/lib/chain/operation';
 import { BeneficiaryRoute } from '@hiveio/dhive/lib/chain/comment';
 
@@ -22,6 +29,24 @@ export interface HiveClientInterface {
     permlink: string,
     beneficiaries: BeneficiaryRoute[],
   ): CommentOptionsOperation[1];
+
+  getAccounts(names: string[]): Promise<HiveAccountType[]>;
+
+  getFollowers(
+    account: string,
+    startFollower: string | null,
+    type: 'blog',
+    limit: number,
+  ): Promise<HiveFollowRelation[]>;
+
+  getFollowing(
+    account: string,
+    startFollowing: string | null,
+    type: 'blog',
+    limit: number,
+  ): Promise<HiveFollowRelation[]>;
+
+  getMutedList(observer: string): Promise<HiveMutedAccount[]>;
 }
 
 export interface GetVoteInterface {

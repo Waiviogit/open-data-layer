@@ -52,5 +52,10 @@ export default () => {
       batchSize: env.POST_SYNC_BATCH_SIZE,
       maxAttempts: env.POST_SYNC_MAX_ATTEMPTS,
     },
+    accountSync: {
+      intervalMs: env.ACCOUNT_SYNC_INTERVAL_MS,
+      batchSize: env.ACCOUNT_SYNC_BATCH_SIZE,
+      maxAttempts: env.ACCOUNT_SYNC_MAX_ATTEMPTS,
+    },
   };
 };

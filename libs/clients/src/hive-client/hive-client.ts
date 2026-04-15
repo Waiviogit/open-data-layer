@@ -1,6 +1,12 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { GetVoteInterface, HiveClientInterface } from './interface';
-import { ActiveVotesType, CommentStateType, HiveContentType } from './type';
+import {
+  ActiveVotesType,
+  CommentStateType,
+  HiveAccountType,
+  HiveContentType,
+  HiveFollowRelation,
+} from './type';
 import { CommentOptionsOperation } from '@hiveio/dhive/lib/chain/operation';
 import { BeneficiaryRoute } from '@hiveio/dhive/lib/chain/comment';
 import { SignedBlock } from '@hiveio/dhive/lib/chain/block';
@@ -150,5 +156,53 @@ export class HiveClient implements HiveClientInterface {
   }: GetVoteInterface): Promise<ActiveVotesType | undefined> {
     const activeVotes = await this.getActiveVotes(author, permlink);
     return activeVotes?.find((v) => v.voter === voter);
+  }
+
+  async getAccounts(names: string[]): Promise<HiveAccountType[]> {
+    if (names.length === 0) {
+      return [];
+    }
+    return (
+      (await this.hiveRequest<HiveAccountType[]>(CONDENSER_API.GET_ACCOUNTS, [
+        names,
+      ])) ?? []
+    );
+  }
+
+  async getFollowers(
+    account: string,
+    startFollower: string | null,
+    type: 'blog',
+    limit: number,
+  ): Promise<HiveFollowRelation[]> {
+    return (
+      (await this.hiveRequest<HiveFollowRelation[]>(
+        CONDENSER_API.GET_FOLLOWERS,
+        [account, startFollower, type, limit],
+      )) ?? []
+    );
+  }
+
+  async getFollowing(
+    account: string,
+    startFollowing: string | null,
+    type: 'blog',
+    limit: number,
+  ): Promise<HiveFollowRelation[]> {
+    return (
+      (await this.hiveRequest<HiveFollowRelation[]>(
+        CONDENSER_API.GET_FOLLOWING,
+        [account, startFollowing, type, limit],
+      )) ?? []
+    );
+  }
+
+  async getMutedList(observer: string) {
+    return (
+      (await this.hiveRequest<{ name: string }[]>(BRIDGE.GET_FOLLOW_LIST, {
+        observer,
+        follow_type: 'muted',
+      })) ?? []
+    );
   }
 }

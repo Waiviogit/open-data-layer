@@ -4,6 +4,7 @@ import { FollowSocialService } from './follow-social.service';
 import { ReblogSocialService } from './reblog-social.service';
 import { AccountProfileUpdateService } from './account-profile-update.service';
 import { AccountEnsureService } from './account-ensure.service';
+import { AccountSyncWorker } from './account-sync.worker';
 
 @Module({
   imports: [RepositoriesModule],
@@ -12,6 +13,7 @@ import { AccountEnsureService } from './account-ensure.service';
     ReblogSocialService,
     AccountProfileUpdateService,
     AccountEnsureService,
+    AccountSyncWorker,
   ],
   exports: [
     FollowSocialService,

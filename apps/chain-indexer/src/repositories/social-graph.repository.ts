@@ -134,4 +134,50 @@ export class SocialGraphRepository {
       .where('name', '=', follower)
       .execute();
   }
+
+  private static readonly BULK_INSERT_CHUNK = 500;
+
+  /**
+   * Idempotent backfill: insert missing `(follower, following)` pairs; does not adjust counts.
+   */
+  async bulkInsertSubscriptions(
+    rows: { follower: string; following: string }[],
+    trx?: DbExecutor,
+  ): Promise<void> {
+    if (rows.length === 0) {
+      return;
+    }
+    const e = this.executor(trx);
+    const chunk = SocialGraphRepository.BULK_INSERT_CHUNK;
+    for (let i = 0; i < rows.length; i += chunk) {
+      const slice = rows.slice(i, i + chunk);
+      await e
+        .insertInto('user_subscriptions')
+        .values(slice.map((r) => ({ follower: r.follower, following: r.following, bell: null })))
+        .onConflict((oc) => oc.columns(['follower', 'following']).doNothing())
+        .execute();
+    }
+  }
+
+  /**
+   * Idempotent backfill: insert missing `(muter, muted)` pairs; does not adjust counts.
+   */
+  async bulkInsertMutes(
+    rows: { muter: string; muted: string }[],
+    trx?: DbExecutor,
+  ): Promise<void> {
+    if (rows.length === 0) {
+      return;
+    }
+    const e = this.executor(trx);
+    const chunk = SocialGraphRepository.BULK_INSERT_CHUNK;
+    for (let i = 0; i < rows.length; i += chunk) {
+      const slice = rows.slice(i, i + chunk);
+      await e
+        .insertInto('user_account_mutes')
+        .values(slice.map((r) => ({ muter: r.muter, muted: r.muted })))
+        .onConflict((oc) => oc.columns(['muter', 'muted']).doNothing())
+        .execute();
+    }
+  }
 }

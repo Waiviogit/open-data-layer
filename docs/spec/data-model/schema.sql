@@ -465,6 +465,18 @@ CREATE TABLE post_sync_queue (
 CREATE INDEX idx_post_sync_queue_pending ON post_sync_queue (last_attempt_at NULLS FIRST);
 
 -- ---------------------------------------------------------------------------
+-- account_sync_queue (chain-indexer: Hive account recovery from get_accounts + social graph)
+-- ---------------------------------------------------------------------------
+CREATE TABLE account_sync_queue (
+  account_name    TEXT NOT NULL PRIMARY KEY,
+  enqueued_at     BIGINT NOT NULL,
+  attempts        INT NOT NULL DEFAULT 0,
+  last_attempt_at BIGINT
+);
+
+CREATE INDEX idx_account_sync_queue_pending ON account_sync_queue (last_attempt_at NULLS FIRST);
+
+-- ---------------------------------------------------------------------------
 -- user_post_drafts (editor drafts; optional link to Hive post via permlink)
 -- ---------------------------------------------------------------------------
 CREATE TABLE user_post_drafts (

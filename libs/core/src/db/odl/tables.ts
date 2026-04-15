@@ -51,6 +51,7 @@ export interface OdlDatabase {
   threads: ThreadsTable;
   thread_active_votes: ThreadActiveVotesTable;
   post_sync_queue: PostSyncQueueTable;
+  account_sync_queue: AccountSyncQueueTable;
 }
 
 // ---------------------------------------------------------------------------
@@ -539,6 +540,21 @@ export interface PostSyncQueueTable {
 export type PostSyncQueueRow = Selectable<PostSyncQueueTable>;
 export type NewPostSyncQueueRow = Insertable<PostSyncQueueTable>;
 export type PostSyncQueueRowUpdate = Updateable<PostSyncQueueTable>;
+
+// ---------------------------------------------------------------------------
+// account_sync_queue (chain-indexer Hive account recovery)
+// ---------------------------------------------------------------------------
+
+export interface AccountSyncQueueTable {
+  account_name: string;
+  enqueued_at: number;
+  attempts: number;
+  last_attempt_at: number | null;
+}
+
+export type AccountSyncQueueRow = Selectable<AccountSyncQueueTable>;
+export type NewAccountSyncQueueRow = Insertable<AccountSyncQueueTable>;
+export type AccountSyncQueueRowUpdate = Updateable<AccountSyncQueueTable>;
 
 // ---------------------------------------------------------------------------
 // user_post_drafts

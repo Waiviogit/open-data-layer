@@ -62,6 +62,7 @@ flowchart LR
 | [Social parsers](social-parsers.md) | Hive follow / reblog / mute, account profile updates, minimal account rows |
 | [ODL pipeline](odl-pipeline.md) | Envelope, actions, repositories, write guards, batch import |
 | [Vote ingestion](vote-ingestion.md) | Hive `vote` → `post_active_votes` + `post_sync_queue`; worker fills `rshares` and ghost posts |
+| [Account sync](account-sync.md) | `account_sync_queue`: `get_accounts` + followers/following/muted backfill when account is missing or on create |
 
 **Schema and migrations:** [Data model](../../../spec/data-model/flow.md), [Migrations](../../../operations/migrations.md).
 
