@@ -6,3 +6,5 @@ export { RankVotesRepository } from './rank-votes.repository';
 export { AccountsCurrentRepository } from './accounts-current.repository';
 export { ObjectAuthorityRepository } from './object-authority.repository';
 export { AggregatedObjectRepository } from './aggregated-object.repository';
+export { PostsRepository } from './posts.repository';
+export { ThreadsRepository } from './threads.repository';

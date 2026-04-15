@@ -6,6 +6,8 @@ import { RankVotesRepository } from './rank-votes.repository';
 import { AccountsCurrentRepository } from './accounts-current.repository';
 import { ObjectAuthorityRepository } from './object-authority.repository';
 import { AggregatedObjectRepository } from './aggregated-object.repository';
+import { PostsRepository } from './posts.repository';
+import { ThreadsRepository } from './threads.repository';
 
 @Module({
   providers: [
@@ -16,6 +18,8 @@ import { AggregatedObjectRepository } from './aggregated-object.repository';
     AccountsCurrentRepository,
     ObjectAuthorityRepository,
     AggregatedObjectRepository,
+    PostsRepository,
+    ThreadsRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -25,6 +29,8 @@ import { AggregatedObjectRepository } from './aggregated-object.repository';
     AccountsCurrentRepository,
     ObjectAuthorityRepository,
     AggregatedObjectRepository,
+    PostsRepository,
+    ThreadsRepository,
   ],
 })
 export class RepositoriesModule {}

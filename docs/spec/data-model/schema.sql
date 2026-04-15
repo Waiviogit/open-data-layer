@@ -328,7 +328,6 @@ CREATE TABLE post_objects (
   permlink     TEXT NOT NULL,
   object_id    TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
   percent      INT,
-  tagged       TEXT,
   object_type  TEXT,
   PRIMARY KEY (author, permlink, object_id),
   FOREIGN KEY (author, permlink) REFERENCES posts (author, permlink) ON DELETE CASCADE
@@ -389,6 +388,55 @@ CREATE TABLE post_mentions (
 );
 
 CREATE INDEX idx_post_mentions_account ON post_mentions (account);
+
+-- ---------------------------------------------------------------------------
+-- threads (Leo / Ecency thread-style Hive comments)
+-- ---------------------------------------------------------------------------
+CREATE TABLE threads (
+  author               TEXT NOT NULL,
+  permlink             TEXT NOT NULL,
+  parent_author        TEXT NOT NULL,
+  parent_permlink      TEXT NOT NULL,
+  body                 TEXT NOT NULL DEFAULT '',
+  created              TEXT,
+  replies              TEXT[] NOT NULL DEFAULT '{}',
+  children             INT NOT NULL DEFAULT 0,
+  depth                INT NOT NULL DEFAULT 1,
+  author_reputation    BIGINT,
+  deleted              BOOLEAN NOT NULL DEFAULT FALSE,
+  tickers              TEXT[] NOT NULL DEFAULT '{}',
+  mentions             TEXT[] NOT NULL DEFAULT '{}',
+  hashtags             TEXT[] NOT NULL DEFAULT '{}',
+  links                TEXT[] NOT NULL DEFAULT '{}',
+  images               TEXT[] NOT NULL DEFAULT '{}',
+  threadstorm          BOOLEAN NOT NULL DEFAULT FALSE,
+  net_rshares          BIGINT,
+  pending_payout_value TEXT,
+  total_payout_value   TEXT,
+  percent_hbd          DOUBLE PRECISION,
+  cashout_time         TEXT,
+  bulk_message         BOOLEAN NOT NULL DEFAULT FALSE,
+  type                 TEXT NOT NULL CHECK (type IN ('leothreads', 'ecencythreads')),
+  created_unix         BIGINT NOT NULL,
+  updated_at_unix      BIGINT,
+  PRIMARY KEY (author, permlink)
+);
+
+CREATE INDEX idx_threads_created_unix ON threads (created_unix DESC);
+
+CREATE TABLE thread_active_votes (
+  author       TEXT NOT NULL,
+  permlink     TEXT NOT NULL,
+  voter        TEXT NOT NULL,
+  weight       DOUBLE PRECISION,
+  percent      DOUBLE PRECISION,
+  rshares      BIGINT,
+  rshares_waiv DOUBLE PRECISION,
+  PRIMARY KEY (author, permlink, voter),
+  FOREIGN KEY (author, permlink) REFERENCES threads (author, permlink) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_thread_active_votes_voter ON thread_active_votes (voter);
 
 -- ---------------------------------------------------------------------------
 -- user_post_drafts (editor drafts; optional link to Hive post via permlink)

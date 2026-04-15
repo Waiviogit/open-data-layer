@@ -153,7 +153,6 @@ describe('GetPostByKeyEndpoint', () => {
       object_id: 'obj-x',
       object_type: 'recipe',
       percent: 100,
-      tagged: null,
     };
     postsRepo.findPostsByKeys.mockResolvedValue([p]);
     postsRepo.findPostObjectsByKeys.mockResolvedValue([postObject]);
@@ -197,7 +196,6 @@ describe('GetPostByKeyEndpoint', () => {
       object_id: 'obj-x',
       object_type: 'recipe',
       percent: 100,
-      tagged: null,
     };
     postsRepo.findPostsByKeys.mockResolvedValue([p]);
     postsRepo.findPostObjectsByKeys.mockResolvedValue([postObject]);

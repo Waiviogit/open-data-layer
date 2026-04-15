@@ -37,6 +37,8 @@
     "@nestjs/schedule": "^6.1.1",
     "@nestjs/swagger": "^11.2.6",
     "class-transformer": "^0.5.1",
+    "diff": "^9.0.0",
+    "eld": "^2.0.3",
     "hivesigner": "^4.0.0",
     "ioredis": "^5.10.0",
     "jose": "^6.2.2",

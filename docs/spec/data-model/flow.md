@@ -11,6 +11,8 @@ Related files:
 - [rank-votes.ts](rank-votes.ts) — RankVoteRow
 - [schema.sql](schema.sql) — Full DDL
 - [posts.md](posts.md) — Hive `posts` and satellite tables (separate from object/update flow)
+- [post-json-metadata-objects.md](post-json-metadata-objects.md) — `json_metadata` shape for `post_objects` (objects, tags, merge, `objects_core` filter)
+- [threads.md](threads.md) — Leo/Ecency `threads` and `thread_active_votes`
 - [users.md](users.md) — Waivio `accounts_current` extensions and `user_*` tables
 
 ## Roles of the tables

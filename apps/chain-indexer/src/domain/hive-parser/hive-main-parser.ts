@@ -12,6 +12,7 @@ import {
   HiveOperationHandler,
   HiveOperationHandlerContext,
 } from './hive-handler-context';
+import { CommentOperationOrchestrator } from '../hive-comment/comment-orchestrator.service';
 
 @Injectable()
 export class HiveMainParser {
@@ -21,11 +22,21 @@ export class HiveMainParser {
   constructor(
     private readonly configService: ConfigService,
     private readonly customJsonParser: HiveCustomJsonParser,
+    private readonly commentOrchestrator: CommentOperationOrchestrator,
   ) {
     this.handlers = {
       [HIVE_OPERATION.CUSTOM_JSON]: {
         handle: (p, ctx) =>
           this.customJsonParser.parse(p as CustomJsonOperation[1], ctx),
+      },
+      [HIVE_OPERATION.COMMENT]: {
+        handle: (p, ctx) =>
+          this.commentOrchestrator.handleComment(p, ctx.timestamp),
+      },
+      [HIVE_OPERATION.DELETE_COMMENT]: {
+        handle: async (p) => {
+          await this.commentOrchestrator.handleDeleteComment(p);
+        },
       },
     };
   }

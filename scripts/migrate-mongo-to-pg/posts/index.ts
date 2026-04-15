@@ -25,7 +25,16 @@ import { Pool } from 'pg';
 import streamArray from 'stream-json/streamers/stream-array.js';
 
 import { createdAtUnixFromObjectId, mongoIdToString } from '../objects/utils';
+import {
+  buildMongoPostMetadataRecord,
+  objectTypeByIdFromLegacyWobjects,
+} from './build-mongo-post-metadata';
+import { normalizeMongoPostLanguage } from './normalize-post-language';
 import type { MongoDate, MongoPost } from './types';
+import {
+  bindPostObjectsToPost,
+  parsePostObjectsForInsert,
+} from '../../../apps/chain-indexer/src/domain/hive-comment/post-objects.parse';
 
 const BATCH_SIZE = 5000;
 
@@ -97,19 +106,6 @@ function toFloatOrNull(v: unknown): number | null {
     return Number.isFinite(n) ? n : null;
   }
   return null;
-}
-
-/** `post_objects.percent` is INT; Mongo wobjects may use floats (e.g. 12.5). */
-function toIntOrNull(v: unknown): number | null {
-  const n = toFloatOrNull(v);
-  if (n == null) {
-    return null;
-  }
-  const r = Math.round(n);
-  if (!Number.isSafeInteger(r)) {
-    return null;
-  }
-  return r;
 }
 
 function parseMongoDate(u: unknown): number | null {
@@ -550,18 +546,17 @@ class MongoPostsMigrator {
       });
     }
 
-    for (const w of doc.wobjects ?? []) {
-      const objectId = w.author_permlink?.trim();
-      if (!objectId) {
-        continue;
-      }
+    const metaRecord = buildMongoPostMetadataRecord(doc);
+    const typeById = objectTypeByIdFromLegacyWobjects(doc);
+    const objectRows = bindPostObjectsToPost(
+      parsePostObjectsForInsert(metaRecord ?? {}, doc.body ?? ''),
+      author,
+      permlink,
+    );
+    for (const row of objectRows) {
       this.pushObject({
-        author,
-        permlink,
-        object_id: objectId,
-        percent: toIntOrNull(w.percent),
-        tagged: w.tagged?.trim() ?? null,
-        object_type: w.object_type?.trim() ?? null,
+        ...row,
+        object_type: row.object_type ?? typeById.get(row.object_id) ?? null,
       });
     }
 
@@ -578,12 +573,16 @@ class MongoPostsMigrator {
       });
     }
 
+    const languagesSeen = new Set<string>();
     for (const lang of doc.languages ?? []) {
-      const language = lang?.trim();
-      if (!language) {
+      const normalized = normalizeMongoPostLanguage(
+        typeof lang === 'string' ? lang : String(lang ?? ''),
+      );
+      if (!normalized || languagesSeen.has(normalized)) {
         continue;
       }
-      this.pushLanguage({ author, permlink, language });
+      languagesSeen.add(normalized);
+      this.pushLanguage({ author, permlink, language: normalized });
     }
 
     for (const link of doc.links ?? []) {

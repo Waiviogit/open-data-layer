@@ -8,9 +8,36 @@ import type {
   ObjectsCoreUpdate,
 } from '@opden-data-layer/core';
 
+const OBJECT_ID_IN_CHUNK = 400;
+
 @Injectable()
 export class ObjectsCoreRepository {
   constructor(@Inject(KYSELY) private readonly db: Kysely<Database>) {}
+
+  /**
+   * Returns object_type per existing object_id (batched). Unknown ids are omitted.
+   */
+  async findObjectTypesByIds(
+    objectIds: string[],
+  ): Promise<Map<string, string>> {
+    const unique = [...new Set(objectIds.map((id) => id.trim()).filter(Boolean))];
+    const out = new Map<string, string>();
+    for (let i = 0; i < unique.length; i += OBJECT_ID_IN_CHUNK) {
+      const chunk = unique.slice(i, i + OBJECT_ID_IN_CHUNK);
+      if (chunk.length === 0) {
+        continue;
+      }
+      const rows = await this.db
+        .selectFrom('objects_core')
+        .select(['object_id', 'object_type'])
+        .where('object_id', 'in', chunk)
+        .execute();
+      for (const r of rows) {
+        out.set(r.object_id, r.object_type);
+      }
+    }
+    return out;
+  }
 
   async findByObjectId(objectId: string) {
     return this.db

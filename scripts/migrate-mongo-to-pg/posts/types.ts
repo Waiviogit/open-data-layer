@@ -16,8 +16,13 @@ export interface MongoPostActiveVote {
 export interface MongoPostWobject {
   author_permlink?: string;
   percent?: number;
-  tagged?: string;
   object_type?: string;
+}
+
+/** New export shape; aligns with chain-indexer `json_metadata.objects`. */
+export interface MongoPostObjectEntry {
+  object_id?: string;
+  percent?: number;
 }
 
 export interface MongoPostReblogTo {
@@ -75,6 +80,10 @@ export interface MongoPost {
   promoted?: string;
   body_length?: number;
   active_votes?: MongoPostActiveVote[];
+  /** Preferred over `wobjects` when present. */
+  objects?: MongoPostObjectEntry[];
+  /** Hive string tags (object_id candidates at percent 0). */
+  tags?: string[];
   wobjects?: MongoPostWobject[];
   languages?: string[];
   reblog_to?: MongoPostReblogTo;

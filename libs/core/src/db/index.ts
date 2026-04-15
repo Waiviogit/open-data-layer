@@ -61,5 +61,11 @@ export type {
   UserPostDraft,
   UserPostDraftUpdate,
   NewUserPostDraft,
+  Thread,
+  ThreadUpdate,
+  NewThread,
+  ThreadActiveVote,
+  ThreadActiveVoteUpdate,
+  NewThreadActiveVote,
 } from './odl/tables';
 export type { OdlDatabase } from './odl/database';

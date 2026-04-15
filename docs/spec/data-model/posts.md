@@ -121,4 +121,5 @@ LIMIT $limit + 1;
 ## Related
 
 - [flow.md](flow.md) — core object/update/vote flows (separate concern from Hive posts)
+- [post-json-metadata-objects.md](post-json-metadata-objects.md) — how `json_metadata` + body become `post_objects` rows
 - [social-account-ingestion.md](../social-account-ingestion.md) — account ingestion context

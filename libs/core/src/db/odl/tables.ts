@@ -5,6 +5,7 @@
  * @see docs/spec/data-model/schema.sql
  * @see docs/spec/data-model/flow.md
  * @see docs/spec/data-model/posts.md
+ * @see docs/spec/data-model/threads.md
  * @see docs/spec/data-model/users.md
  */
 
@@ -46,6 +47,8 @@ export interface OdlDatabase {
   post_links: PostLinksTable;
   post_mentions: PostMentionsTable;
   user_post_drafts: UserPostDraftsTable;
+  threads: ThreadsTable;
+  thread_active_votes: ThreadActiveVotesTable;
 }
 
 // ---------------------------------------------------------------------------
@@ -382,7 +385,6 @@ export interface PostObjectsTable {
   permlink: string;
   object_id: string;
   percent: number | null;
-  tagged: string | null;
   /** Denormalized from objects_core for filters without JOIN. */
   object_type: string | null;
 }
@@ -449,6 +451,62 @@ export interface PostMentionsTable {
 export type PostMention = Selectable<PostMentionsTable>;
 export type NewPostMention = Insertable<PostMentionsTable>;
 export type PostMentionUpdate = Updateable<PostMentionsTable>;
+
+// ---------------------------------------------------------------------------
+// threads (Leo / Ecency thread-style comments)
+// ---------------------------------------------------------------------------
+
+export interface ThreadsTable {
+  author: string;
+  permlink: string;
+  parent_author: string;
+  parent_permlink: string;
+  body: string;
+  created: string | null;
+  replies: ColumnType<string[], string[] | undefined, string[]>;
+  children: number;
+  depth: number;
+  author_reputation: bigint | null;
+  deleted: boolean;
+  tickers: ColumnType<string[], string[] | undefined, string[]>;
+  mentions: ColumnType<string[], string[] | undefined, string[]>;
+  hashtags: ColumnType<string[], string[] | undefined, string[]>;
+  links: ColumnType<string[], string[] | undefined, string[]>;
+  images: ColumnType<string[], string[] | undefined, string[]>;
+  threadstorm: boolean;
+  net_rshares: bigint | null;
+  pending_payout_value: string | null;
+  total_payout_value: string | null;
+  percent_hbd: number | null;
+  cashout_time: string | null;
+  bulk_message: boolean;
+  /** Leo vs Ecency thread flavour. */
+  type: 'leothreads' | 'ecencythreads';
+  created_unix: number;
+  updated_at_unix: number | null;
+}
+
+export type Thread = Selectable<ThreadsTable>;
+export type NewThread = Insertable<ThreadsTable>;
+export type ThreadUpdate = Updateable<ThreadsTable>;
+
+// ---------------------------------------------------------------------------
+// thread_active_votes
+// ---------------------------------------------------------------------------
+
+export interface ThreadActiveVotesTable {
+  author: string;
+  permlink: string;
+  voter: string;
+  weight: number | null;
+  percent: number | null;
+  rshares: bigint | null;
+  rshares_waiv: number | null;
+}
+
+export type ThreadActiveVote = Selectable<ThreadActiveVotesTable>;
+export type NewThreadActiveVote = Insertable<ThreadActiveVotesTable>;
+export type ThreadActiveVoteUpdate = Updateable<ThreadActiveVotesTable>;
 
 // ---------------------------------------------------------------------------
 // user_post_drafts

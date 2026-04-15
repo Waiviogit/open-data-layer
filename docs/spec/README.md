@@ -81,6 +81,8 @@ Details: [architecture overview](../architecture/overview.md).
 |-----|-------------|
 | [data-model/flow.md](data-model/flow.md) | Schema, write/read flows, indexes, comparison notes |
 | [data-model/posts.md](data-model/posts.md) | Hive posts: `posts` + satellite tables (votes, objects, reblogs, languages, links, mentions) |
+| [data-model/post-json-metadata-objects.md](data-model/post-json-metadata-objects.md) | `json_metadata.objects` / `tags` / body paths → `post_objects` (merge rules, DB filter) |
+| [data-model/threads.md](data-model/threads.md) | Leo/Ecency threads: `threads` + `thread_active_votes` |
 | [data-model/users.md](data-model/users.md) | Waivio users: extended `accounts_current` + `user_*` tables |
 | [data-model/schema.sql](data-model/schema.sql) | DDL sketch |
 

@@ -49,7 +49,8 @@ pnpm migrate:mongo-subscriptions <path-to-subscriptions.json>
 Source shape: legacy Mongo [`PostSchema`](../../tmp/PostSchema.js). ODL columns: [`libs/core/src/db/odl/tables.ts`](../../libs/core/src/db/odl/tables.ts).
 
 - **Skipped:** `blocked_for_apps`, singular `language`, `reblog_to`. Posts with both `title` and `body` empty after trim are ignored entirely (stat `postsSkippedEmptyTitleBody`).
-- **`post_objects`:** `wobjects[].author_permlink` → `object_id`. Rows are inserted only when `object_id` exists in `objects_core` (missing FKs are skipped; see migrator stats `postObjectsSkippedNoFk`).
+- **`post_languages`:** `languages[]` may use regional tags (`en-US`). The importer stores the **primary language subtag** only (`en`), canonicalized with `Intl`, and dedupes per post (e.g. `en-US` + `en-GB` → one `en` row).
+- **`post_objects`:** Built with the same merge rules as chain-indexer (`json_metadata.objects` or legacy `wobjects`, `tags` / `json_metadata.tags`, body `/object/...`). `object_type` from legacy `wobjects` when present. Rows are inserted only when `object_id` exists in `objects_core` (missing FKs are skipped; see migrator stats `postObjectsSkippedNoFk`).
 - **`post_reblogged_users.reblogged_at_unix`:** Mongo stores only account names. The importer sets a single timestamp per post from, in order: `updatedAt`, `createdAt` (mongoose), `last_update` / `active` (parsed), else `created_unix` of the post.
 - **`created_unix`:** `created` string, then mongoose `createdAt` / `updatedAt`, then `_id` ObjectId seconds.
 
