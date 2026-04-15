@@ -1,7 +1,7 @@
+import { OBJECT_PATH_BODY_RE } from './comment-post-object-candidates';
 import { parseJsonMetadata } from './json-metadata.util';
 
 const HASHTAG_BODY_RE = /#([\w-]+)/g;
-const OBJECT_SLUG_RE = /\/object\/([a-z0-9-]*)/gi;
 const MENTION_RE = /@([\w.-]+)/g;
 const URL_RE = /https?:\/\/\S+/g;
 
@@ -19,7 +19,7 @@ export function extractHashtags(body: string): string[] {
   while ((m = bodyRe.exec(body)) !== null) {
     out.push(m[1]);
   }
-  const slugRe = new RegExp(OBJECT_SLUG_RE);
+  const slugRe = new RegExp(OBJECT_PATH_BODY_RE);
   while ((m = slugRe.exec(body)) !== null) {
     if (m[1]) {
       out.push(m[1]);

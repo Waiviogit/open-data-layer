@@ -1,7 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { HiveContentType } from '@opden-data-layer/clients';
 import { HiveClient } from '@opden-data-layer/clients';
-import type { NewPost, NewPostActiveVote, NewPostObject, PostActiveVote } from '@opden-data-layer/core';
+import type {
+  NewPost,
+  NewPostActiveVote,
+  NewPostObject,
+  Post,
+  PostActiveVote,
+} from '@opden-data-layer/core';
 import { ObjectsCoreRepository } from '../../repositories/objects-core.repository';
 import { PostsRepository } from '../../repositories/posts.repository';
 import { mergeHiveCommentBody } from './body-merge';
@@ -18,11 +24,11 @@ import { extractLinks, extractMentions } from './thread-extractors';
 
 function toBigIntNaive(v: number | string | undefined | null): bigint {
   if (v === undefined || v === null) {
-    return 0n;
+    return BigInt(0);
   }
   const n = typeof v === 'number' ? v : Number(v);
   if (!Number.isFinite(n)) {
-    return 0n;
+    return BigInt(0);
   }
   return BigInt(Math.trunc(n));
 }
@@ -36,6 +42,45 @@ export class PostUpsertService {
     private readonly objectsCoreRepository: ObjectsCoreRepository,
     private readonly hiveClient: HiveClient,
   ) {}
+
+  /**
+   * When a parent post is missing locally but exists on Hive as a root (`depth === 0`), replay normal root upsert.
+   * Used by comment-driven object binding.
+   */
+  async ensureRootPostInDb(
+    parentAuthor: string,
+    parentPermlink: string,
+    blockTimestamp: string,
+  ): Promise<Post | undefined> {
+    const author = parentAuthor.trim();
+    const permlink = parentPermlink.trim();
+    if (!author || !permlink) {
+      return undefined;
+    }
+    const existing = await this.postsRepository.findByKey(author, permlink);
+    if (existing) {
+      return existing;
+    }
+    const hive = await this.hiveClient.getContent(author, permlink);
+    if (!hive?.author) {
+      return undefined;
+    }
+    if (Number(hive.depth) !== 0) {
+      return undefined;
+    }
+    const metadata = parseJsonMetadata(hive.json_metadata ?? '') ?? {};
+    const op: CommentOperationPayload = {
+      parent_author: '',
+      parent_permlink: hive.parent_permlink ?? '',
+      author: hive.author,
+      permlink: hive.permlink,
+      title: hive.title ?? '',
+      body: hive.body ?? '',
+      json_metadata: hive.json_metadata ?? '{}',
+    };
+    await this.upsertRootPost(op, metadata, blockTimestamp);
+    return this.postsRepository.findByKey(author, permlink);
+  }
 
   /**
    * Root post path only (`parent_author === ''`); caller ensures metadata is truthy.
@@ -157,7 +202,7 @@ export class PostUpsertService {
       author,
       permlink,
       hive_id: null,
-      author_reputation: 0n,
+      author_reputation: BigInt(0),
       author_weight: 0,
       parent_author: '',
       parent_permlink: parentPermlink,
@@ -172,9 +217,9 @@ export class PostUpsertService {
       active: null,
       last_payout: null,
       children: 0,
-      net_rshares: 0n,
-      abs_rshares: 0n,
-      vote_rshares: 0n,
+      net_rshares: BigInt(0),
+      abs_rshares: BigInt(0),
+      vote_rshares: BigInt(0),
       children_abs_rshares: null,
       cashout_time: cashoutTimeFromBlock(blockTimestamp),
       reward_weight: null,

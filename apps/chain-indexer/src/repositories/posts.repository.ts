@@ -39,6 +39,34 @@ export class PostsRepository {
       .execute();
   }
 
+  /** Distinct `object_id` values already linked to the post. */
+  async findPostObjectIdsForPost(
+    author: string,
+    permlink: string,
+  ): Promise<Set<string>> {
+    const rows = await this.db
+      .selectFrom('post_objects')
+      .select('object_id')
+      .where('author', '=', author)
+      .where('permlink', '=', permlink)
+      .execute();
+    return new Set(rows.map((r) => r.object_id));
+  }
+
+  /** Append-only; ignores duplicates (natural PK). */
+  async appendPostObjects(rows: NewPostObject[]): Promise<void> {
+    if (rows.length === 0) {
+      return;
+    }
+    await this.db
+      .insertInto('post_objects')
+      .values(rows)
+      .onConflict((oc) =>
+        oc.columns(['author', 'permlink', 'object_id']).doNothing(),
+      )
+      .execute();
+  }
+
   /**
    * Insert on conflict update all scalars except PK (full row replace semantics).
    */
@@ -57,12 +85,13 @@ export class PostsRepository {
       .execute();
   }
 
-  async incrementChildren(rootAuthor: string, permlink: string): Promise<void> {
+  /** Bump `children` on the parent post row; PK is `(author, permlink)`. */
+  async incrementChildren(parentAuthor: string, parentPermlink: string): Promise<void> {
     await this.db
       .updateTable('posts')
       .set({ children: sql`children + 1` })
-      .where('root_author', '=', rootAuthor)
-      .where('permlink', '=', permlink)
+      .where('author', '=', parentAuthor)
+      .where('permlink', '=', parentPermlink)
       .execute();
   }
 

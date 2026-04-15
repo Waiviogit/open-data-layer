@@ -19,6 +19,11 @@ describe('thread-extractors', () => {
     expect(tags).toContain('two');
   });
 
+  it('extractHashtags captures full /object/ slugs with underscores and periods', () => {
+    const body = 'x /object/my_object.name y';
+    expect(extractHashtags(body)).toContain('my_object.name');
+  });
+
   it('extractMentions strips @', () => {
     expect(extractMentions('Hi @alice.cc and @bob')).toEqual([
       'alice.cc',

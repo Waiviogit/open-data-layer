@@ -7,6 +7,7 @@ import {
   deleteCommentOperationPayloadSchema,
 } from './hive-comment.schema';
 import { isTruthyMetadata, parseJsonMetadata } from './json-metadata.util';
+import { CommentPostObjectBindService } from './comment-post-object-bind.service';
 import { PostUpsertService } from './post-upsert.service';
 import { ThreadParseService } from './thread-parse.service';
 
@@ -19,6 +20,7 @@ export class CommentOperationOrchestrator {
     private readonly threadParse: ThreadParseService,
     private readonly postsRepository: PostsRepository,
     private readonly threadsRepository: ThreadsRepository,
+    private readonly commentPostObjectBind: CommentPostObjectBindService,
   ) {}
 
   async handleComment(
@@ -49,6 +51,7 @@ export class CommentOperationOrchestrator {
         op.parent_author,
         op.parent_permlink,
       );
+      await this.commentPostObjectBind.tryBindObjectsFromComment(op, blockTimestamp);
     }
   }
 

@@ -59,6 +59,18 @@ describe('post-objects.parse', () => {
     expect(parsePostObjectsForInsert(meta, '').every((r) => r.percent === 0)).toBe(true);
   });
 
+  it('maps body hashtags to percent 0 and lets objects override', () => {
+    const meta = {
+      tags: ['x'],
+      objects: [{ object_id: 'x', percent: 50 }],
+    };
+    const parsed = parsePostObjectsForInsert(meta, 'Hello #y /object/z');
+    const byId = Object.fromEntries(parsed.map((r) => [r.object_id, r.percent]));
+    expect(byId['x']).toBe(50);
+    expect(byId['y']).toBe(0);
+    expect(byId['z']).toBe(0);
+  });
+
   it('adds body /object/slug paths at percent 0', () => {
     const parsed = parsePostObjectsForInsert(null, 'See /object/slug-from-body');
     expect(parsed.map((r) => r.object_id)).toEqual(['slug-from-body']);

@@ -1,7 +1,9 @@
 import type { NewPostObject } from '@opden-data-layer/core';
 import { MAX_POST_OBJECTS_PER_POST } from '../../constants/post-objects';
-
-const OBJECT_PATH_RE = /\/object\/([a-z0-9._-]+)/gi;
+import {
+  extractHashtagObjectIdsFromBody,
+  extractObjectPathSlugsFromBody,
+} from './comment-post-object-candidates';
 
 interface MetadataObjectEntry {
   object_id?: unknown;
@@ -82,7 +84,7 @@ function parseMetadataTagStrings(metadata: Record<string, unknown> | null): stri
 
 /**
  * Objects from `json_metadata.objects` (manual percents), `json_metadata.tags` (Hive string[] → percent 0),
- * plus `/object/slug` paths in body (percent 0 unless overridden by `objects`). `objects` wins on duplicate ids.
+ * body `/object/slug`, body `#hashtags`, then `objects` overwrites by `object_id`.
  *
  * @see docs/spec/data-model/post-json-metadata-objects.md
  */
@@ -96,14 +98,16 @@ export function parsePostObjectsForInsert(
     byId.set(id, 0);
   }
 
-  let m: RegExpExecArray | null;
-  const re = new RegExp(OBJECT_PATH_RE);
-  while ((m = re.exec(body)) !== null) {
-    const id = m[1];
-    if (!id || byId.has(id)) {
-      continue;
+  for (const id of extractObjectPathSlugsFromBody(body)) {
+    if (!byId.has(id)) {
+      byId.set(id, 0);
     }
-    byId.set(id, 0);
+  }
+
+  for (const id of extractHashtagObjectIdsFromBody(body)) {
+    if (!byId.has(id)) {
+      byId.set(id, 0);
+    }
   }
 
   for (const { object_id, percent } of parseMetadataObjects(metadata?.objects)) {
