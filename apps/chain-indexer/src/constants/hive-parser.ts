@@ -7,6 +7,7 @@ export const HIVE_OPERATION = Object.freeze({
   ACCOUNT_UPDATE: 'account_update',
   CREATE_ACCOUNT: 'create_account',
   CREATE_CLAIMED_ACCOUNT: 'create_claimed_account',
+  VOTE: 'vote',
 } as const);
 
 /** Hive `custom_json` id for follow / reblog / mute (JSON array payload). */

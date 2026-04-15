@@ -17,6 +17,10 @@ import {
   formatHiveDateTime,
 } from './hive-datetime.util';
 import type { CommentOperationPayload } from './hive-comment.schema';
+import {
+  normalizeHiveBeneficiariesForStorage,
+  normalizeHiveJsonMetadataForStorage,
+} from './hive-post-normalize.util';
 import { parseJsonMetadata } from './json-metadata.util';
 import { bindPostObjectsToPost, parsePostObjectsForInsert, validateWobjectPercentSum } from './post-objects.parse';
 import { detectPostLanguagesBcp47 } from './post-languages';
@@ -47,6 +51,46 @@ export class PostUpsertService {
    * When a parent post is missing locally but exists on Hive as a root (`depth === 0`), replay normal root upsert.
    * Used by comment-driven object binding.
    */
+  /**
+   * Result of attempting to ensure a post row for vote sync:
+   * - `ready`      — row exists or was just created; proceed with vote sync.
+   * - `not_found`  — Hive has no such content yet; caller should retry.
+   * - `is_comment` — target is a reply (`depth > 0`); we do not store those; caller should drop from queue.
+   */
+  async ensurePostFromHiveForVoteSync(
+    author: string,
+    permlink: string,
+    blockTimestampIso: string,
+  ): Promise<'ready' | 'not_found' | 'is_comment'> {
+    const trimmedAuthor = author.trim();
+    const trimmedPermlink = permlink.trim();
+    if (!trimmedAuthor || !trimmedPermlink) {
+      return 'not_found';
+    }
+    const existing = await this.postsRepository.findByKey(
+      trimmedAuthor,
+      trimmedPermlink,
+    );
+    if (existing) {
+      return 'ready';
+    }
+    const hive = await this.hiveClient.getContent(trimmedAuthor, trimmedPermlink);
+    if (!hive?.author) {
+      return 'not_found';
+    }
+    if (Number(hive.depth) !== 0) {
+      return 'is_comment';
+    }
+    await this.ensureRootPostInDb(
+      trimmedAuthor,
+      trimmedPermlink,
+      blockTimestampIso,
+    );
+    const created =
+      (await this.postsRepository.findByKey(trimmedAuthor, trimmedPermlink)) !== undefined;
+    return created ? 'ready' : 'not_found';
+  }
+
   async ensureRootPostInDb(
     parentAuthor: string,
     parentPermlink: string,
@@ -208,7 +252,7 @@ export class PostUpsertService {
       parent_permlink: parentPermlink,
       title: op.title ?? '',
       body,
-      json_metadata: jsonMetadata,
+      json_metadata: normalizeHiveJsonMetadataForStorage(jsonMetadata),
       app: null,
       depth: 0,
       category: null,
@@ -275,7 +319,7 @@ export class PostUpsertService {
       parent_permlink: hive.parent_permlink ?? op.parent_permlink ?? '',
       title: op.title ?? hive.title ?? '',
       body: mergedBody,
-      json_metadata: mergedMetadata,
+      json_metadata: normalizeHiveJsonMetadataForStorage(mergedMetadata),
       app: hive.app?.trim() ? hive.app : null,
       depth:
         hive.depth !== undefined && hive.depth !== null
@@ -312,7 +356,7 @@ export class PostUpsertService {
       allow_replies: hive.allow_replies ?? null,
       allow_votes: hive.allow_votes ?? null,
       allow_curation_rewards: hive.allow_curation_rewards ?? null,
-      beneficiaries: (hive.beneficiaries ?? []) as NewPost['beneficiaries'],
+      beneficiaries: normalizeHiveBeneficiariesForStorage(hive.beneficiaries),
       url: hive.url?.trim() ? hive.url : existing.url,
       pending_payout_value: hive.pending_payout_value ?? '0.000 HBD',
       total_pending_payout_value:

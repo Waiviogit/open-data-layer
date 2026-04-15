@@ -9,3 +9,4 @@ export { AggregatedObjectRepository } from './aggregated-object.repository';
 export { PostsRepository } from './posts.repository';
 export { SocialGraphRepository } from './social-graph.repository';
 export { ThreadsRepository } from './threads.repository';
+export { PostSyncQueueRepository } from './post-sync-queue.repository';

@@ -47,5 +47,10 @@ export default () => {
       maxRetries: env.BATCH_IMPORT_MAX_RETRIES,
       retryDelayMs: env.BATCH_IMPORT_RETRY_DELAY_MS,
     },
+    postSync: {
+      intervalMs: env.POST_SYNC_INTERVAL_MS,
+      batchSize: env.POST_SYNC_BATCH_SIZE,
+      maxAttempts: env.POST_SYNC_MAX_ATTEMPTS,
+    },
   };
 };

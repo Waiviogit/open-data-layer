@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 import {
   HIVE_RPC_NODES,
   HiveClientModule,
@@ -21,6 +22,7 @@ import { GovernanceModule } from './domain/governance';
       load: [chainIndexerConfig],
     }),
     EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
     IpfsClientModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({

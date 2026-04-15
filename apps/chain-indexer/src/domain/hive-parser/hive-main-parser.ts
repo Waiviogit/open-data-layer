@@ -15,6 +15,7 @@ import {
 import { CommentOperationOrchestrator } from '../hive-comment/comment-orchestrator.service';
 import { AccountProfileUpdateService } from '../hive-social/account-profile-update.service';
 import { AccountEnsureService } from '../hive-social/account-ensure.service';
+import { VoteHiveService } from '../hive-vote/vote-hive.service';
 
 @Injectable()
 export class HiveMainParser {
@@ -27,6 +28,7 @@ export class HiveMainParser {
     private readonly commentOrchestrator: CommentOperationOrchestrator,
     private readonly accountProfileUpdate: AccountProfileUpdateService,
     private readonly accountEnsure: AccountEnsureService,
+    private readonly voteHiveService: VoteHiveService,
   ) {
     this.handlers = {
       [HIVE_OPERATION.CUSTOM_JSON]: {
@@ -62,6 +64,10 @@ export class HiveMainParser {
             p as Record<string, unknown>,
           );
         },
+      },
+      [HIVE_OPERATION.VOTE]: {
+        handle: (p, ctx) =>
+          this.voteHiveService.handleVote(p as Record<string, unknown>, ctx),
       },
     };
   }

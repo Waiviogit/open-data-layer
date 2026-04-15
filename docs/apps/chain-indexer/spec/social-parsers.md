@@ -29,6 +29,8 @@ Parsed array:
 
 Reblog is **not** a new row in `posts`. It inserts into `post_reblogged_users` for the **resolved source** post (`author`, `permlink`), with `account` = reblogger and `reblogged_at_unix` from block time. Source resolution: exact `(author, permlink)` first, else `(root_author, permlink)`. Idempotent insert: `ON CONFLICT DO NOTHING`.
 
+If the source post is still missing locally after resolution, the pair is **enqueued** on `post_sync_queue` with `needs_post_create = true` (same queue as [vote ingestion](vote-ingestion.md)) so `HivePostSyncWorker` can materialize the post from Hive. The original reblog row is **not** replayed automatically after sync; only the post row and vote sync run there.
+
 ## Configuration
 
 | Env | Effect |

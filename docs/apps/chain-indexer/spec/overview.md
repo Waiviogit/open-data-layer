@@ -22,7 +22,7 @@ The **chain-indexer** application is the **Hive write path**: it reads blocks in
 ## 3) Non-goals
 
 - **No governance masking for API callers** — indexer stores canonical rows; filtering and masks are defined in domain specs and implemented in the query path.
-- **Not a full Hive mirror** — only operations wired in `HiveMainParser` are processed (`custom_json` for ODL id and follow, `comment`, `delete_comment`, `account_update`, `create_account`, `create_claimed_account`; see [social-parsers](social-parsers.md)).
+- **Not a full Hive mirror** — only operations wired in `HiveMainParser` are processed (`custom_json` for ODL id and follow, `comment`, `delete_comment`, `vote`, `account_update`, `create_account`, `create_claimed_account`; see [social-parsers](social-parsers.md), [vote-ingestion](vote-ingestion.md)).
 
 ## 4) High-level data flow
 
@@ -61,6 +61,7 @@ flowchart LR
 | [Hive ingestion](hive-ingestion.md) | Sequential block loop, Redis cursor, `custom_json` routing, error handling |
 | [Social parsers](social-parsers.md) | Hive follow / reblog / mute, account profile updates, minimal account rows |
 | [ODL pipeline](odl-pipeline.md) | Envelope, actions, repositories, write guards, batch import |
+| [Vote ingestion](vote-ingestion.md) | Hive `vote` → `post_active_votes` + `post_sync_queue`; worker fills `rshares` and ghost posts |
 
 **Schema and migrations:** [Data model](../../../spec/data-model/flow.md), [Migrations](../../../operations/migrations.md).
 

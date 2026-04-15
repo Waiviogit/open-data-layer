@@ -70,5 +70,8 @@ export type {
   ThreadActiveVote,
   ThreadActiveVoteUpdate,
   NewThreadActiveVote,
+  PostSyncQueueRow,
+  PostSyncQueueRowUpdate,
+  NewPostSyncQueueRow,
 } from './odl/tables';
 export type { OdlDatabase } from './odl/database';

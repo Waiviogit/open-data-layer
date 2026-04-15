@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import type { Kysely } from 'kysely';
+import type { Kysely, Transaction } from 'kysely';
 import { sql } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
@@ -14,6 +14,19 @@ import type {
   NewPostLanguage,
   NewPostRebloggedUser,
 } from '@opden-data-layer/core';
+import type { ActiveVotesType } from '@opden-data-layer/clients';
+import { sanitizePostRowJsonColumnsForDatabase } from '../domain/hive-comment/hive-post-normalize.util';
+
+function toBigIntVoteRshares(v: number | string | undefined | null): bigint {
+  if (v === undefined || v === null) {
+    return BigInt(0);
+  }
+  const n = typeof v === 'number' ? v : Number(v);
+  if (!Number.isFinite(n)) {
+    return BigInt(0);
+  }
+  return BigInt(Math.trunc(n));
+}
 
 @Injectable()
 export class PostsRepository {
@@ -26,6 +39,57 @@ export class PostsRepository {
       .where('author', '=', author)
       .where('permlink', '=', permlink)
       .executeTakeFirst();
+  }
+
+  /**
+   * When a post row exists, upserts or removes a `post_active_votes` row for a chain `vote` op.
+   * @returns `true` if `posts` had a matching row, else `false` (no vote rows written).
+   */
+  async applyChainVoteIfPostExists(
+    trx: Transaction<Database>,
+    author: string,
+    permlink: string,
+    voter: string,
+    weight: number,
+  ): Promise<boolean> {
+    const postRow = await trx
+      .selectFrom('posts')
+      .select('author')
+      .where('author', '=', author)
+      .where('permlink', '=', permlink)
+      .executeTakeFirst();
+    if (postRow === undefined) {
+      return false;
+    }
+    if (weight === 0) {
+      await trx
+        .deleteFrom('post_active_votes')
+        .where('author', '=', author)
+        .where('permlink', '=', permlink)
+        .where('voter', '=', voter)
+        .execute();
+    } else {
+      const percent = weight / 100;
+      await trx
+        .insertInto('post_active_votes')
+        .values({
+          author,
+          permlink,
+          voter,
+          weight,
+          percent,
+          rshares: null,
+          rshares_waiv: null,
+        })
+        .onConflict((oc) =>
+          oc.columns(['author', 'permlink', 'voter']).doUpdateSet({
+            weight,
+            percent,
+          }),
+        )
+        .execute();
+    }
+    return true;
   }
 
   /**
@@ -105,12 +169,13 @@ export class PostsRepository {
    * Insert on conflict update all scalars except PK (full row replace semantics).
    */
   async upsertPost(row: NewPost): Promise<void> {
-    const { author: _author, permlink: _permlink, ...rest } = row;
+    const sanitized = sanitizePostRowJsonColumnsForDatabase(row);
+    const { author: _author, permlink: _permlink, ...rest } = sanitized;
     void _author;
     void _permlink;
     await this.db
       .insertInto('posts')
-      .values(row)
+      .values(sanitized)
       .onConflict((oc) =>
         oc.columns(['author', 'permlink']).doUpdateSet({
           ...rest,
@@ -152,15 +217,16 @@ export class PostsRepository {
       votes: NewPostActiveVote[];
     },
   ): Promise<void> {
-    const author = row.author;
-    const permlink = row.permlink;
-    const { author: _a, permlink: _p, ...rest } = row;
+    const sanitized = sanitizePostRowJsonColumnsForDatabase(row);
+    const author = sanitized.author;
+    const permlink = sanitized.permlink;
+    const { author: _a, permlink: _p, ...rest } = sanitized;
     void _a;
     void _p;
     await this.db.transaction().execute(async (trx) => {
       await trx
         .insertInto('posts')
-        .values(row)
+        .values(sanitized)
         .onConflict((oc) =>
           oc.columns(['author', 'permlink']).doUpdateSet({ ...rest }),
         )
@@ -296,6 +362,60 @@ export class PostsRepository {
       }
       if (data.votes.length > 0) {
         await trx.insertInto('post_active_votes').values(data.votes).execute();
+      }
+    });
+  }
+
+  /**
+   * Reconciles `post_active_votes` with Hive `get_active_votes` (authoritative voters + rshares).
+   */
+  async syncActiveVotesFromHive(
+    author: string,
+    permlink: string,
+    hiveVotes: ActiveVotesType[],
+  ): Promise<void> {
+    await this.db.transaction().execute(async (trx) => {
+      const hiveVoters = new Set(hiveVotes.map((v) => v.voter));
+      const stored = await trx
+        .selectFrom('post_active_votes')
+        .select('voter')
+        .where('author', '=', author)
+        .where('permlink', '=', permlink)
+        .execute();
+      for (const row of stored) {
+        if (!hiveVoters.has(row.voter)) {
+          await trx
+            .deleteFrom('post_active_votes')
+            .where('author', '=', author)
+            .where('permlink', '=', permlink)
+            .where('voter', '=', row.voter)
+            .execute();
+        }
+      }
+      for (const v of hiveVotes) {
+        const rshares = toBigIntVoteRshares(v.rshares);
+        const weight = Number.isFinite(v.weight)
+          ? v.weight
+          : Math.round(Number(rshares) * 1e-6);
+        await trx
+          .insertInto('post_active_votes')
+          .values({
+            author,
+            permlink,
+            voter: v.voter,
+            weight,
+            percent: v.percent ?? null,
+            rshares,
+            rshares_waiv: null,
+          })
+          .onConflict((oc) =>
+            oc.columns(['author', 'permlink', 'voter']).doUpdateSet({
+              weight,
+              percent: v.percent ?? null,
+              rshares,
+            }),
+          )
+          .execute();
       }
     });
   }

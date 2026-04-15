@@ -50,6 +50,7 @@ export interface OdlDatabase {
   user_post_drafts: UserPostDraftsTable;
   threads: ThreadsTable;
   thread_active_votes: ThreadActiveVotesTable;
+  post_sync_queue: PostSyncQueueTable;
 }
 
 // ---------------------------------------------------------------------------
@@ -521,6 +522,23 @@ export interface ThreadActiveVotesTable {
 export type ThreadActiveVote = Selectable<ThreadActiveVotesTable>;
 export type NewThreadActiveVote = Insertable<ThreadActiveVotesTable>;
 export type ThreadActiveVoteUpdate = Updateable<ThreadActiveVotesTable>;
+
+// ---------------------------------------------------------------------------
+// post_sync_queue (chain-indexer Hive vote / rshares sync)
+// ---------------------------------------------------------------------------
+
+export interface PostSyncQueueTable {
+  author: string;
+  permlink: string;
+  enqueued_at: number;
+  needs_post_create: boolean;
+  attempts: number;
+  last_attempt_at: number | null;
+}
+
+export type PostSyncQueueRow = Selectable<PostSyncQueueTable>;
+export type NewPostSyncQueueRow = Insertable<PostSyncQueueTable>;
+export type PostSyncQueueRowUpdate = Updateable<PostSyncQueueTable>;
 
 // ---------------------------------------------------------------------------
 // user_post_drafts

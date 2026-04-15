@@ -450,6 +450,21 @@ CREATE TABLE thread_active_votes (
 CREATE INDEX idx_thread_active_votes_voter ON thread_active_votes (voter);
 
 -- ---------------------------------------------------------------------------
+-- post_sync_queue (chain-indexer: Hive vote rshares / ghost post sync)
+-- ---------------------------------------------------------------------------
+CREATE TABLE post_sync_queue (
+  author             TEXT NOT NULL,
+  permlink           TEXT NOT NULL,
+  enqueued_at        BIGINT NOT NULL,
+  needs_post_create  BOOLEAN NOT NULL DEFAULT FALSE,
+  attempts           INT NOT NULL DEFAULT 0,
+  last_attempt_at    BIGINT,
+  PRIMARY KEY (author, permlink)
+);
+
+CREATE INDEX idx_post_sync_queue_pending ON post_sync_queue (last_attempt_at NULLS FIRST);
+
+-- ---------------------------------------------------------------------------
 -- user_post_drafts (editor drafts; optional link to Hive post via permlink)
 -- ---------------------------------------------------------------------------
 CREATE TABLE user_post_drafts (

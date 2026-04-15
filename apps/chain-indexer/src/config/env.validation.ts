@@ -20,6 +20,9 @@ export const chainIndexerConfigSchema = z.object({
   IPFS_GATEWAY_URL: z.string().url().optional(),
   BATCH_IMPORT_MAX_RETRIES: z.coerce.number().optional().default(3),
   BATCH_IMPORT_RETRY_DELAY_MS: z.coerce.number().optional().default(1000),
+  POST_SYNC_INTERVAL_MS: z.coerce.number().optional().default(30_000),
+  POST_SYNC_BATCH_SIZE: z.coerce.number().optional().default(50),
+  POST_SYNC_MAX_ATTEMPTS: z.coerce.number().optional().default(5),
 });
 
 export type ChainIndexerConfig = z.infer<typeof chainIndexerConfigSchema>;

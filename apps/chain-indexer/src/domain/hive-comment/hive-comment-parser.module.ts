@@ -13,6 +13,6 @@ import { ThreadParseService } from './thread-parse.service';
     CommentPostObjectBindService,
     CommentOperationOrchestrator,
   ],
-  exports: [CommentOperationOrchestrator],
+  exports: [CommentOperationOrchestrator, PostUpsertService],
 })
 export class HiveCommentParserModule {}
