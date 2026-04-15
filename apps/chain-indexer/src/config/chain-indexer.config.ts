@@ -30,6 +30,8 @@ export default () => {
         customJson: {
           enabled: process.env.HANDLER_CUSTOM_JSON_ENABLED !== 'false',
         },
+        /** Hive `custom_json` id=follow (follow / reblog / ignore). */
+        hiveFollowEnabled: process.env.HANDLER_HIVE_FOLLOW_ENABLED !== 'false',
       },
       customJsonHandlers: {},
       odlCustomJsonId:

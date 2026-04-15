@@ -18,7 +18,8 @@
     "migrate:mongo-objects": "tsx --env-file=.env scripts/migrate-mongo-to-pg/objects/index.ts",
     "migrate:mongo-posts": "tsx --env-file=.env scripts/migrate-mongo-to-pg/posts/index.ts",
     "migrate:mongo-users": "tsx --env-file=.env scripts/migrate-mongo-to-pg/users/index.ts",
-    "migrate:mongo-subscriptions": "tsx --env-file=.env scripts/migrate-mongo-to-pg/subscriptions/index.ts"
+    "migrate:mongo-subscriptions": "tsx --env-file=.env scripts/migrate-mongo-to-pg/subscriptions/index.ts",
+    "migrate:mongo-mutes": "tsx --env-file=.env scripts/migrate-mongo-to-pg/mutes/index.ts"
   },
   "private": true,
   "dependencies": {

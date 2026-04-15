@@ -38,6 +38,7 @@ export interface OdlDatabase {
   user_referrals: UserReferralsTable;
   user_post_bookmarks: UserPostBookmarksTable;
   user_subscriptions: UserSubscriptionsTable;
+  user_account_mutes: UserAccountMutesTable;
   user_object_follows: UserObjectFollowsTable;
   posts: PostsTable;
   post_active_votes: PostActiveVotesTable;
@@ -283,6 +284,19 @@ export interface UserSubscriptionsTable {
 export type UserSubscription = Selectable<UserSubscriptionsTable>;
 export type NewUserSubscription = Insertable<UserSubscriptionsTable>;
 export type UserSubscriptionUpdate = Updateable<UserSubscriptionsTable>;
+
+// ---------------------------------------------------------------------------
+// user_account_mutes (Hive follow ignore — pair-level social mute)
+// ---------------------------------------------------------------------------
+
+export interface UserAccountMutesTable {
+  muter: string;
+  muted: string;
+}
+
+export type UserAccountMute = Selectable<UserAccountMutesTable>;
+export type NewUserAccountMute = Insertable<UserAccountMutesTable>;
+export type UserAccountMuteUpdate = Updateable<UserAccountMutesTable>;
 
 // ---------------------------------------------------------------------------
 // user_object_follows (UserSchema.objects_follow + bell)

@@ -15,6 +15,7 @@ One-off **data** migrations from Mongo export files into the ODL Postgres schema
 | `pnpm migrate:mongo-posts` | Post array JSON | `posts`, `post_active_votes`, `post_objects`, `post_reblogged_users`, `post_languages`, `post_links`, `post_mentions` |
 | `pnpm migrate:mongo-users` | User array JSON | `accounts_current` (Waivio columns), `user_metadata`, `user_notification_settings`, `user_referrals`, `user_post_bookmarks`, `user_object_follows` |
 | `pnpm migrate:mongo-subscriptions` | Subscription array JSON | `user_subscriptions` |
+| `pnpm migrate:mongo-mutes` | Mute / ignore pair array JSON | `user_account_mutes` |
 
 ### Objects (wobjects)
 
@@ -41,6 +42,14 @@ pnpm migrate:mongo-users <path-to-users.json>
 ```bash
 pnpm migrate:mongo-subscriptions <path-to-subscriptions.json>
 ```
+
+### Mutes (social ignore pairs)
+
+```bash
+pnpm migrate:mongo-mutes <path-to-mutes.json>
+```
+
+Each document should follow legacy **`MutedUserSchema`**: `mutedBy` (who muted) and `userName` (muted account). These map to PostgreSQL `user_account_mutes` as `(muter, muted)`. Optional fallbacks: `muter`/`muted`, or `follower`/`following`. Requires schema migration that creates `user_account_mutes`.
 
 **Breaking rename:** the old script name `migrate:mongo` was replaced by `migrate:mongo-objects`.
 

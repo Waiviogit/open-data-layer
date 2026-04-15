@@ -12,6 +12,7 @@ import type {
   NewPostLink,
   NewPostMention,
   NewPostLanguage,
+  NewPostRebloggedUser,
 } from '@opden-data-layer/core';
 
 @Injectable()
@@ -25,6 +26,39 @@ export class PostsRepository {
       .where('author', '=', author)
       .where('permlink', '=', permlink)
       .executeTakeFirst();
+  }
+
+  /**
+   * Reblog source resolution: exact author+permlink first, else root post with same permlink (Hive/Waivio parity).
+   */
+  async findSourcePostForReblog(
+    author: string,
+    permlink: string,
+  ): Promise<Post | undefined> {
+    const direct = await this.db
+      .selectFrom('posts')
+      .selectAll()
+      .where('author', '=', author)
+      .where('permlink', '=', permlink)
+      .executeTakeFirst();
+    if (direct) {
+      return direct;
+    }
+    return this.db
+      .selectFrom('posts')
+      .selectAll()
+      .where('root_author', '=', author)
+      .where('permlink', '=', permlink)
+      .executeTakeFirst();
+  }
+
+  /** Idempotent reblog marker; first timestamp wins. */
+  async insertRebloggedUser(row: NewPostRebloggedUser): Promise<void> {
+    await this.db
+      .insertInto('post_reblogged_users')
+      .values(row)
+      .onConflict((oc) => oc.columns(['author', 'permlink', 'account']).doNothing())
+      .execute();
   }
 
   async findActiveVotes(

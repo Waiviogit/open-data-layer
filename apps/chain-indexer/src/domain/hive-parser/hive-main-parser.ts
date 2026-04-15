@@ -13,6 +13,8 @@ import {
   HiveOperationHandlerContext,
 } from './hive-handler-context';
 import { CommentOperationOrchestrator } from '../hive-comment/comment-orchestrator.service';
+import { AccountProfileUpdateService } from '../hive-social/account-profile-update.service';
+import { AccountEnsureService } from '../hive-social/account-ensure.service';
 
 @Injectable()
 export class HiveMainParser {
@@ -23,6 +25,8 @@ export class HiveMainParser {
     private readonly configService: ConfigService,
     private readonly customJsonParser: HiveCustomJsonParser,
     private readonly commentOrchestrator: CommentOperationOrchestrator,
+    private readonly accountProfileUpdate: AccountProfileUpdateService,
+    private readonly accountEnsure: AccountEnsureService,
   ) {
     this.handlers = {
       [HIVE_OPERATION.CUSTOM_JSON]: {
@@ -36,6 +40,27 @@ export class HiveMainParser {
       [HIVE_OPERATION.DELETE_COMMENT]: {
         handle: async (p) => {
           await this.commentOrchestrator.handleDeleteComment(p);
+        },
+      },
+      [HIVE_OPERATION.ACCOUNT_UPDATE]: {
+        handle: async (p) => {
+          await this.accountProfileUpdate.handleAccountUpdate(
+            p as Record<string, unknown>,
+          );
+        },
+      },
+      [HIVE_OPERATION.CREATE_ACCOUNT]: {
+        handle: async (p) => {
+          await this.accountEnsure.ensureFromCreateAccountPayload(
+            p as Record<string, unknown>,
+          );
+        },
+      },
+      [HIVE_OPERATION.CREATE_CLAIMED_ACCOUNT]: {
+        handle: async (p) => {
+          await this.accountEnsure.ensureFromCreateAccountPayload(
+            p as Record<string, unknown>,
+          );
         },
       },
     };

@@ -233,6 +233,17 @@ CREATE TABLE user_subscriptions (
 CREATE INDEX idx_user_subscriptions_following ON user_subscriptions (following);
 
 -- ---------------------------------------------------------------------------
+-- user_account_mutes (Hive follow ignore — pair-level social mute)
+-- ---------------------------------------------------------------------------
+CREATE TABLE user_account_mutes (
+  muter   TEXT NOT NULL,
+  muted   TEXT NOT NULL,
+  PRIMARY KEY (muter, muted)
+);
+
+CREATE INDEX idx_user_account_mutes_muted ON user_account_mutes (muted);
+
+-- ---------------------------------------------------------------------------
 -- user_object_follows (UserSchema.objects_follow + bell)
 -- ---------------------------------------------------------------------------
 CREATE TABLE user_object_follows (

@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { CustomJsonOperation } from '@hiveio/dhive/lib/chain/operation';
+import { HIVE_CUSTOM_JSON_ID } from '../../constants/hive-parser';
 import { OdlCustomJsonParser } from '../odl-parser/odl-custom-json-parser';
+import { FollowSocialService } from '../hive-social/follow-social.service';
 import type { HiveOperationHandlerContext } from './hive-handler-context';
 
 type CustomJsonIdHandler = (
@@ -17,6 +19,7 @@ export class HiveCustomJsonParser {
   constructor(
     private readonly odlParser: OdlCustomJsonParser,
     private readonly configService: ConfigService,
+    private readonly followSocial: FollowSocialService,
   ) {
     const odlId = this.configService.get<string>('hive.odlCustomJsonId');
 
@@ -26,7 +29,13 @@ export class HiveCustomJsonParser {
       return this.odlParser.parse(payload.json, account, context);
     };
 
-    this.handlers = { [odlId]: handleOdl };
+    const handleFollow: CustomJsonIdHandler = (payload, context) =>
+      this.followSocial.handleFollowCustomJson(payload, context);
+
+    this.handlers = {
+      [odlId]: handleOdl,
+      [HIVE_CUSTOM_JSON_ID.FOLLOW]: handleFollow,
+    };
   }
 
   async parse(

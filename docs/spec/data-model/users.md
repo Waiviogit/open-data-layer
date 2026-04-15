@@ -14,6 +14,7 @@ Constants: `REFERRAL_TYPES`, `REFERRAL_STATUSES`, `SUPPORTED_CURRENCIES` in `@op
 | **user_referrals** | Rows from `referral[]`; PK `(account, agent, type)`. |
 | **user_post_bookmarks** | Bookmark strings that look like `author/permlink` (post refs). Object-only strings (no `/`) are not stored. |
 | **user_subscriptions** | `SubscriptionSchema` follower/following + `bell`. |
+| **user_account_mutes** | Hive social ignore pairs (`muter`, `muted`); PK `(muter, muted)`. |
 | **user_object_follows** | `objects_follow[]` with `object_id` in `objects_core`; `bell` default false (Mongo had no per-field bell). |
 
 ## Entity relationship
@@ -56,7 +57,7 @@ erDiagram
 
 ## Data import
 
-Mongo → Postgres scripts: [`scripts/migrate-mongo-to-pg/README.md`](../../../scripts/migrate-mongo-to-pg/README.md) (`pnpm migrate:mongo-users`, `pnpm migrate:mongo-subscriptions`).
+Mongo → Postgres scripts: [`scripts/migrate-mongo-to-pg/README.md`](../../../scripts/migrate-mongo-to-pg/README.md) (`pnpm migrate:mongo-users`, `pnpm migrate:mongo-subscriptions`, `pnpm migrate:mongo-mutes`).
 
 ## Related
 

@@ -3,10 +3,11 @@ import { Module } from '@nestjs/common';
 import { HiveMainParser } from './hive-main-parser';
 import { HiveCustomJsonParserModule } from './hive-custom-json-parser.module';
 import { HiveCommentParserModule } from '../hive-comment/hive-comment-parser.module';
+import { HiveSocialModule } from '../hive-social/hive-social.module';
 import { BLOCK_PARSER } from '@opden-data-layer/core';
 
 @Module({
-  imports: [HiveCustomJsonParserModule, HiveCommentParserModule],
+  imports: [HiveCustomJsonParserModule, HiveCommentParserModule, HiveSocialModule],
   providers: [
     HiveMainParser,
     { provide: BLOCK_PARSER, useExisting: HiveMainParser },

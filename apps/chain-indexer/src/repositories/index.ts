@@ -7,4 +7,5 @@ export { AccountsCurrentRepository } from './accounts-current.repository';
 export { ObjectAuthorityRepository } from './object-authority.repository';
 export { AggregatedObjectRepository } from './aggregated-object.repository';
 export { PostsRepository } from './posts.repository';
+export { SocialGraphRepository } from './social-graph.repository';
 export { ThreadsRepository } from './threads.repository';

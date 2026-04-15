@@ -7,6 +7,7 @@ import { AccountsCurrentRepository } from './accounts-current.repository';
 import { ObjectAuthorityRepository } from './object-authority.repository';
 import { AggregatedObjectRepository } from './aggregated-object.repository';
 import { PostsRepository } from './posts.repository';
+import { SocialGraphRepository } from './social-graph.repository';
 import { ThreadsRepository } from './threads.repository';
 
 @Module({
@@ -19,6 +20,7 @@ import { ThreadsRepository } from './threads.repository';
     ObjectAuthorityRepository,
     AggregatedObjectRepository,
     PostsRepository,
+    SocialGraphRepository,
     ThreadsRepository,
   ],
   exports: [
@@ -30,6 +32,7 @@ import { ThreadsRepository } from './threads.repository';
     ObjectAuthorityRepository,
     AggregatedObjectRepository,
     PostsRepository,
+    SocialGraphRepository,
     ThreadsRepository,
   ],
 })
