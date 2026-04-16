@@ -106,7 +106,7 @@ Rules:
 - In blockchain/high-throughput code: avoid blocking operations in parsers, be mindful of memory, avoid unnecessary allocations in block/transaction loops.
 - Database pool and Redis URL rotation are pre-configured in the shared clients lib.
 
-## Redis conventions
+### Redis conventions
 - Always use `db0`. Do not use multiple Redis databases (`db1`, `db2`, etc.)
 - Isolate data via key namespaces: `session:user:{id}`, `cache:product:{id}`, `lock:{resource}`
 - Reason: multiple DBs break Redis Cluster compatibility and complicate connection pooling
