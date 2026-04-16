@@ -46,3 +46,11 @@ src/
 ## Modules
 
 - Feature `*.module.ts` files import `RepositoriesModule` and, when needed, `GovernanceModule` and `@opden-data-layer/objects-domain` — follow existing modules as templates.
+
+## Search deduplication by product group
+
+`objects_core.meta_group_id` is maintained by `chain-indexer` (`MetaGroupSyncHandler`) and reflects the winning `group_id` update value for each object.
+
+When building product search endpoints that must collapse variants into one result per group, use `DISTINCT ON (COALESCE(oc.meta_group_id, oc.object_id))` ordered by `oc.weight DESC NULLS LAST` so the highest-weight representative is kept per group.
+
+Objects without a `group_id` update each appear as their own group (`COALESCE` falls back to `object_id`).

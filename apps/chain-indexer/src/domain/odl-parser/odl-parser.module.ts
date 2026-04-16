@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ObjectsDomainModule } from '@opden-data-layer/objects-domain';
 import { GovernanceModule } from '../governance/governance.module';
 import { RepositoriesModule } from '../../repositories';
 import { ObjectCreateHandler } from './handlers/object-create.handler';
@@ -9,6 +10,7 @@ import { AuthorityHandler } from './handlers/authority.handler';
 import { BatchImportHandler } from './handlers/batch-import.handler';
 import { BatchImportWorker } from './batch-import.worker';
 import { OdlCustomJsonParser } from './odl-custom-json-parser';
+import { MetaGroupSyncHandler } from './handlers/meta-group-sync.handler';
 import {
   GovernanceWriteGuard,
   WRITE_GUARDS,
@@ -16,7 +18,7 @@ import {
 } from './guards';
 
 @Module({
-  imports: [RepositoriesModule, GovernanceModule],
+  imports: [RepositoriesModule, GovernanceModule, ObjectsDomainModule],
   providers: [
     GovernanceWriteGuard,
     WriteGuardRunner,
@@ -33,6 +35,7 @@ import {
     BatchImportHandler,
     BatchImportWorker,
     OdlCustomJsonParser,
+    MetaGroupSyncHandler,
   ],
   exports: [OdlCustomJsonParser],
 })

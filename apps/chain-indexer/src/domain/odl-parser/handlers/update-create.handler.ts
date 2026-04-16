@@ -14,6 +14,10 @@ import {
   GovernanceObjectMutatedEvent,
   GOVERNANCE_OBJECT_MUTATED_EVENT,
 } from '../../governance/governance-object-mutated.event';
+import {
+  GroupIdMutatedEvent,
+  GROUP_ID_MUTATED_EVENT,
+} from '../group-id-mutated.event';
 
 @Injectable()
 export class UpdateCreateHandler implements OdlActionHandler {
@@ -124,6 +128,9 @@ export class UpdateCreateHandler implements OdlActionHandler {
     }
 
     await this.objectUpdatesRepository.create(row);
+    if (update_type === UPDATE_TYPES.GROUP_ID) {
+      this.eventEmitter.emit(GROUP_ID_MUTATED_EVENT, new GroupIdMutatedEvent(object_id));
+    }
     this.eventEmitter.emit(
       GOVERNANCE_OBJECT_MUTATED_EVENT,
       new GovernanceObjectMutatedEvent(object_id),

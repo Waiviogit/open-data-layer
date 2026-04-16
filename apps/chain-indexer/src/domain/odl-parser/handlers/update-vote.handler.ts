@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { NewValidityVote } from '@opden-data-layer/core';
+import { UPDATE_TYPES } from '@opden-data-layer/core';
 import {
   ObjectUpdatesRepository,
   ObjectsCoreRepository,
@@ -13,6 +14,10 @@ import {
   GovernanceObjectMutatedEvent,
   GOVERNANCE_OBJECT_MUTATED_EVENT,
 } from '../../governance/governance-object-mutated.event';
+import {
+  GroupIdMutatedEvent,
+  GROUP_ID_MUTATED_EVENT,
+} from '../group-id-mutated.event';
 
 @Injectable()
 export class UpdateVoteHandler implements OdlActionHandler {
@@ -35,16 +40,22 @@ export class UpdateVoteHandler implements OdlActionHandler {
     }
 
     const { update_id, voter, vote, transaction_id } = result.data;
-    let { object_id } = result.data;
 
-    if (!object_id) {
-      const update = await this.objectUpdatesRepository.findByUpdateId(update_id);
-      if (!update) {
-        this.logger.warn(`update_vote: update_id '${update_id}' not found; skipping`);
-        return;
-      }
-      object_id = update.object_id;
+    const votedUpdate = await this.objectUpdatesRepository.findByUpdateId(update_id);
+    if (!votedUpdate) {
+      this.logger.warn(`update_vote: update_id '${update_id}' not found; skipping`);
+      return;
     }
+
+    const payloadObjectId = result.data.object_id;
+    if (payloadObjectId !== undefined && payloadObjectId !== votedUpdate.object_id) {
+      this.logger.warn(
+        `update_vote: object_id mismatch for update_id '${update_id}'; skipping`,
+      );
+      return;
+    }
+
+    const object_id = votedUpdate.object_id;
 
     const core = await this.objectsCoreRepository.findByObjectId(object_id);
     if (!core) {
@@ -66,6 +77,9 @@ export class UpdateVoteHandler implements OdlActionHandler {
 
     if (vote === 'remove') {
       await this.validityVotesRepository.delete(update_id, voter);
+      if (votedUpdate.update_type === UPDATE_TYPES.GROUP_ID) {
+        this.eventEmitter.emit(GROUP_ID_MUTATED_EVENT, new GroupIdMutatedEvent(object_id));
+      }
       this.eventEmitter.emit(
         GOVERNANCE_OBJECT_MUTATED_EVENT,
         new GovernanceObjectMutatedEvent(object_id),
@@ -83,6 +97,9 @@ export class UpdateVoteHandler implements OdlActionHandler {
     };
 
     await this.validityVotesRepository.create(row);
+    if (votedUpdate.update_type === UPDATE_TYPES.GROUP_ID) {
+      this.eventEmitter.emit(GROUP_ID_MUTATED_EVENT, new GroupIdMutatedEvent(object_id));
+    }
     this.eventEmitter.emit(
       GOVERNANCE_OBJECT_MUTATED_EVENT,
       new GovernanceObjectMutatedEvent(object_id),
