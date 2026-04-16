@@ -1,0 +1,17 @@
+{
+  "name": "@opden-data-layer/notifications",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^4.0.3",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/platform-ws": "^11.0.0",
+    "@nestjs/websockets": "^11.0.0",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.8.0",
+    "ws": "^8.0.0",
+    "zod": "^4.3.6"
+  }
+}

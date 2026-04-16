@@ -13,7 +13,7 @@ Nx monorepo: NestJS apps with Postgres, Redis, Hive, or other runtimes as needed
 - Avoid deep nesting — prefer early returns.
 - Avoid magic numbers — use constants.
 - No dead or commented-out code. Comments in English only.
-- Do not introduce breaking changes silently. Keep commits focused.
+- Do not introduce breaking changes silently.
 - Update types when modifying contracts. Do not commit `.env` files or secrets.
 
 ## Project Context
@@ -105,6 +105,11 @@ Rules:
 
 - In blockchain/high-throughput code: avoid blocking operations in parsers, be mindful of memory, avoid unnecessary allocations in block/transaction loops.
 - Database pool and Redis URL rotation are pre-configured in the shared clients lib.
+
+## Redis conventions
+- Always use `db0`. Do not use multiple Redis databases (`db1`, `db2`, etc.)
+- Isolate data via key namespaces: `session:user:{id}`, `cache:product:{id}`, `lock:{resource}`
+- Reason: multiple DBs break Redis Cluster compatibility and complicate connection pooling
 
 ### Code Style
 

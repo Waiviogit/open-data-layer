@@ -20,6 +20,7 @@ Entry point for Open Data Layer documentation.
 | `ipfs-gateway` | [README](apps/ipfs-gateway/README.md) |
 | `query-api` | [README](apps/query-api/README.md) |
 | `auth-api` | [Overview](apps/auth-api/overview.md) |
+| `notifications` | [Overview](apps/notifications/overview.md) |
 | `web` | [README](apps/web/README.md) |
 
 ## Libraries (cross-cutting)
