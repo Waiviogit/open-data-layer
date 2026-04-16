@@ -40,6 +40,8 @@ Registry validation for `update_create` uses **`OBJECT_TYPE_REGISTRY`** / **`UPD
 
 Handlers use app repositories only (no business logic in repositories). Aggregated reads for governance utilities may use `AggregatedObjectRepository`. For table-level detail, see [Data model flow](../../../spec/data-model/flow.md) and migrations under `libs/migrations/`.
 
+For **`update_create`**, a **duplicate-value** check (`existsByObjectAndValue` — same `object_id`, `update_type`, and payload in `value_*`) runs for **every** update type and is **not** tied to cardinality. Separately, **`single` cardinality** in the registry means the indexer **stores only the latest row per creator** for that `(object_id, update_type)`: if that creator already has a row, the indexer **deletes** it and **inserts** the new one in one **transaction** (votes on the old row cascade off). **`multi` cardinality** allows multiple rows per creator until blocked by the duplicate-value rule. See [`UpdateCreateHandler`](../../../../apps/chain-indexer/src/domain/odl-parser/handlers/update-create.handler.ts) and [`ObjectUpdatesRepository.createReplacingIfPresent`](../../../../apps/chain-indexer/src/repositories/object-updates.repository.ts).
+
 ## 6) Write guards
 
 [`WriteGuardRunner`](../../../../apps/chain-indexer/src/domain/odl-parser/guards/write-guard.ts) runs registered guards for mutating actions (e.g. `update_create`).

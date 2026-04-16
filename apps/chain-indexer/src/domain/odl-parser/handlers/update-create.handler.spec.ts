@@ -30,8 +30,10 @@ describe('UpdateCreateHandler write guard', () => {
   };
 
   it('does not persist when governance guard rejects signer', async () => {
-    const create = jest.fn();
-    const objectUpdatesRepository = { create } as unknown as import('../../../repositories').ObjectUpdatesRepository;
+    const createReplacingIfPresent = jest.fn();
+    const objectUpdatesRepository = {
+      createReplacingIfPresent,
+    } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
       findByObjectId: jest.fn().mockResolvedValue(governanceCore),
     } as unknown as import('../../../repositories').ObjectsCoreRepository;
@@ -55,13 +57,14 @@ describe('UpdateCreateHandler write guard', () => {
       baseCtx,
     );
 
-    expect(create).not.toHaveBeenCalled();
+    expect(createReplacingIfPresent).not.toHaveBeenCalled();
   });
 
   it('persists when signer matches governance object creator', async () => {
-    const create = jest.fn().mockResolvedValue(undefined);
+    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
     const objectUpdatesRepository = {
-      create,
+      createReplacingIfPresent,
+      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
       existsByObjectAndValue: jest.fn().mockResolvedValue(false),
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
@@ -89,7 +92,88 @@ describe('UpdateCreateHandler write guard', () => {
       ctx,
     );
 
-    expect(create).toHaveBeenCalledTimes(1);
+    expect(createReplacingIfPresent).toHaveBeenCalledTimes(1);
+    expect(createReplacingIfPresent).toHaveBeenCalledWith(undefined, expect.any(Object));
     expect(eventEmitter.emit).toHaveBeenCalled();
+  });
+
+  it('replaces existing single-cardinality row from same creator in one call', async () => {
+    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
+    const findByObjectTypeAndCreator = jest.fn().mockResolvedValue({
+      update_id: 'old-update-id',
+      object_id: 'gov1',
+      update_type: 'name',
+      creator: 'owner',
+    });
+    const existsByObjectAndValue = jest.fn().mockResolvedValue(false);
+    const objectUpdatesRepository = {
+      createReplacingIfPresent,
+      findByObjectTypeAndCreator,
+      existsByObjectAndValue,
+    } as unknown as import('../../../repositories').ObjectUpdatesRepository;
+    const objectsCoreRepository = {
+      findByObjectId: jest.fn().mockResolvedValue(governanceCore),
+    } as unknown as import('../../../repositories').ObjectsCoreRepository;
+    const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
+    const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+    const handler = new UpdateCreateHandler(
+      objectUpdatesRepository,
+      objectsCoreRepository,
+      runner,
+      eventEmitter,
+    );
+
+    const ctx = { ...baseCtx, creator: 'owner' };
+
+    await handler.handle(
+      {
+        object_id: 'gov1',
+        update_type: 'name',
+        creator: 'owner',
+        transaction_id: 'tx1',
+        value_text: 'New title',
+      },
+      ctx,
+    );
+
+    expect(existsByObjectAndValue).toHaveBeenCalled();
+    expect(findByObjectTypeAndCreator).toHaveBeenCalledWith('gov1', 'name', 'owner');
+    expect(createReplacingIfPresent).toHaveBeenCalledWith('old-update-id', expect.any(Object));
+  });
+
+  it('skips when duplicate value already exists on the object', async () => {
+    const createReplacingIfPresent = jest.fn();
+    const objectUpdatesRepository = {
+      createReplacingIfPresent,
+      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
+      existsByObjectAndValue: jest.fn().mockResolvedValue(true),
+    } as unknown as import('../../../repositories').ObjectUpdatesRepository;
+    const objectsCoreRepository = {
+      findByObjectId: jest.fn().mockResolvedValue(governanceCore),
+    } as unknown as import('../../../repositories').ObjectsCoreRepository;
+    const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
+    const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+    const handler = new UpdateCreateHandler(
+      objectUpdatesRepository,
+      objectsCoreRepository,
+      runner,
+      eventEmitter,
+    );
+
+    const ctx = { ...baseCtx, creator: 'owner' };
+
+    await handler.handle(
+      {
+        object_id: 'gov1',
+        update_type: 'name',
+        creator: 'owner',
+        transaction_id: 'tx1',
+        value_text: 'Taken title',
+      },
+      ctx,
+    );
+
+    expect(createReplacingIfPresent).not.toHaveBeenCalled();
+    expect(eventEmitter.emit).not.toHaveBeenCalled();
   });
 });

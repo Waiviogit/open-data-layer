@@ -82,6 +82,45 @@ export class ObjectUpdatesRepository {
    * True if this object already has an update with the same type and payload
    * in the column implied by value_kind (value_text | value_geo | value_json).
    */
+  /**
+   * At most one row per (object_id, update_type, creator) for single-cardinality types;
+   * used to decide replace-on-resubmit in update_create.
+   */
+  async findByObjectTypeAndCreator(
+    objectId: string,
+    updateType: string,
+    creator: string,
+  ) {
+    return this.db
+      .selectFrom('object_updates')
+      .where('object_id', '=', objectId)
+      .where('update_type', '=', updateType)
+      .where('creator', '=', creator)
+      .selectAll()
+      .executeTakeFirst();
+  }
+
+  /**
+   * Inserts a new update row. When `replaceUpdateId` is set, deletes that row first
+   * in the same transaction (validity/rank votes cascade from FK).
+   */
+  async createReplacingIfPresent(replaceUpdateId: string | undefined, row: NewObjectUpdate) {
+    if (replaceUpdateId === undefined) {
+      return this.create(row);
+    }
+    return this.db.transaction().execute(async (trx) => {
+      await trx
+        .deleteFrom('object_updates')
+        .where('update_id', '=', replaceUpdateId)
+        .execute();
+      return trx
+        .insertInto('object_updates')
+        .values(row)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+    });
+  }
+
   async existsByObjectAndValue(
     objectId: string,
     updateType: string,

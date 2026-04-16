@@ -112,6 +112,18 @@ export class UpdateCreateHandler implements OdlActionHandler {
       return;
     }
 
+    let replaceUpdateId: string | undefined;
+    if (definition.cardinality === 'single') {
+      const existing = await this.objectUpdatesRepository.findByObjectTypeAndCreator(
+        object_id,
+        update_type,
+        creator,
+      );
+      if (existing) {
+        replaceUpdateId = existing.update_id;
+      }
+    }
+
     if (update_type === UPDATE_TYPES.IDENTIFIER) {
       const parsed = valueResult.data as { value: string; type: string };
       const identifierExists =
@@ -127,7 +139,7 @@ export class UpdateCreateHandler implements OdlActionHandler {
       }
     }
 
-    await this.objectUpdatesRepository.create(row);
+    await this.objectUpdatesRepository.createReplacingIfPresent(replaceUpdateId, row);
     if (update_type === UPDATE_TYPES.GROUP_ID) {
       this.eventEmitter.emit(GROUP_ID_MUTATED_EVENT, new GroupIdMutatedEvent(object_id));
     }
