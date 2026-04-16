@@ -90,6 +90,13 @@ export class HivePostSyncWorker implements OnModuleInit, OnModuleDestroy {
           await this.postSyncQueueRepository.deleteOne(author, permlink);
           return;
         }
+        if (result === 'muted') {
+          this.logger.log(
+            `Sync queue: ${author}/${permlink} author is governance-muted; skipping vote sync`,
+          );
+          await this.postSyncQueueRepository.deleteOne(author, permlink);
+          return;
+        }
         if (result === 'not_found') {
           this.logger.warn(
             `Hive post not found for sync queue ${author}/${permlink} (attempt ${task.attempts})`,

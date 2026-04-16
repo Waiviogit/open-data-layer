@@ -57,5 +57,8 @@ export default () => {
       batchSize: env.ACCOUNT_SYNC_BATCH_SIZE,
       maxAttempts: env.ACCOUNT_SYNC_MAX_ATTEMPTS,
     },
+    governance: {
+      objectId: env.GOVERNANCE_OBJECT_ID,
+    },
   };
 };

@@ -10,6 +10,7 @@ import type {
 } from '@opden-data-layer/core';
 import { ObjectsCoreRepository } from '../../repositories/objects-core.repository';
 import { PostsRepository } from '../../repositories/posts.repository';
+import { GovernanceCacheService } from '../governance/governance-cache.service';
 import { mergeHiveCommentBody } from './body-merge';
 import {
   blockTimestampToUnixSeconds,
@@ -45,6 +46,7 @@ export class PostUpsertService {
     private readonly postsRepository: PostsRepository,
     private readonly objectsCoreRepository: ObjectsCoreRepository,
     private readonly hiveClient: HiveClient,
+    private readonly governanceCache: GovernanceCacheService,
   ) {}
 
   /**
@@ -56,16 +58,24 @@ export class PostUpsertService {
    * - `ready`      — row exists or was just created; proceed with vote sync.
    * - `not_found`  — Hive has no such content yet; caller should retry.
    * - `is_comment` — target is a reply (`depth > 0`); we do not store those; caller should drop from queue.
+   * - `muted` — author is on platform governance muted list; caller should drop from queue.
    */
   async ensurePostFromHiveForVoteSync(
     author: string,
     permlink: string,
     blockTimestampIso: string,
-  ): Promise<'ready' | 'not_found' | 'is_comment'> {
+  ): Promise<'ready' | 'not_found' | 'is_comment' | 'muted'> {
     const trimmedAuthor = author.trim();
     const trimmedPermlink = permlink.trim();
     if (!trimmedAuthor || !trimmedPermlink) {
       return 'not_found';
+    }
+    const gov = await this.governanceCache.resolvePlatform();
+    if (gov.muted.includes(trimmedAuthor)) {
+      this.logger.log(
+        `ensurePostFromHiveForVoteSync: author '${trimmedAuthor}' is muted; skipping`,
+      );
+      return 'muted';
     }
     const existing = await this.postsRepository.findByKey(
       trimmedAuthor,
@@ -134,6 +144,12 @@ export class PostUpsertService {
     metadata: Record<string, unknown> | null,
     blockTimestamp: string,
   ): Promise<void> {
+    const gov = await this.governanceCache.resolvePlatform();
+    if (gov.muted.includes(op.author)) {
+      this.logger.log(`upsertRootPost: author '${op.author}' is muted; skipping`);
+      return;
+    }
+
     const author = op.author;
     const permlink = op.permlink;
     const existing = await this.postsRepository.findByKey(author, permlink);

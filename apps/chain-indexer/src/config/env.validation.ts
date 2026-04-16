@@ -26,6 +26,7 @@ export const chainIndexerConfigSchema = z.object({
   ACCOUNT_SYNC_INTERVAL_MS: z.coerce.number().optional().default(30_000),
   ACCOUNT_SYNC_BATCH_SIZE: z.coerce.number().optional().default(20),
   ACCOUNT_SYNC_MAX_ATTEMPTS: z.coerce.number().optional().default(5),
+  GOVERNANCE_OBJECT_ID: z.string().optional().default(''),
 });
 
 export type ChainIndexerConfig = z.infer<typeof chainIndexerConfigSchema>;

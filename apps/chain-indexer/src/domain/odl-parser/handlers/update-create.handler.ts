@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   OBJECT_TYPE_REGISTRY,
   UPDATE_REGISTRY,
@@ -9,6 +10,10 @@ import { ObjectsCoreRepository, ObjectUpdatesRepository } from '../../../reposit
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
 import { updateCreatePayloadSchema } from '../odl-envelope.schema';
 import { WriteGuardRunner } from '../guards';
+import {
+  GovernanceObjectMutatedEvent,
+  GOVERNANCE_OBJECT_MUTATED_EVENT,
+} from '../../governance/governance-object-mutated.event';
 
 @Injectable()
 export class UpdateCreateHandler implements OdlActionHandler {
@@ -19,6 +24,7 @@ export class UpdateCreateHandler implements OdlActionHandler {
     private readonly objectUpdatesRepository: ObjectUpdatesRepository,
     private readonly objectsCoreRepository: ObjectsCoreRepository,
     private readonly writeGuardRunner: WriteGuardRunner,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
@@ -118,5 +124,9 @@ export class UpdateCreateHandler implements OdlActionHandler {
     }
 
     await this.objectUpdatesRepository.create(row);
+    this.eventEmitter.emit(
+      GOVERNANCE_OBJECT_MUTATED_EVENT,
+      new GovernanceObjectMutatedEvent(object_id),
+    );
   }
 }

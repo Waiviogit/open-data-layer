@@ -1,3 +1,4 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OBJECT_TYPES } from '@opden-data-layer/core';
 import type { ObjectsCore } from '@opden-data-layer/core';
 import { UpdateCreateHandler } from './update-create.handler';
@@ -35,10 +36,12 @@ describe('UpdateCreateHandler write guard', () => {
       findByObjectId: jest.fn().mockResolvedValue(governanceCore),
     } as unknown as import('../../../repositories').ObjectsCoreRepository;
     const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
+    const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
     const handler = new UpdateCreateHandler(
       objectUpdatesRepository,
       objectsCoreRepository,
       runner,
+      eventEmitter,
     );
 
     await handler.handle(
@@ -65,10 +68,12 @@ describe('UpdateCreateHandler write guard', () => {
       findByObjectId: jest.fn().mockResolvedValue(governanceCore),
     } as unknown as import('../../../repositories').ObjectsCoreRepository;
     const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
+    const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
     const handler = new UpdateCreateHandler(
       objectUpdatesRepository,
       objectsCoreRepository,
       runner,
+      eventEmitter,
     );
 
     const ctx = { ...baseCtx, creator: 'owner' };
@@ -85,5 +90,6 @@ describe('UpdateCreateHandler write guard', () => {
     );
 
     expect(create).toHaveBeenCalledTimes(1);
+    expect(eventEmitter.emit).toHaveBeenCalled();
   });
 });

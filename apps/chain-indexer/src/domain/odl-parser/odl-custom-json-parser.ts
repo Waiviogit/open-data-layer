@@ -9,6 +9,7 @@ import { UpdateVoteHandler } from './handlers/update-vote.handler';
 import { RankVoteHandler } from './handlers/rank-vote.handler';
 import { AuthorityHandler } from './handlers/authority.handler';
 import { BatchImportHandler } from './handlers/batch-import.handler';
+import { GovernanceCacheService } from '../governance/governance-cache.service';
 
 @Injectable()
 export class OdlCustomJsonParser {
@@ -22,6 +23,7 @@ export class OdlCustomJsonParser {
     private readonly rankVoteHandler: RankVoteHandler,
     private readonly authorityHandler: AuthorityHandler,
     private readonly batchImportHandler: BatchImportHandler,
+    private readonly governanceCache: GovernanceCacheService,
   ) {
     this.handlerMap = {
       [this.objectCreateHandler.action]: this.objectCreateHandler,
@@ -53,6 +55,12 @@ export class OdlCustomJsonParser {
     }
 
     const { events } = envelopeResult.data;
+
+    const gov = await this.governanceCache.resolvePlatform();
+    if (gov.banned.includes(account)) {
+      this.logger.log(`ODL: account '${account}' is banned; ignoring all events`);
+      return;
+    }
 
     for (let odlEventIndex = 0; odlEventIndex < events.length; odlEventIndex++) {
       const event = events[odlEventIndex];

@@ -21,7 +21,8 @@ const OP_MULT = 1 << ODL_BITS; // 256
 const TRX_MULT = 1 << (ODL_BITS + OP_BITS); // 65_536
 const BLOCK_MULT = 1 << (ODL_BITS + OP_BITS + TRX_BITS); // 67_108_864
 
-const MAX_BLOCK_NUM = (1 << 32) - 1; // 4_294_967_295
+/** Use `2 ** 32`; `(1 << 32)` is `1` in JS (shift count masked), not 2^32. */
+const MAX_BLOCK_NUM = 2 ** 32 - 1; // 4_294_967_295
 const MAX_TRX_INDEX = (1 << TRX_BITS) - 1; // 1_023
 const MAX_OP_INDEX = (1 << OP_BITS) - 1; // 255
 const MAX_ODL_EVENT_INDEX = (1 << ODL_BITS) - 1; // 255

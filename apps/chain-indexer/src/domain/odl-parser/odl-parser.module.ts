@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { GovernanceModule } from '../governance/governance.module';
 import { RepositoriesModule } from '../../repositories';
 import { ObjectCreateHandler } from './handlers/object-create.handler';
 import { UpdateCreateHandler } from './handlers/update-create.handler';
@@ -15,7 +16,7 @@ import {
 } from './guards';
 
 @Module({
-  imports: [RepositoriesModule],
+  imports: [RepositoriesModule, GovernanceModule],
   providers: [
     GovernanceWriteGuard,
     WriteGuardRunner,

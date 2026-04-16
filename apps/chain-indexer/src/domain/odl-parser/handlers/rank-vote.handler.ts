@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { NewRankVote } from '@opden-data-layer/core';
 import {
   ObjectUpdatesRepository,
@@ -8,6 +9,10 @@ import {
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
 import { rankVotePayloadSchema } from '../odl-envelope.schema';
 import { WriteGuardRunner } from '../guards';
+import {
+  GovernanceObjectMutatedEvent,
+  GOVERNANCE_OBJECT_MUTATED_EVENT,
+} from '../../governance/governance-object-mutated.event';
 
 @Injectable()
 export class RankVoteHandler implements OdlActionHandler {
@@ -19,6 +24,7 @@ export class RankVoteHandler implements OdlActionHandler {
     private readonly objectUpdatesRepository: ObjectUpdatesRepository,
     private readonly objectsCoreRepository: ObjectsCoreRepository,
     private readonly writeGuardRunner: WriteGuardRunner,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
@@ -69,5 +75,9 @@ export class RankVoteHandler implements OdlActionHandler {
     };
 
     await this.rankVotesRepository.create(row);
+    this.eventEmitter.emit(
+      GOVERNANCE_OBJECT_MUTATED_EVENT,
+      new GovernanceObjectMutatedEvent(object_id),
+    );
   }
 }

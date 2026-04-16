@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { NewValidityVote } from '@opden-data-layer/core';
 import {
   ObjectUpdatesRepository,
@@ -8,6 +9,10 @@ import {
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
 import { updateVotePayloadSchema } from '../odl-envelope.schema';
 import { WriteGuardRunner } from '../guards';
+import {
+  GovernanceObjectMutatedEvent,
+  GOVERNANCE_OBJECT_MUTATED_EVENT,
+} from '../../governance/governance-object-mutated.event';
 
 @Injectable()
 export class UpdateVoteHandler implements OdlActionHandler {
@@ -19,6 +24,7 @@ export class UpdateVoteHandler implements OdlActionHandler {
     private readonly objectUpdatesRepository: ObjectUpdatesRepository,
     private readonly objectsCoreRepository: ObjectsCoreRepository,
     private readonly writeGuardRunner: WriteGuardRunner,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
@@ -60,6 +66,10 @@ export class UpdateVoteHandler implements OdlActionHandler {
 
     if (vote === 'remove') {
       await this.validityVotesRepository.delete(update_id, voter);
+      this.eventEmitter.emit(
+        GOVERNANCE_OBJECT_MUTATED_EVENT,
+        new GovernanceObjectMutatedEvent(object_id),
+      );
       return;
     }
 
@@ -73,5 +83,9 @@ export class UpdateVoteHandler implements OdlActionHandler {
     };
 
     await this.validityVotesRepository.create(row);
+    this.eventEmitter.emit(
+      GOVERNANCE_OBJECT_MUTATED_EVENT,
+      new GovernanceObjectMutatedEvent(object_id),
+    );
   }
 }
