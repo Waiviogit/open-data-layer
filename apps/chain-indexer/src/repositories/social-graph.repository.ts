@@ -90,6 +90,23 @@ export class SocialGraphRepository {
   }
 
   /**
+   * Accounts muted (Hive ignore) by any of the given muters.
+   */
+  async listMutedForMuters(muters: string[], trx?: DbExecutor): Promise<string[]> {
+    if (muters.length === 0) {
+      return [];
+    }
+    const uniqueMuters = [...new Set(muters)];
+    const e = this.executor(trx);
+    const rows = await e
+      .selectFrom('user_account_mutes')
+      .select('muted')
+      .where('muter', 'in', uniqueMuters)
+      .execute();
+    return [...new Set(rows.map((r) => r.muted))];
+  }
+
+  /**
    * After a new follow: `following` gains a follower; `follower` gains a following.
    */
   async incrementFollowRelationshipCounts(

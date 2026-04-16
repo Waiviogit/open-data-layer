@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { DEFAULT_GOVERNANCE_SNAPSHOT, ObjectViewService } from '@opden-data-layer/objects-domain';
-import { AggregatedObjectRepository } from '../../repositories';
+import { AggregatedObjectRepository, SocialGraphRepository } from '../../repositories';
 import { GovernanceResolverService } from './governance-resolver.service';
 
 describe('GovernanceResolverService.resolveMergedForObjectView', () => {
@@ -8,10 +8,14 @@ describe('GovernanceResolverService.resolveMergedForObjectView', () => {
     const config = {
       get: jest.fn((key: string) => configGet[key] ?? ''),
     } as unknown as ConfigService;
+    const mutesRepo = {
+      listMutedForMuters: jest.fn().mockResolvedValue([]),
+    } as unknown as SocialGraphRepository;
     const service = new GovernanceResolverService(
       {} as AggregatedObjectRepository,
       {} as ObjectViewService,
       config,
+      mutesRepo,
     );
     return { service, config };
   }

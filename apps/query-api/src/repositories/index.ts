@@ -9,3 +9,4 @@ export { AggregatedObjectRepository } from './aggregated-object.repository';
 export { PostsRepository } from './posts.repository';
 export type { FeedBranchRow, PostVoteSummary } from './posts.repository';
 export { UserPostDraftsRepository } from './user-post-drafts.repository';
+export { UserAccountMutesRepository } from './user-account-mutes.repository';

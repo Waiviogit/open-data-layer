@@ -8,7 +8,7 @@ import {
   type GovernanceScope,
   type GovernanceSnapshot,
 } from '@opden-data-layer/objects-domain';
-import { AggregatedObjectRepository } from '../../repositories';
+import { AggregatedObjectRepository, SocialGraphRepository } from '../../repositories';
 import { assembleSnapshot } from './assemble-snapshot';
 import { GOVERNANCE_UPDATE_TYPES } from './governance.constants';
 import { mergeGovernanceSnapshots } from './merge-governance-snapshots';
@@ -21,6 +21,7 @@ export class GovernanceResolverService {
     private readonly aggregatedObjectRepo: AggregatedObjectRepository,
     private readonly objectViewService: ObjectViewService,
     private readonly config: ConfigService,
+    private readonly socialGraphRepo: SocialGraphRepository,
   ) {}
 
   async resolve(objectId: string): Promise<GovernanceSnapshot> {
@@ -48,12 +49,12 @@ export class GovernanceResolverService {
         }
         const childView = this.resolveFilteredView(childAgg, voterReputations);
         const childSnap = assembleSnapshot(childView);
-        await this.applyModeratorMuteStub(childSnap);
+        await this.applyModeratorMutes(childSnap);
         mergeInheritedScopes(snapshot, childSnap, entry.scope);
       }
     }
 
-    await this.applyModeratorMuteStub(snapshot);
+    await this.applyModeratorMutes(snapshot);
     applyWhitelistToMuted(snapshot);
     return snapshot;
   }
@@ -91,15 +92,13 @@ export class GovernanceResolverService {
     return view;
   }
 
-  /** Placeholder until social_mutes_current exists. */
   private async loadMutesForModerators(moderators: string[]): Promise<string[]> {
-    void moderators;
-    return [];
+    return this.socialGraphRepo.listMutedForMuters(moderators);
   }
 
-  private async applyModeratorMuteStub(snapshot: GovernanceSnapshot): Promise<void> {
-    const fromStub = await this.loadMutesForModerators(snapshot.moderators);
-    snapshot.muted = dedupeStrings([...snapshot.muted, ...fromStub]);
+  private async applyModeratorMutes(snapshot: GovernanceSnapshot): Promise<void> {
+    const fromModerators = await this.loadMutesForModerators(snapshot.moderators);
+    snapshot.muted = dedupeStrings([...snapshot.muted, ...fromModerators]);
   }
 }
 
