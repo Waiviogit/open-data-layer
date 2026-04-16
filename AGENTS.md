@@ -18,7 +18,7 @@ Nx monorepo: NestJS apps with Postgres, Redis, Hive, or other runtimes as needed
 
 ## Project Context
 
-- `apps/` — runnable NestJS applications (e.g. `chain-indexer`, `query-api`).
+- `apps/` — runnable NestJS applications (e.g. `chain-indexer`, `query-api`, `auth-api`) and Next.js (`web`).
 - `libs/` — reusable NestJS libraries (e.g. `@opden-data-layer/clients`, `@opden-data-layer/core`); add via Nx generators when needed.
 - `nx.json` — Nx workspace configuration.
 
@@ -112,46 +112,9 @@ Rules:
 - Prettier: single quotes, trailing commas (all), auto endOfLine.
 - Use descriptive names.
 
-### Web app (`apps/web`) — Design tokens
+### Web app (`apps/web`)
 
-When creating or editing UI in `apps/web`, follow the **design token** system so themes and future design presets stay swappable without scattered hex values.
-
-- **Source of truth:** CSS custom properties per `[data-theme='…']` in [`apps/web/src/styles/theme.css`](apps/web/src/styles/theme.css); Tailwind maps them in [`apps/web/tailwind.config.js`](apps/web/tailwind.config.js). Spec: [`docs/apps/web/spec/theme.md`](docs/apps/web/spec/theme.md).
-- **Colors:** use semantic utilities (`bg-bg`, `text-fg`, `text-fg-secondary`, `text-fg-tertiary`, `text-fg-disabled`, `text-muted`, `text-link`, `border-border`, `bg-accent`, `text-accent-fg`, `bg-accent-hover`, `text-accent-alt`, `bg-secondary`, `text-secondary-fg`, `bg-tertiary`, `text-tertiary-fg`, `bg-error`, `text-error`, `border-error`, `outline-focus`, `bg-surface`, `bg-overlay`, `bg-ghost-surface`, `border-ghost-border`, `bg-surface-control`, extended tokens such as `border-border-strong`, `bg-surface-alt`, `bg-surface-raised`, `text-heading`, `bg-code-bg`, `bg-nav-bg`, `text-nav-fg`). Do **not** embed raw `#…` / `rgb()` / `rgba()` in component `className` or inline styles except where documented (e.g. temporary scaffold CSS).
-- **Typography:** root uses `var(--font-body)` from `global.css`; prefer `font-body`, `font-display`, `font-editorial`, `font-label`, or `font-mono` when a component needs an explicit stack. Use `text-hero`, `text-display`, `text-section`, `text-body-lg`, `text-body`, `text-body-sm`, `text-caption`, `text-body-xs`, `text-micro`, `text-nano` for theme-controlled sizes; `font-weight-display`, `font-weight-body`, `font-weight-label`, `font-weight-strong` for weights; `tracking-display`, `tracking-body`, `tracking-caption`, `tracking-loose`, `tracking-looser` for letter-spacing; `leading-display`, `leading-body`, `leading-compressed`, `leading-editorial` for line-height.
-- **Radius and elevation:** prefer token-backed utilities (`rounded-btn`, `rounded-card`, `rounded-card-lg`, `rounded-xl`, `rounded-pill`, `rounded-circle`, `shadow-card`, `shadow-card-float`, `shadow-card-warm`, `shadow-hover`, `shadow-ring`, `shadow-whisper`, `shadow-inset`, `shadow-focus-ring`) over default Tailwind `rounded-md` / `rounded-lg` / `shadow-sm` so curvature and depth follow the active theme. For glass navigation use `backdrop-filter: var(--backdrop-nav)` in CSS.
-- **Layout rhythm:** prefer `px-gutter` / `sm:px-gutter-sm` for horizontal gutters, `py-section-y-sm`, `py-section-y`, `py-section-y-lg`, `py-section-y-hero` for vertical section spacing, `p-card-padding` / `gap-card-padding` for cards and grids, `max-w-container-page`, `max-w-container-content`, and `max-w-container-narrow` for widths — instead of ad-hoc `px-4`, `py-16`, `max-w-lg`, `max-w-6xl`.
-- **New tokens:** if a design needs a new role (color, radius, shadow, layout), add the CSS variable in `theme.css` for every theme block, extend Tailwind in `tailwind.config.js`, and update `docs/apps/web/spec/theme.md` in the same change.
-
-### Web app (`apps/web`) — Shell mode compatibility
-
-Shell mode (`data-shell-mode` on `<html>`) adjusts structural tokens and optional profile/feed UI. Full spec: [`docs/apps/web/spec/shell-mode.md`](docs/apps/web/spec/shell-mode.md).
-
-- **Imports:** use the [`@/shell-mode`](apps/web/src/shell-mode/index.ts) barrel only — do not deep-import `use-shell-mode` or other module files.
-- **Behavior checks:** use helpers from `shell-mode-features.ts` (`shouldHideHero`, `shouldUsePostGrid`, `getVisibleMenuKeys`, `shouldCenterMenu`) instead of `resolvedMode === '…'`.
-- **Visibility:** prefer CSS toggles (`.shell-hide-<mode>` / `.shell-show-<mode>` in `theme.css`) when the subtree is the same across modes; use JS (`return null` or conditional render) when component trees differ, the hidden subtree is heavy, or nav/data must be filtered.
-- **Layout:** use `--shell-left-width`, `--shell-right-width`, and `--spacing-card` in grid templates so shell presets adjust widths without ad-hoc breakpoints.
-- **New behavior:** add a helper in `shell-mode-features.ts` (and CSS in `theme.css` when needed), not scattered mode string checks in feature components.
-
-### Web app (`apps/web`) — Images
-
-- Use **`next/image`** for user-facing raster content (avatars, feed thumbnails, covers). Use inline SVG or `<img>` for icons and decorative graphics. Markdown/HTML body images may stay plain `<img>` with `loading="lazy"`. Spec: [`docs/apps/web/spec/images.md`](docs/apps/web/spec/images.md).
-
-### Web app (`apps/web`) — React hydration
-
-- **SSR + client components:** The server HTML for a Client Component’s first paint must match what React computes on the client before effects run. Avoid **non-deterministic** output in that tree: `Date.now()`, `Math.random()`, locale/time formatting that differs between server and client (e.g. `Intl.RelativeTimeFormat` / “3 minutes ago” at hydration time), or branching on `typeof window`.
-- **Relative times:** Prefer a stable placeholder until `useEffect` (then set formatted text), pass a string from an RSC parent, or use a small helper like `HydrationSafeRelativeTime` in the editor module. Do not call `formatDraftRelativeTime` (or similar) directly in the initial render of a hydrated subtree.
-- **Browser extensions:** Password managers and similar tools may inject attributes on `<a>` (e.g. extra `class` values) before React hydrates, causing attribute mismatches on `next/link`. For purely navigational links where this is expected, **`suppressHydrationWarning`** on the `Link` is acceptable. Do not use it to hide real bugs in app code.
-
-### Web app (`apps/web`) — Architecture
-
-Feature code follows **clean architecture** in `apps/web`: **domain**, **application**, **infrastructure**, **presentation** inside `src/modules/<feature>/`; cross-cutting types in `src/shared/`. Full spec: [`docs/apps/web/spec/architecture.md`](docs/apps/web/spec/architecture.md). Rules for Server Components, server actions, imports, `Result`, policies: [`docs/apps/web/spec/web-conventions.md`](docs/apps/web/spec/web-conventions.md).
-
-- **No runtime DI container** — compose with module barrel exports and factory functions; import from `@/modules/<name>` and `@/shared`.
-- **Import only public APIs** — consume other feature modules via `modules/<name>/index.ts`, not deep paths.
-- **Authentication vs authorization** — identity (session/cookies) is separate from **policies** (`canUpdate`, etc.); policies live in feature `domain/policies/`.
-- **Queries vs use cases** — reads (`application/queries/`) vs writes (`application/use-cases/`); ports (interfaces) in domain/application, implementations in `infrastructure/`.
-- **Typed `Result<T, E>`** — use for expected failures in server actions; see `apps/web/src/shared/domain/result.ts`.
+All rules for design tokens, shell mode, images, React hydration, and clean architecture are in [`apps/web/AGENTS.md`](apps/web/AGENTS.md).
 
 ### Testing
 
@@ -250,8 +213,29 @@ Full standards: [`docs/standards/docs-standards.md`](docs/standards/docs-standar
 - Never use raw string interpolation in DB queries.
 - Never commit `generated/` (registry Markdown output) or edit those files by hand.
 - Never add **axios** or use it for HTTP — use **`fetch`** (e.g. in E2E tests).
-- Never hardcode ad-hoc colors or ignore design-token utilities in `apps/web` UI — follow **Web app (`apps/web`) — Design tokens** (semantic Tailwind + `theme.css`).
-- Never deep-import from `apps/web` feature modules — use each module's `index.ts` barrel only (see **Web app (`apps/web`) — Architecture**).
+- Never violate `apps/web`-specific conventions — see [`apps/web/AGENTS.md`](apps/web/AGENTS.md).
+
+###Conflict resolution:
+
+1. Precedence order (lowest to highest):
+   System (model-level) > Developer (agent-level) > Skill > AGENTS.md > README.md > User prompt.
+   If the priority is higher, then settings can overwrite previous.
+
+2. If you have some conflicts in docs, you must tell me.
+   Most important to know conflicts with System or Developer prompt,
+   because I can't know them beforehand.
+   Stop the session execution while conflicts will not be resolved then.
+
+3. Nested AGENTS.md:
+   Use the AGENTS.md of a currently changing file from the closest parent folder.
+   Parent files are defaults, and child files override only overlapping rules
+   as per specs: https://agents.md
+
+   All changing related files' parent folders should be scanned for AGENTS.md
+   to know the specific instructions exactly for this file and its module.
+
+4. If one file references another, then another file is with default rules
+   and the current file can override it.
 
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
