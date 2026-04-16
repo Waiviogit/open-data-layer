@@ -155,6 +155,28 @@ await this.db.transaction().execute(async (trx) => {
 - Define TTL values as named constants in `constants/` (e.g. `CACHE_TTL_BLOCK_SEC = 60`). No magic numbers.
 - If a key can grow unboundedly (e.g. a set of processed tx hashes), use a TTL or an explicit eviction strategy — document which.
 
+#### Key naming
+
+Keys must follow the pattern: `{app_name}:{purpose}:{identifier}`
+
+| Segment      | Value                              |
+|--------------|------------------------------------|
+| `app_name`   | Nx project name (e.g. `auth-api`, `chain-indexer`, `query-api`) |
+| `purpose`    | `cache`, `lock`, `session`, `queue` |
+| `identifier` | Entity-specific ID (e.g. `block:12345`, `user:abc`, `tx:0xdeadbeef`) |
+
+Examples:
+- `chain-indexer:cache:block:12345`
+- `auth-api:session:user:abc123`
+- `chain-indexer:lock:sync:head`
+- `query-api:cache:account:alice`
+
+Rules:
+- Use **kebab-case** for `app_name` (matches Nx project name).
+- Use **snake_case** forbidden — colons are the only separator.
+- Never use dynamic or unpredictable segments without a fixed prefix.
+- Define the full key pattern as a typed constant or factory function in `constants/`:
+
 #### Key scanning
 
 - **Never use `KEYS *`** (or `KEYS <pattern>`) in production code — it blocks the Redis event loop and is dangerous at scale.
