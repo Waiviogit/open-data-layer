@@ -9,7 +9,7 @@ Nx monorepo: NestJS apps with Postgres, Redis, Hive, or other runtimes as needed
 - Keep modules loosely coupled.
 - Prefer explicit over implicit behavior.
 - Prefer small, focused functions.
-- Prefer composition over inheritance (except when extending a shared repository base class).
+- Prefer composition over inheritance.
 - Avoid deep nesting — prefer early returns.
 - Avoid magic numbers — use constants.
 - No dead or commented-out code. Comments in English only.
@@ -38,6 +38,29 @@ Rules:
 - Repository layer: use **Kysely** for type-safe SQL (https://kysely.dev/docs). Returns typed data, hides driver internals.
 - Service/domain layer: formulas, calculations, decisions, orchestration across repositories.
 - Red flags — move to repository: service builds raw SQL/queries. Move to service: repository has `if/else` decisions or calls other repositories.
+
+### Transaction boundaries
+
+- The **service/domain layer** owns transaction boundaries: it calls `db.transaction().execute(...)` (inject `Kysely` where needed) or `repository.runInTransaction(...)` when a repository exposes that helper.
+- **Repositories** accept an optional `trx` parameter (same Kysely API as the root client) and use a local executor: `executor(trx?: DbExecutor): DbExecutor { return trx ?? this.db; }`. Public methods run queries on `this.executor(trx)`.
+- A repository **must not** start nested transactions for the same work unless it exposes an explicit `runInTransaction` for callers to use as the single boundary.
+- See `apps/chain-indexer/src/repositories/social-graph.repository.ts` (executor + optional `trx` + `runInTransaction`) and `apps/chain-indexer/src/domain/hive-vote/vote-hive.service.ts` (service-owned `db.transaction()` passing `trx` into repos).
+
+```ts
+// repository
+executor(trx?: DbExecutor): DbExecutor {
+  return trx ?? this.db;
+}
+async insert(data: NewRow, trx?: DbExecutor): Promise<void> {
+  await this.executor(trx).insertInto('table').values(data).execute();
+}
+
+// service
+await this.db.transaction().execute(async (trx) => {
+  await this.fooRepository.insert(data, trx);
+  await this.barRepository.update(id, trx);
+});
+```
 
 ### Module Boundaries
 
@@ -86,9 +109,17 @@ Rules:
 - No `console.log` in production. Do not log secrets or connection strings.
 - Log errors with context: `this.logger.error(error.message)`.
 
+| Level | When to use |
+|-------|-------------|
+| `error` | Caught exceptions, infrastructure failures (DB, Redis, HTTP), unrecoverable errors |
+| `warn` | Invalid/unexpected data, skipped work, soft mismatches (signer, schema), degraded state |
+| `log` | Significant lifecycle events: connect/disconnect, sync milestones, batch completions |
+| `debug` | Internal traces useful during development; should not appear in normal production logs |
+| `verbose` | Not used — do not add |
+
 ### Error Handling
 
-- Repository base class catches and logs errors; returns `null` / empty arrays.
+- There is **no shared repository base class** in `libs/`. Follow this convention in repositories: wrap public methods in `try/catch`, log with `this.logger.error((e as Error).message)`, and return `null` or `[]` for reads so callers can handle absence. **Re-throw** when the caller must know about the failure (e.g. writes where partial success is dangerous). Reference: [`apps/auth-api/src/repositories/challenges.repository.ts`](apps/auth-api/src/repositories/challenges.repository.ts).
 - Service/domain layer must check for `null` returns and handle appropriately.
 - Use typed error classes for domain errors. Map domain errors to HTTP responses in controllers.
 - Do not expose stack traces to clients. Fail fast for unrecoverable errors (invalid config, missing connections).
@@ -107,9 +138,28 @@ Rules:
 - Database pool and Redis URL rotation are pre-configured in the shared clients lib.
 
 ### Redis conventions
+
 - Always use `db0`. Do not use multiple Redis databases (`db1`, `db2`, etc.)
-- Isolate data via key namespaces: `session:user:{id}`, `cache:product:{id}`, `lock:{resource}`
+- Isolate data via key namespaces: `session:user:{id}`, `cache:block:{num}`, `lock:{resource}`
 - Reason: multiple DBs break Redis Cluster compatibility and complicate connection pooling
+- **ioredis**: do not import `ioredis` directly in apps or domain code. Use **`RedisClientFactory`**
+  from `@opden-data-layer/clients`: inject it (via `RedisModule`) and call `getClient()` (default `db = 0`).
+  The factory caches one wrapper per `db` index — do not call `new Redis(...)` yourself.
+  Type against `RedisClientInterface`, not the raw `ioredis` `Redis` class.
+  Implementation: `libs/clients/src/redis-client/`.
+
+#### TTL
+
+- Every key written to Redis **must** have a TTL unless it is an intentionally persistent structure.
+- Set TTL at write time via `SET key value EX <seconds>` or `EXPIRE` immediately after write — never leave it implicit.
+- Define TTL values as named constants in `constants/` (e.g. `CACHE_TTL_BLOCK_SEC = 60`). No magic numbers.
+- If a key can grow unboundedly (e.g. a set of processed tx hashes), use a TTL or an explicit eviction strategy — document which.
+
+#### Key scanning
+
+- **Never use `KEYS *`** (or `KEYS <pattern>`) in production code — it blocks the Redis event loop and is dangerous at scale.
+- Use **`SCAN`** with a cursor and a reasonable `COUNT` hint instead.
+- In high-throughput indexer paths, avoid scanning altogether — design data structures so lookup is O(1) (e.g. `GET`, `HGET`, `SISMEMBER`).
 
 ### Code Style
 
@@ -148,10 +198,6 @@ All rules for design tokens, shell mode, images, React hydration, and clean arch
 - After scaffolding a new app, immediately add `apps/<app>/package.json` (the Nx Nest generator does not create it).
   - Format: `name: @opden-data-layer/<app>`, `version: 0.0.0`, `private: true`, dependencies include at minimum `@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`, `reflect-metadata`, `rxjs`. Match version ranges to root `package.json`.
 
-### nx_docs Usage
-
-- Use for: advanced config, unfamiliar flags, migration guides, plugin config, edge cases.
-- Do not use for: basic generator syntax, standard commands.
 
 ### Package Management
 
@@ -220,7 +266,7 @@ Full standards: [`docs/standards/docs-standards.md`](docs/standards/docs-standar
 - Never add **axios** or use it for HTTP — use **`fetch`** (e.g. in E2E tests).
 - Never violate `apps/web`-specific conventions — see [`apps/web/AGENTS.md`](apps/web/AGENTS.md).
 
-###Conflict resolution:
+### Conflict resolution:
 
 1. Precedence order (lowest to highest):
    System (model-level) > Developer (agent-level) > Skill > AGENTS.md > README.md > User prompt.
@@ -244,6 +290,7 @@ Full standards: [`docs/standards/docs-standards.md`](docs/standards/docs-standar
 
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
+<!-- Priority: this block has LOWER precedence than the ## Nx Commands and ## Scaffolding sections above. If rules conflict, the sections above win. -->
 
 ## General Guidelines for working with Nx
 
