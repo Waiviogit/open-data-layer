@@ -52,7 +52,7 @@ describe('GovernanceCacheService', () => {
     expect(result).toEqual(customSnapshot);
     expect(governanceResolver.resolve).toHaveBeenCalledWith('gov-obj');
     expect(redis.set).toHaveBeenCalledWith(
-      'chain_indexer:governance:snapshot:gov-obj',
+      'chain-indexer:cache:governance:snapshot:gov-obj',
       JSON.stringify(customSnapshot),
       60,
     );
@@ -92,7 +92,9 @@ describe('GovernanceCacheService', () => {
     const service = new GovernanceCacheService(governanceResolver, redisFactory, config);
     await service.invalidate('gov-obj');
 
-    expect(redis.del).toHaveBeenCalledWith('chain_indexer:governance:snapshot:gov-obj');
+    expect(redis.del).toHaveBeenCalledWith(
+      'chain-indexer:cache:governance:snapshot:gov-obj',
+    );
   });
 
   it('handleGovernanceObjectMutated delegates to invalidate', async () => {
@@ -108,6 +110,8 @@ describe('GovernanceCacheService', () => {
     const service = new GovernanceCacheService(governanceResolver, redisFactory, config);
     await service.handleGovernanceObjectMutated(new GovernanceObjectMutatedEvent('gov-obj'));
 
-    expect(redis.del).toHaveBeenCalledWith('chain_indexer:governance:snapshot:gov-obj');
+    expect(redis.del).toHaveBeenCalledWith(
+      'chain-indexer:cache:governance:snapshot:gov-obj',
+    );
   });
 });

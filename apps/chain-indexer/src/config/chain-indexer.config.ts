@@ -19,7 +19,6 @@ export default () => {
     },
     hive: {
       startBlockNumber: env.START_BLOCK_NUMBER,
-      blockNumberKey: env.BLOCK_NUMBER_KEY,
       client: {
         cachePrefix: env.HIVE_CACHE_PREFIX,
         cacheTtlSeconds: env.HIVE_CACHE_TTL_SECONDS,

@@ -11,12 +11,9 @@ import {
   GovernanceObjectMutatedEvent,
   GOVERNANCE_OBJECT_MUTATED_EVENT,
 } from './governance-object-mutated.event';
+import { redisKey } from '../../constants/redis-keys';
 
 const GOVERNANCE_SNAPSHOT_TTL_SECONDS = 60;
-
-function cacheKeyForObjectId(objectId: string): string {
-  return `chain_indexer:governance:snapshot:${objectId}`;
-}
 
 @Injectable()
 export class GovernanceCacheService {
@@ -43,7 +40,7 @@ export class GovernanceCacheService {
     }
 
     const redis = this.redisFactory.getClient(0);
-    const key = cacheKeyForObjectId(trimmed);
+    const key = redisKey.governanceSnapshot(trimmed);
     const cached = await redis.get(key);
     if (cached) {
       try {
@@ -64,7 +61,7 @@ export class GovernanceCacheService {
       return;
     }
     const redis = this.redisFactory.getClient(0);
-    await redis.del(cacheKeyForObjectId(trimmed));
+    await redis.del(redisKey.governanceSnapshot(trimmed));
   }
 
   @OnEvent(GOVERNANCE_OBJECT_MUTATED_EVENT)

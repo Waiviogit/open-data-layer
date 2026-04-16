@@ -10,7 +10,7 @@ Describe how **chain-indexer** advances through Hive blocks, resolves the **curr
 
 | Area | Role |
 |------|------|
-| [`HiveProcessorModule`](../../../../apps/chain-indexer/src/domain/hive-parser/hive-parser.module.ts) | Wires `HiveProcessorModule` from `@opden-data-layer/core` with block key and start block from config |
+| [`HiveProcessorModule`](../../../../apps/chain-indexer/src/domain/hive-parser/hive-parser.module.ts) | Wires `HiveProcessorModule` from `@opden-data-layer/core` with block key from [`redis-keys.ts`](../../../../apps/chain-indexer/src/constants/redis-keys.ts) and start block from config |
 | [`HiveParserProvidersModule`](../../../../apps/chain-indexer/src/domain/hive-parser/hive-parser-providers.module.ts) | Binds `BLOCK_PARSER` to `HiveMainParser` |
 | [`HiveProcessorService`](../../../../libs/core/src/hive-processor/hive-processor.service.ts) | Bootstrap loop: fetch block → parse → advance cursor |
 | [`BlockCacheService`](../../../../libs/core/src/hive-processor/block-cache.service.ts) | Redis get/set for the block number |
@@ -21,12 +21,14 @@ Describe how **chain-indexer** advances through Hive blocks, resolves the **curr
 
 ### 3.1 Block cursor (Redis)
 
-| Config key | Env | Description |
-|------------|-----|-------------|
-| `hive.blockNumberKey` | `BLOCK_NUMBER_KEY` | Redis key storing the next block to process (default `chain_indexer:block_number`) |
-| `hive.startBlockNumber` | `START_BLOCK_NUMBER` | Used when the key is missing (default in code: see `env.validation.ts`) |
+| Item | Details |
+|------|---------|
+| **Redis key** | `chain-indexer:cache:hive:block-number` — defined in [`redis-keys.ts`](../../../../apps/chain-indexer/src/constants/redis-keys.ts) (`redisKey.hiveBlockNumber()`), not via env |
+| **`START_BLOCK_NUMBER`** | Used when the key is missing (default in code: see `env.validation.ts`) |
 
 `BlockCacheService` uses Redis DB **0** (see `HiveProcessorModule.forRootAsync` `redisDb: 0`). On read failure, the cursor falls back to `START_BLOCK_NUMBER`.
+
+If you previously used the env-driven key `chain_indexer:block_number`, migrate the stored value to the new key or accept a fresh cursor from `START_BLOCK_NUMBER`.
 
 ### 3.2 Processing loop
 

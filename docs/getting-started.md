@@ -62,7 +62,6 @@ Key variables and their defaults:
 | `REDIS_PORT` | `6379` | Redis container |
 | `DATABASE_URL` | `postgres://postgres:postgres@localhost:5432/odl` | migrations CLI |
 | `START_BLOCK_NUMBER` | `102138605` | chain-indexer |
-| `BLOCK_NUMBER_KEY` | `chain_indexer:block_number` | chain-indexer |
 | `QUERY_API_URL` | `http://localhost:3000` | web (server — query-api **origin**; HTTP paths use `/query/v1/...`) |
 | `WEB_THEME_SYNC_URL` | *(unset)* | web (server — optional theme sync endpoint) |
 

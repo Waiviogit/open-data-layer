@@ -67,7 +67,8 @@ Values are validated in [`apps/chain-indexer/src/config/env.validation.ts`](../.
 | `POSTGRES_POOL_MAX` | No | `10` | Pool size |
 | `REDIS_URI` | No | `redis://localhost:6379` | Redis for block cursor |
 | `START_BLOCK_NUMBER` | No | see `env.validation.ts` | First block height if cursor key missing |
-| `BLOCK_NUMBER_KEY` | No | `chain_indexer:block_number` | Redis key for current height |
+
+Redis **key names** for the block cursor and governance cache are defined in code: [`apps/chain-indexer/src/constants/redis-keys.ts`](../../../apps/chain-indexer/src/constants/redis-keys.ts) (built with `buildRedisKey` from `@opden-data-layer/core`). They are not environment variables.
 
 ### Hive client tuning
 
@@ -117,7 +118,7 @@ Apply database migrations before first run; see [migrations](../../operations/mi
 
 ### Replaying or skipping blocks
 
-- **Cursor:** Stored in Redis at `BLOCK_NUMBER_KEY`. Delete the key or set it to a decimal string height to change where ingestion continues.
+- **Cursor:** Stored in Redis at `chain-indexer:cache:hive:block-number` (see `redis-keys.ts`). Delete the key or set it to a decimal string height to change where ingestion continues.
 - **Default start:** If the key is absent, `START_BLOCK_NUMBER` is used (see `env.validation.ts`).
 
 ### Failure behavior

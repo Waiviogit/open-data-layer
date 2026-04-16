@@ -177,6 +177,18 @@ Rules:
 - Never use dynamic or unpredictable segments without a fixed prefix.
 - Define the full key pattern as a typed constant or factory function in `constants/`:
 
+```ts
+// apps/<app>/src/constants/redis-keys.ts
+import { buildRedisKey } from '@opden-data-layer/core';
+
+const APP = 'chain-indexer';
+
+export const redisKey = {
+  blockCache: (num: number) => buildRedisKey(APP, 'cache', 'block', num),
+  syncLock: () => buildRedisKey(APP, 'lock', 'sync', 'head'),
+} as const;
+```
+
 #### Key scanning
 
 - **Never use `KEYS *`** (or `KEYS <pattern>`) in production code — it blocks the Redis event loop and is dangerous at scale.

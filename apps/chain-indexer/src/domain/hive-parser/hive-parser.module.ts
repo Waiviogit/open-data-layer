@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HiveParserProvidersModule } from './hive-parser-providers.module';
 import { HiveProcessorModule } from '@opden-data-layer/core';
+import { redisKey } from '../../constants/redis-keys';
 
 @Module({
   imports: [
@@ -9,10 +10,7 @@ import { HiveProcessorModule } from '@opden-data-layer/core';
     HiveProcessorModule.forRootAsync({
       imports: [HiveParserProvidersModule],
       useFactory: (config: ConfigService) => ({
-        blockNumberKey: config.get<string>(
-          'hive.blockNumberKey',
-          'chain_indexer:block_number',
-        ),
+        blockNumberKey: redisKey.hiveBlockNumber(),
         startBlockNumber: config.get<number>(
           'hive.startBlockNumber',
           102138605,

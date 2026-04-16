@@ -3,7 +3,6 @@ import { z } from 'zod';
 export const chainIndexerConfigSchema = z.object({
   REDIS_URI: z.string().optional().default('redis://localhost:6379'),
   START_BLOCK_NUMBER: z.coerce.number().optional().default(102138605),
-  BLOCK_NUMBER_KEY: z.string().optional().default('chain_indexer:block_number'),
   POSTGRES_HOST: z.string().min(1).optional().default('localhost'),
   POSTGRES_PORT: z.coerce.number().optional().default(5432),
   POSTGRES_DATABASE: z.string().min(1).optional().default('odl'),
