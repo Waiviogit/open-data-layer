@@ -99,8 +99,17 @@ export class HiveMainParser {
         try {
           await handler.handle(payload, context);
         } catch (error: unknown) {
+          const base =
+            error instanceof Error ? error.message : String(error);
+          const pgDetail =
+            error &&
+            typeof error === 'object' &&
+            'detail' in error &&
+            typeof (error as { detail?: unknown }).detail === 'string'
+              ? (error as { detail: string }).detail
+              : '';
           this.logger.error(
-            `Handler [${type}] failed: ${error instanceof Error ? error.message : String(error)}`,
+            `Handler [${type}] failed: ${base}${pgDetail ? ` | ${pgDetail}` : ''}`,
           );
         }
       }

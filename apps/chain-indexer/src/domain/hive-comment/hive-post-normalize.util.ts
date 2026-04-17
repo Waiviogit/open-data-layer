@@ -4,6 +4,9 @@ import type { HiveBeneficiary, NewPost } from '@opden-data-layer/core';
  * Hive sometimes returns `json_metadata` as an object; DB column is TEXT storing JSON text.
  * Invalid JSON strings are replaced with a minimal valid object.
  * NUL bytes are stripped (PostgreSQL JSON/JSONB rejects them in some cases).
+ *
+ * When the string parses as JSON, we re-serialize with `JSON.stringify` so the stored text
+ * matches what PostgreSQL accepts for implicit JSON/JSONB casts (stricter than V8 in edge cases).
  */
 export function normalizeHiveJsonMetadataForStorage(raw: unknown): string {
   if (raw === undefined || raw === null) {
@@ -15,14 +18,22 @@ export function normalizeHiveJsonMetadataForStorage(raw: unknown): string {
       return '{}';
     }
     try {
-      JSON.parse(t);
-      return t;
+      const parsed: unknown = JSON.parse(t);
+      return safeJsonStringifyForPostgres(parsed);
     } catch {
       return JSON.stringify({ _unparsed: t.slice(0, 2048) });
     }
   }
   try {
-    return JSON.stringify(raw).replace(/\u0000/g, '');
+    return safeJsonStringifyForPostgres(raw);
+  } catch {
+    return '{}';
+  }
+}
+
+function safeJsonStringifyForPostgres(value: unknown): string {
+  try {
+    return JSON.stringify(value).replace(/\u0000/g, '');
   } catch {
     return '{}';
   }
@@ -82,22 +93,38 @@ export function normalizeHiveBeneficiariesForStorage(raw: unknown): HiveBenefici
     }
 
     if (account) {
-      out.push({ account, weight });
+      const w = Number.isFinite(weight) ? Math.trunc(weight) : 0;
+      out.push({ account, weight: w });
     }
   }
   try {
-    JSON.parse(JSON.stringify(out));
-    return out;
+    const serialized = JSON.stringify(out);
+    JSON.parse(serialized);
+    return JSON.parse(serialized) as HiveBeneficiary[];
   } catch {
     return [];
   }
 }
 
+/**
+ * Re-parse + stringify so the stored document is always valid JSON text (belt-and-suspenders).
+ * Covers any edge case where normalization still produced a string Postgres would reject as json/jsonb.
+ */
+function roundTripJsonText(s: string): string {
+  try {
+    return JSON.stringify(JSON.parse(s));
+  } catch {
+    return '{}';
+  }
+}
+
 /** Last line of defense before INSERT/UPDATE `posts` (any code path). */
 export function sanitizePostRowJsonColumnsForDatabase(row: NewPost): NewPost {
+  const meta = normalizeHiveJsonMetadataForStorage(row.json_metadata as unknown);
+  const ben = normalizeHiveBeneficiariesForStorage(row.beneficiaries as unknown);
   return {
     ...row,
-    json_metadata: normalizeHiveJsonMetadataForStorage(row.json_metadata as unknown),
-    beneficiaries: normalizeHiveBeneficiariesForStorage(row.beneficiaries as unknown),
+    json_metadata: roundTripJsonText(meta),
+    beneficiaries: ben,
   };
 }

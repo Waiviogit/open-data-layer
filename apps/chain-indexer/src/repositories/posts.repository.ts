@@ -17,6 +17,24 @@ import type {
 import type { ActiveVotesType } from '@opden-data-layer/clients';
 import { sanitizePostRowJsonColumnsForDatabase } from '../domain/hive-comment/hive-post-normalize.util';
 
+/**
+ * JSONB must be valid JSON at the Postgres parser. Bind a single text parameter cast to jsonb
+ * so we never rely on driver-specific serialization of JS objects/arrays.
+ */
+function jsonbParamFromEncodedJson(encodedJson: string) {
+  return sql`${encodedJson}::jsonb`;
+}
+
+function encodeBeneficiariesForPostgresJsonb(
+  beneficiaries: NewPost['beneficiaries'],
+): string {
+  const plain = (beneficiaries ?? []).map((b) => ({
+    account: String(b.account ?? '').replace(/\u0000/g, ''),
+    weight: Number.isFinite(b.weight) ? Math.trunc(b.weight) : 0,
+  }));
+  return JSON.stringify(plain);
+}
+
 function toBigIntVoteRshares(v: number | string | undefined | null): bigint {
   if (v === undefined || v === null) {
     return BigInt(0);
@@ -170,15 +188,23 @@ export class PostsRepository {
    */
   async upsertPost(row: NewPost): Promise<void> {
     const sanitized = sanitizePostRowJsonColumnsForDatabase(row);
-    const { author: _author, permlink: _permlink, ...rest } = sanitized;
+    const benEncoded = encodeBeneficiariesForPostgresJsonb(sanitized.beneficiaries);
+    const beneficiariesSql = jsonbParamFromEncodedJson(benEncoded);
+    const { author: _author, permlink: _permlink, beneficiaries: _b, ...rest } = sanitized;
     void _author;
     void _permlink;
+    void _b;
+    const insertRow = {
+      ...sanitized,
+      beneficiaries: beneficiariesSql as unknown as NewPost['beneficiaries'],
+    };
     await this.db
       .insertInto('posts')
-      .values(sanitized)
+      .values(insertRow)
       .onConflict((oc) =>
         oc.columns(['author', 'permlink']).doUpdateSet({
           ...rest,
+          beneficiaries: beneficiariesSql as unknown as NewPost['beneficiaries'],
         }),
       )
       .execute();
@@ -220,15 +246,25 @@ export class PostsRepository {
     const sanitized = sanitizePostRowJsonColumnsForDatabase(row);
     const author = sanitized.author;
     const permlink = sanitized.permlink;
-    const { author: _a, permlink: _p, ...rest } = sanitized;
+    const benEncoded = encodeBeneficiariesForPostgresJsonb(sanitized.beneficiaries);
+    const beneficiariesSql = jsonbParamFromEncodedJson(benEncoded);
+    const { author: _a, permlink: _p, beneficiaries: _b, ...rest } = sanitized;
     void _a;
     void _p;
+    void _b;
+    const insertRow = {
+      ...sanitized,
+      beneficiaries: beneficiariesSql as unknown as NewPost['beneficiaries'],
+    };
     await this.db.transaction().execute(async (trx) => {
       await trx
         .insertInto('posts')
-        .values(sanitized)
+        .values(insertRow)
         .onConflict((oc) =>
-          oc.columns(['author', 'permlink']).doUpdateSet({ ...rest }),
+          oc.columns(['author', 'permlink']).doUpdateSet({
+            ...rest,
+            beneficiaries: beneficiariesSql as unknown as NewPost['beneficiaries'],
+          }),
         )
         .execute();
 
