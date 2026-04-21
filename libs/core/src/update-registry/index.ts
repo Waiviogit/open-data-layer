@@ -98,6 +98,12 @@ export { UPDATE_OBJECT_CONTROL } from './updates/object-control';
 export { UPDATE_INHERITS_FROM } from './updates/inherits-from';
 export { UPDATE_VALIDITY_CUTOFF } from './updates/validity-cutoff';
 
+export { cidSchema } from './schemas/cid-schema';
+export {
+  imageCidOrUrlJsonSchema,
+  type ImageCidOrUrlJson,
+} from './schemas/image-cid-or-url-json';
+
 export {
   POST_LINKED_OBJECT_UPDATE_TYPES,
   type PostLinkedObjectUpdateType,

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { POST_LINKED_OBJECT_UPDATE_TYPES } from '@opden-data-layer/core';
 import type { Post } from '@opden-data-layer/core';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
@@ -31,6 +32,7 @@ export class GetPostByKeyEndpoint {
     private readonly objectAuthorityRepo: ObjectAuthorityRepository,
     private readonly objectViewService: ObjectViewService,
     private readonly governanceResolver: GovernanceResolverService,
+    private readonly config: ConfigService,
   ) {}
 
   async execute(
@@ -115,10 +117,12 @@ export class GetPostByKeyEndpoint {
       viewsByObjectId = new Map(views.map((v, i) => [objects[i].core.object_id, v]));
     }
 
+    const ipfsGatewayBaseUrl = this.config.get<string>('ipfs.gatewayUrl') ?? 'https://ipfs.io';
     const detailRows = mapPostObjectsToLinkedDetailRows(
       objectsForPost,
       viewsByObjectId,
       weightByObjectId,
+      ipfsGatewayBaseUrl,
     );
 
     let administrativeIds = new Set<string>();

@@ -1,6 +1,7 @@
 import type { Post } from '@opden-data-layer/core';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
+import { ConfigService } from '@nestjs/config';
 import { AggregatedObjectRepository } from '../../repositories/aggregated-object.repository';
 import { AccountsCurrentRepository } from '../../repositories/accounts-current.repository';
 import { ObjectAuthorityRepository } from '../../repositories/object-authority.repository';
@@ -79,6 +80,7 @@ describe('GetPostByKeyEndpoint', () => {
   let objectAuthorityRepo: jest.Mocked<
     Pick<ObjectAuthorityRepository, 'findAdministrativeObjectIdsForAccount'>
   >;
+  let config: jest.Mocked<Pick<ConfigService, 'get'>>;
   let endpoint: GetPostByKeyEndpoint;
 
   beforeEach(() => {
@@ -102,6 +104,11 @@ describe('GetPostByKeyEndpoint', () => {
     objectAuthorityRepo = {
       findAdministrativeObjectIdsForAccount: jest.fn().mockResolvedValue([]),
     };
+    config = {
+      get: jest.fn().mockImplementation((key: string) =>
+        key === 'ipfs.gatewayUrl' ? 'https://ipfs.io' : undefined,
+      ),
+    };
     endpoint = new GetPostByKeyEndpoint(
       postsRepo as unknown as PostsRepository,
       accounts as unknown as AccountsCurrentRepository,
@@ -109,6 +116,7 @@ describe('GetPostByKeyEndpoint', () => {
       objectAuthorityRepo as unknown as ObjectAuthorityRepository,
       objectViewService as unknown as ObjectViewService,
       governanceResolver as unknown as GovernanceResolverService,
+      config as unknown as ConfigService,
     );
   });
 

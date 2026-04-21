@@ -342,6 +342,79 @@ export const identifierStrategy: JsonValueStrategy = {
   },
 };
 
+/**
+ * Legacy `avatar` / `background` body: plain URL string → `{ url }`, or JSON with exactly one of `cid` / `url`.
+ */
+export const legacyImageCidOrUrlStrategy: JsonValueStrategy = {
+  supports(_legacyFieldName: string, updateType: string): boolean {
+    void _legacyFieldName;
+    return updateType === 'image' || updateType === 'imageBackground';
+  },
+  transform(rawBody: string): JsonTransformResult {
+    const t = rawBody?.trim() ?? '';
+    if (!t.length) {
+      return { ok: false, reason: 'image: empty body' };
+    }
+    const parsed = parseJson(t);
+    if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      const o = parsed as Record<string, unknown>;
+      const cid = trimStr(o.cid);
+      const url = trimStr(o.url);
+      if (cid.length > 0 && url.length > 0) {
+        return { ok: false, reason: 'image: both cid and url' };
+      }
+      if (cid.length > 0) {
+        return { ok: true, value: { cid } as JsonValue };
+      }
+      if (url.length > 0) {
+        return { ok: true, value: { url } as JsonValue };
+      }
+      return { ok: false, reason: 'image: neither cid nor url in JSON' };
+    }
+    return { ok: true, value: { url: t } as JsonValue };
+  },
+};
+
+/**
+ * Legacy gallery item `{ album, value }` → `{ album, url }`; or `{ album, cid }` / `{ album, url }` if present.
+ */
+export const legacyImageGalleryItemStrategy: JsonValueStrategy = {
+  supports(_legacyFieldName: string, updateType: string): boolean {
+    void _legacyFieldName;
+    return updateType === 'imageGalleryItem';
+  },
+  transform(rawBody: string): JsonTransformResult {
+    const parsed = parseJson(rawBody);
+    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return { ok: false, reason: 'imageGalleryItem: body is not a JSON object' };
+    }
+    const o = parsed as Record<string, unknown>;
+    const album = trimStr(o.album);
+    if (!album.length) {
+      return { ok: false, reason: 'imageGalleryItem: missing album' };
+    }
+    const cid = trimStr(o.cid);
+    const url = trimStr(o.url);
+    const legacyValue = trimStr(o.value);
+    if (cid.length > 0 && url.length > 0) {
+      return { ok: false, reason: 'imageGalleryItem: both cid and url' };
+    }
+    if (cid.length > 0) {
+      return { ok: true, value: { album, cid } as JsonValue };
+    }
+    if (url.length > 0) {
+      return { ok: true, value: { album, url } as JsonValue };
+    }
+    if (legacyValue.length > 0) {
+      return { ok: true, value: { album, url: legacyValue } as JsonValue };
+    }
+    return {
+      ok: false,
+      reason: 'imageGalleryItem: need cid, url, or legacy value',
+    };
+  },
+};
+
 export const defaultJsonStrategy: JsonValueStrategy = {
   supports(legacyFieldName: string, updateType: string): boolean {
     void legacyFieldName;
@@ -358,6 +431,8 @@ export const defaultJsonStrategy: JsonValueStrategy = {
 };
 
 const STRATEGIES_ORDERED: JsonValueStrategy[] = [
+  legacyImageCidOrUrlStrategy,
+  legacyImageGalleryItemStrategy,
   identifierStrategy,
   addressStrategy,
   defaultJsonStrategy,

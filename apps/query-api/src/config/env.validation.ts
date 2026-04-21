@@ -9,6 +9,12 @@ export const queryApiConfigSchema = z.object({
   POSTGRES_PASSWORD: z.string().optional(),
   POSTGRES_POOL_MAX: z.coerce.number().optional().default(10),
   GOVERNANCE_OBJECT_ID: z.string().optional().default(''),
+  /** Public gateway origin (no path). URLs are built as `{origin}/ipfs/{cid}`. */
+  IPFS_GATEWAY_URL: z
+    .string()
+    .url()
+    .optional()
+    .default('https://ipfs.io'),
   /** Must match auth-api JWT_SECRET for access token verification. */
   JWT_SECRET: z.string().min(1),
 });

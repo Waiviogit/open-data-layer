@@ -34,6 +34,38 @@ export function pickSingleText(view: ResolvedObjectView, updateType: string): st
   return v?.value_text ?? null;
 }
 
+/** Same pattern as ipfs-client: `{gateway}/ipfs/{cid}`. */
+export function ipfsGatewayUrlForCid(gatewayBaseUrl: string, cid: string): string {
+  const base = gatewayBaseUrl.replace(/\/+$/, '');
+  return `${base}/ipfs/${cid}`;
+}
+
+/** `image` update: JSON `{ url }` or `{ cid }` (via `ipfsGatewayBaseUrl`), or legacy `value_text` URL. */
+export function pickSingleImageDisplayUrl(
+  view: ResolvedObjectView,
+  ipfsGatewayBaseUrl: string,
+): string | null {
+  const field = view.fields[UPDATE_TYPES.IMAGE];
+  if (!field || field.cardinality !== 'single' || field.values.length === 0) {
+    return null;
+  }
+  const row = field.values[0];
+  const j = row?.value_json;
+  if (j != null && typeof j === 'object' && !Array.isArray(j)) {
+    const o = j as Record<string, unknown>;
+    const url = typeof o.url === 'string' && o.url.trim().length > 0 ? o.url.trim() : null;
+    if (url) {
+      return url;
+    }
+    const cid = typeof o.cid === 'string' && o.cid.trim().length > 0 ? o.cid.trim() : null;
+    if (cid) {
+      return ipfsGatewayUrlForCid(ipfsGatewayBaseUrl, cid);
+    }
+  }
+  const fallback = row?.value_text;
+  return typeof fallback === 'string' && fallback.length > 0 ? fallback : null;
+}
+
 function parseCategoryItemLabel(valueJson: JsonValue | null): string | null {
   if (valueJson == null || typeof valueJson !== 'object' || Array.isArray(valueJson)) {
     return null;
@@ -90,10 +122,11 @@ export function mapPostObjectsToTaggedRowsWithWeight(
   objectsForPost: PostObject[],
   viewsByObjectId: Map<string, ResolvedObjectView>,
   weightByObjectId: Map<string, number | null>,
+  ipfsGatewayBaseUrl: string,
 ): TaggedObjectRowWithWeight[] {
   return objectsForPost.map((o) => {
     const view = viewsByObjectId.get(o.object_id);
-    const avatarUrl = view ? pickSingleText(view, UPDATE_TYPES.IMAGE) : null;
+    const avatarUrl = view ? pickSingleImageDisplayUrl(view, ipfsGatewayBaseUrl) : null;
     return {
       objectId: o.object_id,
       objectType: o.object_type,
@@ -111,10 +144,11 @@ export function mapPostObjectsToLinkedDetailRows(
   objectsForPost: PostObject[],
   viewsByObjectId: Map<string, ResolvedObjectView>,
   weightByObjectId: Map<string, number | null>,
+  ipfsGatewayBaseUrl: string,
 ): LinkedObjectDetailRow[] {
   return objectsForPost.map((o) => {
     const view = viewsByObjectId.get(o.object_id);
-    const avatarUrl = view ? pickSingleText(view, UPDATE_TYPES.IMAGE) : null;
+    const avatarUrl = view ? pickSingleImageDisplayUrl(view, ipfsGatewayBaseUrl) : null;
     return {
       objectId: o.object_id,
       objectType: o.object_type,

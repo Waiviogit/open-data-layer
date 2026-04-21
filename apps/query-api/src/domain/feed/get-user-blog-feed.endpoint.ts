@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import type { Post } from '@opden-data-layer/core';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
@@ -39,6 +40,7 @@ export class GetUserBlogFeedEndpoint {
     private readonly aggregatedObjectRepo: AggregatedObjectRepository,
     private readonly objectViewService: ObjectViewService,
     private readonly governanceResolver: GovernanceResolverService,
+    private readonly config: ConfigService,
   ) {}
 
   async execute(
@@ -101,6 +103,7 @@ export class GetUserBlogFeedEndpoint {
     }
 
     const objectIds = [...new Set(postObjects.map((o) => o.object_id))];
+    const ipfsGatewayBaseUrl = this.config.get<string>('ipfs.gatewayUrl') ?? 'https://ipfs.io';
     const governance = await this.governanceResolver.resolveMergedForObjectView(
       governanceObjectIdFromHeader,
     );
@@ -153,6 +156,7 @@ export class GetUserBlogFeedEndpoint {
         objectsForPost,
         viewsByObjectId,
         weightByObjectId,
+        ipfsGatewayBaseUrl,
       );
       const objects = sortAndLimitFeedObjectSummaries(
         withWeight,

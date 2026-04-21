@@ -20,6 +20,9 @@ export default () => {
     governance: {
       objectId: env.GOVERNANCE_OBJECT_ID,
     },
+    ipfs: {
+      gatewayUrl: env.IPFS_GATEWAY_URL,
+    },
     jwt: {
       secret: env.JWT_SECRET,
     },
