@@ -1,7 +1,7 @@
 import type { RankVote } from '@opden-data-layer/core';
 import type { GovernanceSnapshot } from '../types/governance-snapshot';
 import type { ResolvedUpdate } from '../types/resolved-view';
-import { resolveRanking } from './resolve-ranking';
+import { resolveAverageRanking, resolveRanking } from './resolve-ranking';
 
 /**
  * For single-cardinality update types: among all VALID updates, pick the one
@@ -26,7 +26,8 @@ export function resolveSingleCardinality(updates: ResolvedUpdate[]): ResolvedUpd
 /**
  * For multi-cardinality update types: return all VALID updates ordered by ranking.
  *
- * Delegates ordering to resolveRanking which applies the admin/trusted/tie-break hierarchy.
+ * `rankAggregation` `'average'` uses the mean of all rank votes per update.
+ * `'winner'` or omitted uses decisive admin/trusted rank (LWAW).
  *
  * @see docs/spec/vote-semantics.md §B
  */
@@ -34,7 +35,11 @@ export function resolveMultiCardinality(
   updates: ResolvedUpdate[],
   rankVotes: RankVote[],
   governance: GovernanceSnapshot,
+  rankAggregation?: 'average' | 'winner',
 ): ResolvedUpdate[] {
   const valid = updates.filter((u) => u.validity_status === 'VALID');
+  if (rankAggregation === 'average') {
+    return resolveAverageRanking(valid, rankVotes);
+  }
   return resolveRanking(valid, rankVotes, governance);
 }

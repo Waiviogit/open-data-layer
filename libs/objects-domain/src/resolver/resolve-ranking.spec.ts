@@ -1,7 +1,7 @@
 import type { RankVote } from '@opden-data-layer/core';
 import type { ResolvedUpdate } from '../types/resolved-view';
 import type { GovernanceSnapshot } from '../types/governance-snapshot';
-import { resolveRanking } from './resolve-ranking';
+import { resolveAverageRanking, resolveRanking } from './resolve-ranking';
 
 const EMPTY_GOVERNANCE: GovernanceSnapshot = {
   admins: [],
@@ -93,5 +93,41 @@ describe('resolveRanking', () => {
     ];
     const result = resolveRanking(updates, [], EMPTY_GOVERNANCE);
     expect(result[0].update_id).toBe('u_a');
+  });
+});
+
+describe('resolveAverageRanking', () => {
+  it('sets rank_score null when no rank votes', () => {
+    const updates = [makeResolved('u1'), makeResolved('u2')];
+    const result = resolveAverageRanking(updates, []);
+    expect(result[0].rank_score).toBeNull();
+    expect(result[0].rank_context).toBeNull();
+    expect(result[1].rank_score).toBeNull();
+  });
+
+  it('computes rounded mean and orders by lower score first', () => {
+    const updates = [makeResolved('u1'), makeResolved('u2')];
+    const rankVotes = [
+      makeRankVote('u1', 'a', 100),
+      makeRankVote('u1', 'b', 200),
+      makeRankVote('u2', 'c', 50),
+    ];
+    const result = resolveAverageRanking(updates, rankVotes);
+    expect(result[0].update_id).toBe('u2');
+    expect(result[0].rank_score).toBe(50);
+    expect(result[1].update_id).toBe('u1');
+    expect(result[1].rank_score).toBe(150);
+  });
+
+  it('tie-break: equal averages use update event_seq DESC', () => {
+    const updates = [makeResolved('u1', BigInt(5)), makeResolved('u2', BigInt(10))];
+    const rankVotes = [
+      makeRankVote('u1', 'a', 100),
+      makeRankVote('u2', 'b', 100),
+    ];
+    const result = resolveAverageRanking(updates, rankVotes);
+    expect(result[0].rank_score).toBe(100);
+    expect(result[0].update_id).toBe('u2');
+    expect(result[1].update_id).toBe('u1');
   });
 });

@@ -10,5 +10,6 @@ export const UPDATE_AGGREGATE_RATING: UpdateDefinition = {
   description: 'Rating or review value.',
   value_kind: 'text',
   cardinality: 'multi',
+  rank_aggregation: 'average',
   schema: z.string().min(1),
 };

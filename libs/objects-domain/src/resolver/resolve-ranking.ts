@@ -63,6 +63,35 @@ export function resolveRanking(
     .map((entry) => entry.update);
 }
 
+/**
+ * Sort VALID updates by arithmetic mean of all rank votes per update.
+ * `rank_context` is always null (no single decisive voter).
+ *
+ * Tie-break order matches {@link resolveRanking} when `latestDecisiveSeq` is null:
+ *   rank_score ASC, then update event_seq DESC, then update_id ASC.
+ */
+export function resolveAverageRanking(
+  updates: ResolvedUpdate[],
+  rankVotes: RankVote[],
+): ResolvedUpdate[] {
+  const withScores = updates.map((u) => {
+    const votesForUpdate = rankVotes.filter((v) => v.update_id === u.update_id);
+    let rank_score: number | null = null;
+    if (votesForUpdate.length > 0) {
+      const sum = votesForUpdate.reduce((s, v) => s + v.rank, 0);
+      rank_score = Math.round(sum / votesForUpdate.length);
+    }
+    return {
+      update: { ...u, rank_score, rank_context: null },
+      latestDecisiveSeq: null as bigint | null,
+    };
+  });
+
+  return withScores
+    .sort((a, b) => compareRanked(a, b))
+    .map((entry) => entry.update);
+}
+
 function compareRanked(
   a: { update: ResolvedUpdate; latestDecisiveSeq: bigint | null },
   b: { update: ResolvedUpdate; latestDecisiveSeq: bigint | null },

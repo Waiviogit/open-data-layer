@@ -19,6 +19,12 @@ export interface UpdateDefinition {
    *   - 'multi'  — return all valid values, ordered by ranking.
    */
   cardinality: 'single' | 'multi';
+  /**
+   * For multi-cardinality only: how `rank_score` is computed from `rank_votes`.
+   *   'winner'  — decisive admin/trusted rank vote (LWAW). Default when omitted.
+   *   'average' — arithmetic mean of all rank votes for each update.
+   */
+  rank_aggregation?: 'average' | 'winner';
   /** Stable semantic id for tooling / i18n when it differs from `update_type`. */
   semantic_key?: string;
   /** Where this update type is defined (schema vs ODL). */

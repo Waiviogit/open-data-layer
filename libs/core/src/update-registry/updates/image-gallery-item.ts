@@ -10,5 +10,6 @@ export const UPDATE_IMAGE_GALLERY_ITEM: UpdateDefinition = {
   description: 'Gallery album id plus exactly one of IPFS CID or HTTPS URL.',
   value_kind: 'json',
   cardinality: 'multi',
+  rank_aggregation: 'winner',
   schema: z.object({ album: z.string().min(1) }).strict().and(imageCidOrUrlJsonSchema),
 };

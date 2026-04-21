@@ -129,7 +129,12 @@ function resolveObject(
     if (cardinality === 'single') {
       resolved = resolveSingleCardinality(localeScoped);
     } else {
-      resolved = resolveMultiCardinality(localeScoped, rankVotesForType, options.governance);
+      resolved = resolveMultiCardinality(
+        localeScoped,
+        rankVotesForType,
+        options.governance,
+        definition?.rank_aggregation,
+      );
     }
 
     if (options.include_rejected) {

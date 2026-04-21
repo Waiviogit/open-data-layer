@@ -104,4 +104,22 @@ describe('resolveMultiCardinality', () => {
     expect(result[0].update_id).toBe('u2');
     expect(result[1].update_id).toBe('u1');
   });
+
+  it('average aggregation uses mean of all rank votes (not admin decisive)', () => {
+    const updates = [makeResolved('u1', 'VALID'), makeResolved('u2', 'VALID')];
+    const rankVotes = [
+      makeRankVote('u1', 'admin1', 500),
+      makeRankVote('u1', 'bob', 100),
+      makeRankVote('u2', 'admin1', 50),
+    ];
+    const governance = { ...EMPTY_GOVERNANCE, admins: ['admin1'] };
+    const winner = resolveMultiCardinality(updates, rankVotes, governance);
+    expect(winner[0].update_id).toBe('u2');
+    expect(winner[0].rank_score).toBe(50);
+
+    const avg = resolveMultiCardinality(updates, rankVotes, governance, 'average');
+    expect(avg[0].update_id).toBe('u2');
+    expect(avg[0].rank_score).toBe(50);
+    expect(avg.find((u) => u.update_id === 'u1')?.rank_score).toBe(300);
+  });
 });
