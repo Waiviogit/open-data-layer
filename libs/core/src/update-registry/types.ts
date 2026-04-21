@@ -25,6 +25,12 @@ export interface UpdateDefinition {
   namespace?: 'schema' | 'odl';
   /** Whether the value is intended for localization. */
   localizable?: boolean;
+  /**
+   * When `value_kind` is `object_ref`, optional whitelist of `object_type` values
+   * allowed for the **referenced** object (`value_text` target). If set and non-empty,
+   * the indexer rejects the update when the referenced row's `object_type` is not listed.
+   */
+  applies_to?: string[];
   /** Runtime Zod schema used by the Indexer to validate the value payload on insert. */
   schema: ZodType;
 }

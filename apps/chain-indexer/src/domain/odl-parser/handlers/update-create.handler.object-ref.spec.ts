@@ -17,6 +17,7 @@ jest.mock('@opden-data-layer/core', () => {
         description: 'test object ref',
         value_kind: 'object_ref' as const,
         cardinality: 'single' as const,
+        applies_to: [actual.OBJECT_TYPES.PRODUCT],
         schema: z.string().min(1).max(256),
       },
     },
@@ -56,9 +57,16 @@ describe('UpdateCreateHandler object_ref', () => {
     seq: 0,
   };
 
-  const referencedObject: ObjectsCore = {
+  const referencedProduct: ObjectsCore = {
     ...governanceCore,
     object_id: 'ref-target',
+    object_type: OBJECT_TYPES.PRODUCT,
+  };
+
+  const referencedWrongType: ObjectsCore = {
+    ...governanceCore,
+    object_id: 'ref-wrong',
+    object_type: OBJECT_TYPES.GOVERNANCE,
   };
 
   it('skips when referenced object_id does not exist in objects_core', async () => {
@@ -101,6 +109,49 @@ describe('UpdateCreateHandler object_ref', () => {
     expect(existsByObjectAndValue).not.toHaveBeenCalled();
   });
 
+  it('skips when referenced object_type is not in applies_to', async () => {
+    const createReplacingIfPresent = jest.fn();
+    const existsByObjectAndValue = jest.fn().mockResolvedValue(false);
+    const objectUpdatesRepository = {
+      createReplacingIfPresent,
+      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
+      existsByObjectAndValue,
+    } as unknown as import('../../../repositories').ObjectUpdatesRepository;
+    const objectsCoreRepository = {
+      findByObjectId: jest.fn().mockImplementation((id: string) => {
+        if (id === 'gov1') {
+          return Promise.resolve(governanceCore);
+        }
+        if (id === 'ref-wrong') {
+          return Promise.resolve(referencedWrongType);
+        }
+        return Promise.resolve(undefined);
+      }),
+    } as unknown as import('../../../repositories').ObjectsCoreRepository;
+    const runner = new WriteGuardRunner([]);
+    const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+    const handler = new UpdateCreateHandler(
+      objectUpdatesRepository,
+      objectsCoreRepository,
+      runner,
+      eventEmitter,
+    );
+
+    await handler.handle(
+      {
+        object_id: 'gov1',
+        update_type: 'test_object_ref',
+        creator: 'owner',
+        transaction_id: 'tx1',
+        value_text: 'ref-wrong',
+      },
+      baseCtx,
+    );
+
+    expect(createReplacingIfPresent).not.toHaveBeenCalled();
+    expect(existsByObjectAndValue).not.toHaveBeenCalled();
+  });
+
   it('persists value_text and calls existsByObjectAndValue with object_ref when referenced object exists', async () => {
     const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
     const existsByObjectAndValue = jest.fn().mockResolvedValue(false);
@@ -115,7 +166,7 @@ describe('UpdateCreateHandler object_ref', () => {
           return Promise.resolve(governanceCore);
         }
         if (id === 'ref-target') {
-          return Promise.resolve(referencedObject);
+          return Promise.resolve(referencedProduct);
         }
         return Promise.resolve(undefined);
       }),

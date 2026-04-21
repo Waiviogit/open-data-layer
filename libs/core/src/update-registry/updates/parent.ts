@@ -7,7 +7,7 @@ export const UPDATE_PARENT: UpdateDefinition = {
   namespace: 'odl',
   localizable: false,
   description: 'Parent object or list reference.',
-  value_kind: 'text',
+  value_kind: 'object_ref',
   cardinality: 'single',
-  schema: z.string().min(1),
+  schema: z.string().min(3).max(256),
 };

@@ -95,6 +95,13 @@ export class UpdateCreateHandler implements OdlActionHandler {
         );
         return;
       }
+      const allowed = definition.applies_to;
+      if (allowed && allowed.length > 0 && !allowed.includes(referenced.object_type)) {
+        this.logger.warn(
+          `update_create: referenced object '${refId}' has object_type '${referenced.object_type}' not in applies_to for update_type '${update_type}'; skipping`,
+        );
+        return;
+      }
     }
 
     const update_id = `${ctx.transactionId}-${ctx.transactionIndex}-${ctx.operationIndex}-${ctx.odlEventIndex}`;
