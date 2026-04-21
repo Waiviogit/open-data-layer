@@ -23,7 +23,12 @@ export interface UpdateDefinition {
   semantic_key?: string;
   /** Where this update type is defined (schema vs ODL). */
   namespace?: 'schema' | 'odl';
-  /** Whether the value is intended for localization. */
+  /**
+   * When strictly `true`, the indexer persists `locale` from the payload and the query
+   * resolver applies locale preference when assembling the field. If omitted or not `true`,
+   * the indexer stores `locale: null` (ignores payload locale) and resolution does not
+   * filter VALID rows by requested locale for this update type.
+   */
   localizable?: boolean;
   /**
    * When `value_kind` is `object_ref`, optional whitelist of `object_type` values

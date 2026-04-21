@@ -120,11 +120,10 @@ function resolveObject(
     );
 
     const validResolved = resolvedUpdates.filter((u) => u.validity_status === 'VALID');
-    const localeScoped = filterByLocalePreference(
-      validResolved,
-      options.locale,
-      cardinality,
-    );
+    const localeScoped =
+      definition?.localizable === true
+        ? filterByLocalePreference(validResolved, options.locale, cardinality)
+        : validResolved;
 
     let resolved: ResolvedUpdate[];
     if (cardinality === 'single') {

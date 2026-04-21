@@ -12,6 +12,7 @@ function makeCore(objectId: string, creator = 'alice'): ObjectsCore {
     creator,
     weight: null,
     meta_group_id: null,
+    canonical: null,
     transaction_id: 'tx1',
     seq: 1,
   };
@@ -265,6 +266,16 @@ describe('resolveObjectViews', () => {
       const result = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['tag_category'], { locale: 'en-US' }));
       const ids = new Set(result[0].fields['tag_category'].values.map((v) => v.update_id));
       expect(ids).toEqual(new Set(['u_en', 'u_neutral']));
+    });
+
+    it('for non-localizable types, ignores requested locale when picking single winner', () => {
+      const updates = [
+        makeUpdate('u_fr', 'obj1', 'parent', 'alice', BigInt(5), 'fr-FR'),
+        makeUpdate('u_en', 'obj1', 'parent', 'bob', BigInt(50), 'en-US'),
+      ];
+      const obj = makeAggregated('obj1', updates);
+      const result = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['parent'], { locale: 'fr-FR' }));
+      expect(result[0].fields['parent'].values[0].update_id).toBe('u_en');
     });
   });
 });
