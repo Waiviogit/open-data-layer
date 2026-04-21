@@ -7,7 +7,7 @@ export const PERSON_OBJECT_TYPE: ObjectTypeDefinition = {
   description: 'Person or user profile.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
-    UPDATE_TYPES.AVATAR,
+    UPDATE_TYPES.IMAGE,
     UPDATE_TYPES.NAME,
     UPDATE_TYPES.TITLE,
     UPDATE_TYPES.BACKGROUND,
@@ -24,7 +24,7 @@ export const PERSON_OBJECT_TYPE: ObjectTypeDefinition = {
     UPDATE_TYPES.DESCRIPTION,
     UPDATE_TYPES.WORK_TIME,
     UPDATE_TYPES.ADDRESS,
-    UPDATE_TYPES.MAP,
+    UPDATE_TYPES.GEO,
     UPDATE_TYPES.WEBSITE,
     UPDATE_TYPES.PHONE,
     UPDATE_TYPES.EMAIL,

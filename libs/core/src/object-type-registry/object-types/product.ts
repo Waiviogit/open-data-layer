@@ -7,7 +7,7 @@ export const PRODUCT_OBJECT_TYPE: ObjectTypeDefinition = {
   description: 'Product or sellable item with catalog fields.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
-    UPDATE_TYPES.AVATAR,
+    UPDATE_TYPES.IMAGE,
     UPDATE_TYPES.NAME,
     UPDATE_TYPES.TITLE,
     UPDATE_TYPES.BACKGROUND,

@@ -7,7 +7,7 @@ export const DISH_OBJECT_TYPE: ObjectTypeDefinition = {
   description: 'Dish or menu item with pricing and options.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
-    UPDATE_TYPES.AVATAR,
+    UPDATE_TYPES.IMAGE,
     UPDATE_TYPES.NAME,
     UPDATE_TYPES.TITLE,
     UPDATE_TYPES.BACKGROUND,

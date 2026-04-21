@@ -7,7 +7,7 @@ export const DRINK_OBJECT_TYPE: ObjectTypeDefinition = {
   description: 'Drink or beverage with variants and details.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
-    UPDATE_TYPES.AVATAR,
+    UPDATE_TYPES.IMAGE,
     UPDATE_TYPES.NAME,
     UPDATE_TYPES.TITLE,
     UPDATE_TYPES.BACKGROUND,

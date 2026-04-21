@@ -29,7 +29,7 @@ import { UPDATE_AFFILIATE_PRODUCT_ID_TYPES } from './updates/affiliate-product-i
 import { UPDATE_AFFILIATE_GEO_AREA } from './updates/affiliate-geo-area';
 import { UPDATE_AFFILIATE_URL_TEMPLATE } from './updates/affiliate-url-template';
 import { UPDATE_AFFILIATE_CODE } from './updates/affiliate-code';
-import { UPDATE_MAP } from './updates/map';
+import { UPDATE_GEO } from './updates/geo';
 import { UPDATE_MAP_OBJECT_TYPES } from './updates/map-object-types';
 import { UPDATE_MAP_OBJECT_TAGS } from './updates/map-object-tags';
 import { UPDATE_MAP_MOBILE_VIEW } from './updates/map-mobile-view';
@@ -59,7 +59,7 @@ import { UPDATE_CONTENT_POSITION } from './updates/content-position';
 import { UPDATE_HTML_CONTENT } from './updates/html-content';
 import { UPDATE_CONTENT_VIEW } from './updates/content-view';
 import { UPDATE_STATUS } from './updates/status';
-import { UPDATE_AVATAR } from './updates/avatar';
+import { UPDATE_IMAGE } from './updates/image';
 import { UPDATE_TITLE } from './updates/title';
 import { UPDATE_DESCRIPTION } from './updates/description';
 import { UPDATE_BACKGROUND } from './updates/background';
@@ -125,7 +125,7 @@ export const UPDATE_REGISTRY: UpdateRegistry = {
   [UPDATE_TYPES.AFFILIATE_GEO_AREA]: UPDATE_AFFILIATE_GEO_AREA,
   [UPDATE_TYPES.AFFILIATE_URL_TEMPLATE]: UPDATE_AFFILIATE_URL_TEMPLATE,
   [UPDATE_TYPES.AFFILIATE_CODE]: UPDATE_AFFILIATE_CODE,
-  [UPDATE_TYPES.MAP]: UPDATE_MAP,
+  [UPDATE_TYPES.GEO]: UPDATE_GEO,
   [UPDATE_TYPES.MAP_OBJECT_TYPES]: UPDATE_MAP_OBJECT_TYPES,
   [UPDATE_TYPES.MAP_OBJECT_TAGS]: UPDATE_MAP_OBJECT_TAGS,
   [UPDATE_TYPES.MAP_MOBILE_VIEW]: UPDATE_MAP_MOBILE_VIEW,
@@ -155,7 +155,7 @@ export const UPDATE_REGISTRY: UpdateRegistry = {
   [UPDATE_TYPES.HTML_CONTENT]: UPDATE_HTML_CONTENT,
   [UPDATE_TYPES.CONTENT_VIEW]: UPDATE_CONTENT_VIEW,
   [UPDATE_TYPES.STATUS]: UPDATE_STATUS,
-  [UPDATE_TYPES.AVATAR]: UPDATE_AVATAR,
+  [UPDATE_TYPES.IMAGE]: UPDATE_IMAGE,
   [UPDATE_TYPES.TITLE]: UPDATE_TITLE,
   [UPDATE_TYPES.DESCRIPTION]: UPDATE_DESCRIPTION,
   [UPDATE_TYPES.BACKGROUND]: UPDATE_BACKGROUND,

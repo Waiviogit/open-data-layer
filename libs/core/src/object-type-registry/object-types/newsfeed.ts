@@ -7,7 +7,7 @@ export const NEWSFEED_OBJECT_TYPE: ObjectTypeDefinition = {
   description: 'News feed or feed configuration.',
   supported_updates: [
     UPDATE_TYPES.NAME,
-    UPDATE_TYPES.AVATAR,
+    UPDATE_TYPES.IMAGE,
     UPDATE_TYPES.TITLE,
     UPDATE_TYPES.BACKGROUND,
     UPDATE_TYPES.STATUS,

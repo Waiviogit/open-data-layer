@@ -7,7 +7,7 @@ export const LIST_OBJECT_TYPE: ObjectTypeDefinition = {
   description: 'Curated list or collection of items.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
-    UPDATE_TYPES.AVATAR,
+    UPDATE_TYPES.IMAGE,
     UPDATE_TYPES.NAME,
     UPDATE_TYPES.TITLE,
     UPDATE_TYPES.BACKGROUND,

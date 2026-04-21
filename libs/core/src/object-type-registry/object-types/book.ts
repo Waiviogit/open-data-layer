@@ -7,7 +7,7 @@ export const BOOK_OBJECT_TYPE: ObjectTypeDefinition = {
   description: 'Book or publication with metadata, authors, and commerce.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
-    UPDATE_TYPES.AVATAR,
+    UPDATE_TYPES.IMAGE,
     UPDATE_TYPES.NAME,
     UPDATE_TYPES.TITLE,
     UPDATE_TYPES.BACKGROUND,

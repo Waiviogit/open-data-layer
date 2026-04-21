@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
+  latLonToGeoJsonPoint,
   OBJECT_TYPE_REGISTRY,
   UPDATE_REGISTRY,
   UPDATE_TYPES,
@@ -108,6 +109,13 @@ export class UpdateCreateHandler implements OdlActionHandler {
     const effectiveLocale =
       definition.localizable === true ? (payloadLocale ?? null) : null;
 
+    const geoForDb =
+      definition.value_kind === 'geo'
+        ? latLonToGeoJsonPoint(
+            valueResult.data as { latitude: number; longitude: number },
+          )
+        : null;
+
     const update_id = `${ctx.transactionId}-${ctx.transactionIndex}-${ctx.operationIndex}-${ctx.odlEventIndex}`;
 
     const row: NewObjectUpdate = {
@@ -123,7 +131,7 @@ export class UpdateCreateHandler implements OdlActionHandler {
         definition.value_kind === 'text' || definition.value_kind === 'object_ref'
           ? String(valueResult.data)
           : null,
-      value_geo: definition.value_kind === 'geo' ? valueResult.data : null,
+      value_geo: geoForDb,
       value_json: definition.value_kind === 'json' ? (valueResult.data as JsonValue) : null,
     };
 
@@ -131,7 +139,7 @@ export class UpdateCreateHandler implements OdlActionHandler {
       object_id,
       update_type,
       definition.value_kind,
-      valueResult.data,
+      definition.value_kind === 'geo' ? geoForDb! : valueResult.data,
     );
     if (duplicate) {
       this.logger.warn(

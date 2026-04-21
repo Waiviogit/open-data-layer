@@ -7,7 +7,7 @@ export const MAP_OBJECT_TYPE: ObjectTypeDefinition = {
   description: 'Map view with objects and layers.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
-    UPDATE_TYPES.AVATAR,
+    UPDATE_TYPES.IMAGE,
     UPDATE_TYPES.PIN,
     UPDATE_TYPES.REMOVE,
     UPDATE_TYPES.NAME,

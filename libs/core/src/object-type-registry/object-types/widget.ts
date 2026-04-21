@@ -7,7 +7,7 @@ export const WIDGET_OBJECT_TYPE: ObjectTypeDefinition = {
   description: 'Widget or embeddable UI component.',
   supported_updates: [
     UPDATE_TYPES.NAME,
-    UPDATE_TYPES.AVATAR,
+    UPDATE_TYPES.IMAGE,
     UPDATE_TYPES.TITLE,
     UPDATE_TYPES.BACKGROUND,
     UPDATE_TYPES.STATUS,

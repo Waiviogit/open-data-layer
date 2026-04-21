@@ -93,7 +93,7 @@ export function mapPostObjectsToTaggedRowsWithWeight(
 ): TaggedObjectRowWithWeight[] {
   return objectsForPost.map((o) => {
     const view = viewsByObjectId.get(o.object_id);
-    const avatarUrl = view ? pickSingleText(view, UPDATE_TYPES.AVATAR) : null;
+    const avatarUrl = view ? pickSingleText(view, UPDATE_TYPES.IMAGE) : null;
     return {
       objectId: o.object_id,
       objectType: o.object_type,
@@ -114,7 +114,7 @@ export function mapPostObjectsToLinkedDetailRows(
 ): LinkedObjectDetailRow[] {
   return objectsForPost.map((o) => {
     const view = viewsByObjectId.get(o.object_id);
-    const avatarUrl = view ? pickSingleText(view, UPDATE_TYPES.AVATAR) : null;
+    const avatarUrl = view ? pickSingleText(view, UPDATE_TYPES.IMAGE) : null;
     return {
       objectId: o.object_id,
       objectType: o.object_type,

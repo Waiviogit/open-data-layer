@@ -7,7 +7,7 @@ export const HASHTAG_OBJECT_TYPE: ObjectTypeDefinition = {
   description: 'Hashtag or topic tag for categorization.',
   supported_updates: [
     UPDATE_TYPES.STATUS,
-    UPDATE_TYPES.AVATAR,
+    UPDATE_TYPES.IMAGE,
     UPDATE_TYPES.PIN,
     UPDATE_TYPES.REMOVE,
     UPDATE_TYPES.NAME,

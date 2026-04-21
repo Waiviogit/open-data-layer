@@ -27,7 +27,7 @@ function examplePayload(
         ? '"<object_id>"'
         : '"<string>"'
       : valueKind === 'geo'
-        ? '{ "type": "Point", "coordinates": [lon, lat] }'
+        ? '{ "latitude": <number>, "longitude": <number> }'
         : '{}  // or [] — valid JSON per schema';
 
   return `{

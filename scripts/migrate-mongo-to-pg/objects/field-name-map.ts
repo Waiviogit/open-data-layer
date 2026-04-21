@@ -23,7 +23,7 @@ export const AUTHORITY_LEGACY_FIELD_NAME = 'authority';
  * companyId / productId both map to identifier with JSON reshape in value-strategies.
  */
 export const LEGACY_FIELD_TO_UPDATE_TYPE: Record<string, string> = {
-  map: 'map',
+  map: 'geo',
   tagCategory: 'tag_category',
   categoryItem: 'category_item',
   status: 'status',
@@ -35,7 +35,7 @@ export const LEGACY_FIELD_TO_UPDATE_TYPE: Record<string, string> = {
   parent: 'parent',
   galleryAlbum: 'gallery_album',
   galleryItem: 'gallery_item',
-  avatar: 'avatar',
+  avatar: 'image',
   website: 'website',
   background: 'background',
   address: 'address',

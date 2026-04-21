@@ -32,7 +32,7 @@ export { UPDATE_AFFILIATE_PRODUCT_ID_TYPES } from './updates/affiliate-product-i
 export { UPDATE_AFFILIATE_GEO_AREA } from './updates/affiliate-geo-area';
 export { UPDATE_AFFILIATE_URL_TEMPLATE } from './updates/affiliate-url-template';
 export { UPDATE_AFFILIATE_CODE } from './updates/affiliate-code';
-export { UPDATE_MAP } from './updates/map';
+export { latLonToGeoJsonPoint, type GeoJsonPoint, UPDATE_GEO } from './updates/geo';
 export { UPDATE_MAP_OBJECT_TYPES } from './updates/map-object-types';
 export { UPDATE_MAP_OBJECT_TAGS } from './updates/map-object-tags';
 export { UPDATE_MAP_MOBILE_VIEW } from './updates/map-mobile-view';
@@ -62,7 +62,7 @@ export { UPDATE_CONTENT_POSITION } from './updates/content-position';
 export { UPDATE_HTML_CONTENT } from './updates/html-content';
 export { UPDATE_CONTENT_VIEW } from './updates/content-view';
 export { UPDATE_STATUS } from './updates/status';
-export { UPDATE_AVATAR } from './updates/avatar';
+export { UPDATE_IMAGE } from './updates/image';
 export { UPDATE_TITLE } from './updates/title';
 export { UPDATE_DESCRIPTION } from './updates/description';
 export { UPDATE_BACKGROUND } from './updates/background';
