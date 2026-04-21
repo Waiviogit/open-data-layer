@@ -4,6 +4,9 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_FEATURES: UpdateDefinition = {
   update_type: UPDATE_TYPES.FEATURES,
+  namespace: 'schema',
+  localizable: true,
+  semantic_key: 'featureList',
   description: 'Features or attributes list.',
   value_kind: 'json',
   cardinality: 'multi',

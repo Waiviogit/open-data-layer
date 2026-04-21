@@ -4,6 +4,8 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_GROUP_EXCLUDE: UpdateDefinition = {
   update_type: UPDATE_TYPES.GROUP_EXCLUDE,
+  namespace: 'odl',
+  localizable: false,
   description: 'Excluded member or account from group.',
   value_kind: 'text',
   cardinality: 'multi',

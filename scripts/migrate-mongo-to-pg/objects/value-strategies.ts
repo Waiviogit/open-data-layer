@@ -230,77 +230,74 @@ export const addressStrategy: JsonValueStrategy = {
   },
 };
 
-/** Legacy `{ name, author_permlink }` -> ODL `{ name, object_id? }` (authors, brand, …). */
-function legacyNameAuthorPermlinkToObjectIdJson(
+/**
+ * Legacy Waivio `{ name, author_permlink }` JSON in `field.body` — ODL `object_ref`
+ * stores only `author_permlink` as `value_text` (no `name`).
+ */
+const LEGACY_NAME_AUTHOR_PERMLINK_OBJECT_REF_TYPES = new Set([
+  'authors',
+  'brand',
+  'manufacturer',
+  'merchant',
+  'publisher',
+]);
+
+function legacyJsonBodyToAuthorPermlinkObject(
   rawBody: string,
-  label: string,
-): JsonTransformResult {
+): Record<string, unknown> | null {
   const parsed = parseJson(rawBody);
-  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    return { ok: false, reason: `${label}: body is not a JSON object` };
+  if (parsed === null) {
+    return null;
   }
-  const o = parsed as Record<string, unknown>;
-  const name = trimStr(o.name);
-  if (!name.length) {
-    return { ok: false, reason: `${label}: missing or empty name` };
+  if (Array.isArray(parsed)) {
+    const first = parsed[0];
+    if (
+      first !== undefined &&
+      typeof first === 'object' &&
+      first !== null &&
+      !Array.isArray(first)
+    ) {
+      return first as Record<string, unknown>;
+    }
+    return null;
   }
-  const objectId = trimStr(o.author_permlink);
-  const out: Record<string, JsonValue> = { name };
-  if (objectId.length > 0) {
-    out.object_id = objectId;
+  if (typeof parsed === 'object' && parsed !== null) {
+    return parsed as Record<string, unknown>;
   }
-  return { ok: true, value: out as JsonValue };
+  return null;
 }
 
-export const authorsStrategy: JsonValueStrategy = {
-  supports(_legacyFieldName: string, updateType: string): boolean {
-    void _legacyFieldName;
-    return updateType === 'authors';
-  },
-  transform(rawBody: string): JsonTransformResult {
-    return legacyNameAuthorPermlinkToObjectIdJson(rawBody, 'authors');
-  },
-};
-
-export const brandStrategy: JsonValueStrategy = {
-  supports(_legacyFieldName: string, updateType: string): boolean {
-    void _legacyFieldName;
-    return updateType === 'brand';
-  },
-  transform(rawBody: string): JsonTransformResult {
-    return legacyNameAuthorPermlinkToObjectIdJson(rawBody, 'brand');
-  },
-};
-
-export const manufacturerStrategy: JsonValueStrategy = {
-  supports(_legacyFieldName: string, updateType: string): boolean {
-    void _legacyFieldName;
-    return updateType === 'manufacturer';
-  },
-  transform(rawBody: string): JsonTransformResult {
-    return legacyNameAuthorPermlinkToObjectIdJson(rawBody, 'manufacturer');
-  },
-};
-
-export const merchantStrategy: JsonValueStrategy = {
-  supports(_legacyFieldName: string, updateType: string): boolean {
-    void _legacyFieldName;
-    return updateType === 'merchant';
-  },
-  transform(rawBody: string): JsonTransformResult {
-    return legacyNameAuthorPermlinkToObjectIdJson(rawBody, 'merchant');
-  },
-};
-
-export const publisherStrategy: JsonValueStrategy = {
-  supports(_legacyFieldName: string, updateType: string): boolean {
-    void _legacyFieldName;
-    return updateType === 'publisher';
-  },
-  transform(rawBody: string): JsonTransformResult {
-    return legacyNameAuthorPermlinkToObjectIdJson(rawBody, 'publisher');
-  },
-};
+/**
+ * Maps legacy Mongo `field.body` to a single object_id string for `value_text`.
+ * For known legacy JSON shapes, only `author_permlink` is kept (not `name`).
+ */
+export function migrateObjectRefBodyToText(
+  rawBody: string,
+  updateType: string,
+): { ok: true; value: string } | { ok: false; reason: string } {
+  if (LEGACY_NAME_AUTHOR_PERMLINK_OBJECT_REF_TYPES.has(updateType)) {
+    const o = legacyJsonBodyToAuthorPermlinkObject(rawBody);
+    if (o === null) {
+      return {
+        ok: false,
+        reason: `${updateType}: body is not a JSON object (or empty array)`,
+      };
+    }
+    const objectId = trimStr(o.author_permlink);
+    if (!objectId.length) {
+      return { ok: false, reason: `${updateType}: missing or empty author_permlink` };
+    }
+    if (objectId.length < 3) {
+      return { ok: false, reason: `${updateType}: author_permlink too short` };
+    }
+    return { ok: true, value: objectId };
+  }
+  const trimmed = rawBody?.trim() ?? '';
+  if (trimmed.length < 3) {
+    return { ok: false, reason: 'object_ref: empty or too short body' };
+  }
+  return { ok: true, value: trimmed };
+}
 
 /** Legacy companyId / productId -> ODL identifier `{ value, type, image? }`. */
 export const identifierStrategy: JsonValueStrategy = {
@@ -363,11 +360,6 @@ export const defaultJsonStrategy: JsonValueStrategy = {
 const STRATEGIES_ORDERED: JsonValueStrategy[] = [
   identifierStrategy,
   addressStrategy,
-  authorsStrategy,
-  brandStrategy,
-  manufacturerStrategy,
-  merchantStrategy,
-  publisherStrategy,
   defaultJsonStrategy,
 ];
 

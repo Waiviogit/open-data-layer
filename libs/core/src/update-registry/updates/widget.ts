@@ -4,6 +4,8 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_WIDGET: UpdateDefinition = {
   update_type: UPDATE_TYPES.WIDGET,
+  namespace: 'odl',
+  localizable: false,
   description: 'Widget or embed configuration.',
   value_kind: 'json',
   cardinality: 'multi',

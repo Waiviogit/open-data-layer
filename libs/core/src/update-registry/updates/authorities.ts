@@ -5,6 +5,8 @@ import { UPDATE_TYPES } from '../update-types';
 /** Governance: restricts object search scope to objects where this account holds object_authority. @see docs/spec/governance-resolution.md §2 */
 export const UPDATE_AUTHORITIES: UpdateDefinition = {
   update_type: UPDATE_TYPES.AUTHORITIES,
+  namespace: 'odl',
+  localizable: false,
   description: 'Governance: authority or scope list.',
   value_kind: 'text',
   cardinality: 'multi',

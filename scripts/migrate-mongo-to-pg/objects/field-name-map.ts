@@ -9,6 +9,10 @@ export const SKIP_LEGACY_FIELD_NAMES = new Set([
   'tagCloud',
   'tag',
   'webpage',
+  /** Removed from ODL update registry — do not migrate. */
+  'chartid',
+  'blog',
+  'cost',
 ]);
 
 /** Routed to object_authority, not object_updates. */
@@ -41,12 +45,10 @@ export const LEGACY_FIELD_TO_UPDATE_TYPE: Record<string, string> = {
   price: 'price',
   button: 'button',
   workTime: 'work_time',
-  chartid: 'chart_id',
   pageContent: 'page_content',
   listItem: 'list_item',
   menuItem: 'menu_item',
   sortCustom: 'sort_custom',
-  blog: 'blog',
   form: 'form',
   companyId: 'identifier',
   productId: 'identifier',
@@ -91,7 +93,6 @@ export const LEGACY_FIELD_TO_UPDATE_TYPE: Record<string, string> = {
   calories: 'calories',
   budget: 'budget',
   cookingTime: 'cooking_time',
-  cost: 'cost',
   recipeIngredients: 'recipe_ingredients',
   groupExpertise: 'group_expertise',
   groupFollowers: 'group_followers',

@@ -4,6 +4,9 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_NUTRITION: UpdateDefinition = {
   update_type: UPDATE_TYPES.NUTRITION,
+  namespace: 'schema',
+  localizable: true,
+  semantic_key: 'nutrition',
   description: 'Nutrition facts or summary.',
   value_kind: 'text',
   cardinality: 'single',

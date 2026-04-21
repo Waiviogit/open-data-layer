@@ -4,6 +4,8 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_STATUS: UpdateDefinition = {
   update_type: UPDATE_TYPES.STATUS,
+  namespace: 'odl',
+  localizable: false,
   description: 'Status payload (title and link).',
   value_kind: 'json',
   cardinality: 'single',

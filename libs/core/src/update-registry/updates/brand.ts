@@ -4,11 +4,11 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_BRAND: UpdateDefinition = {
   update_type: UPDATE_TYPES.BRAND,
+  namespace: 'schema',
+  localizable: false,
+  semantic_key: 'brand',
   description: 'Brand or manufacturer reference.',
-  value_kind: 'json',
+  value_kind: 'object_ref',
   cardinality: 'single',
-  schema: z.object({
-    name: z.string().min(1),
-    object_id: z.string().optional(),
-  }),
+  schema: z.string().min(3).max(256),
 };

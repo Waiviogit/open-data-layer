@@ -34,6 +34,7 @@ import {
 import type { MongoWObject, MongoWObjectField } from './types';
 import { createdAtUnixFromObjectId, mongoIdToString } from './utils';
 import {
+  migrateObjectRefBodyToText,
   transformJsonBody,
   transformJsonBodyMulti,
   transformPromotionSaleFromField,
@@ -377,7 +378,14 @@ class MongoToPgMigrator {
     let value_json: unknown | null = null;
     let value_geo: ReturnType<typeof sql> | null = null;
 
-    if (def.value_kind === 'text') {
+    if (def.value_kind === 'object_ref') {
+      const refResult = migrateObjectRefBodyToText(field.body ?? '', updateType);
+      if (!refResult.ok) {
+        this.stats.fieldsSkippedBadPayload += 1;
+        return;
+      }
+      value_text = refResult.value;
+    } else if (def.value_kind === 'text') {
       const body = field.body ?? '';
       value_text = body;
     } else if (def.value_kind === 'geo') {

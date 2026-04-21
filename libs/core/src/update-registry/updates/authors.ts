@@ -4,11 +4,11 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_AUTHORS: UpdateDefinition = {
   update_type: UPDATE_TYPES.AUTHORS,
+  namespace: 'schema',
+  localizable: false,
+  semantic_key: 'author',
   description: 'Authors or contributors list.',
-  value_kind: 'json',
+  value_kind: 'object_ref',
   cardinality: 'multi',
-  schema: z.object({
-    name: z.string().min(1),
-    object_id: z.string().optional(),
-  }),
+  schema: z.string().min(3).max(256),
 };

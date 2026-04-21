@@ -12,6 +12,8 @@ export const UPDATE_NEWS_FILTER: UpdateDefinition = {
   description: 'News feed filter configuration.',
   value_kind: 'json',
   cardinality: 'single',
+  namespace: 'odl',
+  localizable: false,
   schema: z.object({
     allow_list: z.array(z.array(z.string())),
     ignore_list: z.array(z.string()),

@@ -4,6 +4,9 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_PHONE: UpdateDefinition = {
   update_type: UPDATE_TYPES.PHONE,
+  semantic_key: 'telephone',
+  namespace: 'schema',
+  localizable: false,
   description: 'Phone number or contact.',
   value_kind: 'text',
   cardinality: 'single',

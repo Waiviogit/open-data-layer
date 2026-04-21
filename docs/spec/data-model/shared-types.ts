@@ -11,7 +11,7 @@
  */
 export type UpdateCardinality = 'single' | 'multi';
 export type ValidityVoteValue = 'for' | 'against';
-export type ValueKind = 'text' | 'geo' | 'json';
+export type ValueKind = 'text' | 'geo' | 'json' | 'object_ref';
 
 /**
  * Canonical event position.

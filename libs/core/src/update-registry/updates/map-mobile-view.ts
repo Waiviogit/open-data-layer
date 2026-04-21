@@ -12,6 +12,8 @@ const mapViewSchema = z.object({
 
 export const UPDATE_MAP_MOBILE_VIEW: UpdateDefinition = {
   update_type: UPDATE_TYPES.MAP_MOBILE_VIEW,
+  namespace: 'odl',
+  localizable: false,
   description: 'Map mobile view (bounds, center, zoom).',
   value_kind: 'json',
   cardinality: 'single',

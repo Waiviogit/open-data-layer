@@ -4,6 +4,9 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_COMPARE_AT_PRICE: UpdateDefinition = {
   update_type: UPDATE_TYPES.COMPARE_AT_PRICE,
+  namespace: 'odl',
+  localizable: true,
+  semantic_key: 'compare_at_price',
   description: 'Compare-at or original price.',
   value_kind: 'text',
   cardinality: 'single',

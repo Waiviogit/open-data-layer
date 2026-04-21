@@ -12,13 +12,19 @@ export interface UpdateDefinition {
   /** Short purpose statement for spec/tooling. */
   description: string;
   /** Which value column holds the data for this update type. */
-  value_kind: 'text' | 'geo' | 'json';
+  value_kind: 'text' | 'geo' | 'json' | 'object_ref';
   /**
    * How the resolved view treats multiple rows for the same (object_id, update_type):
    *   - 'single' — pick one winning value (highest-precedence valid update).
    *   - 'multi'  — return all valid values, ordered by ranking.
    */
   cardinality: 'single' | 'multi';
+  /** Stable semantic id for tooling / i18n when it differs from `update_type`. */
+  semantic_key?: string;
+  /** Where this update type is defined (schema vs ODL). */
+  namespace?: 'schema' | 'odl';
+  /** Whether the value is intended for localization. */
+  localizable?: boolean;
   /** Runtime Zod schema used by the Indexer to validate the value payload on insert. */
   schema: ZodType;
 }

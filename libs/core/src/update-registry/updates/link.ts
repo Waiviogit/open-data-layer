@@ -29,6 +29,9 @@ const linkTypeSchema = z.enum(
 export const UPDATE_LINK: UpdateDefinition = {
   update_type: UPDATE_TYPES.LINK,
   description: 'Link or URL with optional metadata.',
+  namespace: 'odl',
+  localizable: false,
+  semantic_key: 'link',
   value_kind: 'json',
   cardinality: 'multi',
   schema: z.object({

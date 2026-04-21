@@ -7,6 +7,8 @@ export const UPDATE_MENU_ITEM: UpdateDefinition = {
   description: 'Menu item or dish entry.',
   value_kind: 'json',
   cardinality: 'multi',
+  namespace: 'odl',
+  localizable: true,
   /** Either link_to_object or link_to_web must be provided. */
   schema: z
     .object({

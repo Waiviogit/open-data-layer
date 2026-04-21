@@ -4,6 +4,8 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_GROUP_LAST_ACTIVITY: UpdateDefinition = {
   update_type: UPDATE_TYPES.GROUP_LAST_ACTIVITY,
+  namespace: 'odl',
+  localizable: false,
   description: 'Last activity timestamp for group.',
   value_kind: 'text',
   cardinality: 'single',

@@ -42,7 +42,6 @@ import { UPDATE_URL } from './updates/url';
 import { UPDATE_CALORIES } from './updates/calories';
 import { UPDATE_BUDGET } from './updates/budget';
 import { UPDATE_COOKING_TIME } from './updates/cooking-time';
-import { UPDATE_COST } from './updates/cost';
 import { UPDATE_RECIPE_INGREDIENTS } from './updates/recipe-ingredients';
 import { UPDATE_GROUP_EXPERTISE } from './updates/group-expertise';
 import { UPDATE_GROUP_FOLLOWERS } from './updates/group-followers';
@@ -78,14 +77,12 @@ import { UPDATE_PRICE } from './updates/price';
 import { UPDATE_SORT_CUSTOM } from './updates/sort-custom';
 import { UPDATE_ADDRESS } from './updates/address';
 import { UPDATE_FORM } from './updates/form';
-import { UPDATE_BLOG } from './updates/blog';
 import { UPDATE_NEWS_FILTER } from './updates/news-filter';
 import { UPDATE_WORK_TIME } from './updates/work-time';
 import { UPDATE_BUTTON } from './updates/button';
 import { UPDATE_PHONE } from './updates/phone';
 import { UPDATE_LINK } from './updates/link';
 import { UPDATE_EMAIL } from './updates/email';
-import { UPDATE_CHART_ID } from './updates/chartid';
 import { UPDATE_PAGE_CONTENT } from './updates/page-content';
 import { UPDATE_ADMINS } from './updates/admins';
 import { UPDATE_TRUSTED } from './updates/trusted';
@@ -141,7 +138,6 @@ export const UPDATE_REGISTRY: UpdateRegistry = {
   [UPDATE_TYPES.CALORIES]: UPDATE_CALORIES,
   [UPDATE_TYPES.BUDGET]: UPDATE_BUDGET,
   [UPDATE_TYPES.COOKING_TIME]: UPDATE_COOKING_TIME,
-  [UPDATE_TYPES.COST]: UPDATE_COST,
   [UPDATE_TYPES.RECIPE_INGREDIENTS]: UPDATE_RECIPE_INGREDIENTS,
   [UPDATE_TYPES.GROUP_EXPERTISE]: UPDATE_GROUP_EXPERTISE,
   [UPDATE_TYPES.GROUP_FOLLOWERS]: UPDATE_GROUP_FOLLOWERS,
@@ -177,14 +173,12 @@ export const UPDATE_REGISTRY: UpdateRegistry = {
   [UPDATE_TYPES.SORT_CUSTOM]: UPDATE_SORT_CUSTOM,
   [UPDATE_TYPES.ADDRESS]: UPDATE_ADDRESS,
   [UPDATE_TYPES.FORM]: UPDATE_FORM,
-  [UPDATE_TYPES.BLOG]: UPDATE_BLOG,
   [UPDATE_TYPES.NEWS_FILTER]: UPDATE_NEWS_FILTER,
   [UPDATE_TYPES.WORK_TIME]: UPDATE_WORK_TIME,
   [UPDATE_TYPES.BUTTON]: UPDATE_BUTTON,
   [UPDATE_TYPES.PHONE]: UPDATE_PHONE,
   [UPDATE_TYPES.LINK]: UPDATE_LINK,
   [UPDATE_TYPES.EMAIL]: UPDATE_EMAIL,
-  [UPDATE_TYPES.CHART_ID]: UPDATE_CHART_ID,
   [UPDATE_TYPES.PAGE_CONTENT]: UPDATE_PAGE_CONTENT,
   [UPDATE_TYPES.ADMINS]: UPDATE_ADMINS,
   [UPDATE_TYPES.TRUSTED]: UPDATE_TRUSTED,

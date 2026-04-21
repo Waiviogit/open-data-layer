@@ -11,7 +11,7 @@ const ROOT = path.resolve(__dirname, '..');
 const SPEC_DIR = path.join(ROOT, 'generated/object-updates');
 
 function payloadField(kind: UpdateDefinition['value_kind']): string {
-  if (kind === 'text') return 'value_text';
+  if (kind === 'text' || kind === 'object_ref') return 'value_text';
   if (kind === 'geo') return 'value_geo';
   return 'value_json';
 }
@@ -22,8 +22,10 @@ function examplePayload(
 ): string {
   const field = payloadField(valueKind);
   const valueExample =
-    valueKind === 'text'
-      ? '"<string>"'
+    valueKind === 'text' || valueKind === 'object_ref'
+      ? valueKind === 'object_ref'
+        ? '"<object_id>"'
+        : '"<string>"'
       : valueKind === 'geo'
         ? '{ "type": "Point", "coordinates": [lon, lat] }'
         : '{}  // or [] — valid JSON per schema';

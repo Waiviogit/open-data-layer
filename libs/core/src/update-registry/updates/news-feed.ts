@@ -4,6 +4,8 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_NEWS_FEED: UpdateDefinition = {
   update_type: UPDATE_TYPES.NEWS_FEED,
+  namespace: 'odl',
+  localizable: false,
   description: 'News feed configuration.',
   value_kind: 'json',
   cardinality: 'single',

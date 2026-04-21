@@ -3,7 +3,10 @@ import type { UpdateDefinition } from '../types';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_RECIPE_INGREDIENTS: UpdateDefinition = {
-  update_type: UPDATE_TYPES.RECIPE_INGREDIENTS,
+  update_type: UPDATE_TYPES.RECIPE_INGREDIENTS, 
+  namespace: 'schema',
+  localizable: true,
+  semantic_key: 'ingredients',
   description: 'Recipe ingredients list.',
   value_kind: 'json',
   cardinality: 'single',

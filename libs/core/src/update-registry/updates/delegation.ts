@@ -4,6 +4,9 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_DELEGATION: UpdateDefinition = {
   update_type: UPDATE_TYPES.DELEGATION,
+  namespace: 'odl',
+  localizable: false,
+  semantic_key: 'delegation',
   description: 'Delegation or authority reference.',
   value_kind: 'text',
   cardinality: 'single',

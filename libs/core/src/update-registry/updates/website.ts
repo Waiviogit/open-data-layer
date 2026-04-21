@@ -4,6 +4,8 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_WEBSITE: UpdateDefinition = {
   update_type: UPDATE_TYPES.WEBSITE,
+  namespace: 'odl',
+  localizable: true,
   description: 'Website or main URL.',
   value_kind: 'json',
   cardinality: 'single',

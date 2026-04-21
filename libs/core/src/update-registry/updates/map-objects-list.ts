@@ -5,6 +5,8 @@ import { UPDATE_TYPES } from '../update-types';
 export const UPDATE_MAP_OBJECTS_LIST: UpdateDefinition = {
   update_type: UPDATE_TYPES.MAP_OBJECTS_LIST,
   description: 'List of object IDs shown on map.',
+  namespace: 'odl',
+  localizable: false,
   value_kind: 'text',
   cardinality: 'single',
   schema: z.string().min(1),

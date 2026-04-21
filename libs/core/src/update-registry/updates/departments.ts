@@ -4,6 +4,9 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_DEPARTMENTS: UpdateDefinition = {
   update_type: UPDATE_TYPES.DEPARTMENTS,
+  namespace: 'schema',
+  localizable: true,
+  semantic_key: 'category',
   description: 'Department or category list.',
   value_kind: 'text',
   cardinality: 'multi',

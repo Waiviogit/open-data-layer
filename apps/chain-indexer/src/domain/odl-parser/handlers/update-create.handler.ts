@@ -73,7 +73,10 @@ export class UpdateCreateHandler implements OdlActionHandler {
       return;
     }
 
-    const valueField = `value_${definition.value_kind}` as const;
+    const valueField =
+      definition.value_kind === 'object_ref'
+        ? 'value_text'
+        : (`value_${definition.value_kind}` as const);
     const rawValue = payload[valueField];
     const valueResult = definition.schema.safeParse(rawValue);
     if (!valueResult.success) {
@@ -81,6 +84,17 @@ export class UpdateCreateHandler implements OdlActionHandler {
         `Value validation failed for update_type '${update_type}': ${valueResult.error.message}`,
       );
       return;
+    }
+
+    if (definition.value_kind === 'object_ref') {
+      const refId = String(valueResult.data);
+      const referenced = await this.objectsCoreRepository.findByObjectId(refId);
+      if (!referenced) {
+        this.logger.warn(
+          `update_create: referenced object '${refId}' not found for update_type '${update_type}'; skipping`,
+        );
+        return;
+      }
     }
 
     const update_id = `${ctx.transactionId}-${ctx.transactionIndex}-${ctx.operationIndex}-${ctx.odlEventIndex}`;
@@ -94,7 +108,10 @@ export class UpdateCreateHandler implements OdlActionHandler {
       created_at_unix: Math.floor(new Date(ctx.timestamp).getTime() / 1000),
       event_seq: ctx.eventSeq,
       transaction_id,
-      value_text: definition.value_kind === 'text' ? String(valueResult.data) : null,
+      value_text:
+        definition.value_kind === 'text' || definition.value_kind === 'object_ref'
+          ? String(valueResult.data)
+          : null,
       value_geo: definition.value_kind === 'geo' ? valueResult.data : null,
       value_json: definition.value_kind === 'json' ? (valueResult.data as JsonValue) : null,
     };

@@ -4,6 +4,8 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_WALLET_ADDRESS: UpdateDefinition = {
   update_type: UPDATE_TYPES.WALLET_ADDRESS,
+  namespace: 'odl',
+  localizable: false,
   description: 'Wallet or payment address.',
   value_kind: 'json',
   cardinality: 'multi',

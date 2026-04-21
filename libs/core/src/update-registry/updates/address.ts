@@ -4,6 +4,9 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_ADDRESS: UpdateDefinition = {
   update_type: UPDATE_TYPES.ADDRESS,
+  semantic_key: 'address',
+  namespace: 'schema',
+  localizable: false,
   description:
     'Structured physical/postal address (vCard/RFC 6350 naming). ' +
     'street: street name and number; locality: city, village, or town; ' +

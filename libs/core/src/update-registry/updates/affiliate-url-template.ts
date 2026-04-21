@@ -4,6 +4,8 @@ import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_AFFILIATE_URL_TEMPLATE: UpdateDefinition = {
   update_type: UPDATE_TYPES.AFFILIATE_URL_TEMPLATE,
+  namespace: 'odl',
+  localizable: false,
   description: 'Affiliate URL template or base.',
   value_kind: 'text',
   cardinality: 'single',

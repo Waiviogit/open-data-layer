@@ -7,6 +7,9 @@ export const UPDATE_OPTIONS: UpdateDefinition = {
   description: 'Product or variant options.',
   value_kind: 'json',
   cardinality: 'multi',
+  namespace: 'schema',
+  localizable: true,
+  semantic_key: 'option',
   schema: z.object({
     category: z.string().min(1),
     value: z.string().min(1),
