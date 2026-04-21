@@ -7,7 +7,7 @@ export const UPDATE_MANUFACTURER: UpdateDefinition = {
   update_type: UPDATE_TYPES.MANUFACTURER,
   description: 'Manufacturer or maker details.',
   namespace: 'schema',
-  localizable: true,
+  localizable: false,
   semantic_key: 'manufacturer',
   value_kind: 'object_ref',
   cardinality: 'single',

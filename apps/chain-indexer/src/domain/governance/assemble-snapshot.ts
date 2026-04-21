@@ -1,3 +1,4 @@
+import { UPDATE_TYPES } from '@opden-data-layer/core';
 import type { GovernanceSnapshot } from '@opden-data-layer/objects-domain';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import {
@@ -24,12 +25,12 @@ export function assembleSnapshot(view: ResolvedObjectView): GovernanceSnapshot {
   const banned = collectValueTextsFromUpdates(fieldValues(view, 'banned'));
   const whitelist = collectValueTextsFromUpdates(fieldValues(view, 'whitelist'));
 
-  const ocUpdates = fieldValues(view, 'object_control');
+  const ocUpdates = fieldValues(view, UPDATE_TYPES.OBJECT_CONTROL);
   const object_control =
     ocUpdates.length > 0 ? parseObjectControl(ocUpdates[0]?.value_text ?? null) : null;
 
   const inherits_from: GovernanceSnapshot['inherits_from'] = [];
-  for (const u of fieldValues(view, 'inherits_from')) {
+  for (const u of fieldValues(view, UPDATE_TYPES.INHERITS_FROM)) {
     const entry = parseInheritsFromJson(u.value_json);
     if (entry) {
       inherits_from.push(entry);
@@ -37,7 +38,7 @@ export function assembleSnapshot(view: ResolvedObjectView): GovernanceSnapshot {
   }
 
   const validity_cutoff: GovernanceSnapshot['validity_cutoff'] = [];
-  for (const u of fieldValues(view, 'validity_cutoff')) {
+  for (const u of fieldValues(view, UPDATE_TYPES.VALIDITY_CUTOFF)) {
     const row = parseValidityCutoffJson(u.value_json);
     if (row) {
       validity_cutoff.push(row);

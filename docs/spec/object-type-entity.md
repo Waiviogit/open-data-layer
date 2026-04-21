@@ -26,6 +26,8 @@ interface ObjectType {
 
 ## 3. Update registry
 
+`update_type` string values in the registry and in stored `object_updates` rows use **lower camelCase** (for example `tagCategory`, `workHours`, `groupId`), while the TypeScript constants remain **`CAPS_SNAKE`** keys on `UPDATE_TYPES` (for example `TAG_CATEGORY`, `WORK_HOURS`).
+
 In addition to per-type definitions, the codebase must maintain a **global update registry** — a flat map of every possible `updateType` name to its validation schema:
 
 ```typescript

@@ -35,17 +35,17 @@ describe('assembleSnapshot', () => {
         restricted: { update_type: 'restricted', cardinality: 'multi', values: [] },
         banned: { update_type: 'banned', cardinality: 'multi', values: [] },
         whitelist: { update_type: 'whitelist', cardinality: 'multi', values: [ru({ value_text: 'w1' })] },
-        object_control: {
-          update_type: 'object_control',
+        objectControl: {
+          update_type: 'objectControl',
           cardinality: 'single',
-          values: [ru({ update_type: 'object_control', value_text: 'full' })],
+          values: [ru({ update_type: 'objectControl', value_text: 'full' })],
         },
-        inherits_from: {
-          update_type: 'inherits_from',
+        inheritsFrom: {
+          update_type: 'inheritsFrom',
           cardinality: 'multi',
           values: [
             ru({
-              update_type: 'inherits_from',
+              update_type: 'inheritsFrom',
               value_json: {
                 object_id: 'parent1',
                 scope: ['admins', 'muted', 'unknown_scope'],
@@ -53,12 +53,12 @@ describe('assembleSnapshot', () => {
             }),
           ],
         },
-        validity_cutoff: {
-          update_type: 'validity_cutoff',
+        validityCutoff: {
+          update_type: 'validityCutoff',
           cardinality: 'multi',
           values: [
             ru({
-              update_type: 'validity_cutoff',
+              update_type: 'validityCutoff',
               value_json: { account: 'bob', timestamp: 99 },
             }),
           ],
@@ -84,10 +84,10 @@ describe('assembleSnapshot', () => {
       weight: null,
       meta_group_id: null,
       fields: {
-        object_control: {
-          update_type: 'object_control',
+        objectControl: {
+          update_type: 'objectControl',
           cardinality: 'single',
-          values: [ru({ update_type: 'object_control', value_text: 'nope' })],
+          values: [ru({ update_type: 'objectControl', value_text: 'nope' })],
         },
       },
     };

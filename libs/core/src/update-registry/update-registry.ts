@@ -1,14 +1,14 @@
 import type { UpdateRegistry } from './types';
 import { UPDATE_TYPES } from './update-types';
 import { UPDATE_NAME } from './updates/name';
-import { UPDATE_OPTIONS } from './updates/options';
-import { UPDATE_AGE_RANGE } from './updates/age-range';
-import { UPDATE_PUBLICATION_DATE } from './updates/publication-date';
-import { UPDATE_GROUP_ID } from './updates/group-id';
+import { UPDATE_OPTION } from './updates/option';
+import { UPDATE_TYPICAL_AGE_RANGE } from './updates/typical-age-range';
+import { UPDATE_DATE_PUBLISHED } from './updates/date-published';
+import { UPDATE_PRODUCT_GROUP_ID } from './updates/product-group-id';
 import { UPDATE_IDENTIFIER } from './updates/identifier';
 import { UPDATE_PRODUCT_WEIGHT } from './updates/weight';
-import { UPDATE_DIMENSIONS } from './updates/dimensions';
-import { UPDATE_AUTHORS } from './updates/authors';
+import { UPDATE_SIZE } from './updates/size';
+import { UPDATE_AUTHOR } from './updates/author';
 import { UPDATE_PUBLISHER } from './updates/publisher';
 import { UPDATE_PRINT_LENGTH } from './updates/print-length';
 import { UPDATE_NEWS_FEED } from './updates/news-feed';
@@ -16,10 +16,10 @@ import { UPDATE_WIDGET } from './updates/widget';
 import { UPDATE_MERCHANT } from './updates/merchant';
 import { UPDATE_MANUFACTURER } from './updates/manufacturer';
 import { UPDATE_BRAND } from './updates/brand';
-import { UPDATE_FEATURES } from './updates/features';
-import { UPDATE_RELATED } from './updates/related';
+import { UPDATE_FEATURE_LIST } from './updates/feature-list';
+import { UPDATE_IS_RELATED_TO } from './updates/is-related-to';
 import { UPDATE_ADD_ON } from './updates/add-on';
-import { UPDATE_SIMILAR } from './updates/similar';
+import { UPDATE_IS_SIMILAR_TO } from './updates/is-similar-to';
 import { UPDATE_PIN } from './updates/pin';
 import { UPDATE_REMOVE } from './updates/remove';
 import { UPDATE_SHOP_FILTER } from './updates/shop-filter';
@@ -41,8 +41,8 @@ import { UPDATE_DELEGATION } from './updates/delegation';
 import { UPDATE_URL } from './updates/url';
 import { UPDATE_CALORIES } from './updates/calories';
 import { UPDATE_BUDGET } from './updates/budget';
-import { UPDATE_COOKING_TIME } from './updates/cooking-time';
-import { UPDATE_RECIPE_INGREDIENTS } from './updates/recipe-ingredients';
+import { UPDATE_COOK_TIME } from './updates/cook-time';
+import { UPDATE_INGREDIENTS } from './updates/ingredients';
 import { UPDATE_GROUP_EXPERTISE } from './updates/group-expertise';
 import { UPDATE_GROUP_FOLLOWERS } from './updates/group-followers';
 import { UPDATE_GROUP_FOLLOWING } from './updates/group-following';
@@ -53,7 +53,7 @@ import { UPDATE_GROUP_MIN_EXPERTISE } from './updates/group-min-expertise';
 import { UPDATE_PROMOTION } from './updates/promotion';
 import { UPDATE_NUTRITION } from './updates/nutrition';
 import { UPDATE_FEATURED } from './updates/featured';
-import { UPDATE_SALE } from './updates/sale';
+import { UPDATE_SALE_EVENT } from './updates/sale-event';
 import { UPDATE_COMPARE_AT_PRICE } from './updates/compare-at-price';
 import { UPDATE_CONTENT_POSITION } from './updates/content-position';
 import { UPDATE_HTML_CONTENT } from './updates/html-content';
@@ -62,25 +62,25 @@ import { UPDATE_STATUS } from './updates/status';
 import { UPDATE_IMAGE } from './updates/image';
 import { UPDATE_TITLE } from './updates/title';
 import { UPDATE_DESCRIPTION } from './updates/description';
-import { UPDATE_BACKGROUND } from './updates/background';
+import { UPDATE_IMAGE_BACKGROUND } from './updates/image-background';
 import { UPDATE_TAG_CATEGORY } from './updates/tag-category';
-import { UPDATE_CATEGORY_ITEM } from './updates/category-item';
-import { UPDATE_GALLERY_ALBUM } from './updates/gallery-album';
-import { UPDATE_GALLERY_ITEM } from './updates/gallery-item';
+import { UPDATE_TAG_CATEGORY_ITEM } from './updates/tag-category-item';
+import { UPDATE_IMAGE_GALLERY } from './updates/image-gallery';
+import { UPDATE_IMAGE_GALLERY_ITEM } from './updates/image-gallery-item';
 import { UPDATE_PARENT } from './updates/parent';
-import { UPDATE_LANGUAGE } from './updates/language';
-import { UPDATE_DEPARTMENTS } from './updates/departments';
+import { UPDATE_IN_LANGUAGE } from './updates/in-language';
+import { UPDATE_CATEGORY } from './updates/category';
 import { UPDATE_WEBSITE } from './updates/website';
-import { UPDATE_RATING } from './updates/rating';
+import { UPDATE_AGGREGATE_RATING } from './updates/aggregate-rating';
 import { UPDATE_LIST_ITEM } from './updates/list-item';
 import { UPDATE_PRICE } from './updates/price';
 import { UPDATE_SORT_CUSTOM } from './updates/sort-custom';
 import { UPDATE_ADDRESS } from './updates/address';
 import { UPDATE_FORM } from './updates/form';
 import { UPDATE_NEWS_FILTER } from './updates/news-filter';
-import { UPDATE_WORK_TIME } from './updates/work-time';
+import { UPDATE_WORK_HOURS } from './updates/work-hours';
 import { UPDATE_BUTTON } from './updates/button';
-import { UPDATE_PHONE } from './updates/phone';
+import { UPDATE_TELEPHONE } from './updates/telephone';
 import { UPDATE_LINK } from './updates/link';
 import { UPDATE_EMAIL } from './updates/email';
 import { UPDATE_PAGE_CONTENT } from './updates/page-content';
@@ -97,14 +97,14 @@ import { UPDATE_VALIDITY_CUTOFF } from './updates/validity-cutoff';
 
 export const UPDATE_REGISTRY: UpdateRegistry = {
   [UPDATE_TYPES.NAME]: UPDATE_NAME,
-  [UPDATE_TYPES.OPTIONS]: UPDATE_OPTIONS,
-  [UPDATE_TYPES.AGE_RANGE]: UPDATE_AGE_RANGE,
-  [UPDATE_TYPES.PUBLICATION_DATE]: UPDATE_PUBLICATION_DATE,
-  [UPDATE_TYPES.GROUP_ID]: UPDATE_GROUP_ID,
+  [UPDATE_TYPES.OPTION]: UPDATE_OPTION,
+  [UPDATE_TYPES.TYPICAL_AGE_RANGE]: UPDATE_TYPICAL_AGE_RANGE,
+  [UPDATE_TYPES.DATE_PUBLISHED]: UPDATE_DATE_PUBLISHED,
+  [UPDATE_TYPES.PRODUCT_GROUP_ID]: UPDATE_PRODUCT_GROUP_ID,
   [UPDATE_TYPES.IDENTIFIER]: UPDATE_IDENTIFIER,
   [UPDATE_TYPES.PRODUCT_WEIGHT]: UPDATE_PRODUCT_WEIGHT,
-  [UPDATE_TYPES.DIMENSIONS]: UPDATE_DIMENSIONS,
-  [UPDATE_TYPES.AUTHORS]: UPDATE_AUTHORS,
+  [UPDATE_TYPES.SIZE]: UPDATE_SIZE,
+  [UPDATE_TYPES.AUTHOR]: UPDATE_AUTHOR,
   [UPDATE_TYPES.PUBLISHER]: UPDATE_PUBLISHER,
   [UPDATE_TYPES.PRINT_LENGTH]: UPDATE_PRINT_LENGTH,
   [UPDATE_TYPES.NEWS_FEED]: UPDATE_NEWS_FEED,
@@ -112,10 +112,10 @@ export const UPDATE_REGISTRY: UpdateRegistry = {
   [UPDATE_TYPES.MERCHANT]: UPDATE_MERCHANT,
   [UPDATE_TYPES.MANUFACTURER]: UPDATE_MANUFACTURER,
   [UPDATE_TYPES.BRAND]: UPDATE_BRAND,
-  [UPDATE_TYPES.FEATURES]: UPDATE_FEATURES,
-  [UPDATE_TYPES.RELATED]: UPDATE_RELATED,
+  [UPDATE_TYPES.FEATURE_LIST]: UPDATE_FEATURE_LIST,
+  [UPDATE_TYPES.IS_RELATED_TO]: UPDATE_IS_RELATED_TO,
   [UPDATE_TYPES.ADD_ON]: UPDATE_ADD_ON,
-  [UPDATE_TYPES.SIMILAR]: UPDATE_SIMILAR,
+  [UPDATE_TYPES.IS_SIMILAR_TO]: UPDATE_IS_SIMILAR_TO,
   [UPDATE_TYPES.PIN]: UPDATE_PIN,
   [UPDATE_TYPES.REMOVE]: UPDATE_REMOVE,
   [UPDATE_TYPES.SHOP_FILTER]: UPDATE_SHOP_FILTER,
@@ -137,8 +137,8 @@ export const UPDATE_REGISTRY: UpdateRegistry = {
   [UPDATE_TYPES.URL]: UPDATE_URL,
   [UPDATE_TYPES.CALORIES]: UPDATE_CALORIES,
   [UPDATE_TYPES.BUDGET]: UPDATE_BUDGET,
-  [UPDATE_TYPES.COOKING_TIME]: UPDATE_COOKING_TIME,
-  [UPDATE_TYPES.RECIPE_INGREDIENTS]: UPDATE_RECIPE_INGREDIENTS,
+  [UPDATE_TYPES.COOK_TIME]: UPDATE_COOK_TIME,
+  [UPDATE_TYPES.INGREDIENTS]: UPDATE_INGREDIENTS,
   [UPDATE_TYPES.GROUP_EXPERTISE]: UPDATE_GROUP_EXPERTISE,
   [UPDATE_TYPES.GROUP_FOLLOWERS]: UPDATE_GROUP_FOLLOWERS,
   [UPDATE_TYPES.GROUP_FOLLOWING]: UPDATE_GROUP_FOLLOWING,
@@ -149,7 +149,7 @@ export const UPDATE_REGISTRY: UpdateRegistry = {
   [UPDATE_TYPES.PROMOTION]: UPDATE_PROMOTION,
   [UPDATE_TYPES.NUTRITION]: UPDATE_NUTRITION,
   [UPDATE_TYPES.FEATURED]: UPDATE_FEATURED,
-  [UPDATE_TYPES.SALE]: UPDATE_SALE,
+  [UPDATE_TYPES.SALE_EVENT]: UPDATE_SALE_EVENT,
   [UPDATE_TYPES.COMPARE_AT_PRICE]: UPDATE_COMPARE_AT_PRICE,
   [UPDATE_TYPES.CONTENT_POSITION]: UPDATE_CONTENT_POSITION,
   [UPDATE_TYPES.HTML_CONTENT]: UPDATE_HTML_CONTENT,
@@ -158,25 +158,25 @@ export const UPDATE_REGISTRY: UpdateRegistry = {
   [UPDATE_TYPES.IMAGE]: UPDATE_IMAGE,
   [UPDATE_TYPES.TITLE]: UPDATE_TITLE,
   [UPDATE_TYPES.DESCRIPTION]: UPDATE_DESCRIPTION,
-  [UPDATE_TYPES.BACKGROUND]: UPDATE_BACKGROUND,
+  [UPDATE_TYPES.IMAGE_BACKGROUND]: UPDATE_IMAGE_BACKGROUND,
   [UPDATE_TYPES.TAG_CATEGORY]: UPDATE_TAG_CATEGORY,
-  [UPDATE_TYPES.CATEGORY_ITEM]: UPDATE_CATEGORY_ITEM,
-  [UPDATE_TYPES.GALLERY_ALBUM]: UPDATE_GALLERY_ALBUM,
-  [UPDATE_TYPES.GALLERY_ITEM]: UPDATE_GALLERY_ITEM,
+  [UPDATE_TYPES.TAG_CATEGORY_ITEM]: UPDATE_TAG_CATEGORY_ITEM,
+  [UPDATE_TYPES.IMAGE_GALLERY]: UPDATE_IMAGE_GALLERY,
+  [UPDATE_TYPES.IMAGE_GALLERY_ITEM]: UPDATE_IMAGE_GALLERY_ITEM,
   [UPDATE_TYPES.PARENT]: UPDATE_PARENT,
-  [UPDATE_TYPES.LANGUAGE]: UPDATE_LANGUAGE,
-  [UPDATE_TYPES.DEPARTMENTS]: UPDATE_DEPARTMENTS,
+  [UPDATE_TYPES.IN_LANGUAGE]: UPDATE_IN_LANGUAGE,
+  [UPDATE_TYPES.CATEGORY]: UPDATE_CATEGORY,
   [UPDATE_TYPES.WEBSITE]: UPDATE_WEBSITE,
-  [UPDATE_TYPES.RATING]: UPDATE_RATING,
+  [UPDATE_TYPES.AGGREGATE_RATING]: UPDATE_AGGREGATE_RATING,
   [UPDATE_TYPES.LIST_ITEM]: UPDATE_LIST_ITEM,
   [UPDATE_TYPES.PRICE]: UPDATE_PRICE,
   [UPDATE_TYPES.SORT_CUSTOM]: UPDATE_SORT_CUSTOM,
   [UPDATE_TYPES.ADDRESS]: UPDATE_ADDRESS,
   [UPDATE_TYPES.FORM]: UPDATE_FORM,
   [UPDATE_TYPES.NEWS_FILTER]: UPDATE_NEWS_FILTER,
-  [UPDATE_TYPES.WORK_TIME]: UPDATE_WORK_TIME,
+  [UPDATE_TYPES.WORK_HOURS]: UPDATE_WORK_HOURS,
   [UPDATE_TYPES.BUTTON]: UPDATE_BUTTON,
-  [UPDATE_TYPES.PHONE]: UPDATE_PHONE,
+  [UPDATE_TYPES.TELEPHONE]: UPDATE_TELEPHONE,
   [UPDATE_TYPES.LINK]: UPDATE_LINK,
   [UPDATE_TYPES.EMAIL]: UPDATE_EMAIL,
   [UPDATE_TYPES.PAGE_CONTENT]: UPDATE_PAGE_CONTENT,

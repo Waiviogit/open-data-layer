@@ -5,7 +5,7 @@ import { UPDATE_TYPES } from '../update-types';
 export const UPDATE_BUTTON: UpdateDefinition = {
   update_type: UPDATE_TYPES.BUTTON,
   namespace: 'odl',
-  localizable: false,
+  localizable: true,
   semantic_key: 'button',
   description: 'Button or CTA configuration.',
   value_kind: 'json',

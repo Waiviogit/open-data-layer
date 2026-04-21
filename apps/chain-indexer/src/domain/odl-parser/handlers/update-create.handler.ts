@@ -176,7 +176,7 @@ export class UpdateCreateHandler implements OdlActionHandler {
     }
 
     await this.objectUpdatesRepository.createReplacingIfPresent(replaceUpdateId, row);
-    if (update_type === UPDATE_TYPES.GROUP_ID) {
+    if (update_type === UPDATE_TYPES.PRODUCT_GROUP_ID) {
       this.eventEmitter.emit(GROUP_ID_MUTATED_EVENT, new GroupIdMutatedEvent(object_id));
     }
     this.eventEmitter.emit(

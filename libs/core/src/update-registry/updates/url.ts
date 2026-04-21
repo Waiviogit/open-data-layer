@@ -6,7 +6,7 @@ export const UPDATE_URL: UpdateDefinition = {
   update_type: UPDATE_TYPES.URL,
   semantic_key: 'url',
   namespace: 'schema',
-  localizable: false,
+  localizable: true,
   description: 'URL or web link.',
   value_kind: 'text',
   cardinality: 'single',

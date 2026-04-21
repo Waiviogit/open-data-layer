@@ -2,8 +2,8 @@ import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
 import { UPDATE_TYPES } from '../update-types';
 
-export const UPDATE_SALE: UpdateDefinition = {
-  update_type: UPDATE_TYPES.SALE,
+export const UPDATE_SALE_EVENT: UpdateDefinition = {
+  update_type: UPDATE_TYPES.SALE_EVENT,
   description: 'Sale or discount configuration.',
   namespace: 'schema',
   localizable: true,

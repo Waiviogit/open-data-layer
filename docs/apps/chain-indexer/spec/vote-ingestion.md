@@ -40,4 +40,4 @@ On conflict, `needs_post_create` is merged with **OR** (once `true`, it stays `t
 | `POST_SYNC_BATCH_SIZE` | `50` | Rows claimed per tick |
 | `POST_SYNC_MAX_ATTEMPTS` | `5` | Max claims before giving up on a missing Hive post |
 
-**Code:** `VoteHiveService`, `HivePostSyncWorker`, `PostSyncQueueRepository`, migration `00007_post_sync_queue`.
+**Code:** `VoteHiveService`, `HivePostSyncWorker`, `PostSyncQueueRepository`; `post_sync_queue` is created in migration `00001_odl_schema.ts`.

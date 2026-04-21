@@ -44,10 +44,10 @@ function parseCategoryItemLabel(valueJson: JsonValue | null): string | null {
 
 /**
  * Up to `max` category_item `value` labels, most recent by `event_seq` first in selection,
- * then ordered ascending by `event_seq` for subtitle display (oldest · newest).
+ * then ordered ascending by `event_seq` for subtitle display (oldest В· newest).
  */
 export function pickLastCategoryItemLabels(view: ResolvedObjectView, max: number): string[] {
-  const field = view.fields[UPDATE_TYPES.CATEGORY_ITEM];
+  const field = view.fields[UPDATE_TYPES.TAG_CATEGORY_ITEM];
   if (!field || field.cardinality !== 'multi' || field.values.length === 0) {
     return [];
   }
@@ -65,9 +65,9 @@ export function pickLastCategoryItemLabels(view: ResolvedObjectView, max: number
   return top.map((x) => x.label);
 }
 
-/** First value after ranking (multi rating) — primary display string for stars. */
+/** First value after ranking (multi rating) вЂ” primary display string for stars. */
 export function pickPrimaryRating(view: ResolvedObjectView): string | null {
-  const field = view.fields[UPDATE_TYPES.RATING];
+  const field = view.fields[UPDATE_TYPES.AGGREGATE_RATING];
   if (!field || field.values.length === 0) {
     return null;
   }

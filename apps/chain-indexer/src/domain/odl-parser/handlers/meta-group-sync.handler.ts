@@ -44,12 +44,12 @@ export class MetaGroupSyncHandler {
         [aggregated],
         voterReputations,
         {
-          update_types: [UPDATE_TYPES.GROUP_ID],
+          update_types: [UPDATE_TYPES.PRODUCT_GROUP_ID],
           governance,
         },
       );
       const view = views[0];
-      const winningGroupId = view?.fields[UPDATE_TYPES.GROUP_ID]?.values[0]?.value_text ?? null;
+      const winningGroupId = view?.fields[UPDATE_TYPES.PRODUCT_GROUP_ID]?.values[0]?.value_text ?? null;
 
       if (winningGroupId === aggregated.core.meta_group_id) {
         return;

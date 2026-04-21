@@ -9,7 +9,7 @@ export type GovernanceScope =
   | 'admins'
   | 'trusted'
   | 'moderators'
-  | 'validity_cutoff'
+  | 'validityCutoff'
   | 'restricted'
   | 'whitelist'
   | 'authorities'

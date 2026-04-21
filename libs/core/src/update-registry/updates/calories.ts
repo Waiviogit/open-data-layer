@@ -6,7 +6,7 @@ export const UPDATE_CALORIES: UpdateDefinition = {
   update_type: UPDATE_TYPES.CALORIES,
   description: 'Calorie count or range.',
   namespace: 'schema',
-  localizable: false,
+  localizable: true,
   semantic_key: 'calories',
   value_kind: 'text',
   cardinality: 'single',

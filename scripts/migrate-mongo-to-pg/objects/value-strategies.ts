@@ -427,7 +427,7 @@ export function transformPromotionSaleFromField(
   updateType: string,
   field: MongoWObjectField,
 ): JsonTransformResult | null {
-  if (updateType !== 'promotion' && updateType !== 'sale') {
+  if (updateType !== 'promotion' && updateType !== 'saleEvent') {
     return null;
   }
   const value = typeof field.body === 'string' ? field.body.trim() : '';

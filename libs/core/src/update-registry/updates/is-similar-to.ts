@@ -2,12 +2,12 @@ import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
 import { UPDATE_TYPES } from '../update-types';
 
-export const UPDATE_RELATED: UpdateDefinition = {
-  update_type: UPDATE_TYPES.RELATED,
+export const UPDATE_IS_SIMILAR_TO: UpdateDefinition = {
+  update_type: UPDATE_TYPES.IS_SIMILAR_TO,
   namespace: 'schema',
-  localizable: true,
-  semantic_key: 'isRelatedTo',
-  description: 'Related object or item reference.',
+  localizable: false,
+  semantic_key: 'isSimilarTo',
+  description: 'Similar or related object reference.',
   value_kind: 'object_ref',
   cardinality: 'multi',
   schema: z.string().min(3).max(256),

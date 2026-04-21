@@ -3,8 +3,8 @@ import type { UpdateDefinition } from '../types';
 import { UPDATE_TYPES } from '../update-types';
 import { OBJECT_TYPES } from '../../object-type-registry/object-types';
 
-export const UPDATE_AUTHORS: UpdateDefinition = {
-  update_type: UPDATE_TYPES.AUTHORS,
+export const UPDATE_AUTHOR: UpdateDefinition = {
+  update_type: UPDATE_TYPES.AUTHOR,
   namespace: 'schema',
   localizable: false,
   semantic_key: 'author',

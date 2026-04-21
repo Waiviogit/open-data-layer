@@ -6,7 +6,7 @@ const GOVERNANCE_SCOPE = [
   'admins',
   'trusted',
   'moderators',
-  'validity_cutoff',
+  'validityCutoff',
   'restricted',
   'whitelist',
   'authorities',

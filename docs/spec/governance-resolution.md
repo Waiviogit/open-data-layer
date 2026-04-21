@@ -10,7 +10,7 @@ A governance object is a regular object in `objects_core` with `objectType = 'go
 
 ## 2) Governance update types
 
-Most update types are **multi-cardinality** (accumulate, never replace). `object_control` is **single-cardinality** — only one active value at a time. No length restriction on value lists.
+Most update types are **multi-cardinality** (accumulate, never replace). `objectControl` is **single-cardinality** — only one active value at a time. No length restriction on value lists.
 
 | `update_type`     | Cardinality | Value format | Meaning |
 |-------------------|-------------|--------------|---------|
@@ -21,13 +21,13 @@ Most update types are **multi-cardinality** (accumulate, never replace). `object
 | `restricted`      | multi  | text — Hive account name | Account flagged for reward eligibility (informational only, not enforced in V2) |
 | `banned`          | multi  | text — Hive account name | Platform-level ban: triggers deletion of all objects and updates created by this account; at governance level all remaining content from this account is excluded from resolved views |
 | `whitelist`       | multi  | text — Hive account name | Account protected from appearing in the resolved `muted` set regardless of who muted them |
-| `object_control`  | single | text — `ObjectControlMode` enum value | Activates global object authority control for this governance context |
-| `inherits_from`   | multi  | JSON — `{ object_id: string, scope: GovernanceScope[] }` | Merge specific fields from the referenced governance object into this one (one level only) |
-| `validity_cutoff` | multi  | JSON — `{ account: string, timestamp: number }` | Actions by this account after `timestamp` (unix) are untrusted; historical work remains valid |
+| `objectControl`  | single | text — `ObjectControlMode` enum value | Activates global object authority control for this governance context |
+| `inheritsFrom`   | multi  | JSON — `{ object_id: string, scope: GovernanceScope[] }` | Merge specific fields from the referenced governance object into this one (one level only) |
+| `validityCutoff` | multi  | JSON — `{ account: string, timestamp: number }` | Actions by this account after `timestamp` (unix) are untrusted; historical work remains valid |
 
 ```typescript
-// Valid scope field names — any key from the output snapshot except 'object_control' and 'inherits_from'.
-type GovernanceScope = 'admins' | 'trusted' | 'moderators' | 'validity_cutoff' | 'restricted' | 'whitelist' | 'authorities' | 'banned' | 'muted';
+// Valid scope field names — any key from the output snapshot except `object_control` and `inherits_from` (snapshot keys); scope tokens use lower camelCase where multi-word (e.g. `validityCutoff`).
+type GovernanceScope = 'admins' | 'trusted' | 'moderators' | 'validityCutoff' | 'restricted' | 'whitelist' | 'authorities' | 'banned' | 'muted';
 ```
 
 ## 3) Write rules
@@ -48,13 +48,13 @@ For each update type, include only entries where `update.creator == governance.c
 - `admins` → resolved set of account strings
 - `trusted` → resolved set of account strings
 - `moderators` → resolved set of account strings
-- `validity_cutoff` → resolved list of `{ account: string, timestamp: number }`
+- `validityCutoff` → resolved list of `{ account: string, timestamp: number }`
 - `restricted` → resolved set of account strings
 - `whitelist` → resolved set of account strings
-- `inherits_from` → resolved list of `{ object_id: string, scope: GovernanceScope[] }`
+- `inheritsFrom` → resolved list of `{ object_id: string, scope: GovernanceScope[] }`
 - `authorities` → resolved set of account strings
 - `banned` → resolved set of account strings
-- `object_control` → resolved single `ObjectControlMode` string, or `null` if absent / voted against
+- `objectControl` → resolved single `ObjectControlMode` string, or `null` if absent / voted against
 
 ### Step 2: Resolve inherited fields
 
@@ -73,7 +73,7 @@ For each field named in any `inherits_from` entry's `scope`, union the inherited
 field = own field ∪ inherited field  (union, deduplicated)
 ```
 
-Fields not listed in any `scope` are not inherited — they come from the root governance object only. `object_control` and `inherits_from` are never merged regardless of scope.
+Fields not listed in any `scope` are not inherited — they come from the root governance object only. `objectControl` and `inheritsFrom` update types are never merged regardless of scope.
 
 ### Step 4: Aggregate muted accounts
 
@@ -94,7 +94,7 @@ Whitelisted accounts are never present in the resolved `muted` set, regardless o
 // Extensible enum — only 'full' is defined in V2; future modes may be added.
 type ObjectControlMode = 'full';
 
-type GovernanceScope = 'admins' | 'trusted' | 'moderators' | 'validity_cutoff' | 'restricted' | 'whitelist' | 'authorities' | 'banned' | 'muted';
+type GovernanceScope = 'admins' | 'trusted' | 'moderators' | 'validityCutoff' | 'restricted' | 'whitelist' | 'authorities' | 'banned' | 'muted';
 
 interface InheritsFromEntry {
   object_id: string;

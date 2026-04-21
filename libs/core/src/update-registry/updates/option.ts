@@ -2,8 +2,8 @@ import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
 import { UPDATE_TYPES } from '../update-types';
 
-export const UPDATE_OPTIONS: UpdateDefinition = {
-  update_type: UPDATE_TYPES.OPTIONS,
+export const UPDATE_OPTION: UpdateDefinition = {
+  update_type: UPDATE_TYPES.OPTION,
   description: 'Product or variant options.',
   value_kind: 'json',
   cardinality: 'multi',

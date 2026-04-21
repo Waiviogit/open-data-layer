@@ -5,7 +5,7 @@ import { UPDATE_TYPES } from '../update-types';
 export const UPDATE_BUDGET: UpdateDefinition = {
   update_type: UPDATE_TYPES.BUDGET,
   namespace: 'odl',
-  localizable: false,
+  localizable: true,
   semantic_key: 'budget',
   description: 'Budget or price range.',
   value_kind: 'text',

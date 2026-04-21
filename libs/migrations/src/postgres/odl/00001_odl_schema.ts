@@ -2,11 +2,18 @@ import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 
 /**
- * Initial ODL schema: objects_core, object_updates, validity_votes, rank_votes, object_authority, accounts_current,
- * user_* tables, posts and post_* satellite tables.
- * Source: docs/spec/data-model/schema.sql. Types: @opden-data-layer/core (OdlDatabase).
+ * Consolidated ODL PostgreSQL schema (former migrations 00001–00008).
+ * Former 00001: objects_core, object_updates, validity_votes, rank_votes, object_authority,
+ * accounts_current, user_* tables, posts and post_* satellite tables.
+ * Former 00002: auth-api (auth_challenges, auth_identities, refresh_sessions).
+ * Former 00003: user_post_drafts. Former 00004: threads, thread_active_votes.
+ * Former 00005: drop legacy post_objects.tagged. Former 00006: user_account_mutes.
+ * Former 00007: post_sync_queue. Former 00008: account_sync_queue.
+ * Data-only migrations 00009–00012 (UPDATE object_updates.update_type) are omitted — fresh DB uses wire values from @opden-data-layer/core.
+ * Source baseline: docs/spec/data-model/schema.sql; types: OdlDatabase.
  * Requires: PostGIS extension.
  */
+
 export async function up(db: Kysely<unknown>): Promise<void> {
   await sql`CREATE EXTENSION IF NOT EXISTS postgis`.execute(db);
 
@@ -367,28 +374,182 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   `.execute(db);
 
   await sql`CREATE INDEX idx_post_mentions_account ON post_mentions (account)`.execute(db);
+
+  await sql`
+    CREATE TABLE auth_challenges (
+      id UUID PRIMARY KEY,
+      provider TEXT NOT NULL,
+      hive_username TEXT NOT NULL,
+      nonce TEXT NOT NULL,
+      message TEXT NOT NULL,
+      expires_at TIMESTAMPTZ NOT NULL,
+      used_at TIMESTAMPTZ,
+      ip TEXT,
+      user_agent TEXT,
+      metadata_json JSONB
+    )
+  `.execute(db);
+
+  await sql`CREATE INDEX idx_auth_challenges_expires_at ON auth_challenges (expires_at)`.execute(db);
+  await sql`CREATE INDEX idx_auth_challenges_hive_username ON auth_challenges (hive_username)`.execute(db);
+
+  await sql`
+    CREATE TABLE auth_identities (
+      id UUID PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      provider TEXT NOT NULL,
+      provider_subject TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      last_used_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      metadata_json JSONB,
+      UNIQUE (provider, provider_subject)
+    )
+  `.execute(db);
+
+  await sql`CREATE INDEX idx_auth_identities_user_id ON auth_identities (user_id)`.execute(db);
+
+  await sql`
+    CREATE TABLE refresh_sessions (
+      id UUID PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      auth_provider TEXT NOT NULL DEFAULT 'keychain',
+      refresh_token_hash TEXT NOT NULL,
+      expires_at TIMESTAMPTZ NOT NULL,
+      revoked_at TIMESTAMPTZ,
+      device_info TEXT,
+      ip TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `.execute(db);
+
+  await sql`CREATE INDEX idx_refresh_sessions_user_id ON refresh_sessions (user_id)`.execute(db);
+  await sql`CREATE INDEX idx_refresh_sessions_refresh_token_hash ON refresh_sessions (refresh_token_hash)`.execute(db);
+
+  await sql`
+    CREATE TABLE user_post_drafts (
+      author           TEXT NOT NULL,
+      draft_id         TEXT NOT NULL,
+      title            TEXT NOT NULL DEFAULT '',
+      body             TEXT NOT NULL DEFAULT '',
+      json_metadata    JSONB NOT NULL DEFAULT '{}'::jsonb,
+      parent_author    TEXT NOT NULL DEFAULT '',
+      parent_permlink  TEXT NOT NULL DEFAULT '',
+      permlink         TEXT,
+      beneficiaries    JSONB NOT NULL DEFAULT '[]'::jsonb,
+      last_updated     BIGINT NOT NULL,
+      PRIMARY KEY (author, draft_id)
+    )
+  `.execute(db);
+
+  await sql`
+    CREATE UNIQUE INDEX idx_user_post_drafts_author_permlink_unique
+    ON user_post_drafts (author, permlink)
+    WHERE permlink IS NOT NULL
+  `.execute(db);
+
+  await sql`
+    CREATE INDEX idx_user_post_drafts_author_last_updated
+    ON user_post_drafts (author, last_updated DESC, draft_id DESC)
+  `.execute(db);
+
+  await sql`
+    CREATE TABLE threads (
+      author              TEXT NOT NULL,
+      permlink            TEXT NOT NULL,
+      parent_author       TEXT NOT NULL,
+      parent_permlink     TEXT NOT NULL,
+      body                TEXT NOT NULL DEFAULT '',
+      created             TEXT,
+      replies             TEXT[] NOT NULL DEFAULT '{}',
+      children            INT NOT NULL DEFAULT 0,
+      depth               INT NOT NULL DEFAULT 1,
+      author_reputation   BIGINT,
+      deleted             BOOLEAN NOT NULL DEFAULT FALSE,
+      tickers             TEXT[] NOT NULL DEFAULT '{}',
+      mentions            TEXT[] NOT NULL DEFAULT '{}',
+      hashtags            TEXT[] NOT NULL DEFAULT '{}',
+      links               TEXT[] NOT NULL DEFAULT '{}',
+      images              TEXT[] NOT NULL DEFAULT '{}',
+      threadstorm         BOOLEAN NOT NULL DEFAULT FALSE,
+      net_rshares         BIGINT,
+      pending_payout_value TEXT,
+      total_payout_value  TEXT,
+      percent_hbd         DOUBLE PRECISION,
+      cashout_time        TEXT,
+      bulk_message        BOOLEAN NOT NULL DEFAULT FALSE,
+      type                TEXT NOT NULL CHECK (type IN ('leothreads', 'ecencythreads')),
+      created_unix        BIGINT NOT NULL,
+      updated_at_unix     BIGINT,
+      PRIMARY KEY (author, permlink)
+    )
+  `.execute(db);
+
+  await sql`
+    CREATE INDEX idx_threads_created_unix ON threads (created_unix DESC)
+  `.execute(db);
+
+  await sql`
+    CREATE TABLE thread_active_votes (
+      author       TEXT NOT NULL,
+      permlink     TEXT NOT NULL,
+      voter        TEXT NOT NULL,
+      weight       DOUBLE PRECISION,
+      percent      DOUBLE PRECISION,
+      rshares      BIGINT,
+      rshares_waiv DOUBLE PRECISION,
+      PRIMARY KEY (author, permlink, voter),
+      FOREIGN KEY (author, permlink) REFERENCES threads (author, permlink) ON DELETE CASCADE
+    )
+  `.execute(db);
+
+  await sql`
+    CREATE INDEX idx_thread_active_votes_voter ON thread_active_votes (voter)
+  `.execute(db);
+
+  await sql`ALTER TABLE post_objects DROP COLUMN IF EXISTS tagged`.execute(db);
+
+  await sql`
+    CREATE TABLE user_account_mutes (
+      muter   TEXT NOT NULL,
+      muted   TEXT NOT NULL,
+      PRIMARY KEY (muter, muted)
+    )
+  `.execute(db);
+
+  await sql`CREATE INDEX idx_user_account_mutes_muted ON user_account_mutes (muted)`.execute(
+    db,
+  );
+
+  await sql`
+    CREATE TABLE post_sync_queue (
+      author            TEXT NOT NULL,
+      permlink          TEXT NOT NULL,
+      enqueued_at       BIGINT NOT NULL,
+      needs_post_create BOOLEAN NOT NULL DEFAULT FALSE,
+      attempts          INT NOT NULL DEFAULT 0,
+      last_attempt_at   BIGINT,
+      PRIMARY KEY (author, permlink)
+    )
+  `.execute(db);
+
+  await sql`
+    CREATE INDEX idx_post_sync_queue_pending ON post_sync_queue (last_attempt_at NULLS FIRST)
+  `.execute(db);
+
+  await sql`
+    CREATE TABLE account_sync_queue (
+      account_name    TEXT NOT NULL PRIMARY KEY,
+      enqueued_at     BIGINT NOT NULL,
+      attempts        INT NOT NULL DEFAULT 0,
+      last_attempt_at BIGINT
+    )
+  `.execute(db);
+
+  await sql`
+    CREATE INDEX idx_account_sync_queue_pending ON account_sync_queue (last_attempt_at NULLS FIRST)
+  `.execute(db);
 }
 
-export async function down(db: Kysely<unknown>): Promise<void> {
-  await sql`DROP TABLE IF EXISTS post_mentions`.execute(db);
-  await sql`DROP TABLE IF EXISTS post_links`.execute(db);
-  await sql`DROP TABLE IF EXISTS post_languages`.execute(db);
-  await sql`DROP TABLE IF EXISTS post_reblogged_users`.execute(db);
-  await sql`DROP TABLE IF EXISTS post_objects`.execute(db);
-  await sql`DROP TABLE IF EXISTS post_active_votes`.execute(db);
-  await sql`DROP TABLE IF EXISTS posts`.execute(db);
-  await sql`DROP TABLE IF EXISTS user_object_follows`.execute(db);
-  await sql`DROP TABLE IF EXISTS user_subscriptions`.execute(db);
-  await sql`DROP TABLE IF EXISTS user_post_bookmarks`.execute(db);
-  await sql`DROP TABLE IF EXISTS user_referrals`.execute(db);
-  await sql`DROP TABLE IF EXISTS user_notification_settings`.execute(db);
-  await sql`DROP TABLE IF EXISTS user_metadata`.execute(db);
-  await sql`DROP TRIGGER IF EXISTS tr_object_updates_search_vector ON object_updates`.execute(db);
-  await sql`DROP FUNCTION IF EXISTS object_updates_search_vector_trigger()`.execute(db);
-  await sql`DROP TABLE IF EXISTS object_authority`.execute(db);
-  await sql`DROP TABLE IF EXISTS rank_votes`.execute(db);
-  await sql`DROP TABLE IF EXISTS validity_votes`.execute(db);
-  await sql`DROP TABLE IF EXISTS object_updates`.execute(db);
-  await sql`DROP TABLE IF EXISTS objects_core`.execute(db);
-  await sql`DROP TABLE IF EXISTS accounts_current`.execute(db);
+export async function down(_db: Kysely<unknown>): Promise<void> {
+  throw new Error('down not supported — drop the database and re-run up');
 }

@@ -6,7 +6,7 @@ import { OBJECT_TYPES } from '../../object-type-registry/object-types';
 export const UPDATE_PUBLISHER: UpdateDefinition = {
   update_type: UPDATE_TYPES.PUBLISHER,
   namespace: 'schema',
-  localizable: true,
+  localizable: false,
   semantic_key: 'publisher',
   description: 'Publisher or imprint details.',
   value_kind: 'object_ref',

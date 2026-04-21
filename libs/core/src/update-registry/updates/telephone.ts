@@ -2,12 +2,12 @@ import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
 import { UPDATE_TYPES } from '../update-types';
 
-export const UPDATE_COOKING_TIME: UpdateDefinition = {
-  update_type: UPDATE_TYPES.COOKING_TIME,
+export const UPDATE_TELEPHONE: UpdateDefinition = {
+  update_type: UPDATE_TYPES.TELEPHONE,
+  semantic_key: 'telephone',
   namespace: 'schema',
-  localizable: false,
-  semantic_key: 'cookTime',
-  description: 'Cooking or prep time.',
+  localizable: true,
+  description: 'Phone number or contact.',
   value_kind: 'text',
   cardinality: 'single',
   schema: z.string().min(1),

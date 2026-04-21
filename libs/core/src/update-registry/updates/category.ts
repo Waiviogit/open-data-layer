@@ -2,13 +2,13 @@ import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
 import { UPDATE_TYPES } from '../update-types';
 
-export const UPDATE_WORK_TIME: UpdateDefinition = {
-  update_type: UPDATE_TYPES.WORK_TIME,
+export const UPDATE_CATEGORY: UpdateDefinition = {
+  update_type: UPDATE_TYPES.CATEGORY,
   namespace: 'schema',
   localizable: true,
-  semantic_key: 'workHours',
-  description: 'Opening hours or work schedule.',
+  semantic_key: 'category',
+  description: 'Department or category list.',
   value_kind: 'text',
-  cardinality: 'single',
+  cardinality: 'multi',
   schema: z.string().min(1),
 };

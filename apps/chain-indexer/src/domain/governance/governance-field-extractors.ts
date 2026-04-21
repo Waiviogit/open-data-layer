@@ -11,13 +11,18 @@ const GOVERNANCE_SCOPES = new Set<GovernanceScope>([
   'admins',
   'trusted',
   'moderators',
-  'validity_cutoff',
+  'validityCutoff',
   'restricted',
   'whitelist',
   'authorities',
   'banned',
   'muted',
 ]);
+
+/** Legacy inherits_from scope token (pre–camelCase update_type). Normalized to `validityCutoff`. */
+const LEGACY_SCOPE_ALIASES: Record<string, GovernanceScope> = {
+  validity_cutoff: 'validityCutoff',
+};
 
 export function collectValueTextsFromUpdates(updates: ResolvedUpdate[]): string[] {
   const out: string[] = [];
@@ -54,8 +59,12 @@ export function parseInheritsFromJson(value: JsonValue | null | undefined): Inhe
   }
   const scope: GovernanceScope[] = [];
   for (const s of scopeRaw) {
-    if (typeof s === 'string' && GOVERNANCE_SCOPES.has(s as GovernanceScope)) {
-      scope.push(s as GovernanceScope);
+    if (typeof s !== 'string') {
+      continue;
+    }
+    const normalized = LEGACY_SCOPE_ALIASES[s] ?? s;
+    if (GOVERNANCE_SCOPES.has(normalized as GovernanceScope)) {
+      scope.push(normalized as GovernanceScope);
     }
   }
   return { object_id: objectId, scope };

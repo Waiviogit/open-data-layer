@@ -2,15 +2,15 @@ import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
 import { UPDATE_TYPES } from '../update-types';
 
-export const UPDATE_GALLERY_ITEM: UpdateDefinition = {
-  update_type: UPDATE_TYPES.GALLERY_ITEM,
+export const UPDATE_TAG_CATEGORY_ITEM: UpdateDefinition = {
+  update_type: UPDATE_TYPES.TAG_CATEGORY_ITEM,
   namespace: 'odl',
-  localizable: false,
-  description: 'Gallery item or media entry.',
+  localizable: true,
+  description: 'Category or tag item with value.',
   value_kind: 'json',
   cardinality: 'multi',
   schema: z.object({
-    album: z.string().min(1),
     value: z.string().min(1),
+    category: z.string().min(1),
   }),
 };

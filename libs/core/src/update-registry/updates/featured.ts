@@ -7,7 +7,7 @@ export const UPDATE_FEATURED: UpdateDefinition = {
   namespace: 'odl',
   localizable: false,
   description: 'Featured item or object reference.',
-  value_kind: 'text',
+  value_kind: 'object_ref',
   cardinality: 'multi',
-  schema: z.string().min(1),
+  schema: z.string().min(3).max(256),
 };

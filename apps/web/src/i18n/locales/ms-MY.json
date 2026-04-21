@@ -437,7 +437,7 @@
   "preview_locale": "dalam bahasa {locale}",
   "description_short": "Penerangan Ringkas",
   "description_full": "Penerangan lengkap",
-  "work_time": "Jam",
+  "workHours": "Jam",
   "location_country": "Negara",
   "location_city": "Bandar",
   "location_street": "Jalan",
@@ -1309,7 +1309,7 @@
   "proposal_payment_to": "Pembayaran cadangan kepada {receiver}",
   "notification_settings": "Tetapan Pemberitahuan",
   "mobnav_notification_settings": "Pemberitahuan",
-  "сommunity_actions": "Tindakan masyarakat",
+  "СЃommunity_actions": "Tindakan masyarakat",
   "likes": "Suka",
   "re_blogs": "Buat semula blogs",
   "mentions": "Sebutan",
@@ -1865,5 +1865,5 @@
   "drafts_last_updated": "Last updated",
   "drafts_untitled": "Untitled draft",
   "drafts_delete_one": "Delete",
-  "drafts_loading": "Loading…"
+  "drafts_loading": "LoadingвЂ¦"
 }

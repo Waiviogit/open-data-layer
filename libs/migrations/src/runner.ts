@@ -76,7 +76,7 @@ export async function migrateDown(
  * Migrates up or down to the named migration (inclusive).
  *
  * @param dbOrConfig - Kysely instance or pg Pool config
- * @param targetName - Migration name (e.g. '00001_initial_odl_schema')
+ * @param targetName - Migration name (e.g. '00001_odl_schema')
  * @returns MigrationResultSet
  */
 export async function migrateTo(

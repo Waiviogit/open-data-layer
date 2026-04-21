@@ -19,7 +19,7 @@ Each trigger emits an in-process event handled by `MetaGroupSyncHandler` (`apps/
 
 1. Load aggregated object rows (core, updates, votes, authority, voter reputations) for the `object_id`.
 2. Resolve `GovernanceSnapshot` via `GovernanceCacheService.resolvePlatform()` (platform governance object from config, or default empty snapshot).
-3. Call `ObjectViewService.resolve` with `update_types: ['group_id']` and that snapshot.
+3. Call `ObjectViewService.resolve` with `update_types: ['productGroupId']` and that snapshot.
 4. Read the winning value from `fields.group_id.values[0].value_text`, or `null` if none.
 5. If it equals `objects_core.meta_group_id`, exit; otherwise `UPDATE objects_core SET meta_group_id = …`.
 

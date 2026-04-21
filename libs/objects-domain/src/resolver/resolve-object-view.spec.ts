@@ -247,24 +247,24 @@ describe('resolveObjectViews', () => {
 
     it('for multi-cardinality, returns only requested locale when matches exist', () => {
       const updates = [
-        makeUpdate('u_en', 'obj1', 'tag_category', 'alice', BigInt(1), 'en-US'),
-        makeUpdate('u_fr', 'obj1', 'tag_category', 'bob', BigInt(2), 'fr-FR'),
+        makeUpdate('u_en', 'obj1', 'tagCategory', 'alice', BigInt(1), 'en-US'),
+        makeUpdate('u_fr', 'obj1', 'tagCategory', 'bob', BigInt(2), 'fr-FR'),
       ];
       const obj = makeAggregated('obj1', updates);
-      const result = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['tag_category'], { locale: 'en-US' }));
-      expect(result[0].fields['tag_category'].values).toHaveLength(1);
-      expect(result[0].fields['tag_category'].values[0].update_id).toBe('u_en');
+      const result = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['tagCategory'], { locale: 'en-US' }));
+      expect(result[0].fields['tagCategory'].values).toHaveLength(1);
+      expect(result[0].fields['tagCategory'].values[0].update_id).toBe('u_en');
     });
 
     it('for multi-cardinality, includes language-neutral rows with locale matches', () => {
       const updates = [
-        makeUpdate('u_en', 'obj1', 'tag_category', 'alice', BigInt(1), 'en-US'),
-        makeUpdate('u_neutral', 'obj1', 'tag_category', 'bob', BigInt(2), null),
-        makeUpdate('u_fr', 'obj1', 'tag_category', 'carol', BigInt(3), 'fr-FR'),
+        makeUpdate('u_en', 'obj1', 'tagCategory', 'alice', BigInt(1), 'en-US'),
+        makeUpdate('u_neutral', 'obj1', 'tagCategory', 'bob', BigInt(2), null),
+        makeUpdate('u_fr', 'obj1', 'tagCategory', 'carol', BigInt(3), 'fr-FR'),
       ];
       const obj = makeAggregated('obj1', updates);
-      const result = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['tag_category'], { locale: 'en-US' }));
-      const ids = new Set(result[0].fields['tag_category'].values.map((v) => v.update_id));
+      const result = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['tagCategory'], { locale: 'en-US' }));
+      const ids = new Set(result[0].fields['tagCategory'].values.map((v) => v.update_id));
       expect(ids).toEqual(new Set(['u_en', 'u_neutral']));
     });
 

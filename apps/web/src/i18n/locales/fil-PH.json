@@ -437,7 +437,7 @@
   "preview_locale": "sa {locale} lokal",
   "description_short": "Maikling Paglalarawan",
   "description_full": "Buong paglalarawan",
-  "work_time": "Mga oras",
+  "workHours": "Mga oras",
   "location_country": "Bansa",
   "location_city": "Lungsod",
   "location_street": "Kalye",
@@ -1309,7 +1309,7 @@
   "proposal_payment_to": "Pagbabayad ng panukala sa {receiver}",
   "notification_settings": "Mga setting ng Notification",
   "mobnav_notification_settings": "Mga Abiso",
-  "сommunity_actions": "Mga aksyon sa pamayanan",
+  "СЃommunity_actions": "Mga aksyon sa pamayanan",
   "likes": "Gusto",
   "re_blogs": "Muling mga blog",
   "mentions": "Nabanggit",
@@ -1867,5 +1867,5 @@
   "drafts_last_updated": "Last updated",
   "drafts_untitled": "Untitled draft",
   "drafts_delete_one": "Delete",
-  "drafts_loading": "Loading…"
+  "drafts_loading": "LoadingвЂ¦"
 }

@@ -7,7 +7,7 @@ const WEIGHT_UNITS = ['t', 'kg', 'gm', 'mg', 'mcg', 'st', 'lb', 'oz'] as const;
 export const UPDATE_PRODUCT_WEIGHT: UpdateDefinition = {
   update_type: UPDATE_TYPES.PRODUCT_WEIGHT,
   namespace: 'schema',
-  localizable: false,
+  localizable: true,
   semantic_key: 'weight',
   description: 'Product weight with unit.',
   value_kind: 'json',

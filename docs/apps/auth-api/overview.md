@@ -10,7 +10,7 @@ NestJS service for Hive-based login (Keychain challenge-response, HiveAuth paylo
 
 - NestJS, Kysely + PostgreSQL (tables `auth_challenges`, `auth_identities`, `refresh_sessions`)
 - `@nestjs/jwt`, `@hiveio/dhive` (signature verification), `hivesigner` (authorize URL builder)
-- Migrations: `libs/migrations/src/postgres/odl/00002_auth_tables.ts`
+- Migrations: `libs/migrations/src/postgres/odl/00001_odl_schema.ts` (includes auth tables)
 
 ## HTTP surface
 

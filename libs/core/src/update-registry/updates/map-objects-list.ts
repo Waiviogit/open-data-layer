@@ -7,7 +7,7 @@ export const UPDATE_MAP_OBJECTS_LIST: UpdateDefinition = {
   description: 'List of object IDs shown on map.',
   namespace: 'odl',
   localizable: false,
-  value_kind: 'text',
+  value_kind: 'object_ref',
   cardinality: 'single',
-  schema: z.string().min(1),
+  schema: z.string().min(3).max(256),
 };

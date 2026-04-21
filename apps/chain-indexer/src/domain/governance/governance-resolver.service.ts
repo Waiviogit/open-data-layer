@@ -141,7 +141,7 @@ function mergeInheritedScopes(
       case 'muted':
         root.muted = dedupeStrings([...root.muted, ...child.muted]);
         break;
-      case 'validity_cutoff':
+      case 'validityCutoff':
         root.validity_cutoff = mergeValidityCutoff(root.validity_cutoff, child.validity_cutoff);
         break;
       default:

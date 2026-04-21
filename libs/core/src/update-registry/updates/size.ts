@@ -4,8 +4,8 @@ import { UPDATE_TYPES } from '../update-types';
 
 const DIMENSION_UNITS = ['km', 'm', 'cm', 'mm', 'μm', 'mi', 'yd', 'ft', 'in', 'nmi'] as const;
 
-export const UPDATE_DIMENSIONS: UpdateDefinition = {
-  update_type: UPDATE_TYPES.DIMENSIONS,
+export const UPDATE_SIZE: UpdateDefinition = {
+  update_type: UPDATE_TYPES.SIZE,
   namespace: 'schema',
   localizable: true,
   semantic_key: 'size',

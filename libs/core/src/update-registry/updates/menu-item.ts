@@ -15,7 +15,7 @@ export const UPDATE_MENU_ITEM: UpdateDefinition = {
       title: z.string().min(1),
       style: z.string().min(1),
       image: z.string().optional(),
-      link_to_object: z.string().optional(),
+      link_to_object: z.string().min(3).max(256).optional(),
       object_type: z.string().optional(),
       link_to_web: z.url().optional(),
     })

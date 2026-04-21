@@ -6,7 +6,6 @@ export const UPDATE_CONTENT_POSITION: UpdateDefinition = {
   update_type: UPDATE_TYPES.CONTENT_POSITION,
   namespace: 'odl',
   localizable: false,
-  semantic_key: 'content_position',
   description: 'Content position or order.',
   value_kind: 'text',
   cardinality: 'single',

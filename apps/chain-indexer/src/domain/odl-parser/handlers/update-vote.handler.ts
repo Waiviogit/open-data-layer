@@ -77,7 +77,7 @@ export class UpdateVoteHandler implements OdlActionHandler {
 
     if (vote === 'remove') {
       await this.validityVotesRepository.delete(update_id, voter);
-      if (votedUpdate.update_type === UPDATE_TYPES.GROUP_ID) {
+      if (votedUpdate.update_type === UPDATE_TYPES.PRODUCT_GROUP_ID) {
         this.eventEmitter.emit(GROUP_ID_MUTATED_EVENT, new GroupIdMutatedEvent(object_id));
       }
       this.eventEmitter.emit(
@@ -97,7 +97,7 @@ export class UpdateVoteHandler implements OdlActionHandler {
     };
 
     await this.validityVotesRepository.create(row);
-    if (votedUpdate.update_type === UPDATE_TYPES.GROUP_ID) {
+    if (votedUpdate.update_type === UPDATE_TYPES.PRODUCT_GROUP_ID) {
       this.eventEmitter.emit(GROUP_ID_MUTATED_EVENT, new GroupIdMutatedEvent(object_id));
     }
     this.eventEmitter.emit(

@@ -10,7 +10,7 @@ Migrations use **Kysely's built-in Migrator**:
 
 - **Tracking:** Kysely creates and uses `kysely_migration` (executed migrations) and `kysely_migration_lock` (advisory lock).
 - **Locking:** Only one process can run migrations at a time; concurrent calls are serialized.
-- **Up/down:** Each migration has `up(db)` and `down(db)`; you can roll back with `migrateDown` or `migrateTo(name)`.
+- **Up/down:** Each migration has `up(db)` and `down(db)`; you can roll back with `migrateDown` or `migrateTo(name)` when `down` is implemented. The bundled base migration `00001_odl_schema` uses a stub `down` (drop DB and re-run `up` in dev).
 
 The library is engine- and schema-aware: migrations are grouped by database (e.g. Postgres) and schema (e.g. ODL). Today only Postgres ODL is implemented; the structure supports adding Redis, ClickHouse, etc. later.
 
@@ -22,7 +22,7 @@ The library is engine- and schema-aware: migrations are grouped by database (e.g
 libs/migrations/src/
   postgres/
     odl/                          # ODL schema (objects_core, object_updates, votes, accounts_current, posts, post_*)
-      00001_initial_odl_schema.ts
+      00001_odl_schema.ts         # consolidated DDL (former 00001–00008); add 00002_… for new changes
       index.ts                    # MIGRATIONS record for OdlMigrationProvider
   cli.ts                          # CLI entry (latest | down | status)
   provider.ts                     # OdlMigrationProvider
@@ -57,12 +57,12 @@ export async function down(db: Kysely<unknown>): Promise<void> {
 3. **Register the migration** in `libs/migrations/src/postgres/odl/index.ts`:
 
 ```typescript
-import * as m00001 from './00001_initial_odl_schema';
+import * as m00001 from './00001_odl_schema';
 import * as m00002 from './00002_add_some_table';
 import type { Migration } from 'kysely';
 
 export const MIGRATIONS: Record<string, Migration> = {
-  '00001_initial_odl_schema': { up: m00001.up, down: m00001.down },
+  '00001_odl_schema': { up: m00001.up, down: m00001.down },
   '00002_add_some_table': { up: m00002.up, down: m00002.down },
 };
 ```
@@ -115,7 +115,7 @@ await migrateDown(db);
 
 // Check status
 const status = await getMigrationStatus(db);
-// => [{ name: '00001_initial_odl_schema', executedAt: Date }, { name: '00002_...', executedAt: undefined }, ...]
+// => [{ name: '00001_odl_schema', executedAt: Date }, { name: '00002_...', executedAt: undefined }, ...]
 ```
 
 All runner functions return a **MigrationResultSet** (or, for `getMigrationStatus`, an array of `{ name, executedAt }`). For `migrateToLatest` / `migrateDown` / `migrateTo`, check `result.error` and `result.results`; they never throw.
