@@ -4,6 +4,7 @@ import type { PostObject } from '@opden-data-layer/core';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 
 import type { FeedObjectSummaryDto } from './feed-story-dtos';
+import { pickSingleImageDisplayUrlFromResolvedUpdate } from '../object-projection/image-display-url';
 import {
   LINKED_OBJECT_CATEGORY_ITEMS_MAX,
   LINKED_OBJECT_DESCRIPTION_MAX,
@@ -34,12 +35,6 @@ export function pickSingleText(view: ResolvedObjectView, updateType: string): st
   return v?.value_text ?? null;
 }
 
-/** Same pattern as ipfs-client: `{gateway}/ipfs/{cid}`. */
-export function ipfsGatewayUrlForCid(gatewayBaseUrl: string, cid: string): string {
-  const base = gatewayBaseUrl.replace(/\/+$/, '');
-  return `${base}/ipfs/${cid}`;
-}
-
 /** `image` update: JSON `{ url }` or `{ cid }` (via `ipfsGatewayBaseUrl`), or legacy `value_text` URL. */
 export function pickSingleImageDisplayUrl(
   view: ResolvedObjectView,
@@ -49,21 +44,7 @@ export function pickSingleImageDisplayUrl(
   if (!field || field.cardinality !== 'single' || field.values.length === 0) {
     return null;
   }
-  const row = field.values[0];
-  const j = row?.value_json;
-  if (j != null && typeof j === 'object' && !Array.isArray(j)) {
-    const o = j as Record<string, unknown>;
-    const url = typeof o.url === 'string' && o.url.trim().length > 0 ? o.url.trim() : null;
-    if (url) {
-      return url;
-    }
-    const cid = typeof o.cid === 'string' && o.cid.trim().length > 0 ? o.cid.trim() : null;
-    if (cid) {
-      return ipfsGatewayUrlForCid(ipfsGatewayBaseUrl, cid);
-    }
-  }
-  const fallback = row?.value_text;
-  return typeof fallback === 'string' && fallback.length > 0 ? fallback : null;
+  return pickSingleImageDisplayUrlFromResolvedUpdate(field.values[0], ipfsGatewayBaseUrl);
 }
 
 function parseCategoryItemLabel(valueJson: JsonValue | null): string | null {

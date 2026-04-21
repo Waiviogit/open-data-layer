@@ -26,6 +26,7 @@ function makeResolved(id: string, eventSeq = BigInt(1)): ResolvedUpdate {
     created_at_unix: 1000,
     event_seq: eventSeq,
     value_text: `value-${id}`,
+    value_geo: null,
     value_json: null,
     validity_status: 'VALID',
     field_weight: null,

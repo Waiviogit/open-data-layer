@@ -107,6 +107,7 @@ function resolveObject(
         created_at_unix: update.created_at_unix,
         event_seq: update.event_seq,
         value_text: update.value_text,
+        value_geo: update.value_geo ?? null,
         value_json: update.value_json ?? null,
         validity_status: status,
         field_weight,

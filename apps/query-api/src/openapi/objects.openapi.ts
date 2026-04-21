@@ -19,6 +19,7 @@ const resolvedUpdateSchema = registry.register(
         'Monotonic sequence (bigint in domain). Represented as string when serialized to JSON.',
     }),
     value_text: z.string().nullable(),
+    value_geo: z.unknown().nullable().openapi({ description: 'GeoJSON from value_geo when present.' }),
     value_json: z.unknown().nullable().openapi({ description: 'JSON value when present.' }),
     validity_status: validityStatusSchema,
     field_weight: z.number().nullable(),

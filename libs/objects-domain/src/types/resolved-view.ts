@@ -14,6 +14,8 @@ export interface ResolvedUpdate {
   created_at_unix: number;
   event_seq: bigint;
   value_text: string | null;
+  /** GeoJSON Point from `value_geo` when `value_kind` is `geo`; otherwise null. */
+  value_geo: unknown | null;
   value_json: JsonValue | null;
   validity_status: ValidityStatus;
   /**

@@ -10,6 +10,7 @@ function ru(partial: Partial<ResolvedUpdate>): ResolvedUpdate {
     created_at_unix: 1,
     event_seq: BigInt(1),
     value_text: null,
+    value_geo: null,
     value_json: null,
     validity_status: 'VALID',
     field_weight: null,

@@ -5,6 +5,7 @@ import { ControllersModule } from './controllers';
 import { DatabaseModule } from './database';
 import { RepositoriesModule } from './repositories';
 import { GovernanceModule } from './domain/governance';
+import { ObjectProjectionModule } from './domain/object-projection';
 import queryApiConfig from './config/query-api.config';
 
 @Module({
@@ -24,6 +25,7 @@ import queryApiConfig from './config/query-api.config';
     DatabaseModule,
     RepositoriesModule,
     GovernanceModule,
+    ObjectProjectionModule,
     ControllersModule,
   ],
 })

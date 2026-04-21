@@ -30,6 +30,7 @@ function makeResolved(
     created_at_unix: 1000,
     event_seq: eventSeq,
     value_text: `value-${id}`,
+    value_geo: null,
     value_json: null,
     validity_status: status,
     field_weight: null,
