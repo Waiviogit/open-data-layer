@@ -93,3 +93,16 @@ index.ts         public barrel — other features import only from here
 ## Server actions
 
 - Return types: use **`Result<T, E>`** from `src/shared/domain/result.ts` for expected failures.
+
+## Form Rules
+
+- Treat forms as contracts, not ad hoc UI handlers.
+- Define one canonical schema per payload.
+- Reuse the same validation rules on client and broadcast layer.
+- Prefer safe parsing over exceptions.
+- Return one consistent result shape from every form flow.
+- Keep field errors separate from form-level errors.
+- Derive validation state from the schema when possible.
+- Handle invalid, pending, error, and success states explicitly.
+- Normalize input consistently before broadcast.
+- Do not add form libraries unless complexity clearly requires them.
