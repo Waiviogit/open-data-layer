@@ -8,6 +8,20 @@ export interface RedisPipelineInterface {
 export interface RedisClientInterface {
   get(key: string): Promise<string | null>;
   set(key: string, value: string, ttl?: number): Promise<void>;
+  /**
+   * Sets key to value with TTL only if the key does not exist (SET ... NX EX).
+   * @returns true if the key was set
+   */
+  trySetNx(
+    key: string,
+    value: string,
+    ttlSeconds: number,
+  ): Promise<boolean>;
+  /**
+   * Deletes the key only if its value matches `expectedValue` (for lock release by token).
+   * @returns true if the key was deleted
+   */
+  releaseLockIfValue(key: string, expectedValue: string): Promise<boolean>;
   del(key: string): Promise<void>;
   exists(key: string): Promise<boolean>;
   hGet(key: string, field: string): Promise<string | null>;

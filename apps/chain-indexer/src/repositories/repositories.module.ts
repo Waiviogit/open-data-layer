@@ -11,6 +11,8 @@ import { SocialGraphRepository } from './social-graph.repository';
 import { ThreadsRepository } from './threads.repository';
 import { PostSyncQueueRepository } from './post-sync-queue.repository';
 import { AccountSyncQueueRepository } from './account-sync-queue.repository';
+import { CanonicalRecomputeRepository } from './canonical-recompute.repository';
+import { SiteRegistryRepository } from './site-registry.repository';
 
 @Module({
   providers: [
@@ -26,6 +28,8 @@ import { AccountSyncQueueRepository } from './account-sync-queue.repository';
     ThreadsRepository,
     PostSyncQueueRepository,
     AccountSyncQueueRepository,
+    CanonicalRecomputeRepository,
+    SiteRegistryRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -40,6 +44,8 @@ import { AccountSyncQueueRepository } from './account-sync-queue.repository';
     ThreadsRepository,
     PostSyncQueueRepository,
     AccountSyncQueueRepository,
+    CanonicalRecomputeRepository,
+    SiteRegistryRepository,
   ],
 })
 export class RepositoriesModule {}

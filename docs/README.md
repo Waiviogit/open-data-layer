@@ -21,6 +21,7 @@ Entry point for Open Data Layer documentation.
 | `query-api` | [README](apps/query-api/README.md) |
 | `auth-api` | [Overview](apps/auth-api/overview.md) |
 | `notifications` | [Overview](apps/notifications/overview.md) |
+| `scheduler` | [Spec](apps/scheduler/spec/overview.md) |
 | `web` | [README](apps/web/README.md) |
 
 ## Libraries (cross-cutting)

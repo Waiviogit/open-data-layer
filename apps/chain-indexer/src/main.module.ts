@@ -13,6 +13,7 @@ import { RepositoriesModule } from './repositories';
 import chainIndexerConfig from './config/chain-indexer.config';
 import { HiveParserModule } from './domain/hive-parser/hive-parser.module';
 import { GovernanceModule } from './domain/governance';
+import { SiteCanonicalModule } from './domain/site-canonical/site-canonical.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { GovernanceModule } from './domain/governance';
     RepositoriesModule,
     HiveParserModule,
     GovernanceModule,
+    SiteCanonicalModule,
   ],
 })
 export class MainModule {}

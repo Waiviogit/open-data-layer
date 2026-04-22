@@ -47,6 +47,7 @@ describe('GetObjectByIdEndpoint', () => {
       creator: 'c',
       weight: null,
       meta_group_id: null,
+      canonical: null,
       fields: {},
     };
     const repo = {
@@ -97,6 +98,7 @@ describe('GetObjectByIdEndpoint', () => {
       creator: 'c',
       weight: null,
       meta_group_id: null,
+      canonical: null,
       fields: {},
     };
     const repo = {
@@ -171,6 +173,7 @@ describe('GetObjectByIdEndpoint', () => {
       creator: 'c',
       weight: null,
       meta_group_id: null,
+      canonical: null,
       fields: {},
     };
     const repo = {
@@ -218,6 +221,7 @@ describe('GetObjectByIdEndpoint', () => {
       creator: 'c',
       weight: null,
       meta_group_id: null,
+      canonical: null,
       fields: {},
     };
     const repo = {

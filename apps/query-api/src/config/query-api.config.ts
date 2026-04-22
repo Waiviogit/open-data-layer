@@ -23,6 +23,9 @@ export default () => {
     ipfs: {
       gatewayUrl: env.IPFS_GATEWAY_URL,
     },
+    siteCanonical: {
+      fallbackOrigin: env.SITE_CANONICAL_FALLBACK_ORIGIN,
+    },
     jwt: {
       secret: env.JWT_SECRET,
     },

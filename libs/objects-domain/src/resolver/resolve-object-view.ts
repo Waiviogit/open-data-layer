@@ -152,6 +152,7 @@ function resolveObject(
     creator: obj.core.creator,
     weight: obj.core.weight,
     meta_group_id: obj.core.meta_group_id,
+    canonical: obj.core.canonical,
     fields,
   };
 }

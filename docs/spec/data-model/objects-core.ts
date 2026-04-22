@@ -11,7 +11,12 @@ export interface ObjectCoreRow {
   creator: string;
   weight: number | null;
   meta_group_id: string | null;
-  /** Normalized display name for search/sort; null if unset. */
+  /**
+   * Normalized site URL for this object (variant B): `https://...` only.
+   * Populated by the site-canonical pipeline; see `docs/spec/site-canonical.md`.
+   */
   canonical: string | null;
+  /** Hive account of the winning `description` update author (`en-US`); used with `site_registry` bulk updates. */
+  canonical_creator: string | null;
   seq: number;
 }

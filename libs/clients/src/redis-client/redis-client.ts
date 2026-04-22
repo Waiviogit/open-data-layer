@@ -33,6 +33,14 @@ class RedisPipelineWrapper implements RedisPipelineInterface {
   }
 }
 
+const RELEASE_LOCK_LUA = `
+if redis.call("get", KEYS[1]) == ARGV[1] then
+  return redis.call("del", KEYS[1])
+else
+  return 0
+end
+`;
+
 class RedisClientWrapper implements RedisClientInterface {
   constructor(private readonly client: Redis) {}
 
@@ -46,6 +54,34 @@ class RedisClientWrapper implements RedisClientInterface {
     } else {
       await this.client.set(key, value);
     }
+  }
+
+  async trySetNx(
+    key: string,
+    value: string,
+    ttlSeconds: number,
+  ): Promise<boolean> {
+    const r = await this.client.set(
+      key,
+      value,
+      'EX',
+      ttlSeconds,
+      'NX',
+    );
+    return r === 'OK';
+  }
+
+  async releaseLockIfValue(
+    key: string,
+    expectedValue: string,
+  ): Promise<boolean> {
+    const n = (await this.client.eval(
+      RELEASE_LOCK_LUA,
+      1,
+      key,
+      expectedValue,
+    )) as number;
+    return n === 1;
   }
 
   async del(key: string): Promise<void> {

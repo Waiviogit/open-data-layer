@@ -16,6 +16,10 @@ import {
   GOVERNANCE_OBJECT_MUTATED_EVENT,
 } from '../../governance/governance-object-mutated.event';
 import {
+  SITE_CANONICAL_RECOMPUTE_EVENT,
+  SiteCanonicalRecomputeEvent,
+} from '../../site-canonical/site-canonical-recompute.event';
+import {
   GroupIdMutatedEvent,
   GROUP_ID_MUTATED_EVENT,
 } from '../group-id-mutated.event';
@@ -178,6 +182,12 @@ export class UpdateCreateHandler implements OdlActionHandler {
     await this.objectUpdatesRepository.createReplacingIfPresent(replaceUpdateId, row);
     if (update_type === UPDATE_TYPES.PRODUCT_GROUP_ID) {
       this.eventEmitter.emit(GROUP_ID_MUTATED_EVENT, new GroupIdMutatedEvent(object_id));
+    }
+    if (update_type === UPDATE_TYPES.DESCRIPTION) {
+      this.eventEmitter.emit(
+        SITE_CANONICAL_RECOMPUTE_EVENT,
+        new SiteCanonicalRecomputeEvent(object_id),
+      );
     }
     this.eventEmitter.emit(
       GOVERNANCE_OBJECT_MUTATED_EVENT,

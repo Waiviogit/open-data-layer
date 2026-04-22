@@ -45,6 +45,9 @@ const resolvedObjectViewSchema = registry.register(
     creator: z.string(),
     weight: z.number().nullable(),
     meta_group_id: z.string().nullable(),
+    canonical: z.string().nullable().openapi({
+      description: 'Site URL from `objects_core.canonical` (`https://...` only), not from resolved fields.',
+    }),
     fields: z.record(z.string(), resolvedFieldSchema).openapi({
       description: 'Keyed by update_type. Only requested update_types are present.',
     }),

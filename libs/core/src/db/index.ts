@@ -76,5 +76,10 @@ export type {
   AccountSyncQueueRow,
   AccountSyncQueueRowUpdate,
   NewAccountSyncQueueRow,
+  SiteRegistryRow,
+  SiteRegistryRowUpdate,
+  NewSiteRegistryRow,
+  CanonicalRecomputeQueueRow,
+  NewCanonicalRecomputeQueueRow,
 } from './odl/tables';
 export type { OdlDatabase } from './odl/database';

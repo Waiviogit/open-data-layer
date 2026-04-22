@@ -59,5 +59,11 @@ export default () => {
     governance: {
       objectId: env.GOVERNANCE_OBJECT_ID,
     },
+    siteCanonical: {
+      fallbackOrigin: env.CANONICAL_FALLBACK_ORIGIN,
+      accountCacheTtlSec: env.CANONICAL_ACCOUNT_CACHE_TTL_SEC,
+      recomputeIntervalMs: env.CANONICAL_RECOMPUTE_INTERVAL_MS,
+      recomputeBatchSize: env.CANONICAL_RECOMPUTE_BATCH_SIZE,
+    },
   };
 };

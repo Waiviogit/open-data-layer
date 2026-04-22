@@ -5,14 +5,15 @@ import type { ResolvedUpdate } from '../types/resolved-view';
 import { DEFAULT_GOVERNANCE_SNAPSHOT } from '../types/governance-snapshot';
 import { filterByLocalePreference, resolveObjectViews } from './resolve-object-view';
 
-function makeCore(objectId: string, creator = 'alice'): ObjectsCore {
+function makeCore(objectId: string, creator = 'alice', canonical: string | null = null): ObjectsCore {
   return {
     object_id: objectId,
     object_type: 'place',
     creator,
     weight: null,
     meta_group_id: null,
-    canonical: null,
+    canonical,
+    canonical_creator: null,
     transaction_id: 'tx1',
     seq: 1,
   };
@@ -50,9 +51,10 @@ function makeAggregated(
   rankVotes: RankVote[] = [],
   authorities: ObjectAuthority[] = [],
   creator = 'alice',
+  canonical: string | null = null,
 ): AggregatedObject {
   return {
-    core: makeCore(objectId, creator),
+    core: makeCore(objectId, creator, canonical),
     updates,
     validity_votes: validityVotes,
     rank_votes: rankVotes,
@@ -179,11 +181,12 @@ describe('resolveObjectViews', () => {
 
   it('assembles basic ResolvedObjectView shape correctly', () => {
     const update = makeUpdate('u1', 'obj1', 'name');
-    const obj = makeAggregated('obj1', [update]);
+    const obj = makeAggregated('obj1', [update], [], [], [], 'alice', 'https://a.example/');
     const [view] = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['name']));
     expect(view.object_id).toBe('obj1');
     expect(view.object_type).toBe('place');
     expect(view.creator).toBe('alice');
+    expect(view.canonical).toBe('https://a.example/');
     expect(view.fields['name'].cardinality).toBe('single');
     expect(view.fields['name'].values[0].update_id).toBe('u1');
   });

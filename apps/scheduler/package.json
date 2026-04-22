@@ -1,0 +1,19 @@
+{
+  "name": "@opden-data-layer/scheduler",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^4.0.3",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/schedule": "^6.1.1",
+    "cron": "^4.4.0",
+    "ioredis": "^5.10.0",
+    "kysely": "^0.28.11",
+    "pg": "^8.20.0",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.8.0",
+    "zod": "^4.3.6"
+  }
+}

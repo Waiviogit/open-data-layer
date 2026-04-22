@@ -26,6 +26,15 @@ export const chainIndexerConfigSchema = z.object({
   ACCOUNT_SYNC_BATCH_SIZE: z.coerce.number().optional().default(20),
   ACCOUNT_SYNC_MAX_ATTEMPTS: z.coerce.number().optional().default(5),
   GOVERNANCE_OBJECT_ID: z.string().optional().default(''),
+  /** Origin for `buildFallbackCanonicalUrl` (https only), e.g. `https://fallback.example.com` */
+  CANONICAL_FALLBACK_ORIGIN: z
+    .string()
+    .url()
+    .optional()
+    .default('https://example.com'),
+  CANONICAL_ACCOUNT_CACHE_TTL_SEC: z.coerce.number().optional().default(600),
+  CANONICAL_RECOMPUTE_INTERVAL_MS: z.coerce.number().optional().default(2_000),
+  CANONICAL_RECOMPUTE_BATCH_SIZE: z.coerce.number().optional().default(5),
 });
 
 export type ChainIndexerConfig = z.infer<typeof chainIndexerConfigSchema>;

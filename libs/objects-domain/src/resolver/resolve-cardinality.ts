@@ -19,7 +19,16 @@ export function resolveSingleCardinality(updates: ResolvedUpdate[]): ResolvedUpd
   const valid = updates.filter((u) => u.validity_status === 'VALID');
   if (valid.length === 0) return [];
 
-  const winner = valid.reduce((best, u) => (u.event_seq > best.event_seq ? u : best));
+  const winner = valid.reduce((best, u) => {
+    if (u.event_seq > best.event_seq) {
+      return u;
+    }
+    if (u.event_seq < best.event_seq) {
+      return best;
+    }
+    // Tie: deterministic total order — update_id ASC
+    return u.update_id < best.update_id ? u : best;
+  });
   return [winner];
 }
 

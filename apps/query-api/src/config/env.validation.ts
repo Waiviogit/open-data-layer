@@ -11,10 +11,17 @@ export const queryApiConfigSchema = z.object({
   GOVERNANCE_OBJECT_ID: z.string().optional().default(''),
   /** Public gateway origin (no path). URLs are built as `{origin}/ipfs/{cid}`. */
   IPFS_GATEWAY_URL: z
-    .string()
     .url()
     .optional()
     .default('https://ipfs.io'),
+  /**
+   * HTTPS origin for object canonical when `objects_core.canonical` is null;
+   * must match chain-indexer / scheduler fallback.
+   */
+  SITE_CANONICAL_FALLBACK_ORIGIN: z
+    .url()
+    .optional()
+    .default('https://example.com'),
   /** Must match auth-api JWT_SECRET for access token verification. */
   JWT_SECRET: z.string().min(1),
 });

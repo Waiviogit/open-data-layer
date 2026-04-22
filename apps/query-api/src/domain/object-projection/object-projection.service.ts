@@ -61,7 +61,7 @@ export class ObjectProjectionService {
       viewerAccount,
     });
 
-    const core = projectObjectCore({
+    const projectedCore = projectObjectCore({
       view,
       ipfsGatewayBaseUrl,
       refSummariesById,
@@ -69,13 +69,16 @@ export class ObjectProjectionService {
     });
 
     const projected: ProjectedObject = {
-      ...core,
+      ...projectedCore,
       hasAdministrativeAuthority,
       hasOwnershipAuthority,
     };
 
     if (options.includeSeo === true) {
-      return { ...projected, seo: this.seoService.build(projected) };
+      return {
+        ...projected,
+        seo: this.seoService.build(projected, view.canonical ?? null),
+      };
     }
 
     return projected;

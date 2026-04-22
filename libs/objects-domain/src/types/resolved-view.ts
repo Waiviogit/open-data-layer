@@ -57,6 +57,11 @@ export interface ResolvedObjectView {
   creator: string;
   weight: number | null;
   meta_group_id: string | null;
+  /**
+   * Site canonical from `objects_core` (`https://...` only, variant B), not from update resolution.
+   * Same value as `AggregatedObject.core.canonical` for this object.
+   */
+  canonical: string | null;
   /** Keyed by update_type. Contains only the update_types requested via ResolveOptions.update_types. */
   fields: Record<string, ResolvedField>;
 }

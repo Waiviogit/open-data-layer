@@ -93,6 +93,10 @@ For updates with equal `rank_score` in same `rank_context`:
 2. latest update event by `event_seq DESC`;
 3. `update_id ASC`.
 
+### Tie-break for single-cardinality field winner
+
+For update types with `cardinality: single`, when multiple **VALID** candidates share the same maximal `event_seq`, the winning update is the one with **lexicographically smallest** `update_id` (`update_id ASC`). This keeps the resolved winner deterministic (used e.g. for the `en-US` description that drives site canonical in [site-canonical](site-canonical.md)).
+
 ## C) Community vote weight
 
 When no admin or trusted decisive vote exists for an update, the **community vote weight** system determines validity. This is the lowest-priority tier in the resolution hierarchy.

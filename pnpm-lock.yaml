@@ -59,6 +59,9 @@ importers:
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
+      cron:
+        specifier: ^4.4.0
+        version: 4.4.0
       diff:
         specifier: ^9.0.0
         version: 9.0.0
@@ -447,6 +450,42 @@ importers:
       '@nestjs/swagger':
         specifier: ^11.2.6
         version: 11.2.6(@nestjs/common@11.1.15(class-transformer@0.5.1)(reflect-metadata@0.1.14)(rxjs@7.8.1))(@nestjs/core@11.1.15)(class-transformer@0.5.1)(reflect-metadata@0.1.14)
+      reflect-metadata:
+        specifier: ^0.1.13
+        version: 0.1.14
+      rxjs:
+        specifier: ^7.8.0
+        version: 7.8.1
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
+
+  apps/scheduler:
+    dependencies:
+      '@nestjs/common':
+        specifier: ^11.0.0
+        version: 11.1.15(class-transformer@0.5.1)(reflect-metadata@0.1.14)(rxjs@7.8.1)
+      '@nestjs/config':
+        specifier: ^4.0.3
+        version: 4.0.3(@nestjs/common@11.1.15(class-transformer@0.5.1)(reflect-metadata@0.1.14)(rxjs@7.8.1))(rxjs@7.8.1)
+      '@nestjs/core':
+        specifier: ^11.0.0
+        version: 11.1.15(@nestjs/common@11.1.15(class-transformer@0.5.1)(reflect-metadata@0.1.14)(rxjs@7.8.1))(@nestjs/platform-express@11.1.15)(@nestjs/websockets@11.1.19)(reflect-metadata@0.1.14)(rxjs@7.8.1)
+      '@nestjs/platform-express':
+        specifier: ^11.0.0
+        version: 11.1.15(@nestjs/common@11.1.15(class-transformer@0.5.1)(reflect-metadata@0.1.14)(rxjs@7.8.1))(@nestjs/core@11.1.15)
+      '@nestjs/schedule':
+        specifier: ^6.1.1
+        version: 6.1.1(@nestjs/common@11.1.15(class-transformer@0.5.1)(reflect-metadata@0.1.14)(rxjs@7.8.1))(@nestjs/core@11.1.15)
+      ioredis:
+        specifier: ^5.10.0
+        version: 5.10.0
+      kysely:
+        specifier: ^0.28.11
+        version: 0.28.11
+      pg:
+        specifier: ^8.20.0
+        version: 8.20.0
       reflect-metadata:
         specifier: ^0.1.13
         version: 0.1.14

@@ -15,6 +15,10 @@ import {
   GOVERNANCE_OBJECT_MUTATED_EVENT,
 } from '../../governance/governance-object-mutated.event';
 import {
+  SITE_CANONICAL_RECOMPUTE_EVENT,
+  SiteCanonicalRecomputeEvent,
+} from '../../site-canonical/site-canonical-recompute.event';
+import {
   GroupIdMutatedEvent,
   GROUP_ID_MUTATED_EVENT,
 } from '../group-id-mutated.event';
@@ -80,6 +84,12 @@ export class UpdateVoteHandler implements OdlActionHandler {
       if (votedUpdate.update_type === UPDATE_TYPES.PRODUCT_GROUP_ID) {
         this.eventEmitter.emit(GROUP_ID_MUTATED_EVENT, new GroupIdMutatedEvent(object_id));
       }
+      if (votedUpdate.update_type === UPDATE_TYPES.DESCRIPTION) {
+        this.eventEmitter.emit(
+          SITE_CANONICAL_RECOMPUTE_EVENT,
+          new SiteCanonicalRecomputeEvent(object_id),
+        );
+      }
       this.eventEmitter.emit(
         GOVERNANCE_OBJECT_MUTATED_EVENT,
         new GovernanceObjectMutatedEvent(object_id),
@@ -99,6 +109,12 @@ export class UpdateVoteHandler implements OdlActionHandler {
     await this.validityVotesRepository.create(row);
     if (votedUpdate.update_type === UPDATE_TYPES.PRODUCT_GROUP_ID) {
       this.eventEmitter.emit(GROUP_ID_MUTATED_EVENT, new GroupIdMutatedEvent(object_id));
+    }
+    if (votedUpdate.update_type === UPDATE_TYPES.DESCRIPTION) {
+      this.eventEmitter.emit(
+        SITE_CANONICAL_RECOMPUTE_EVENT,
+        new SiteCanonicalRecomputeEvent(object_id),
+      );
     }
     this.eventEmitter.emit(
       GOVERNANCE_OBJECT_MUTATED_EVENT,

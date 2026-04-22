@@ -52,6 +52,10 @@ export interface OdlDatabase {
   thread_active_votes: ThreadActiveVotesTable;
   post_sync_queue: PostSyncQueueTable;
   account_sync_queue: AccountSyncQueueTable;
+  scheduler_job_runs: SchedulerJobRunsTable;
+  scheduler_job_queue: SchedulerJobQueueTable;
+  site_registry: SiteRegistryTable;
+  canonical_recompute_queue: CanonicalRecomputeQueueTable;
 }
 
 // ---------------------------------------------------------------------------
@@ -64,8 +68,12 @@ export interface ObjectsCoreTable {
   creator: string;
   weight: number | null;
   meta_group_id: string | null;
-  /** Normalized display name for search/sort; null if unset. */
+  /**
+   * Normalized site URL for SEO (`https://...` only). Legacy display names were cleared in migration 00003.
+   */
   canonical: string | null;
+  /** Hive account of winning @en-US `description` author; used for bulk updates with site_registry. */
+  canonical_creator: string | null;
   transaction_id: string;
   /** DEFAULT 0; optional on insert. */
   seq: ColumnType<number, number | undefined, number>;
@@ -555,6 +563,85 @@ export interface AccountSyncQueueTable {
 export type AccountSyncQueueRow = Selectable<AccountSyncQueueTable>;
 export type NewAccountSyncQueueRow = Insertable<AccountSyncQueueTable>;
 export type AccountSyncQueueRowUpdate = Updateable<AccountSyncQueueTable>;
+
+// ---------------------------------------------------------------------------
+// scheduler_job_runs (apps/scheduler run metadata)
+// ---------------------------------------------------------------------------
+
+export interface SchedulerJobRunsTable {
+  id: Generated<string>;
+  job_name: string;
+  trigger: 'scheduled' | 'manual' | 'retry';
+  status: 'pending' | 'running' | 'success' | 'failed' | 'skipped';
+  attempt: number;
+  started_at: Date | null;
+  finished_at: Date | null;
+  duration_ms: number | null;
+  error: string | null;
+  payload: ColumnType<JsonValue, JsonValue | null | undefined, JsonValue | null>;
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
+}
+
+export type SchedulerJobRun = Selectable<SchedulerJobRunsTable>;
+export type NewSchedulerJobRun = Insertable<SchedulerJobRunsTable>;
+export type SchedulerJobRunUpdate = Updateable<SchedulerJobRunsTable>;
+
+// ---------------------------------------------------------------------------
+// scheduler_job_queue (Postgres-backed queue for scheduler workers)
+// ---------------------------------------------------------------------------
+
+export interface SchedulerJobQueueTable {
+  id: Generated<string>;
+  run_id: string;
+  job_name: string;
+  status: 'pending' | 'claimed' | 'done' | 'dead';
+  available_at: Date;
+  attempts: number;
+  max_attempts: number;
+  last_error: string | null;
+  claimed_at: Date | null;
+}
+
+export type SchedulerJobQueueRow = Selectable<SchedulerJobQueueTable>;
+export type NewSchedulerJobQueueRow = Insertable<SchedulerJobQueueTable>;
+export type SchedulerJobQueueRowUpdate = Updateable<SchedulerJobQueueTable>;
+
+// ---------------------------------------------------------------------------
+// site_registry (per-creator site state; scheduler daily + indexer)
+// ---------------------------------------------------------------------------
+
+export interface SiteRegistryTable {
+  creator: string;
+  website_raw: string | null;
+  website_normalized: string | null;
+  effective_canonical: string | null;
+  site_state: 'active' | 'fallback';
+  is_reachable: boolean;
+  last_checked_at: Date | null;
+  last_success_at: Date | null;
+  last_error: string | null;
+  consecutive_fail_count: number;
+  http_status_code: number | null;
+  updated_at: ColumnType<Date, Date | string | undefined, Date | string>;
+}
+
+export type SiteRegistryRow = Selectable<SiteRegistryTable>;
+export type NewSiteRegistryRow = Insertable<SiteRegistryTable>;
+export type SiteRegistryRowUpdate = Updateable<SiteRegistryTable>;
+
+// ---------------------------------------------------------------------------
+// canonical_recompute_queue (chain-indexer dedup by object_id)
+// ---------------------------------------------------------------------------
+
+export interface CanonicalRecomputeQueueTable {
+  object_id: string;
+  enqueued_at: Date;
+  attempts: number;
+}
+
+export type CanonicalRecomputeQueueRow = Selectable<CanonicalRecomputeQueueTable>;
+export type NewCanonicalRecomputeQueueRow = Insertable<CanonicalRecomputeQueueTable>;
+export type CanonicalRecomputeQueueRowUpdate = Updateable<CanonicalRecomputeQueueTable>;
 
 // ---------------------------------------------------------------------------
 // user_post_drafts
