@@ -14,7 +14,7 @@ The **chain-indexer** application is the **Hive write path**: it reads blocks in
 |-------|------------|
 | Runtime | NestJS `ApplicationContext` (no HTTP server) |
 | Chain access | `@hiveio/dhive` via `@opden-data-layer/clients` (`HiveClient`) |
-| Block loop | `HiveProcessorService` in `@opden-data-layer/core` |
+| Block loop | `HiveProcessorService` in `@opden-data-layer/hive-processor` |
 | Cursor | Redis (`BlockCacheService`) |
 | Persistence | Kysely + PostgreSQL (app repositories under `apps/chain-indexer/src/repositories/`) |
 | Large imports | Optional IPFS (`batch_import` → `BatchImportWorker`) |

@@ -40,4 +40,4 @@ Files named `*.worker.ts`: long-running or periodic background work (queue drain
 
 ## Cross-cutting
 
-- **Hive block processing** uses `HiveProcessorModule` / parsers from `@opden-data-layer/core` — follow existing `hive-parser` and `odl-parser` patterns for new operations.
+- **Hive block processing** uses `HiveProcessorModule` from `@opden-data-layer/hive-processor` and parsers under `hive-parser` / `odl-parser` — follow existing patterns for new operations.

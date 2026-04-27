@@ -66,5 +66,6 @@
       }
     }
   },
-  "tags": []
+  "tags": [],
+  "implicitDependencies": ["hive-processor"]
 }

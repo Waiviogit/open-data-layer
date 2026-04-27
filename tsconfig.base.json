@@ -19,7 +19,8 @@
       "@opden-data-layer/migrations": ["libs/migrations/src/index.ts"],
       "@opden-data-layer/clients": ["libs/clients/src/index.ts"],
       "@opden-data-layer/objects-domain": ["libs/objects-domain/src/index.ts"],
-      "@opden-data-layer/site-canonical": ["libs/site-canonical/src/index.ts"]
+      "@opden-data-layer/site-canonical": ["libs/site-canonical/src/index.ts"],
+      "@opden-data-layer/hive-processor": ["libs/hive-processor/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

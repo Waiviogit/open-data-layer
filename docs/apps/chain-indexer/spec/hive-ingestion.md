@@ -10,10 +10,10 @@ Describe how **chain-indexer** advances through Hive blocks, resolves the **curr
 
 | Area | Role |
 |------|------|
-| [`HiveProcessorModule`](../../../../apps/chain-indexer/src/domain/hive-parser/hive-parser.module.ts) | Wires `HiveProcessorModule` from `@opden-data-layer/core` with block key from [`redis-keys.ts`](../../../../apps/chain-indexer/src/constants/redis-keys.ts) and start block from config |
+| [`HiveProcessorModule`](../../../../apps/chain-indexer/src/domain/hive-parser/hive-parser.module.ts) | Wires `HiveProcessorModule` from `@opden-data-layer/hive-processor` with block key from [`redis-keys.ts`](../../../../apps/chain-indexer/src/constants/redis-keys.ts) and start block from config |
 | [`HiveParserProvidersModule`](../../../../apps/chain-indexer/src/domain/hive-parser/hive-parser-providers.module.ts) | Binds `BLOCK_PARSER` to `HiveMainParser` |
-| [`HiveProcessorService`](../../../../libs/core/src/hive-processor/hive-processor.service.ts) | Bootstrap loop: fetch block → parse → advance cursor |
-| [`BlockCacheService`](../../../../libs/core/src/hive-processor/block-cache.service.ts) | Redis get/set for the block number |
+| [`HiveProcessorService`](../../../../libs/hive-processor/src/hive-processor.service.ts) | Bootstrap loop: fetch block → parse → advance cursor |
+| [`BlockCacheService`](../../../../libs/hive-processor/src/block-cache.service.ts) | Redis get/set for the block number |
 | [`HiveMainParser`](../../../../apps/chain-indexer/src/domain/hive-parser/hive-main-parser.ts) | Per-block operation dispatch |
 | [`HiveCustomJsonParser`](../../../../apps/chain-indexer/src/domain/hive-parser/hive-custom-json-parser.ts) | Routes `custom_json` by `id` to ODL |
 
@@ -72,4 +72,4 @@ Other ids are ignored.
 | Path | Role |
 |------|------|
 | `apps/chain-indexer/src/domain/hive-parser/` | Hive-side parsing and ODL id routing |
-| `libs/core/src/hive-processor/` | Block loop and Redis cursor |
+| `libs/hive-processor/` | Block loop and Redis cursor (Nest `HiveProcessorModule`) |
