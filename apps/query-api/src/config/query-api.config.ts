@@ -29,5 +29,13 @@ export default () => {
     jwt: {
       secret: env.JWT_SECRET,
     },
+    hive: {
+      client: {
+        cachePrefix: env.HIVE_CACHE_PREFIX,
+        cacheTtlSeconds: env.HIVE_CACHE_TTL_SECONDS,
+        maxResponseTimeMs: env.HIVE_MAX_RESPONSE_TIME_MS,
+        urlRotationDb: env.HIVE_URL_ROTATION_DB,
+      },
+    },
   };
 };

@@ -24,6 +24,11 @@ export const queryApiConfigSchema = z.object({
     .default('https://example.com'),
   /** Must match auth-api JWT_SECRET for access token verification. */
   JWT_SECRET: z.string().min(1),
+  /** Hive RPC client / URL rotation (optional; aligns with chain-indexer). */
+  HIVE_CACHE_PREFIX: z.string().optional(),
+  HIVE_CACHE_TTL_SECONDS: z.coerce.number().optional(),
+  HIVE_MAX_RESPONSE_TIME_MS: z.coerce.number().optional(),
+  HIVE_URL_ROTATION_DB: z.coerce.number().optional(),
 });
 
 export type QueryApiConfig = z.infer<typeof queryApiConfigSchema>;

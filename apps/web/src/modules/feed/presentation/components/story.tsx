@@ -351,7 +351,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
           ) : null}
 
           <div
-            className="feed-story-excerpt pointer-events-auto min-h-[1.5em] text-body text-fg-secondary line-clamp-6 [&_a]:break-words [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-2 [&_p]:m-0 [&_p+p]:mt-2"
+            className="feed-story-excerpt pointer-events-none min-h-[1.5em] text-body text-fg-secondary line-clamp-6 [&_a]:pointer-events-auto [&_a]:break-words [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-2 [&_p]:m-0 [&_p+p]:mt-2"
             dangerouslySetInnerHTML={{ __html: feedExcerptToSafeHtml(story.excerpt) }}
           />
           {story.isNsfw ? (

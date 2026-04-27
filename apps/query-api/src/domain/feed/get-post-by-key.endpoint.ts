@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { HiveClient } from '@opden-data-layer/clients';
 import { POST_LINKED_OBJECT_UPDATE_TYPES } from '@opden-data-layer/core';
 import type { Post } from '@opden-data-layer/core';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
@@ -10,8 +11,10 @@ import {
   type PostVoteSummary,
 } from '../../repositories';
 import { mapAccountToUserProfileView } from '../users/account-mapper';
+import { parsePostingMetadata } from '../users/parse-posting-metadata';
 import { GovernanceResolverService } from '../governance';
 import { buildLinkedObjectSummaries } from './feed-object-summaries';
+import { mapHiveContentToSinglePostView } from './map-hive-content-to-single-post.dto';
 import { ObjectProjectionService } from '../object-projection';
 import type { SinglePostViewDto } from './feed-story-dtos';
 import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
@@ -28,6 +31,7 @@ export class GetPostByKeyEndpoint {
     private readonly objectViewService: ObjectViewService,
     private readonly governanceResolver: GovernanceResolverService,
     private readonly objectProjection: ObjectProjectionService,
+    private readonly hiveClient: HiveClient,
   ) {}
 
   async execute(
@@ -46,7 +50,22 @@ export class GetPostByKeyEndpoint {
 
     const post = postRows[0];
     if (!post) {
-      return null;
+      const hiveContent = await this.hiveClient.getContent(author, permlink);
+      if (
+        !hiveContent ||
+        !hiveContent.author?.trim() ||
+        !hiveContent.permlink?.trim()
+      ) {
+        return null;
+      }
+      if (
+        hiveContent.author.trim().toLowerCase() !== author.trim().toLowerCase() ||
+        hiveContent.permlink.trim().toLowerCase() !== permlink.trim().toLowerCase()
+      ) {
+        return null;
+      }
+      const authorProfile = await this.resolveAuthorProfileForHiveFallback(author);
+      return mapHiveContentToSinglePostView(hiveContent, authorProfile, viewerAccount);
     }
 
     return this.mapPostToSingleView(
@@ -57,6 +76,42 @@ export class GetPostByKeyEndpoint {
       governanceObjectIdFromHeader,
       viewerAccount,
     );
+  }
+
+  private async resolveAuthorProfileForHiveFallback(
+    author: string,
+  ): Promise<SinglePostViewDto['authorProfile']> {
+    const accountRow = await this.accounts.findByName(author);
+    if (accountRow) {
+      const profile = mapAccountToUserProfileView(accountRow);
+      return {
+        name: profile.name,
+        displayName: profile.displayName,
+        avatarUrl: profile.avatarUrl,
+        reputation: profile.reputation,
+      };
+    }
+    const hiveAccounts = await this.hiveClient.getAccounts([author]);
+    const ha = hiveAccounts[0];
+    if (!ha) {
+      return {
+        name: author,
+        displayName: null,
+        avatarUrl: null,
+        reputation: 0,
+      };
+    }
+    const meta = parsePostingMetadata(ha.posting_json_metadata);
+    const metaName = meta?.profile.name?.trim() ?? '';
+    const displayName = metaName !== '' ? metaName : ha.name;
+    const avatarFromMeta = meta?.profile.profile_image?.trim() ?? '';
+    const avatarUrl = avatarFromMeta !== '' ? avatarFromMeta : null;
+    return {
+      name: ha.name,
+      displayName,
+      avatarUrl,
+      reputation: 0,
+    };
   }
 
   private async mapPostToSingleView(

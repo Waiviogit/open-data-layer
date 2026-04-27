@@ -1,3 +1,4 @@
+import { HiveClient, type HiveContentType } from '@opden-data-layer/clients';
 import type { Post } from '@opden-data-layer/core';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
@@ -77,6 +78,7 @@ describe('GetPostByKeyEndpoint', () => {
     Pick<GovernanceResolverService, 'resolveMergedForObjectView'>
   >;
   let objectProjection: jest.Mocked<Pick<ObjectProjectionService, 'batchProject'>>;
+  let hiveClient: jest.Mocked<Pick<HiveClient, 'getContent' | 'getAccounts'>>;
   let endpoint: GetPostByKeyEndpoint;
 
   beforeEach(() => {
@@ -110,6 +112,10 @@ describe('GetPostByKeyEndpoint', () => {
         })),
       ),
     };
+    hiveClient = {
+      getContent: jest.fn().mockResolvedValue(undefined),
+      getAccounts: jest.fn().mockResolvedValue([]),
+    };
     endpoint = new GetPostByKeyEndpoint(
       postsRepo as unknown as PostsRepository,
       accounts as unknown as AccountsCurrentRepository,
@@ -117,17 +123,104 @@ describe('GetPostByKeyEndpoint', () => {
       objectViewService as unknown as ObjectViewService,
       governanceResolver as unknown as GovernanceResolverService,
       objectProjection as unknown as ObjectProjectionService,
+      hiveClient as unknown as HiveClient,
     );
   });
 
-  it('returns null when post is missing', async () => {
+  it('returns null when post is missing and Hive has no content', async () => {
     postsRepo.findPostsByKeys.mockResolvedValue([]);
     postsRepo.findPostObjectsByKeys.mockResolvedValue([]);
     postsRepo.findActiveVoteSummaries.mockResolvedValue(new Map());
 
     const r = await endpoint.execute('alice', 'nope', 'en-US', undefined, undefined);
     expect(r).toBeNull();
+    expect(hiveClient.getContent).toHaveBeenCalledWith('alice', 'nope');
     expect(accounts.findByName).not.toHaveBeenCalled();
+  });
+
+  it('returns single post from Hive when not indexed', async () => {
+    const hivePost = {
+      author: 'alice',
+      permlink: 'hive-only',
+      title: 'From chain',
+      body: '<p>Hive body</p>',
+      json_metadata: '{}',
+      category: 'blog',
+      created: '2024-06-01T12:00:00',
+      children: 1,
+      pending_payout_value: '0.100',
+      total_payout_value: '1.000',
+      net_rshares: 42,
+      reblogged_users: ['reblogger'],
+      active_votes: [
+        { voter: 'low', weight: 1, percent: 50, reputation: 0, rshares: 5 },
+        { voter: 'high', weight: 1, percent: 50, reputation: 0, rshares: 99 },
+      ],
+    } as unknown as HiveContentType;
+
+    postsRepo.findPostsByKeys.mockResolvedValue([]);
+    postsRepo.findPostObjectsByKeys.mockResolvedValue([]);
+    postsRepo.findActiveVoteSummaries.mockResolvedValue(new Map());
+    hiveClient.getContent.mockResolvedValue(hivePost);
+    accounts.findByName.mockResolvedValue(null);
+    hiveClient.getAccounts.mockResolvedValue([
+      {
+        id: 1,
+        name: 'alice',
+        json_metadata: '',
+        posting_json_metadata: '{"profile":{"name":"Alice Hive","profile_image":"https://x.test/a.jpg"}}',
+        created: '',
+        comment_count: 0,
+        lifetime_vote_count: 0,
+        post_count: 0,
+        last_post: '',
+        last_root_post: '',
+      },
+    ]);
+
+    const r = await endpoint.execute('alice', 'hive-only', 'en-US', undefined, 'high');
+
+    expect(r).not.toBeNull();
+    if (r == null) {
+      throw new Error('expected post');
+    }
+    expect(r.body).toBe('<p>Hive body</p>');
+    expect(r.title).toBe('From chain');
+    expect(r.objects).toEqual([]);
+    expect(r.rebloggedBy).toBe('reblogger');
+    expect(r.votes.totalCount).toBe(2);
+    expect(r.votes.previewVoters[0]).toBe('high');
+    expect(r.votes.voted).toBe(true);
+    expect(r.authorProfile.displayName).toBe('Alice Hive');
+    expect(r.authorProfile.avatarUrl).toBe('https://x.test/a.jpg');
+    expect(aggregatedObjectRepo.loadByObjectIds).not.toHaveBeenCalled();
+  });
+
+  it('returns null when Hive content author key mismatches request', async () => {
+    const hivePost = {
+      author: 'other',
+      permlink: 'x',
+      title: 'x',
+      body: '',
+      json_metadata: '{}',
+      category: 'blog',
+      created: '2024-01-01T00:00:00',
+      children: 0,
+      pending_payout_value: '0',
+      total_payout_value: '0',
+      net_rshares: 0,
+      reblogged_users: [],
+      active_votes: [],
+    } as unknown as HiveContentType;
+
+    postsRepo.findPostsByKeys.mockResolvedValue([]);
+    postsRepo.findPostObjectsByKeys.mockResolvedValue([]);
+    postsRepo.findActiveVoteSummaries.mockResolvedValue(new Map());
+    hiveClient.getContent.mockResolvedValue(hivePost);
+
+    const r = await endpoint.execute('alice', 'x', 'en-US', undefined, undefined);
+    expect(r).toBeNull();
+    expect(hiveClient.getAccounts).not.toHaveBeenCalled();
   });
 
   it('returns single post view with body and empty objects when none tagged', async () => {
