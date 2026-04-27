@@ -12,6 +12,7 @@ export {
   pickSingleImageDisplayUrlFromResolvedUpdate,
 } from './image-display-url';
 export { SEMANTIC_TYPE_BY_OBJECT_TYPE } from './semantic-types';
+export { normalizeProjectedObjectForJson } from './normalize-projected-object-for-json';
 export type {
   ProjectedAggregateRating,
   ProjectedObject,

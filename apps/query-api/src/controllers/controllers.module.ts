@@ -8,9 +8,16 @@ import { ObjectsController } from './objects.controller';
 import { UserPostDraftsController } from './user-post-drafts.controller';
 import { PostsController } from './posts.controller';
 import { UsersController } from './users.controller';
+import { UserThreadsController } from './user-threads.controller';
 
 @Module({
   imports: [ObjectsModule, UsersModule, FeedModule, DraftsModule, AuthModule],
-  controllers: [ObjectsController, UsersController, PostsController, UserPostDraftsController],
+  controllers: [
+    ObjectsController,
+    UsersController,
+    UserThreadsController,
+    PostsController,
+    UserPostDraftsController,
+  ],
 })
 export class ControllersModule {}

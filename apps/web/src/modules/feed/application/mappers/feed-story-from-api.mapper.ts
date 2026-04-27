@@ -74,7 +74,7 @@ export function mapFeedStoryItemApiToView(item: FeedStoryItemApi): FeedStoryView
     excerpt: item.excerpt,
     isNsfw: item.isNsfw,
     category: item.category,
-    /** Public URL `/@author/permlink` (rewritten to `user-profile/...`); post route is `(profile)/(main)/[permlink]` for modal intercept. */
+    /** Public URL `/@author/permlink` (rewritten to `user-profile/.../post/permlink`); see `proxy.ts`. */
     permalinkPath: `/@${encodeURIComponent(item.author)}/${encodeURIComponent(item.permlink)}`,
     rebloggedBy: item.rebloggedBy,
     children: item.children,

@@ -5,19 +5,20 @@ import type {
   BatchProjectOptions,
   ObjectProjectionService,
 } from '../object-projection/object-projection.service';
+import { normalizeProjectedObjectForJson } from '../object-projection/normalize-projected-object-for-json';
 import type { ProjectedObject } from '../object-projection/projected-object.types';
 import { LINKED_OBJECT_DESCRIPTION_MAX } from './feed.constants';
 import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
 
 function placeholderProjectedObject(o: PostObject): ProjectedObject {
-  return {
+  return normalizeProjectedObjectForJson({
     object_id: o.object_id,
     object_type: o.object_type ?? '',
     semantic_type: null,
     fields: {},
     hasAdministrativeAuthority: false,
     hasOwnershipAuthority: false,
-  };
+  });
 }
 
 function hasDisplayImage(p: ProjectedObject): boolean {

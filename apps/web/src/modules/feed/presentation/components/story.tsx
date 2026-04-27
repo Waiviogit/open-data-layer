@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useEffect, useState, type ReactNode } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { feedExcerptToSafeHtml } from '@/shared/infrastructure/feed-excerpt-html';
 import {
   AVATAR_PLACEHOLDER_SRC,
   shouldUnoptimizeRemoteImage,
@@ -349,9 +350,10 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
             </div>
           ) : null}
 
-          <p className="min-h-[1.5em] whitespace-pre-wrap text-body text-fg-secondary line-clamp-6">
-            {story.excerpt}
-          </p>
+          <div
+            className="feed-story-excerpt pointer-events-auto min-h-[1.5em] text-body text-fg-secondary line-clamp-6 [&_a]:break-words [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-2 [&_p]:m-0 [&_p+p]:mt-2"
+            dangerouslySetInnerHTML={{ __html: feedExcerptToSafeHtml(story.excerpt) }}
+          />
           {story.isNsfw ? (
             <p className="text-caption text-muted" role="status">
               NSFW
@@ -373,7 +375,9 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
             count={story.children ?? 0}
             label="Comments"
           />
-          <StatButton icon={<IconReblog />} count={undefined} label="Reblog" />
+          {feedTab !== 'threads' ? (
+            <StatButton icon={<IconReblog />} count={undefined} label="Reblog" />
+          ) : null}
           <StoryOverflowMenu
             authorName={story.authorName}
             editHref={editHref}

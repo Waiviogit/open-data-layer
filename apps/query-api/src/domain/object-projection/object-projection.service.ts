@@ -5,6 +5,7 @@ import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { AggregatedObjectRepository, ObjectAuthorityRepository } from '../../repositories';
 import { GovernanceResolverService } from '../governance';
 import { expandObjectRefs } from './object-ref-expansion';
+import { normalizeProjectedObjectForJson } from './normalize-projected-object-for-json';
 import { collectObjectRefIdsFromView, projectObjectCore } from './project-object';
 import { ObjectSeoService } from './object-seo.service';
 import type { ProjectedObject } from './projected-object.types';
@@ -83,13 +84,13 @@ export class ObjectProjectionService {
     };
 
     if (options.includeSeo === true) {
-      return {
+      return normalizeProjectedObjectForJson({
         ...projected,
         seo: this.seoService.build(projected, view.canonical ?? null),
-      };
+      });
     }
 
-    return projected;
+    return normalizeProjectedObjectForJson(projected);
   }
 
   /**
@@ -151,7 +152,7 @@ export class ObjectProjectionService {
         };
       }
 
-      results.push(projected);
+      results.push(normalizeProjectedObjectForJson(projected));
     }
 
     return results;

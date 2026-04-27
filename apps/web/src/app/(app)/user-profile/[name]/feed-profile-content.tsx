@@ -1,4 +1,9 @@
-import { FeedList, getUserBlogFeedPageQuery, type FeedTab } from '@/modules/feed';
+import {
+  FeedList,
+  getUserBlogFeedPageQuery,
+  getUserThreadsFeedPageQuery,
+  type FeedTab,
+} from '@/modules/feed';
 import { FeedColumn } from '@/shared/presentation/layout';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 
@@ -17,6 +22,22 @@ export async function FeedProfileContent({ accountName, feedTab }: FeedProfileCo
 
   if (feedTab === 'posts') {
     const page = await getUserBlogFeedPageQuery(accountName, {}, currentUsername);
+    return (
+      <BlogFeedPostsList
+        accountName={accountName}
+        initialPage={page}
+        feedTab={feedTab}
+        currentUsername={currentUsername}
+      />
+    );
+  }
+
+  if (feedTab === 'threads') {
+    const page = await getUserThreadsFeedPageQuery(
+      accountName,
+      { sort: 'latest' },
+      currentUsername,
+    );
     return (
       <BlogFeedPostsList
         accountName={accountName}

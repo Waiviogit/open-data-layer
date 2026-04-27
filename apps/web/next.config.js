@@ -9,23 +9,8 @@ const { composePlugins, withNx } = require('@nx/next');
  **/
 const nextConfig = {
   /**
-   * Public `/@account/...` URLs → internal `/user-profile/account/...` (URL bar stays `/@…`).
-   * Implemented here instead of middleware to avoid Turbopack / Next 16 edge cases with reexports.
+   * `/@account/…` → `/user-profile/account/…` is handled in `src/proxy.ts` (Next.js 16 proxy).
    */
-  async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: '/@:account/:path*',
-          destination: '/user-profile/:account/:path*',
-        },
-        {
-          source: '/@:account',
-          destination: '/user-profile/:account',
-        },
-      ],
-    };
-  },
   // Request Client Hints so SSR can resolve `system` theme via `Sec-CH-Prefers-Color-Scheme`
   // (see get-server-theme-resolution.ts). Without this, the server often defaults to light.
   async headers() {

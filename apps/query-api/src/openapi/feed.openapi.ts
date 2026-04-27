@@ -71,6 +71,15 @@ const userBlogFeedBodySchema = registry.register(
   }),
 );
 
+const userThreadsFeedBodySchema = registry.register(
+  'UserThreadsFeedBody',
+  z.object({
+    limit: z.number().int().min(1).max(50).optional(),
+    cursor: z.string().optional(),
+    sort: z.enum(['latest', 'oldest']).optional(),
+  }),
+);
+
 const accountNameParam = z
   .string()
   .min(3)
@@ -116,6 +125,53 @@ registry.registerPath({
   responses: {
     200: {
       description: 'Feed page with items and optional next cursor.',
+      content: {
+        'application/json': {
+          schema: userBlogFeedResponseSchema,
+        },
+      },
+    },
+    404: {
+      description: 'No `accounts_current` row for `name`.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/query/v1/users/{name}/threads',
+  summary: 'User profile threads feed (Leo/Ecency)',
+  description:
+    'Paginated feed of thread rows for a profile: threads that mention the profile or authored by them (excluding bulk_message). Respects viewer mutes (X-Viewer). Cursor matches blog feed encoding.',
+  request: {
+    params: z.object({ name: accountNameParam }),
+    headers: z.object({
+      'accept-language': z.string().optional(),
+      'x-locale': z.string().optional(),
+      'x-governance-object-id': z.string().optional(),
+      'x-viewer': z.string().optional().openapi({
+        description:
+          'Optional Hive account of the viewer; mutes apply; vote preview uses thread_active_votes.',
+        example: 'alice',
+      }),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: userThreadsFeedBodySchema,
+        },
+      },
+      required: false,
+    },
+  },
+  responses: {
+    200: {
+      description: 'Feed page; items use empty objects and payout fields for thread cards.',
       content: {
         'application/json': {
           schema: userBlogFeedResponseSchema,

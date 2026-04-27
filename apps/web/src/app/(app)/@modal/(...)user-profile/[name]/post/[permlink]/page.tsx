@@ -6,11 +6,11 @@ import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/co
 import { FeedColumn } from '@/shared/presentation/layout';
 
 /**
- * Intercepts soft navigation from any page to `/user-profile/[name]/[permlink]`.
- * Using `(...)` (from the app root) so the marker segment is `(...)user-profile` — a static
- * string — rather than `(.)` applied to a dynamic `[permlink]`, which causes Next to split
- * the actual permlink value on every `(.)` occurrence.
- * Hard navigation renders `(article)/[permlink]/page.tsx` full-page.
+ * Intercepts soft navigation to `/user-profile/[name]/post/[permlink]`.
+ * Posts live under a static `post` segment so profile tabs (`threads`, etc.) are not mistaken
+ * for permalinks by this parallel route (which would load getSinglePostQuery and 404).
+ *
+ * Public URLs stay `/@account/permlink`; {@link proxy} rewrites them to `.../post/permlink`.
  */
 export default async function PostModalInterceptPage({
   params,

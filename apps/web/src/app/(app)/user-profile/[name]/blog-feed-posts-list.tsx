@@ -9,6 +9,7 @@ import { FeedColumn } from '@/shared/presentation/layout';
 import { shouldUsePostGrid, useShellMode } from '@/shell-mode';
 
 import { loadMoreUserBlogFeedAction } from './blog-feed.actions';
+import { loadMoreUserThreadsFeedAction } from './threads-feed.actions';
 
 type BlogFeedPostsListProps = {
   accountName: string;
@@ -63,7 +64,10 @@ export function BlogFeedPostsList({
                 return;
               }
               startTransition(async () => {
-                const next = await loadMoreUserBlogFeedAction(accountName, cursor);
+                const next =
+                  feedTab === 'threads'
+                    ? await loadMoreUserThreadsFeedAction(accountName, cursor)
+                    : await loadMoreUserBlogFeedAction(accountName, cursor);
                 setItems((prev) => [...prev, ...next.items]);
                 setCursor(next.cursor);
                 setHasMore(next.hasMore);
