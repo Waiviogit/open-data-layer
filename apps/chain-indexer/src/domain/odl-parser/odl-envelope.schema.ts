@@ -38,7 +38,7 @@ export const rankVotePayloadSchema = z.object({
   update_id: z.string().min(1).max(256),
   object_id: z.string().min(1).max(256).optional(),
   voter: z.string().min(1).max(32),
-  rank: z.number().int().min(1).max(10000),
+  rank: z.number().int().min(0).max(10000),
   rank_context: z.string().max(64).default('default'),
   transaction_id: z.string().min(1).max(256),
 });

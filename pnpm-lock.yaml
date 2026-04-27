@@ -86,9 +86,6 @@ importers:
       marked:
         specifier: ^18.0.0
         version: 18.0.0
-      multiformats:
-        specifier: ^13.4.2
-        version: 13.4.2
       next:
         specifier: ~16.0.1
         version: 16.0.11(@babel/core@7.29.0)(@playwright/test@1.59.0)(babel-plugin-macros@3.1.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.97.3)
@@ -477,6 +474,9 @@ importers:
       '@nestjs/schedule':
         specifier: ^6.1.1
         version: 6.1.1(@nestjs/common@11.1.15(class-transformer@0.5.1)(reflect-metadata@0.1.14)(rxjs@7.8.1))(@nestjs/core@11.1.15)
+      cron:
+        specifier: ^4.4.0
+        version: 4.4.0
       ioredis:
         specifier: ^5.10.0
         version: 5.10.0
@@ -6883,9 +6883,6 @@ packages:
   multicast-dns@7.2.5:
     resolution: {integrity: sha512-2eznPJP8z2BFLX50tf0LuODrpINqP1RVIm/CObbTcBRITQgmC/TjcREF1NeTBzIcR5XO/ukWo+YHOjBbFwIupg==}
     hasBin: true
-
-  multiformats@13.4.2:
-    resolution: {integrity: sha512-eh6eHCrRi1+POZ3dA+Dq1C6jhP1GNtr9CRINMb67OKzqW9I5DUuZM/3jLPlzhgpGeiNUlEGEbkCYChXMCc/8DQ==}
 
   mz@2.7.0:
     resolution: {integrity: sha512-z81GNO7nnYMEhrGh9LeymoE4+Yr0Wn5McHIZMK5cfQCl+NDX08sCZgUc9/6MHni9IWuFLm1Z3HTCXu2z9fN62Q==}
@@ -16958,8 +16955,6 @@ snapshots:
     dependencies:
       dns-packet: 5.6.1
       thunky: 1.1.0
-
-  multiformats@13.4.2: {}
 
   mz@2.7.0:
     dependencies:

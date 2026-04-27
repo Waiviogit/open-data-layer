@@ -60,7 +60,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     WHERE canonical_creator IS NOT NULL
   `.execute(db);
 
-  -- Variant B: clear legacy display names (non-https) from canonical
+  // Variant B: clear legacy display names (non-https) from canonical
   await sql`
     UPDATE objects_core
     SET canonical = NULL

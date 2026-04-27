@@ -93,7 +93,7 @@ CREATE TABLE rank_votes (
   update_id      TEXT NOT NULL REFERENCES object_updates (update_id) ON DELETE CASCADE,
   object_id      TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
   voter          TEXT NOT NULL,
-  rank           INT NOT NULL CHECK (rank >= 1 AND rank <= 10000),
+  rank           INT NOT NULL CHECK (rank >= 0 AND rank <= 10000),
   rank_context   TEXT NOT NULL,
   event_seq      BIGINT NOT NULL,
   transaction_id TEXT NOT NULL,

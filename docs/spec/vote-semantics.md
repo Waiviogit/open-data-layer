@@ -59,7 +59,7 @@ Validity is derived at query time with tiered hierarchy:
 - Required fields:
   - `update_id`
   - `voter`
-  - `rank` (`1..10000`)
+  - `rank` (`0..10000`)
 - Optional:
   - `rank_context` (default `default`)
 
@@ -81,7 +81,7 @@ Ranking uses the same hierarchy:
 
 ### Ranking output
 
-- Decisive rank vote yields `rank_score` (`1..10000`) per update/context.
+- Decisive rank vote yields `rank_score` (`0..10000`) per update/context.
 - `rank_score` is used with other ranking signals.
 - Validity remains controlled by validity channel.
 

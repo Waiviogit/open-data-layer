@@ -24,7 +24,7 @@ export interface ResolvedUpdate {
    */
   field_weight: number | null;
   /**
-   * Decisive rank score (1..10000). Null for single-cardinality update types.
+   * Decisive rank score (0..10000). Null for single-cardinality update types.
    */
   rank_score: number | null;
   /**

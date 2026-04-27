@@ -23,7 +23,7 @@ Related files:
 | **objects_core**     | Slim identity and metadata per object. `canonical` is an optional normalized name for search/sort. `seq` incremented on every mutation.                                                                            |
 | **object_updates**   | One row per active update. FK to objects_core ON DELETE CASCADE. Holds value (text/geo/json), plus `search_vector` (tsvector) and PostGIS `value_geo`. |
 | **validity_votes**   | One row per validity vote. FK to object_updates ON DELETE CASCADE — replacing an update deletes its votes automatically.                               |
-| **rank_votes**       | One row per rank vote. Same CASCADE. rank 1..10000 enforced by CHECK.                                                                                  |
+| **rank_votes**       | One row per rank vote. Same CASCADE. rank 0..10000 enforced by CHECK.                                                                                  |
 | **object_authority** | One row per `(object_id, account, authority_type)` authority claim. Written by `object_authority` Hive events (`method: 'add' | 'remove'`). Does not affect `seq`. See [authority-entity.md](../authority-entity.md). |
 | **accounts_current** | One row per Hive account. Hive-sourced fields synced from Hive node API; `object_reputation` maintained by Indexer from administrative authority events. Used at query time to compute community vote weight. See [social-account-ingestion.md](../social-account-ingestion.md). |
 

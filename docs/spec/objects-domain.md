@@ -117,7 +117,7 @@ interface ResolvedUpdate {
   value_json: JsonValue | null;
   validity_status: 'VALID' | 'REJECTED';
   field_weight: number | null;   // community vote weight; null if admin/trusted decided
-  rank_score: number | null;     // 1..10000; null for single-cardinality fields
+  rank_score: number | null;     // 0..10000; null for single-cardinality fields
   rank_context: string | null;
 }
 ```

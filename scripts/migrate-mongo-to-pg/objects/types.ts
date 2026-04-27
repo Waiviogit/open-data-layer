@@ -18,6 +18,12 @@ export interface MongoActiveVote {
   weightWAIV?: number;
 }
 
+/** Legacy Waivio rank vote (field `rating` / aggregate rating); Mongo scale 0–10. */
+export interface MongoRatingVote {
+  voter?: string;
+  rank?: number;
+}
+
 export interface MongoWObjectField {
   name?: string;
   body?: string;
@@ -31,6 +37,8 @@ export interface MongoWObjectField {
   id?: string;
   active_votes?: MongoActiveVote[];
   _id?: MongoId;
+  /** Rank votes for `name: "rating"` only; 0–10 in Mongo, migrated to `rank_votes` (0–10000). */
+  rating_votes?: MongoRatingVote[];
   /** Legacy promotion/sale window (often ms since epoch). */
   startDate?: number;
   endDate?: number;

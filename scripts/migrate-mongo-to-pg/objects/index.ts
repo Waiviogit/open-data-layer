@@ -17,6 +17,7 @@ import type {
   NewObjectAuthority,
   NewObjectsCore,
   NewObjectUpdate,
+  NewRankVote,
   NewValidityVote,
   OdlDatabase,
 } from '../../../libs/core/src/db';
@@ -31,7 +32,7 @@ import {
   SKIP_LEGACY_FIELD_NAMES,
   resolveUpdateType,
 } from './field-name-map';
-import type { MongoWObject, MongoWObjectField } from './types';
+import type { MongoRatingVote, MongoWObject, MongoWObjectField } from './types';
 import { createdAtUnixFromObjectId, mongoIdToString } from './utils';
 import {
   migrateObjectRefBodyToText,
@@ -42,6 +43,8 @@ import {
 
 const BATCH_SIZE = 5000;
 const LEGACY_EVENT_SEQ = BigInt(0);
+/** ODL default rank context (see rankVotePayloadSchema). */
+const LEGACY_RANK_CONTEXT = 'default';
 
 const AUTHORITY_TYPES = new Set<string>(['ownership', 'administrative']);
 
@@ -70,6 +73,9 @@ interface MigrationStats {
   coreRowsBuffered: number;
   votesSkippedZeroPercent: number;
   votesSkippedNoVoter: number;
+  rankRowsBuffered: number;
+  rankVotesSkippedOutOfRange: number;
+  rankVotesSkippedNoVoter: number;
 }
 
 function fail(message: string): never {
@@ -140,6 +146,33 @@ function buildVoteLegacyTransactionId(
   return `legacy_${fieldAuthor}_${permlink}_${voter}`;
 }
 
+function buildRankVoteLegacyTransactionId(
+  fieldAuthor: string,
+  permlink: string,
+  voter: string,
+): string {
+  return `legacy_rank_${fieldAuthor}_${permlink}_${voter}`;
+}
+
+/** Typed as `rating_votes?[]` in MongoWObjectField; `unknown` accepts a lone object in bad exports. */
+function normalizeRatingVotes(raw: unknown): MongoRatingVote[] {
+  if (raw == null) {
+    return [];
+  }
+  return Array.isArray(raw) ? (raw as MongoRatingVote[]) : [raw as MongoRatingVote];
+}
+
+/** Mongo 0..10 → ODL 0, 1000, .. 10000. Non-integers and out of range return null. */
+function mongoRankToOdlRank(mongoRank: number): number | null {
+  if (!Number.isFinite(mongoRank) || !Number.isInteger(mongoRank)) {
+    return null;
+  }
+  if (mongoRank < 0 || mongoRank > 10) {
+    return null;
+  }
+  return mongoRank * 1000;
+}
+
 class MongoToPgMigrator {
   readonly db: Kysely<OdlDatabase>;
 
@@ -150,6 +183,8 @@ class MongoToPgMigrator {
   private authorityBuffer: NewObjectAuthority[] = [];
 
   private voteBuffer: NewValidityVote[] = [];
+
+  private rankBuffer: NewRankVote[] = [];
 
   readonly stats: MigrationStats = {
     objectsSeen: 0,
@@ -167,6 +202,9 @@ class MongoToPgMigrator {
     coreRowsBuffered: 0,
     votesSkippedZeroPercent: 0,
     votesSkippedNoVoter: 0,
+    rankRowsBuffered: 0,
+    rankVotesSkippedOutOfRange: 0,
+    rankVotesSkippedNoVoter: 0,
   };
 
   constructor(connectionString: string) {
@@ -245,10 +283,26 @@ class MongoToPgMigrator {
       .execute();
   }
 
-  /** FK-safe order: core → updates & authority → votes. */
+  private async flushRankVotes(): Promise<void> {
+    if (this.rankBuffer.length === 0) {
+      return;
+    }
+    const chunk = this.rankBuffer;
+    this.rankBuffer = [];
+    await this.db
+      .insertInto('rank_votes')
+      .values(chunk)
+      .onConflict((oc) =>
+        oc.columns(['update_id', 'voter', 'rank_context']).doNothing(),
+      )
+      .execute();
+  }
+
+  /** FK-safe order: core → updates → rank_votes → authority → validity_votes. */
   async flushAll(): Promise<void> {
     await this.flushCore();
     await this.flushUpdates();
+    await this.flushRankVotes();
     await this.flushAuthority();
     await this.flushVotes();
   }
@@ -260,14 +314,23 @@ class MongoToPgMigrator {
     if (this.updateBuffer.length >= BATCH_SIZE) {
       await this.flushCore();
       await this.flushUpdates();
+      await this.flushRankVotes();
     }
     if (this.authorityBuffer.length >= BATCH_SIZE) {
       await this.flushCore();
+      await this.flushUpdates();
+      await this.flushRankVotes();
       await this.flushAuthority();
+    }
+    if (this.rankBuffer.length >= BATCH_SIZE) {
+      await this.flushCore();
+      await this.flushUpdates();
+      await this.flushRankVotes();
     }
     if (this.voteBuffer.length >= BATCH_SIZE) {
       await this.flushCore();
       await this.flushUpdates();
+      await this.flushRankVotes();
       await this.flushVotes();
     }
   }
@@ -290,6 +353,11 @@ class MongoToPgMigrator {
   private pushVote(row: NewValidityVote): void {
     this.voteBuffer.push(row);
     this.stats.voteRowsBuffered += 1;
+  }
+
+  private pushRankVote(row: NewRankVote): void {
+    this.rankBuffer.push(row);
+    this.stats.rankRowsBuffered += 1;
   }
 
   processWObject(doc: MongoWObject): void {
@@ -469,6 +537,15 @@ class MongoToPgMigrator {
       permlink,
       field.active_votes,
     );
+    if (updateType === 'aggregateRating') {
+      this.processRatingVotesForField(
+        objectId,
+        fieldId,
+        fieldAuthor,
+        permlink,
+        field,
+      );
+    }
   }
 
   private processAuthorityField(objectId: string, field: MongoWObjectField): void {
@@ -518,6 +595,49 @@ class MongoToPgMigrator {
         vote: voteValue,
         event_seq: LEGACY_EVENT_SEQ,
         transaction_id: buildVoteLegacyTransactionId(fieldAuthor, permlink, voter),
+      });
+    }
+  }
+
+  private processRatingVotesForField(
+    objectId: string,
+    updateId: string,
+    fieldAuthor: string,
+    permlink: string,
+    field: MongoWObjectField,
+  ): void {
+    const entries = normalizeRatingVotes(field.rating_votes);
+    if (entries.length === 0) {
+      return;
+    }
+    for (const rv of entries) {
+      const voter = rv.voter?.trim();
+      if (!voter) {
+        this.stats.rankVotesSkippedNoVoter += 1;
+        continue;
+      }
+      const mongoRank = rv.rank;
+      if (mongoRank === undefined || mongoRank === null) {
+        this.stats.rankVotesSkippedOutOfRange += 1;
+        continue;
+      }
+      const odlRank = mongoRankToOdlRank(mongoRank);
+      if (odlRank === null) {
+        this.stats.rankVotesSkippedOutOfRange += 1;
+        continue;
+      }
+      this.pushRankVote({
+        update_id: updateId,
+        object_id: objectId,
+        voter,
+        rank: odlRank,
+        rank_context: LEGACY_RANK_CONTEXT,
+        event_seq: LEGACY_EVENT_SEQ,
+        transaction_id: buildRankVoteLegacyTransactionId(
+          fieldAuthor,
+          permlink,
+          voter,
+        ),
       });
     }
   }

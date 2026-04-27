@@ -2,7 +2,7 @@
  * One row per rank vote. Table: rank_votes.
  *
  * Ranking applies to updates whose update_type has multi cardinality
- * (per the update registry). rank 1..10000 (CHECK in schema).
+ * (per the update registry). rank 0..10000 (CHECK in schema).
  * FK to object_updates ON DELETE CASCADE.
  */
 

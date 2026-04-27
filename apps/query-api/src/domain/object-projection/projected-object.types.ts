@@ -20,7 +20,7 @@ export interface ProjectedObjectSeo {
 
 /** `aggregateRating` field: community average plus the current viewer's vote (if any). */
 export interface ProjectedAggregateRating {
-  /** Rounded mean of `rank_score` across valid rating rows (1–10000 scale); null if none. */
+  /** Rounded mean of `rank_score` across valid rating rows (0–10000 scale); null if none. */
   averageRating: number | null;
   /** `value_text` for the row whose `creator` matches the viewer; null if anonymous or no vote. */
   userRating: string | null;
