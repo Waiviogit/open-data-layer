@@ -1,4 +1,4 @@
-import type { HiveOperationPayload } from './hive-operations';
+import type { HiveOperationPayload } from '@opden-data-layer/hive-broadcast';
 
 export type WalletProviderId = 'keychain' | 'hiveauth' | 'hivesigner';
 

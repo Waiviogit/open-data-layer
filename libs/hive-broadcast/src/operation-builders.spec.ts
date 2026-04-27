@@ -66,7 +66,7 @@ describe('wireCommentOptionsPayload', () => {
       max_accepted_payout: '0.000 HBD',
       extensions: [],
     });
-    expect(wireCommentOptionsPayload(op).percent_hbd).toBeUndefined();
+    expect(wireCommentOptionsPayload(op)['percent_hbd']).toBeUndefined();
   });
 });
 

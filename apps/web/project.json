@@ -4,6 +4,7 @@
   "sourceRoot": "apps/web",
   "projectType": "application",
   "tags": [],
+  "implicitDependencies": ["hive-broadcast"],
   "// targets": "to see all targets run: nx show project web --web",
   "targets": {
     "dev-webpack": {

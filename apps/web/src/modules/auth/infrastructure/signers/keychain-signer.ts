@@ -1,10 +1,13 @@
 'use client';
 
 import type { IHiveSigner } from '../../application/ports/hive-signer.port';
-import type { HiveOperation, HiveOperationPayload } from '../../domain/hive-operations';
+import {
+  wireCommentOptionsPayload,
+  type HiveOperation,
+  type HiveOperationPayload,
+} from '@opden-data-layer/hive-broadcast';
 import type { BroadcastTransactionResult } from '../../domain/types';
 import type { KeychainWireOperation, HiveKeychainWindow } from '../providers/keychain-provider';
-import { wireCommentOptionsPayload } from '../../domain/hive-operation-wire';
 
 function resolveSigningAccount(operations: readonly HiveOperation[]): string {
   if (operations.length === 0) {
@@ -43,6 +46,10 @@ function resolveSigningAccount(operations: readonly HiveOperation[]): string {
     throw new Error('Signing account could not be resolved');
   }
   return account;
+}
+
+function assertNeverForHiveOp(x: never): never {
+  throw new Error(`Unsupported Hive operation: ${JSON.stringify(x)}`);
 }
 
 function toWireOperation(op: HiveOperation): KeychainWireOperation {
@@ -92,6 +99,7 @@ function toWireOperation(op: HiveOperation): KeychainWireOperation {
         },
       ];
   }
+  return assertNeverForHiveOp(op);
 }
 
 function extractTransactionIdFromBroadcastResult(result: unknown): string | null {

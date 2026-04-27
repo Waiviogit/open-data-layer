@@ -13,7 +13,7 @@ export function wireCommentOptionsPayload(op: CommentOptionsOp): Record<string, 
     extensions: [...op.extensions],
   };
   if (op.percent_hbd !== undefined) {
-    payload.percent_hbd = op.percent_hbd;
+    payload['percent_hbd'] = op.percent_hbd;
   }
   return payload;
 }
