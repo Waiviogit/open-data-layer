@@ -48,6 +48,7 @@ describe('GetUserCommentsFeedEndpoint', () => {
       author: 'alice',
       permlink: 're-alice-1',
       title: '',
+      root_title: 'Discussion root title',
       body: '<p>c1</p>',
       json_metadata: '{}',
       category: 'blog',
@@ -90,6 +91,7 @@ describe('GetUserCommentsFeedEndpoint', () => {
     }
     expect(r.items).toHaveLength(1);
     expect(r.items[0].permlink).toBe('re-alice-1');
+    expect(r.items[0].title).toBe('Discussion root title');
     expect(r.hasMore).toBe(true);
     expect(r.cursor).not.toBeNull();
     expect(hiveClient.getDiscussionsByComments).toHaveBeenCalledWith({

@@ -19,6 +19,14 @@ function rebloggedByFromHive(content: HiveContentType): string | null {
   return typeof first === 'string' && first.trim() !== '' ? first.trim() : null;
 }
 
+function hiveCommentFeedTitle(content: HiveContentType): string {
+  const own = (content.title ?? '').trim();
+  if (own !== '') {
+    return own;
+  }
+  return (content.root_title ?? '').trim();
+}
+
 /** Maps `HiveContentType` (e.g. from `get_discussions_by_comments`) to a feed card row. */
 export function mapHiveContentToFeedStoryItemDto(
   content: HiveContentType,
@@ -40,7 +48,7 @@ export function mapHiveContentToFeedStoryItemDto(
     id: `${author}/${permlink}`,
     author,
     permlink,
-    title: content.title ?? '',
+    title: hiveCommentFeedTitle(content),
     excerpt,
     createdAt,
     feedAt: createdAt,

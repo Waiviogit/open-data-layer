@@ -194,7 +194,7 @@ registry.registerPath({
   path: '/query/v1/users/{name}/comments',
   summary: 'User profile comments feed (Hive)',
   description:
-    'Paginated feed of comments authored by the profile via `condenser_api.get_discussions_by_comments`. No DB merge. Leo Threads replies are excluded; the API may perform multiple Hive round-trips per page to fill `limit`. Body matches threads (`sort` is ignored).',
+    'Paginated feed of comments authored by the profile via `condenser_api.get_discussions_by_comments`. No DB merge. Leo Threads replies are excluded; the API may perform multiple Hive round-trips per page to fill `limit`. Body matches threads (`sort` is ignored). Item `title` falls back to Hive `root_title` when the comment `title` is empty.',
   request: {
     params: z.object({ name: accountNameParam }),
     headers: z.object({

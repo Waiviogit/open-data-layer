@@ -287,17 +287,34 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
             .join(' ')}
         >
           {story.title ? (
-            <h2
-              id={`story-title-${story.id}`}
-              className={[
-                'text-body-lg font-semibold',
-                story.permalinkPath ? 'feed-story-title-link' : 'text-heading',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-            >
-              {story.title}
-            </h2>
+            feedTab === 'comments' ? (
+              <h2
+                id={`story-title-${story.id}`}
+                className="flex min-w-0 items-center gap-2 leading-snug"
+              >
+                <span
+                  className="inline-flex shrink-0 items-center justify-center rounded-md bg-code-bg px-1.5 py-0.5 font-mono text-[0.65rem] font-bold uppercase leading-none tracking-wide text-code-fg"
+                  aria-hidden
+                >
+                  RE
+                </span>
+                <span className="min-w-0 flex-1 text-body font-medium text-fg-secondary">
+                  {story.title}
+                </span>
+              </h2>
+            ) : (
+              <h2
+                id={`story-title-${story.id}`}
+                className={[
+                  'text-body-lg font-semibold',
+                  story.permalinkPath ? 'feed-story-title-link' : 'text-heading',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              >
+                {story.title}
+              </h2>
+            )
           ) : (
             <h2 id={`story-title-${story.id}`} className="sr-only">
               Post by {displayAuthor}

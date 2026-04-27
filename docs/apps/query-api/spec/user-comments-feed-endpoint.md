@@ -27,7 +27,7 @@ Same Zod schema as threads (`limit`, `cursor`, optional `sort`). **`sort` is ign
 
 Same shape as [User blog feed](user-blog-feed-endpoint.md): `UserBlogFeedResponse` (`items`, `cursor`, `hasMore`).
 
-Items are mapped from Hive content: excerpts, thumbnails, payouts, `objects: []`, etc. Replies under Leo Threads (`parent_author` / `url`) are **excluded**, matching legacy behaviour. The service **keeps calling** `get_discussions_by_comments` with the last raw comment permlink until the requested page is filled or Hive returns no more rows (same pattern as Waivio `getComments.js`). Each Hive request uses at most **20** comments per batch (`condenser_api` rejects a higher `limit`). For thread-indexed views, use the profile **Threads** feed.
+Items are mapped from Hive content: excerpts, thumbnails, payouts, `objects: []`, etc. Card **`title`** uses `title` when non-empty; otherwise **`root_title`** (root discussion title from Hive), so comments show context like PeakD. Replies under Leo Threads (`parent_author` / `url`) are **excluded**, matching legacy behaviour. The service **keeps calling** `get_discussions_by_comments` with the last raw comment permlink until the requested page is filled or Hive returns no more rows (same pattern as Waivio `getComments.js`). Each Hive request uses at most **20** comments per batch (`condenser_api` rejects a higher `limit`). For thread-indexed views, use the profile **Threads** feed.
 
 ## Cursor
 
