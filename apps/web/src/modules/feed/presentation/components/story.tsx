@@ -168,6 +168,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
     permlink: story.permlink,
   });
   const editHref = `/editor?${editorSearch.toString()}`;
+  const authorProfileHref = `/@${encodeURIComponent(story.authorName)}`;
 
   return (
     <article
@@ -183,15 +184,26 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
       ) : null}
 
       <header className="flex gap-3">
-        <UserAvatar
-          username={story.authorName}
-          avatarUrl={story.authorAvatarUrl}
-          displayName={displayAuthor}
-          size={40}
-        />
+        <Link
+          href={authorProfileHref}
+          className="inline-flex shrink-0 self-start rounded-circle focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          aria-label={`View profile: @${story.authorName}`}
+        >
+          <UserAvatar
+            username={story.authorName}
+            avatarUrl={story.authorAvatarUrl}
+            displayName={displayAuthor}
+            size={40}
+          />
+        </Link>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <span className="font-weight-label text-body-sm text-fg">{displayAuthor}</span>
+            <Link
+              href={authorProfileHref}
+              className="font-weight-label text-body-sm text-fg hover:underline focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            >
+              {displayAuthor}
+            </Link>
             {repLabel != null ? (
               <span className="rounded bg-surface-control px-1.5 py-0.5 text-caption font-medium text-fg-secondary tabular-nums">
                 {repLabel}

@@ -6,7 +6,7 @@
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/query/v1/users/:name/mentions` | Paginated posts that **mention** the profile (`post_mentions.account` matches `:name`, case-insensitive). |
+| `POST` | `/query/v1/users/:name/mentions` | Paginated posts that **mention** the profile (`post_mentions.account` matches `:name`, case-insensitive). Posts **authored by** that same account are excluded (including self-mentions). |
 
 Path parameter `name` is the Hive account name (3–32 chars, `[a-zA-Z0-9.-]`).
 
@@ -33,8 +33,9 @@ Items include tagged **objects** and vote summaries like the blog feed. `reblogg
 ## Data source
 
 - Join `post_mentions` → `posts` on `(author, permlink)`.
+- Filter: `LOWER(posts.author) <> LOWER(:name)` so the profile owner’s own posts never appear.
 - Sort: `posts.created_unix` descending, then `author`, `permlink` descending (same tie-break as blog own-post branch).
-- Includes root posts and comments that mention the profile.
+- Includes root posts and comments by **other** authors that mention the profile.
 
 ## Cursor
 

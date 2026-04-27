@@ -40,6 +40,7 @@ export class PostsRepository {
 
   /**
    * Posts that @mention `profileAccount` (indexed in post_mentions), newest first.
+   * Excludes posts authored by `profileAccount` (no self-authored rows, including self-mentions).
    * Optional `mutedAuthors`: exclude posts whose author is muted by the viewer.
    */
   async findMentionsFeed(
@@ -53,7 +54,8 @@ export class PostsRepository {
       .innerJoin('posts as p', (join) =>
         join.onRef('m.author', '=', 'p.author').onRef('m.permlink', '=', 'p.permlink'),
       )
-      .where(sql<boolean>`LOWER(m.account) = LOWER(${profileAccount})`);
+      .where(sql<boolean>`LOWER(m.account) = LOWER(${profileAccount})`)
+      .where(sql<boolean>`LOWER(p.author) <> LOWER(${profileAccount})`);
 
     if (mutedAuthors.length > 0) {
       qb = qb.where('p.author', 'not in', mutedAuthors);

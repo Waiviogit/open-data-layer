@@ -147,7 +147,7 @@ registry.registerPath({
   path: '/query/v1/users/{name}/mentions',
   summary: 'User profile mentions feed',
   description:
-    'Paginated newest-first posts where `post_mentions.account` matches the profile (case-insensitive). Same response shape as blog feed; authors muted by `X-Viewer` are excluded.',
+    'Paginated newest-first posts where `post_mentions.account` matches the profile (case-insensitive). Posts authored by the profile account are excluded (no self-posts, including self-mentions). Same response shape as blog feed; authors muted by `X-Viewer` are excluded.',
   request: {
     params: z.object({ name: accountNameParam }),
     headers: z.object({
