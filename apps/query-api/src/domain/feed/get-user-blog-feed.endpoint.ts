@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import type { Post } from '@opden-data-layer/core';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
@@ -13,10 +12,8 @@ import { mapAccountToUserProfileView } from '../users/account-mapper';
 import type { UserProfileView } from '../users/user-profile.types';
 import { GovernanceResolverService } from '../governance';
 import { decodeFeedCursor, encodeFeedCursor } from './feed-cursor';
-import {
-  mapPostObjectsToTaggedRowsWithWeight,
-  sortAndLimitFeedObjectSummaries,
-} from './feed-object-summaries';
+import { buildFeedObjectChips } from './feed-object-summaries';
+import { ObjectProjectionService } from '../object-projection';
 import { FEED_OBJECT_UPDATE_TYPES, FEED_TAGGED_OBJECT_DISPLAY_LIMIT } from './feed.constants';
 import type { FeedStoryItemDto, UserBlogFeedResponse } from './feed-story-dtos';
 import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
@@ -25,12 +22,7 @@ import { extractVideoEmbedUrl, extractVideoThumbnailUrl } from './post-video-thu
 import { isNsfwPost } from './post-nsfw';
 import type { UserBlogFeedBody } from './schemas/user-blog-feed.schema';
 
-export type {
-  FeedObjectSummaryDto,
-  FeedStoryItemDto,
-  FeedVoteSummaryDto,
-  UserBlogFeedResponse,
-} from './feed-story-dtos';
+export type { FeedStoryItemDto, FeedVoteSummaryDto, UserBlogFeedResponse } from './feed-story-dtos';
 
 @Injectable()
 export class GetUserBlogFeedEndpoint {
@@ -40,7 +32,7 @@ export class GetUserBlogFeedEndpoint {
     private readonly aggregatedObjectRepo: AggregatedObjectRepository,
     private readonly objectViewService: ObjectViewService,
     private readonly governanceResolver: GovernanceResolverService,
-    private readonly config: ConfigService,
+    private readonly objectProjection: ObjectProjectionService,
   ) {}
 
   async execute(
@@ -103,7 +95,6 @@ export class GetUserBlogFeedEndpoint {
     }
 
     const objectIds = [...new Set(postObjects.map((o) => o.object_id))];
-    const ipfsGatewayBaseUrl = this.config.get<string>('ipfs.gatewayUrl') ?? 'https://ipfs.io';
     const governance = await this.governanceResolver.resolveMergedForObjectView(
       governanceObjectIdFromHeader,
     );
@@ -124,7 +115,8 @@ export class GetUserBlogFeedEndpoint {
       viewsByObjectId = new Map(views.map((v, i) => [objects[i].core.object_id, v]));
     }
 
-    const items: FeedStoryItemDto[] = pageRows.map((row) => {
+    const items: FeedStoryItemDto[] = [];
+    for (const row of pageRows) {
       const pk = `${row.author}\0${row.permlink}`;
       const post = postByKey.get(pk);
       if (!post) {
@@ -152,18 +144,20 @@ export class GetUserBlogFeedEndpoint {
       const objectsForPost = postObjects.filter(
         (o) => o.author === row.author && o.permlink === row.permlink,
       );
-      const withWeight = mapPostObjectsToTaggedRowsWithWeight(
+      const objects = await buildFeedObjectChips(
         objectsForPost,
         viewsByObjectId,
         weightByObjectId,
-        ipfsGatewayBaseUrl,
-      );
-      const objects = sortAndLimitFeedObjectSummaries(
-        withWeight,
+        this.objectProjection,
+        {
+          locale,
+          governanceObjectIdFromHeader,
+          viewerAccount,
+        },
         FEED_TAGGED_OBJECT_DISPLAY_LIMIT,
       );
 
-      return {
+      items.push({
         id: `${row.author}/${row.permlink}`,
         author: row.author,
         permlink: row.permlink,
@@ -191,8 +185,8 @@ export class GetUserBlogFeedEndpoint {
           previewVoters: votes.previewVoters,
           voted: votes.voted,
         },
-      };
-    });
+      });
+    }
 
     let nextCursor: string | null = null;
     if (hasMore && pageRows.length > 0) {

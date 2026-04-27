@@ -75,7 +75,7 @@ export function projectObjectCore(input: ProjectObjectInput): ProjectedObjectCor
     if (!def) {
       continue;
     }
-    const key = def.semantic_key ?? updateType;
+    const key = updateType;
     if (def.value_kind === 'object_ref') {
       fields[key] = projectObjectRefField(field, def, refSummariesById);
     } else {

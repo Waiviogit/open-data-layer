@@ -11,6 +11,7 @@ import {
   UserAvatar,
 } from '@/shared/presentation';
 
+import { objectFields } from '../../application/dto/object-fields';
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 import type { FeedTab } from '../../domain/feed-tab';
 
@@ -212,32 +213,36 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
             className="flex max-w-[10rem] shrink-0 flex-wrap content-start justify-end gap-1.5 sm:max-w-none"
             aria-label="Tagged objects"
           >
-            {taggedObjects.map((o) => (
-              <li key={o.objectId} className="list-none" title={o.name ?? o.objectId}>
-                <span className="flex size-9 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-control ring-1 ring-border/60">
-                  {o.avatarUrl ? (
-                    <Image
-                      src={o.avatarUrl}
-                      alt=""
-                      className="size-full object-cover"
-                      width={36}
-                      height={36}
-                      sizes="36px"
-                      unoptimized={shouldUnoptimizeRemoteImage(o.avatarUrl)}
-                    />
-                  ) : (
-                    <Image
-                      src={AVATAR_PLACEHOLDER_SRC}
-                      alt=""
-                      className="size-full object-cover"
-                      width={36}
-                      height={36}
-                      sizes="36px"
-                    />
-                  )}
-                </span>
-              </li>
-            ))}
+            {taggedObjects.map((o) => {
+              const chipImage = objectFields.image(o);
+              const chipName = objectFields.name(o);
+              return (
+                <li key={o.object_id} className="list-none" title={chipName ?? o.object_id}>
+                  <span className="flex size-9 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-control ring-1 ring-border/60">
+                    {chipImage ? (
+                      <Image
+                        src={chipImage}
+                        alt=""
+                        className="size-full object-cover"
+                        width={36}
+                        height={36}
+                        sizes="36px"
+                        unoptimized={shouldUnoptimizeRemoteImage(chipImage)}
+                      />
+                    ) : (
+                      <Image
+                        src={AVATAR_PLACEHOLDER_SRC}
+                        alt=""
+                        className="size-full object-cover"
+                        width={36}
+                        height={36}
+                        sizes="36px"
+                      />
+                    )}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         ) : null}
       </header>

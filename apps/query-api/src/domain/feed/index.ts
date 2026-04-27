@@ -2,7 +2,6 @@ export { FeedModule } from './feed.module';
 export { GetPostByKeyEndpoint } from './get-post-by-key.endpoint';
 export { GetUserBlogFeedEndpoint } from './get-user-blog-feed.endpoint';
 export type {
-  FeedObjectSummaryDto,
   FeedStoryItemDto,
   FeedVoteSummaryDto,
   SinglePostViewDto,

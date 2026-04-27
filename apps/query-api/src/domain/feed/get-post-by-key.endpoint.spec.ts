@@ -1,12 +1,11 @@
 import type { Post } from '@opden-data-layer/core';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
-import { ConfigService } from '@nestjs/config';
 import { AggregatedObjectRepository } from '../../repositories/aggregated-object.repository';
 import { AccountsCurrentRepository } from '../../repositories/accounts-current.repository';
-import { ObjectAuthorityRepository } from '../../repositories/object-authority.repository';
 import { PostsRepository } from '../../repositories/posts.repository';
 import { GovernanceResolverService } from '../governance';
+import type { ObjectProjectionService } from '../object-projection/object-projection.service';
 import { GetPostByKeyEndpoint } from './get-post-by-key.endpoint';
 
 function postRow(overrides: Partial<Post> = {}): Post {
@@ -77,10 +76,7 @@ describe('GetPostByKeyEndpoint', () => {
   let governanceResolver: jest.Mocked<
     Pick<GovernanceResolverService, 'resolveMergedForObjectView'>
   >;
-  let objectAuthorityRepo: jest.Mocked<
-    Pick<ObjectAuthorityRepository, 'findAdministrativeObjectIdsForAccount'>
-  >;
-  let config: jest.Mocked<Pick<ConfigService, 'get'>>;
+  let objectProjection: jest.Mocked<Pick<ObjectProjectionService, 'batchProject'>>;
   let endpoint: GetPostByKeyEndpoint;
 
   beforeEach(() => {
@@ -101,22 +97,26 @@ describe('GetPostByKeyEndpoint', () => {
     governanceResolver = {
       resolveMergedForObjectView: jest.fn().mockResolvedValue({}),
     };
-    objectAuthorityRepo = {
-      findAdministrativeObjectIdsForAccount: jest.fn().mockResolvedValue([]),
-    };
-    config = {
-      get: jest.fn().mockImplementation((key: string) =>
-        key === 'ipfs.gatewayUrl' ? 'https://ipfs.io' : undefined,
+    objectProjection = {
+      batchProject: jest.fn().mockImplementation(async (views, options) =>
+        views.map((v) => ({
+          object_id: v.object_id,
+          object_type: v.object_type,
+          semantic_type: null,
+          fields: {},
+          hasAdministrativeAuthority:
+            options.viewerAccount === 'bob' && v.object_id === 'obj-x',
+          hasOwnershipAuthority: false,
+        })),
       ),
     };
     endpoint = new GetPostByKeyEndpoint(
       postsRepo as unknown as PostsRepository,
       accounts as unknown as AccountsCurrentRepository,
       aggregatedObjectRepo as unknown as AggregatedObjectRepository,
-      objectAuthorityRepo as unknown as ObjectAuthorityRepository,
       objectViewService as unknown as ObjectViewService,
       governanceResolver as unknown as GovernanceResolverService,
-      config as unknown as ConfigService,
+      objectProjection as unknown as ObjectProjectionService,
     );
   });
 
@@ -153,7 +153,7 @@ describe('GetPostByKeyEndpoint', () => {
     expect(aggregatedObjectRepo.loadByObjectIds).not.toHaveBeenCalled();
   });
 
-  it('does not query administrative authority when viewer is omitted but post has tagged objects', async () => {
+  it('calls batchProject without viewer when viewer is omitted but post has tagged objects', async () => {
     const p = postRow();
     const postObject = {
       author: 'alice',
@@ -178,6 +178,7 @@ describe('GetPostByKeyEndpoint', () => {
             weight: 1,
             meta_group_id: null,
             canonical: null,
+            canonical_creator: null,
             transaction_id: 't',
             seq: 0,
           },
@@ -189,14 +190,23 @@ describe('GetPostByKeyEndpoint', () => {
       ],
       voterReputations: new Map(),
     });
-    objectViewService.resolve.mockReturnValue([{ fields: {} } as ResolvedObjectView]);
+    objectViewService.resolve.mockReturnValue([
+      {
+        object_id: 'obj-x',
+        object_type: 'recipe',
+        fields: {},
+      } as ResolvedObjectView,
+    ]);
 
     await endpoint.execute('alice', 'my-post', 'en-US', undefined, undefined);
 
-    expect(objectAuthorityRepo.findAdministrativeObjectIdsForAccount).not.toHaveBeenCalled();
+    expect(objectProjection.batchProject).toHaveBeenCalledWith(
+      expect.any(Array),
+      expect.objectContaining({ viewerAccount: undefined }),
+    );
   });
 
-  it('sets hasAdministrativeAuthority when viewer is provided and authority repo returns the object id', async () => {
+  it('sets hasAdministrativeAuthority from projection when viewer is bob', async () => {
     const p = postRow();
     const postObject = {
       author: 'alice',
@@ -221,6 +231,7 @@ describe('GetPostByKeyEndpoint', () => {
             weight: 1,
             meta_group_id: null,
             canonical: null,
+            canonical_creator: null,
             transaction_id: 't',
             seq: 0,
           },
@@ -232,14 +243,20 @@ describe('GetPostByKeyEndpoint', () => {
       ],
       voterReputations: new Map(),
     });
-    objectViewService.resolve.mockReturnValue([{ fields: {} } as ResolvedObjectView]);
-    objectAuthorityRepo.findAdministrativeObjectIdsForAccount.mockResolvedValue(['obj-x']);
+    objectViewService.resolve.mockReturnValue([
+      {
+        object_id: 'obj-x',
+        object_type: 'recipe',
+        fields: {},
+      } as ResolvedObjectView,
+    ]);
 
     const r = await endpoint.execute('alice', 'my-post', 'en-US', undefined, 'bob');
 
-    expect(objectAuthorityRepo.findAdministrativeObjectIdsForAccount).toHaveBeenCalledWith('bob', [
-      'obj-x',
-    ]);
+    expect(objectProjection.batchProject).toHaveBeenCalledWith(
+      expect.any(Array),
+      expect.objectContaining({ viewerAccount: 'bob' }),
+    );
     expect(r?.objects).toHaveLength(1);
     expect(r?.objects[0].hasAdministrativeAuthority).toBe(true);
   });

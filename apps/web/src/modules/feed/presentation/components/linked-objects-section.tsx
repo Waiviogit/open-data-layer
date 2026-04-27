@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 
+import { objectFields } from '../../application/dto/object-fields';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AVATAR_PLACEHOLDER_SRC, shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 
@@ -25,17 +26,6 @@ function formatLinkedObjectTypeLabel(type: string | null): string {
     .join(' ');
 }
 
-function parseRating01To5(raw: string | null): number | null {
-  if (raw == null || raw.trim() === '') {
-    return null;
-  }
-  const n = Number.parseFloat(raw.replace(',', '.'));
-  if (Number.isNaN(n)) {
-    return null;
-  }
-  return Math.min(5, Math.max(0, n));
-}
-
 function IconStar({ filled }: { filled: boolean }) {
   return (
     <svg
@@ -54,17 +44,17 @@ function IconStar({ filled }: { filled: boolean }) {
   );
 }
 
-function RatingRow({ ratingText }: { ratingText: string | null }) {
+function RatingRow({ rating01To5 }: { rating01To5: number | null }) {
   const { t } = useI18n();
-  const value = parseRating01To5(ratingText);
-  if (value == null) {
+  if (rating01To5 == null) {
     return null;
   }
-  const fullStars = Math.round(value);
+  const fullStars = Math.round(rating01To5);
+  const label = rating01To5.toFixed(1);
   return (
     <div className="mt-2 flex flex-wrap items-center gap-2">
       <span className="text-caption font-medium text-fg-secondary">{t('feed_linked_object_rating')}</span>
-      <span className="inline-flex items-center gap-0.5" role="img" aria-label={`${t('feed_linked_object_rating')}: ${ratingText}`}>
+      <span className="inline-flex items-center gap-0.5" role="img" aria-label={`${t('feed_linked_object_rating')}: ${label}`}>
         {Array.from({ length: 5 }, (_, i) => (
           <IconStar key={i} filled={i < fullStars} />
         ))}
@@ -107,9 +97,13 @@ function SummaryChevron() {
 
 function LinkedObjectCard({ object: o }: { object: LinkedObject }) {
   const { t } = useI18n();
-  const typeLabel = formatLinkedObjectTypeLabel(o.objectType);
-  const subtitleParts = [typeLabel, ...(o.categoryItems ?? []).filter(Boolean)].filter(Boolean);
+  const typeLabel = formatLinkedObjectTypeLabel(o.object_type);
+  const categoryLabels = objectFields.tagCategoryLabels(o);
+  const subtitleParts = [typeLabel, ...categoryLabels.filter(Boolean)].filter(Boolean);
   const subtitle = subtitleParts.join(' · ');
+  const avatarUrl = objectFields.image(o);
+  const name = objectFields.name(o);
+  const description = objectFields.description(o);
 
   return (
     <li className="relative list-none rounded-card border border-border bg-surface-control/40 p-card-padding shadow-whisper">
@@ -131,15 +125,15 @@ function LinkedObjectCard({ object: o }: { object: LinkedObject }) {
       <div className="flex gap-3 pe-8">
         <div className="shrink-0">
           <span className="flex size-14 items-center justify-center overflow-hidden rounded-full border border-border bg-surface ring-1 ring-border/60">
-            {o.avatarUrl ? (
+            {avatarUrl ? (
               <Image
-                src={o.avatarUrl}
+                src={avatarUrl}
                 alt=""
                 className="size-full object-cover"
                 width={56}
                 height={56}
                 sizes="56px"
-                unoptimized={shouldUnoptimizeRemoteImage(o.avatarUrl)}
+                unoptimized={shouldUnoptimizeRemoteImage(avatarUrl)}
               />
             ) : (
               <Image
@@ -154,13 +148,13 @@ function LinkedObjectCard({ object: o }: { object: LinkedObject }) {
           </span>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-weight-label text-body text-heading">{o.name ?? o.objectId}</p>
+          <p className="font-weight-label text-body text-heading">{name ?? o.object_id}</p>
           {subtitle ? (
             <p className="mt-0.5 text-caption text-fg-secondary">{subtitle}</p>
           ) : null}
-          <RatingRow ratingText={o.rating ?? null} />
-          {o.description ? (
-            <p className="mt-2 text-body-sm italic leading-body text-muted line-clamp-4">{o.description}</p>
+          <RatingRow rating01To5={objectFields.ratingStars01To5(o)} />
+          {description ? (
+            <p className="mt-2 text-body-sm italic leading-body text-muted line-clamp-4">{description}</p>
           ) : null}
         </div>
       </div>
@@ -174,8 +168,8 @@ export function LinkedObjectsSection({ objects }: { objects: NonNullable<FeedSto
     return null;
   }
 
-  const linkedObjects = objects.filter((o) => !isHashtagObject(o.objectType));
-  const hashtagObjects = objects.filter((o) => isHashtagObject(o.objectType));
+  const linkedObjects = objects.filter((o) => !isHashtagObject(o.object_type));
+  const hashtagObjects = objects.filter((o) => isHashtagObject(o.object_type));
 
   return (
     <section className="mt-8 flex flex-col gap-6 border-t border-border pt-6">
@@ -198,7 +192,7 @@ export function LinkedObjectsSection({ objects }: { objects: NonNullable<FeedSto
             aria-labelledby="post-linked-objects-heading"
           >
             {linkedObjects.map((o) => (
-              <LinkedObjectCard key={o.objectId} object={o} />
+              <LinkedObjectCard key={o.object_id} object={o} />
             ))}
           </ul>
         </details>
@@ -223,7 +217,7 @@ export function LinkedObjectsSection({ objects }: { objects: NonNullable<FeedSto
             aria-labelledby="post-linked-hashtags-heading"
           >
             {hashtagObjects.map((o) => (
-              <LinkedObjectCard key={o.objectId} object={o} />
+              <LinkedObjectCard key={o.object_id} object={o} />
             ))}
           </ul>
         </details>

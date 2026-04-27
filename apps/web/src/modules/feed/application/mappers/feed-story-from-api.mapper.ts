@@ -2,6 +2,16 @@ import { z } from 'zod';
 
 import type { FeedStoryView } from '../dto/feed-story.dto';
 
+const projectedObjectApiSchema = z.object({
+  object_id: z.string(),
+  object_type: z.string(),
+  semantic_type: z.string().nullable(),
+  fields: z.record(z.string(), z.unknown()),
+  hasAdministrativeAuthority: z.boolean().optional().default(false),
+  hasOwnershipAuthority: z.boolean().optional().default(false),
+  seo: z.record(z.string(), z.unknown()).optional(),
+});
+
 export const feedStoryItemApiSchema = z.object({
   id: z.string(),
   author: z.string(),
@@ -26,18 +36,7 @@ export const feedStoryItemApiSchema = z.object({
     avatarUrl: z.string().nullable(),
     reputation: z.number(),
   }),
-  objects: z.array(
-    z.object({
-      objectId: z.string(),
-      objectType: z.string().nullable(),
-      name: z.string().nullable(),
-      avatarUrl: z.string().nullable(),
-      description: z.string().nullable().optional(),
-      rating: z.string().nullable().optional(),
-      categoryItems: z.array(z.string()).optional(),
-      hasAdministrativeAuthority: z.boolean().optional(),
-    }),
-  ),
+  objects: z.array(projectedObjectApiSchema),
   votes: z.object({
     totalCount: z.number(),
     previewVoters: z.array(z.string()),
@@ -82,16 +81,7 @@ export function mapFeedStoryItemApiToView(item: FeedStoryItemApi): FeedStoryView
     pendingPayout: item.pendingPayout,
     totalPayout: item.totalPayout,
     netRshares: item.netRshares,
-    objects: item.objects.map((o) => ({
-      objectId: o.objectId,
-      objectType: o.objectType,
-      name: o.name,
-      avatarUrl: o.avatarUrl,
-      description: o.description ?? null,
-      rating: o.rating ?? null,
-      categoryItems: o.categoryItems ?? [],
-      hasAdministrativeAuthority: o.hasAdministrativeAuthority ?? false,
-    })),
+    objects: item.objects,
     votes: item.votes,
   };
 }

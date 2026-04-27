@@ -2,19 +2,15 @@ import { z } from 'zod';
 
 import { FEED_TABS } from '../../domain/feed-tab';
 
-const feedObjectChipSchema = z.object({
-  objectId: z.string(),
-  objectType: z.string().nullable(),
-  name: z.string().nullable(),
-  avatarUrl: z.string().nullable(),
-  /** Plain excerpt for linked-object cards (single-post); omitted in feed chip responses. */
-  description: z.string().nullable().optional(),
-  /** Primary rating text for display (single-post). */
-  rating: z.string().nullable().optional(),
-  /** Up to two category labels (single-post). */
-  categoryItems: z.array(z.string()).optional(),
-  /** When viewer has administrative authority on the object (single-post with `X-Viewer`). */
-  hasAdministrativeAuthority: z.boolean().optional(),
+/** Matches query-api `ProjectedObject` JSON shape. */
+const projectedObjectViewSchema = z.object({
+  object_id: z.string(),
+  object_type: z.string(),
+  semantic_type: z.string().nullable(),
+  fields: z.record(z.string(), z.unknown()),
+  hasAdministrativeAuthority: z.boolean().optional().default(false),
+  hasOwnershipAuthority: z.boolean().optional().default(false),
+  seo: z.record(z.string(), z.unknown()).optional(),
 });
 
 const feedVoteSummarySchema = z.object({
@@ -53,7 +49,7 @@ export const feedStoryViewSchema = z.object({
   pendingPayout: z.string().optional(),
   totalPayout: z.string().optional(),
   netRshares: z.string().optional(),
-  objects: z.array(feedObjectChipSchema).optional(),
+  objects: z.array(projectedObjectViewSchema).optional(),
   votes: feedVoteSummarySchema.optional(),
 });
 

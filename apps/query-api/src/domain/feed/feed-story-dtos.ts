@@ -1,17 +1,4 @@
-export interface FeedObjectSummaryDto {
-  objectId: string;
-  objectType: string | null;
-  name: string | null;
-  avatarUrl: string | null;
-  /** Plain text excerpt for linked-object cards (full post); null when absent. */
-  description: string | null;
-  /** Primary rating text after ranking (full post); null when absent. */
-  rating: string | null;
-  /** Up to two category_item labels (value), most recent by event_seq (full post). */
-  categoryItems: string[];
-  /** True when `X-Viewer` matches an administrative authority row for this object. */
-  hasAdministrativeAuthority: boolean;
-}
+import type { ProjectedObject } from '../object-projection';
 
 export interface FeedVoteSummaryDto {
   totalCount: number;
@@ -46,7 +33,7 @@ export interface FeedStoryItemDto {
     avatarUrl: string | null;
     reputation: number;
   };
-  objects: FeedObjectSummaryDto[];
+  objects: ProjectedObject[];
   votes: FeedVoteSummaryDto;
 }
 

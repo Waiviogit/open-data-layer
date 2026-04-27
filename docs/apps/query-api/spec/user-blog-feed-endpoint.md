@@ -66,10 +66,10 @@ Each item links a post to ODL objects via `post_objects`. The API returns **at m
 
 **Sort order (stable tie-break: `object_id` ascending):**
 
-1. **Avatar first** — rows where resolved governance view exposes a non-empty **avatar** update rank above rows without an avatar.
+1. **Image first** — rows where projected `fields.image` (resolved `image` update) is non-empty rank above rows without.
 2. **Then by `objects_core.weight` descending** — higher object weight first; `NULL` weight sorts last within the same avatar tier.
 
-Resolution uses the same object-view pipeline as elsewhere (`name` / `avatar` update types only for feed cards). Implementation: `sortAndLimitFeedObjectSummaries` in `get-user-blog-feed.endpoint.ts`.
+Resolution uses `ObjectProjectionService.batchProject` with feed-local update types (`name` / `image` only for list cards). Each `objects[]` element is a **`ProjectedObject`** (`object_id`, `object_type`, `semantic_type`, `fields`, authority flags). Sort/limit: `buildFeedObjectChips` + `sortProjectedObjectsForDisplay` in `feed-object-summaries.ts`.
 
 ## Cursor format
 

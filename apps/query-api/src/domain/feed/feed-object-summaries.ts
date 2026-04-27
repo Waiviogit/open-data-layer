@@ -1,155 +1,39 @@
-import type { JsonValue } from '@opden-data-layer/core';
-import { UPDATE_TYPES } from '@opden-data-layer/core';
 import type { PostObject } from '@opden-data-layer/core';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 
-import type { FeedObjectSummaryDto } from './feed-story-dtos';
-import { pickSingleImageDisplayUrlFromResolvedUpdate } from '../object-projection/image-display-url';
-import {
-  LINKED_OBJECT_CATEGORY_ITEMS_MAX,
-  LINKED_OBJECT_DESCRIPTION_MAX,
-} from './feed.constants';
+import type {
+  BatchProjectOptions,
+  ObjectProjectionService,
+} from '../object-projection/object-projection.service';
+import type { ProjectedObject } from '../object-projection/projected-object.types';
+import { LINKED_OBJECT_DESCRIPTION_MAX } from './feed.constants';
 import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
 
-export interface TaggedObjectRowWithWeight {
-  objectId: string;
-  objectType: string | null;
-  name: string | null;
-  avatarUrl: string | null;
-  weight: number | null;
+function placeholderProjectedObject(o: PostObject): ProjectedObject {
+  return {
+    object_id: o.object_id,
+    object_type: o.object_type ?? '',
+    semantic_type: null,
+    fields: {},
+    hasAdministrativeAuthority: false,
+    hasOwnershipAuthority: false,
+  };
 }
 
-/** Tagged row plus fields for full-post linked-object cards. */
-export interface LinkedObjectDetailRow extends TaggedObjectRowWithWeight {
-  description: string | null;
-  rating: string | null;
-  categoryItems: string[];
-}
-
-export function pickSingleText(view: ResolvedObjectView, updateType: string): string | null {
-  const field = view.fields[updateType];
-  if (!field || field.cardinality !== 'single') {
-    return null;
-  }
-  const v = field.values[0];
-  return v?.value_text ?? null;
-}
-
-/** `image` update: JSON `{ url }` or `{ cid }` (via `ipfsGatewayBaseUrl`), or legacy `value_text` URL. */
-export function pickSingleImageDisplayUrl(
-  view: ResolvedObjectView,
-  ipfsGatewayBaseUrl: string,
-): string | null {
-  const field = view.fields[UPDATE_TYPES.IMAGE];
-  if (!field || field.cardinality !== 'single' || field.values.length === 0) {
-    return null;
-  }
-  return pickSingleImageDisplayUrlFromResolvedUpdate(field.values[0], ipfsGatewayBaseUrl);
-}
-
-function parseCategoryItemLabel(valueJson: JsonValue | null): string | null {
-  if (valueJson == null || typeof valueJson !== 'object' || Array.isArray(valueJson)) {
-    return null;
-  }
-  const v = (valueJson as Record<string, unknown>).value;
-  return typeof v === 'string' && v.length > 0 ? v : null;
+function hasDisplayImage(p: ProjectedObject): boolean {
+  const img = p.fields['image'];
+  return typeof img === 'string' && img.length > 0;
 }
 
 /**
- * Up to `max` category_item `value` labels, most recent by `event_seq` first in selection,
- * then ordered ascending by `event_seq` for subtitle display (oldest В· newest).
+ * Tagged / linked objects: prefer avatar (`image` field) resolved, then higher `objects_core.weight`, then id.
  */
-export function pickLastCategoryItemLabels(view: ResolvedObjectView, max: number): string[] {
-  const field = view.fields[UPDATE_TYPES.TAG_CATEGORY_ITEM];
-  if (!field || field.cardinality !== 'multi' || field.values.length === 0) {
-    return [];
-  }
-  const withLabels = field.values
-    .map((u) => ({ u, label: parseCategoryItemLabel(u.value_json) }))
-    .filter((x): x is { u: (typeof field.values)[0]; label: string } => x.label != null);
-  if (withLabels.length === 0) {
-    return [];
-  }
-  const bySeqDesc = [...withLabels].sort((a, b) =>
-    a.u.event_seq > b.u.event_seq ? -1 : a.u.event_seq < b.u.event_seq ? 1 : 0,
-  );
-  const top = bySeqDesc.slice(0, max);
-  top.sort((a, b) => (a.u.event_seq < b.u.event_seq ? -1 : 1));
-  return top.map((x) => x.label);
-}
-
-/** First value after ranking (multi rating) вЂ” primary display string for stars. */
-export function pickPrimaryRating(view: ResolvedObjectView): string | null {
-  const field = view.fields[UPDATE_TYPES.AGGREGATE_RATING];
-  if (!field || field.values.length === 0) {
-    return null;
-  }
-  return field.values[0]?.value_text ?? null;
-}
-
-export function pickDescriptionExcerpt(view: ResolvedObjectView, maxLen: number): string | null {
-  const text = pickSingleText(view, UPDATE_TYPES.DESCRIPTION);
-  if (text == null || text === '') {
-    return null;
-  }
-  const plain = stripHtmlForExcerpt(text);
-  return truncateExcerpt(plain, maxLen);
-}
-
-/**
- * Maps `post_objects` rows to name/avatar using resolved views and core weight for ordering.
- */
-export function mapPostObjectsToTaggedRowsWithWeight(
-  objectsForPost: PostObject[],
-  viewsByObjectId: Map<string, ResolvedObjectView>,
-  weightByObjectId: Map<string, number | null>,
-  ipfsGatewayBaseUrl: string,
-): TaggedObjectRowWithWeight[] {
-  return objectsForPost.map((o) => {
-    const view = viewsByObjectId.get(o.object_id);
-    const avatarUrl = view ? pickSingleImageDisplayUrl(view, ipfsGatewayBaseUrl) : null;
-    return {
-      objectId: o.object_id,
-      objectType: o.object_type,
-      name: view ? pickSingleText(view, UPDATE_TYPES.NAME) : null,
-      avatarUrl,
-      weight: weightByObjectId.get(o.object_id) ?? null,
-    };
-  });
-}
-
-/**
- * Full linked-object fields for single-post resolution (wider update_types).
- */
-export function mapPostObjectsToLinkedDetailRows(
-  objectsForPost: PostObject[],
-  viewsByObjectId: Map<string, ResolvedObjectView>,
-  weightByObjectId: Map<string, number | null>,
-  ipfsGatewayBaseUrl: string,
-): LinkedObjectDetailRow[] {
-  return objectsForPost.map((o) => {
-    const view = viewsByObjectId.get(o.object_id);
-    const avatarUrl = view ? pickSingleImageDisplayUrl(view, ipfsGatewayBaseUrl) : null;
-    return {
-      objectId: o.object_id,
-      objectType: o.object_type,
-      name: view ? pickSingleText(view, UPDATE_TYPES.NAME) : null,
-      avatarUrl,
-      weight: weightByObjectId.get(o.object_id) ?? null,
-      description: view ? pickDescriptionExcerpt(view, LINKED_OBJECT_DESCRIPTION_MAX) : null,
-      rating: view ? pickPrimaryRating(view) : null,
-      categoryItems: view ? pickLastCategoryItemLabels(view, LINKED_OBJECT_CATEGORY_ITEMS_MAX) : [],
-    };
-  });
-}
-
-/**
- * Tagged objects for display: prefer avatar resolved, then higher `objects_core.weight`, then id.
- */
-export function sortFeedObjectSummaries(items: TaggedObjectRowWithWeight[]): FeedObjectSummaryDto[] {
+export function sortProjectedObjectsForDisplay(
+  items: Array<{ projected: ProjectedObject; weight: number | null }>,
+): ProjectedObject[] {
   const sorted = [...items].sort((a, b) => {
-    const ha = a.avatarUrl ? 1 : 0;
-    const hb = b.avatarUrl ? 1 : 0;
+    const ha = hasDisplayImage(a.projected) ? 1 : 0;
+    const hb = hasDisplayImage(b.projected) ? 1 : 0;
     if (ha !== hb) {
       return hb - ha;
     }
@@ -158,68 +42,81 @@ export function sortFeedObjectSummaries(items: TaggedObjectRowWithWeight[]): Fee
     if (wa !== wb) {
       return wb - wa;
     }
-    return a.objectId.localeCompare(b.objectId);
+    return a.projected.object_id.localeCompare(b.projected.object_id);
   });
-  return sorted.map(({ objectId, objectType, name, avatarUrl }) => ({
-    objectId,
-    objectType,
-    name,
-    avatarUrl,
-    description: null,
-    rating: null,
-    categoryItems: [],
-    hasAdministrativeAuthority: false,
+  return sorted.map((x) => x.projected);
+}
+
+function applyLinkedDescriptionExcerpt(projected: ProjectedObject): ProjectedObject {
+  const desc = projected.fields['description'];
+  if (typeof desc !== 'string' || desc === '') {
+    return projected;
+  }
+  const plain = stripHtmlForExcerpt(desc);
+  const excerpt = truncateExcerpt(plain, LINKED_OBJECT_DESCRIPTION_MAX);
+  return {
+    ...projected,
+    fields: {
+      ...projected.fields,
+      description: excerpt,
+    },
+  };
+}
+
+async function projectObjectsForPost(
+  objectsForPost: PostObject[],
+  viewsByObjectId: Map<string, ResolvedObjectView>,
+  weightByObjectId: Map<string, number | null>,
+  projection: ObjectProjectionService,
+  options: BatchProjectOptions,
+): Promise<Array<{ projected: ProjectedObject; weight: number | null }>> {
+  const uniqueIds = [...new Set(objectsForPost.map((o) => o.object_id))];
+  const viewsToProject = uniqueIds
+    .map((id) => viewsByObjectId.get(id))
+    .filter((v): v is ResolvedObjectView => v != null);
+
+  const projectedBatch =
+    viewsToProject.length > 0 ? await projection.batchProject(viewsToProject, options) : [];
+  const projectedById = new Map(projectedBatch.map((p) => [p.object_id, p]));
+
+  return objectsForPost.map((o) => ({
+    projected: projectedById.get(o.object_id) ?? placeholderProjectedObject(o),
+    weight: weightByObjectId.get(o.object_id) ?? null,
   }));
 }
 
-/**
- * Same ordering as feed chips; fills linked-object card fields and administrative heart flag.
- */
-export function sortLinkedObjectSummaries(
-  items: LinkedObjectDetailRow[],
-  administrativeObjectIds: Set<string>,
-): FeedObjectSummaryDto[] {
-  const sorted = [...items].sort((a, b) => {
-    const ha = a.avatarUrl ? 1 : 0;
-    const hb = b.avatarUrl ? 1 : 0;
-    if (ha !== hb) {
-      return hb - ha;
-    }
-    const wa = a.weight ?? Number.NEGATIVE_INFINITY;
-    const wb = b.weight ?? Number.NEGATIVE_INFINITY;
-    if (wa !== wb) {
-      return wb - wa;
-    }
-    return a.objectId.localeCompare(b.objectId);
-  });
-  return sorted.map(
-    ({
-      objectId,
-      objectType,
-      name,
-      avatarUrl,
-      description,
-      rating,
-      categoryItems,
-    }) => ({
-      objectId,
-      objectType,
-      name,
-      avatarUrl,
-      description,
-      rating,
-      categoryItems,
-      hasAdministrativeAuthority: administrativeObjectIds.has(objectId),
-    }),
+export async function buildFeedObjectChips(
+  objectsForPost: PostObject[],
+  viewsByObjectId: Map<string, ResolvedObjectView>,
+  weightByObjectId: Map<string, number | null>,
+  projection: ObjectProjectionService,
+  options: BatchProjectOptions,
+  limit: number,
+): Promise<ProjectedObject[]> {
+  const rows = await projectObjectsForPost(
+    objectsForPost,
+    viewsByObjectId,
+    weightByObjectId,
+    projection,
+    options,
   );
+  return sortProjectedObjectsForDisplay(rows).slice(0, limit);
 }
 
-/**
- * Feed cards: same order as {@link sortFeedObjectSummaries}, first `limit` chips only.
- */
-export function sortAndLimitFeedObjectSummaries(
-  items: TaggedObjectRowWithWeight[],
-  limit: number,
-): FeedObjectSummaryDto[] {
-  return sortFeedObjectSummaries(items).slice(0, limit);
+export async function buildLinkedObjectSummaries(
+  objectsForPost: PostObject[],
+  viewsByObjectId: Map<string, ResolvedObjectView>,
+  weightByObjectId: Map<string, number | null>,
+  projection: ObjectProjectionService,
+  options: BatchProjectOptions,
+): Promise<ProjectedObject[]> {
+  const rows = await projectObjectsForPost(
+    objectsForPost,
+    viewsByObjectId,
+    weightByObjectId,
+    projection,
+    options,
+  );
+  const sorted = sortProjectedObjectsForDisplay(rows);
+  return sorted.map(applyLinkedDescriptionExcerpt);
 }

@@ -1,24 +1,37 @@
-import { sortLinkedObjectSummaries, type LinkedObjectDetailRow } from './feed-object-summaries';
+import type { ProjectedObject } from '../object-projection/projected-object.types';
+import { sortProjectedObjectsForDisplay } from './feed-object-summaries';
 
-function row(overrides: Partial<LinkedObjectDetailRow> = {}): LinkedObjectDetailRow {
+function projected(overrides: Partial<ProjectedObject> = {}): ProjectedObject {
   return {
-    objectId: 'a',
-    objectType: 'recipe',
-    name: 'N',
-    avatarUrl: null,
-    weight: 0,
-    description: null,
-    rating: null,
-    categoryItems: [],
+    object_id: 'a',
+    object_type: 'recipe',
+    semantic_type: null,
+    fields: {},
+    hasAdministrativeAuthority: false,
+    hasOwnershipAuthority: false,
     ...overrides,
   };
 }
 
-describe('sortLinkedObjectSummaries', () => {
-  it('sets hasAdministrativeAuthority when object id is in the administrative set', () => {
-    const admin = new Set(['b']);
-    const out = sortLinkedObjectSummaries([row({ objectId: 'a' }), row({ objectId: 'b' })], admin);
-    expect(out.find((o) => o.objectId === 'a')?.hasAdministrativeAuthority).toBe(false);
-    expect(out.find((o) => o.objectId === 'b')?.hasAdministrativeAuthority).toBe(true);
+describe('sortProjectedObjectsForDisplay', () => {
+  it('orders by image presence then weight then object_id', () => {
+    const out = sortProjectedObjectsForDisplay([
+      { projected: projected({ object_id: 'z', fields: {} }), weight: 10 },
+      { projected: projected({ object_id: 'a', fields: { image: 'https://x' } }), weight: 0 },
+      { projected: projected({ object_id: 'm', fields: {} }), weight: 5 },
+    ]);
+    expect(out.map((p) => p.object_id)).toEqual(['a', 'z', 'm']);
+  });
+
+  it('preserves hasAdministrativeAuthority on projected objects', () => {
+    const out = sortProjectedObjectsForDisplay([
+      {
+        projected: projected({ object_id: 'b', hasAdministrativeAuthority: true }),
+        weight: 0,
+      },
+      { projected: projected({ object_id: 'a' }), weight: 0 },
+    ]);
+    expect(out.find((o) => o.object_id === 'b')?.hasAdministrativeAuthority).toBe(true);
+    expect(out.find((o) => o.object_id === 'a')?.hasAdministrativeAuthority).toBe(false);
   });
 });

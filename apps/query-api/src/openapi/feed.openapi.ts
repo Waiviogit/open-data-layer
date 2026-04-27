@@ -1,4 +1,6 @@
 import { z } from 'zod';
+
+import { projectedObjectOpenApiSchema } from './projected-object.schema';
 import { registry } from './registry';
 
 const notFoundSchema = z.object({
@@ -13,16 +15,6 @@ const feedVoteSummarySchema = registry.register(
     totalCount: z.number().int(),
     previewVoters: z.array(z.string()),
     voted: z.boolean(),
-  }),
-);
-
-const feedObjectSummarySchema = registry.register(
-  'FeedObjectSummary',
-  z.object({
-    objectId: z.string(),
-    objectType: z.string().nullable(),
-    name: z.string().nullable(),
-    avatarUrl: z.string().nullable(),
   }),
 );
 
@@ -57,7 +49,7 @@ const feedStoryItemSchema = registry.register(
     videoThumbnailUrl: z.string().nullable(),
     videoEmbedUrl: z.string().nullable(),
     authorProfile: authorProfileSnippetSchema,
-    objects: z.array(feedObjectSummarySchema),
+    objects: z.array(projectedObjectOpenApiSchema),
     votes: feedVoteSummarySchema,
   }),
 );

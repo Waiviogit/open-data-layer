@@ -1,6 +1,6 @@
 export { ObjectProjectionModule } from './object-projection.module';
 export { ObjectProjectionService } from './object-projection.service';
-export type { ProjectOptions } from './object-projection.service';
+export type { BatchProjectOptions, ProjectOptions } from './object-projection.service';
 export { ObjectSeoService } from './object-seo.service';
 export { buildObjectCanonicalUrl } from './build-object-canonical-url';
 export { expandObjectRefs, REF_SUMMARY_UPDATE_TYPES } from './object-ref-expansion';

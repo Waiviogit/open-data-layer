@@ -22,6 +22,14 @@ export interface ProjectOptions {
   viewerAccount?: string;
 }
 
+export interface BatchProjectOptions {
+  locale: string;
+  /** When true, adds `seo` per item via {@link ObjectSeoService}. Default false. */
+  includeSeo?: boolean;
+  governanceObjectIdFromHeader?: string;
+  viewerAccount?: string;
+}
+
 @Injectable()
 export class ObjectProjectionService {
   constructor(
@@ -82,5 +90,70 @@ export class ObjectProjectionService {
     }
 
     return projected;
+  }
+
+  /**
+   * Projects multiple views with one batched administrative/ownership lookup.
+   * Order of the returned array matches the order of `views`.
+   */
+  async batchProject(views: ResolvedObjectView[], options: BatchProjectOptions): Promise<ProjectedObject[]> {
+    if (views.length === 0) {
+      return [];
+    }
+
+    const ipfsGatewayBaseUrl = this.config.get<string>('ipfs.gatewayUrl') ?? 'https://ipfs.io';
+    const viewerAccount = options.viewerAccount?.trim() || undefined;
+    const governance = await this.governanceResolver.resolveMergedForObjectView(
+      options.governanceObjectIdFromHeader,
+    );
+
+    const objectIds = views.map((v) => v.object_id);
+    let adminSet = new Set<string>();
+    let ownershipSet = new Set<string>();
+    if (viewerAccount) {
+      const [adminIds, ownershipIds] = await Promise.all([
+        this.objectAuthorityRepo.findAdministrativeObjectIdsForAccount(viewerAccount, objectIds),
+        this.objectAuthorityRepo.findOwnershipObjectIdsForAccount(viewerAccount, objectIds),
+      ]);
+      adminSet = new Set(adminIds);
+      ownershipSet = new Set(ownershipIds);
+    }
+
+    const results: ProjectedObject[] = [];
+    for (const view of views) {
+      const refIds = collectObjectRefIdsFromView(view);
+      const refSummariesById = await expandObjectRefs(refIds, {
+        aggregatedObjectRepo: this.aggregatedObjectRepo,
+        objectViewService: this.objectViewService,
+        governance,
+        locale: options.locale,
+        ipfsGatewayBaseUrl,
+        viewerAccount,
+      });
+
+      const projectedCore = projectObjectCore({
+        view,
+        ipfsGatewayBaseUrl,
+        refSummariesById,
+        viewerAccount,
+      });
+
+      let projected: ProjectedObject = {
+        ...projectedCore,
+        hasAdministrativeAuthority: adminSet.has(view.object_id),
+        hasOwnershipAuthority: ownershipSet.has(view.object_id),
+      };
+
+      if (options.includeSeo === true) {
+        projected = {
+          ...projected,
+          seo: this.seoService.build(projected, view.canonical ?? null),
+        };
+      }
+
+      results.push(projected);
+    }
+
+    return results;
   }
 }

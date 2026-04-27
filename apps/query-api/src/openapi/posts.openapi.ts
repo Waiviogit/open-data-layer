@@ -1,4 +1,6 @@
 import { z } from 'zod';
+
+import { projectedObjectOpenApiSchema } from './projected-object.schema';
 import { registry } from './registry';
 
 const notFoundSchema = z.object({
@@ -34,18 +36,7 @@ const singlePostViewSchema = registry.register(
       avatarUrl: z.string().nullable(),
       reputation: z.number(),
     }),
-    objects: z.array(
-      z.object({
-        objectId: z.string(),
-        objectType: z.string().nullable(),
-        name: z.string().nullable(),
-        avatarUrl: z.string().nullable(),
-        description: z.string().nullable(),
-        rating: z.string().nullable(),
-        categoryItems: z.array(z.string()),
-        hasAdministrativeAuthority: z.boolean(),
-      }),
-    ),
+    objects: z.array(projectedObjectOpenApiSchema),
     votes: z.object({
       totalCount: z.number().int(),
       previewVoters: z.array(z.string()),

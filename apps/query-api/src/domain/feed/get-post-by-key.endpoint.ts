@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { POST_LINKED_OBJECT_UPDATE_TYPES } from '@opden-data-layer/core';
 import type { Post } from '@opden-data-layer/core';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
@@ -7,16 +6,13 @@ import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import {
   AggregatedObjectRepository,
   AccountsCurrentRepository,
-  ObjectAuthorityRepository,
   PostsRepository,
   type PostVoteSummary,
 } from '../../repositories';
 import { mapAccountToUserProfileView } from '../users/account-mapper';
 import { GovernanceResolverService } from '../governance';
-import {
-  mapPostObjectsToLinkedDetailRows,
-  sortLinkedObjectSummaries,
-} from './feed-object-summaries';
+import { buildLinkedObjectSummaries } from './feed-object-summaries';
+import { ObjectProjectionService } from '../object-projection';
 import type { SinglePostViewDto } from './feed-story-dtos';
 import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
 import { extractThumbnailUrl } from './post-thumbnail';
@@ -29,10 +25,9 @@ export class GetPostByKeyEndpoint {
     private readonly postsRepo: PostsRepository,
     private readonly accounts: AccountsCurrentRepository,
     private readonly aggregatedObjectRepo: AggregatedObjectRepository,
-    private readonly objectAuthorityRepo: ObjectAuthorityRepository,
     private readonly objectViewService: ObjectViewService,
     private readonly governanceResolver: GovernanceResolverService,
-    private readonly config: ConfigService,
+    private readonly objectProjection: ObjectProjectionService,
   ) {}
 
   async execute(
@@ -117,24 +112,17 @@ export class GetPostByKeyEndpoint {
       viewsByObjectId = new Map(views.map((v, i) => [objects[i].core.object_id, v]));
     }
 
-    const ipfsGatewayBaseUrl = this.config.get<string>('ipfs.gatewayUrl') ?? 'https://ipfs.io';
-    const detailRows = mapPostObjectsToLinkedDetailRows(
+    const objects = await buildLinkedObjectSummaries(
       objectsForPost,
       viewsByObjectId,
       weightByObjectId,
-      ipfsGatewayBaseUrl,
-    );
-
-    let administrativeIds = new Set<string>();
-    if (viewerAccount && objectIds.length > 0) {
-      const ids = await this.objectAuthorityRepo.findAdministrativeObjectIdsForAccount(
+      this.objectProjection,
+      {
+        locale,
+        governanceObjectIdFromHeader,
         viewerAccount,
-        objectIds,
-      );
-      administrativeIds = new Set(ids);
-    }
-
-    const objects = sortLinkedObjectSummaries(detailRows, administrativeIds);
+      },
+    );
 
     const createdAt = new Date(post.created_unix * 1000).toISOString();
 
