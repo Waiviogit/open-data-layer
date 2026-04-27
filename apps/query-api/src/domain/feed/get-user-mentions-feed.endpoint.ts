@@ -4,6 +4,7 @@ import {
   AggregatedObjectRepository,
   AccountsCurrentRepository,
   PostsRepository,
+  UserAccountMutesRepository,
   type FeedBranchRow,
 } from '../../repositories';
 import { GovernanceResolverService } from '../governance';
@@ -13,13 +14,12 @@ import { buildFeedStoryItemsFromPostPage } from './build-feed-story-items-from-p
 import type { FeedStoryItemDto, UserBlogFeedResponse } from './feed-story-dtos';
 import type { UserBlogFeedBody } from './schemas/user-blog-feed.schema';
 
-export type { FeedStoryItemDto, FeedVoteSummaryDto, UserBlogFeedResponse } from './feed-story-dtos';
-
 @Injectable()
-export class GetUserBlogFeedEndpoint {
+export class GetUserMentionsFeedEndpoint {
   constructor(
     private readonly postsRepo: PostsRepository,
     private readonly accounts: AccountsCurrentRepository,
+    private readonly userAccountMutesRepo: UserAccountMutesRepository,
     private readonly aggregatedObjectRepo: AggregatedObjectRepository,
     private readonly objectViewService: ObjectViewService,
     private readonly governanceResolver: GovernanceResolverService,
@@ -27,13 +27,13 @@ export class GetUserBlogFeedEndpoint {
   ) {}
 
   async execute(
-    accountName: string,
+    profileAccountName: string,
     body: UserBlogFeedBody,
     locale: string,
     governanceObjectIdFromHeader?: string,
     viewerAccount?: string,
   ): Promise<UserBlogFeedResponse | null> {
-    const accountRow = await this.accounts.findByName(accountName);
+    const accountRow = await this.accounts.findByName(profileAccountName);
     if (!accountRow) {
       return null;
     }
@@ -49,8 +49,15 @@ export class GetUserBlogFeedEndpoint {
       };
     }
 
-    const feedRows = await this.postsRepo.findUserBlogFeed(
-      accountName,
+    const viewerTrimmed = viewerAccount?.trim() ?? '';
+    const mutedAuthors =
+      viewerTrimmed.length > 0
+        ? await this.userAccountMutesRepo.listMutedForMuters([viewerTrimmed])
+        : [];
+
+    const feedRows = await this.postsRepo.findMentionsFeed(
+      profileAccountName,
+      mutedAuthors,
       cursorPayload,
       limitPlusOne,
     );

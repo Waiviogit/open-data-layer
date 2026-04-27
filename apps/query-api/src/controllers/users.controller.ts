@@ -2,6 +2,7 @@ import { Body, Controller, Get, NotFoundException, Param, Post } from '@nestjs/c
 import { ReqLocale } from '@opden-data-layer/core';
 import {
   GetUserBlogFeedEndpoint,
+  GetUserMentionsFeedEndpoint,
   userBlogFeedBodySchema,
   type UserBlogFeedBody,
   type UserBlogFeedResponse,
@@ -19,6 +20,7 @@ export class UsersController {
   constructor(
     private readonly getUserProfile: GetUserProfileEndpoint,
     private readonly getUserBlogFeed: GetUserBlogFeedEndpoint,
+    private readonly getUserMentionsFeed: GetUserMentionsFeedEndpoint,
   ) {}
 
   @Get(':name/profile')
@@ -39,6 +41,27 @@ export class UsersController {
     @ReqViewer() viewer: string | undefined,
   ): Promise<UserBlogFeedResponse> {
     const result = await this.getUserBlogFeed.execute(
+      name,
+      body,
+      locale,
+      governanceObjectIdFromHeader,
+      viewer,
+    );
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Post(':name/mentions')
+  async getMentionsFeed(
+    @Param('name') name: string,
+    @Body(new ZodBodyPipe(userBlogFeedBodySchema)) body: UserBlogFeedBody,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<UserBlogFeedResponse> {
+    const result = await this.getUserMentionsFeed.execute(
       name,
       body,
       locale,

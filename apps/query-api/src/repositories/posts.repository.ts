@@ -38,6 +38,54 @@ export class PostsRepository {
     return mergeFeedBranches(own, reblogs, limitPlusOne);
   }
 
+  /**
+   * Posts that @mention `profileAccount` (indexed in post_mentions), newest first.
+   * Optional `mutedAuthors`: exclude posts whose author is muted by the viewer.
+   */
+  async findMentionsFeed(
+    profileAccount: string,
+    mutedAuthors: string[],
+    cursor: { feedAt: number; author: string; permlink: string } | null,
+    limitPlusOne: number,
+  ): Promise<FeedBranchRow[]> {
+    let qb = this.db
+      .selectFrom('post_mentions as m')
+      .innerJoin('posts as p', (join) =>
+        join.onRef('m.author', '=', 'p.author').onRef('m.permlink', '=', 'p.permlink'),
+      )
+      .where(sql<boolean>`LOWER(m.account) = LOWER(${profileAccount})`);
+
+    if (mutedAuthors.length > 0) {
+      qb = qb.where('p.author', 'not in', mutedAuthors);
+    }
+
+    if (cursor) {
+      qb = qb.where(
+        sql`(p.created_unix, p.author, p.permlink) < (${cursor.feedAt}, ${cursor.author}, ${cursor.permlink})` as never,
+      );
+    }
+
+    const rows = await qb
+      .select([
+        sql<string>`p.author`.as('author'),
+        sql<string>`p.permlink`.as('permlink'),
+        sql<number>`p.created_unix`.as('feed_at'),
+        sql<string | null>`NULL::text`.as('reblogged_by'),
+      ])
+      .orderBy(sql`p.created_unix`, 'desc')
+      .orderBy(sql`p.author`, 'desc')
+      .orderBy(sql`p.permlink`, 'desc')
+      .limit(limitPlusOne)
+      .execute();
+
+    return rows.map((r) => ({
+      author: r.author,
+      permlink: r.permlink,
+      feed_at: r.feed_at,
+      reblogged_by: r.reblogged_by,
+    }));
+  }
+
   private async loadOwnPostsBranch(
     account: string,
     cursor: { feedAt: number; author: string; permlink: string } | null,

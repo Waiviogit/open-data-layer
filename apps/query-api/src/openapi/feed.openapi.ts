@@ -144,6 +144,53 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'post',
+  path: '/query/v1/users/{name}/mentions',
+  summary: 'User profile mentions feed',
+  description:
+    'Paginated newest-first posts where `post_mentions.account` matches the profile (case-insensitive). Same response shape as blog feed; authors muted by `X-Viewer` are excluded.',
+  request: {
+    params: z.object({ name: accountNameParam }),
+    headers: z.object({
+      'accept-language': z.string().optional(),
+      'x-locale': z.string().optional(),
+      'x-governance-object-id': z.string().optional(),
+      'x-viewer': z.string().optional().openapi({
+        description:
+          'Optional Hive account of the viewer; excludes posts authored by accounts they mute. `votes.voted` uses `post_active_votes`.',
+        example: 'alice',
+      }),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: userBlogFeedBodySchema,
+        },
+      },
+      required: false,
+    },
+  },
+  responses: {
+    200: {
+      description: 'Feed page with items and optional next cursor.',
+      content: {
+        'application/json': {
+          schema: userBlogFeedResponseSchema,
+        },
+      },
+    },
+    404: {
+      description: 'No `accounts_current` row for `name`.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'post',
   path: '/query/v1/users/{name}/comments',
   summary: 'User profile comments feed (Hive)',
   description:

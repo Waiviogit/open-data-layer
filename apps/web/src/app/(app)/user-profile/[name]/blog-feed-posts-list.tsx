@@ -10,6 +10,7 @@ import { shouldUsePostGrid, useShellMode } from '@/shell-mode';
 
 import { loadMoreUserBlogFeedAction } from './blog-feed.actions';
 import { loadMoreUserCommentsFeedAction } from './comments-feed.actions';
+import { loadMoreUserMentionsFeedAction } from './mentions-feed.actions';
 import { loadMoreUserThreadsFeedAction } from './threads-feed.actions';
 
 type BlogFeedPostsListProps = {
@@ -70,7 +71,9 @@ export function BlogFeedPostsList({
                     ? await loadMoreUserThreadsFeedAction(accountName, cursor)
                     : feedTab === 'comments'
                       ? await loadMoreUserCommentsFeedAction(accountName, cursor)
-                      : await loadMoreUserBlogFeedAction(accountName, cursor);
+                      : feedTab === 'mentions'
+                        ? await loadMoreUserMentionsFeedAction(accountName, cursor)
+                        : await loadMoreUserBlogFeedAction(accountName, cursor);
                 setItems((prev) => [...prev, ...next.items]);
                 setCursor(next.cursor);
                 setHasMore(next.hasMore);

@@ -2,6 +2,7 @@ import {
   FeedList,
   getUserBlogFeedPageQuery,
   getUserCommentsFeedPageQuery,
+  getUserMentionsFeedPageQuery,
   getUserThreadsFeedPageQuery,
   type FeedTab,
 } from '@/modules/feed';
@@ -55,6 +56,18 @@ export async function FeedProfileContent({ accountName, feedTab }: FeedProfileCo
       { sort: 'latest' },
       currentUsername,
     );
+    return (
+      <BlogFeedPostsList
+        accountName={accountName}
+        initialPage={page}
+        feedTab={feedTab}
+        currentUsername={currentUsername}
+      />
+    );
+  }
+
+  if (feedTab === 'mentions') {
+    const page = await getUserMentionsFeedPageQuery(accountName, {}, currentUsername);
     return (
       <BlogFeedPostsList
         accountName={accountName}

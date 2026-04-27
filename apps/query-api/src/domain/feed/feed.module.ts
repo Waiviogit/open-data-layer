@@ -6,6 +6,7 @@ import { RepositoriesModule } from '../../repositories';
 import { GetPostByKeyEndpoint } from './get-post-by-key.endpoint';
 import { GetUserBlogFeedEndpoint } from './get-user-blog-feed.endpoint';
 import { GetUserCommentsFeedEndpoint } from './get-user-comments-feed.endpoint';
+import { GetUserMentionsFeedEndpoint } from './get-user-mentions-feed.endpoint';
 import { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
 
 @Module({
@@ -14,12 +15,14 @@ import { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
     GetUserBlogFeedEndpoint,
     GetUserThreadsFeedEndpoint,
     GetUserCommentsFeedEndpoint,
+    GetUserMentionsFeedEndpoint,
     GetPostByKeyEndpoint,
   ],
   exports: [
     GetUserBlogFeedEndpoint,
     GetUserThreadsFeedEndpoint,
     GetUserCommentsFeedEndpoint,
+    GetUserMentionsFeedEndpoint,
     GetPostByKeyEndpoint,
   ],
 })
