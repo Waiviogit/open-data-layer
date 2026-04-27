@@ -144,6 +144,53 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'post',
+  path: '/query/v1/users/{name}/comments',
+  summary: 'User profile comments feed (Hive)',
+  description:
+    'Paginated feed of comments authored by the profile via `condenser_api.get_discussions_by_comments`. No DB merge. Leo Threads replies are excluded; the API may perform multiple Hive round-trips per page to fill `limit`. Body matches threads (`sort` is ignored).',
+  request: {
+    params: z.object({ name: accountNameParam }),
+    headers: z.object({
+      'accept-language': z.string().optional(),
+      'x-locale': z.string().optional(),
+      'x-governance-object-id': z.string().optional(),
+      'x-viewer': z.string().optional().openapi({
+        description:
+          'Optional Hive account of the viewer; `votes.voted` uses `active_votes` from Hive.',
+        example: 'alice',
+      }),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: userThreadsFeedBodySchema,
+        },
+      },
+      required: false,
+    },
+  },
+  responses: {
+    200: {
+      description: 'Feed page; same schema as blog/threads.',
+      content: {
+        'application/json': {
+          schema: userBlogFeedResponseSchema,
+        },
+      },
+    },
+    404: {
+      description: 'No `accounts_current` row for `name`.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'post',
   path: '/query/v1/users/{name}/threads',
   summary: 'User profile threads feed (Leo/Ecency)',
   description:

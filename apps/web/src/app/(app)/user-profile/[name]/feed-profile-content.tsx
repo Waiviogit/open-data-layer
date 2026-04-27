@@ -1,6 +1,7 @@
 import {
   FeedList,
   getUserBlogFeedPageQuery,
+  getUserCommentsFeedPageQuery,
   getUserThreadsFeedPageQuery,
   type FeedTab,
 } from '@/modules/feed';
@@ -34,6 +35,22 @@ export async function FeedProfileContent({ accountName, feedTab }: FeedProfileCo
 
   if (feedTab === 'threads') {
     const page = await getUserThreadsFeedPageQuery(
+      accountName,
+      { sort: 'latest' },
+      currentUsername,
+    );
+    return (
+      <BlogFeedPostsList
+        accountName={accountName}
+        initialPage={page}
+        feedTab={feedTab}
+        currentUsername={currentUsername}
+      />
+    );
+  }
+
+  if (feedTab === 'comments') {
+    const page = await getUserCommentsFeedPageQuery(
       accountName,
       { sort: 'latest' },
       currentUsername,

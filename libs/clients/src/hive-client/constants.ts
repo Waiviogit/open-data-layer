@@ -10,6 +10,7 @@ export const CONDENSER_API = Object.freeze({
   GET_ACCOUNTS: `${HIVE_API.CONDENSER_API}.get_accounts`,
   GET_FOLLOWERS: `${HIVE_API.CONDENSER_API}.get_followers`,
   GET_FOLLOWING: `${HIVE_API.CONDENSER_API}.get_following`,
+  GET_DISCUSSIONS_BY_COMMENTS: `${HIVE_API.CONDENSER_API}.get_discussions_by_comments`,
 } as const);
 
 export const BRIDGE = Object.freeze({

@@ -17,6 +17,13 @@ export interface HiveClientInterface {
     author: string,
     permlink: string,
   ): Promise<HiveContentType | undefined>;
+
+  /** `condenser_api.get_discussions_by_comments` — comments authored by `start_author` (normalized to lowercase), paginated by `start_permlink`. `limit` is clamped to [1, 20] (Hive node assertion). */
+  getDiscussionsByComments(params: {
+    start_author: string;
+    start_permlink?: string;
+    limit: number;
+  }): Promise<HiveContentType[]>;
   getActiveVotes(author: string, permlink: string): Promise<ActiveVotesType[]>;
   getVote({
     author,

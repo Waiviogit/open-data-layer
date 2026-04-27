@@ -118,6 +118,41 @@ export class HiveClient implements HiveClientInterface {
     ]);
   }
 
+  async getDiscussionsByComments(params: {
+    start_author: string;
+    start_permlink?: string;
+    limit: number;
+  }): Promise<HiveContentType[]> {
+    // Hive account names are lowercase on-chain; condenser_api returns [] for mixed-case start_author.
+    const startAuthor = params.start_author.trim().toLowerCase();
+    if (startAuthor === '') {
+      return [];
+    }
+    const rawLimit = Number(params.limit);
+    const limit =
+      Number.isFinite(rawLimit) && rawLimit >= 1
+        ? Math.min(20, Math.floor(rawLimit))
+        : 1;
+    const payload: {
+      start_author: string;
+      limit: number;
+      start_permlink?: string;
+    } = {
+      start_author: startAuthor,
+      limit,
+    };
+    const anchor = params.start_permlink?.trim();
+    if (anchor) {
+      payload.start_permlink = anchor;
+    }
+    return (
+      (await this.hiveRequest<HiveContentType[]>(
+        CONDENSER_API.GET_DISCUSSIONS_BY_COMMENTS,
+        [payload],
+      )) ?? []
+    );
+  }
+
   async getState(author: string, permlink: string): Promise<CommentStateType> {
     const content = await this.hiveRequest<Record<string, HiveContentType>>(
       BRIDGE.GET_DISCUSSION,

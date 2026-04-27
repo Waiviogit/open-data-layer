@@ -375,7 +375,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
             count={story.children ?? 0}
             label="Comments"
           />
-          {feedTab !== 'threads' ? (
+          {feedTab !== 'threads' && feedTab !== 'comments' ? (
             <StatButton icon={<IconReblog />} count={undefined} label="Reblog" />
           ) : null}
           <StoryOverflowMenu

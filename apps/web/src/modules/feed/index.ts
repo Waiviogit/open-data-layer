@@ -3,6 +3,7 @@ export type { FeedStoryView } from './application/dto/feed-story.dto';
 export type { UserBlogFeedPage } from './application/dto/user-blog-feed-page.dto';
 export { getUserBlogFeedPageQuery } from './application/queries/get-user-blog-feed.query';
 export { getUserThreadsFeedPageQuery } from './application/queries/get-user-threads-feed.query';
+export { getUserCommentsFeedPageQuery } from './application/queries/get-user-comments-feed.query';
 export { getSinglePostQuery } from './application/queries/get-single-post.query';
 export type { BlogPostPayload } from './application/queries/get-single-post.query';
 export type { VoteWeightContext } from './domain/vote-weight';

@@ -5,6 +5,7 @@ import { ObjectProjectionModule } from '../object-projection';
 import { RepositoriesModule } from '../../repositories';
 import { GetPostByKeyEndpoint } from './get-post-by-key.endpoint';
 import { GetUserBlogFeedEndpoint } from './get-user-blog-feed.endpoint';
+import { GetUserCommentsFeedEndpoint } from './get-user-comments-feed.endpoint';
 import { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
 
 @Module({
@@ -12,11 +13,13 @@ import { GetUserThreadsFeedEndpoint } from './get-user-threads-feed.endpoint';
   providers: [
     GetUserBlogFeedEndpoint,
     GetUserThreadsFeedEndpoint,
+    GetUserCommentsFeedEndpoint,
     GetPostByKeyEndpoint,
   ],
   exports: [
     GetUserBlogFeedEndpoint,
     GetUserThreadsFeedEndpoint,
+    GetUserCommentsFeedEndpoint,
     GetPostByKeyEndpoint,
   ],
 })

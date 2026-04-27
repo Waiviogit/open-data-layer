@@ -1,45 +1,14 @@
-import type { ActiveVotesType, HiveContentType } from '@opden-data-layer/clients';
+import type { HiveContentType } from '@opden-data-layer/clients';
 
-import type { FeedVoteSummaryDto, SinglePostViewDto } from './feed-story-dtos';
-import { FEED_PREVIEW_VOTER_DISPLAY } from './feed.constants';
+import type { FeedStoryItemDto } from './feed-story-dtos';
+import {
+  buildVoteSummaryFromHiveActiveVotes,
+  normalizeHiveContentJsonMetadata,
+} from './map-hive-content-to-single-post.dto';
 import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
 import { extractThumbnailUrl } from './post-thumbnail';
 import { extractVideoEmbedUrl, extractVideoThumbnailUrl } from './post-video-thumbnail';
 import { isNsfwPost } from './post-nsfw';
-
-export type SinglePostAuthorProfileSlice = SinglePostViewDto['authorProfile'];
-
-export function normalizeHiveContentJsonMetadata(raw: HiveContentType['json_metadata']): string {
-  if (raw == null) {
-    return '';
-  }
-  if (typeof raw === 'string') {
-    return raw;
-  }
-  try {
-    return JSON.stringify(raw);
-  } catch {
-    return '';
-  }
-}
-
-export function buildVoteSummaryFromHiveActiveVotes(
-  activeVotes: ActiveVotesType[] | undefined,
-  viewerAccount: string | undefined,
-): FeedVoteSummaryDto {
-  const votes = activeVotes ?? [];
-  const sorted = [...votes].sort((a, b) => (b.rshares ?? 0) - (a.rshares ?? 0));
-  const viewer = viewerAccount?.trim().toLowerCase();
-  const voted =
-    viewer !== undefined && viewer !== ''
-      ? votes.some((v) => v.voter.trim().toLowerCase() === viewer)
-      : false;
-  return {
-    totalCount: votes.length,
-    previewVoters: sorted.slice(0, FEED_PREVIEW_VOTER_DISPLAY).map((v) => v.voter),
-    voted,
-  };
-}
 
 function rebloggedByFromHive(content: HiveContentType): string | null {
   const users = content.reblogged_users;
@@ -50,14 +19,12 @@ function rebloggedByFromHive(content: HiveContentType): string | null {
   return typeof first === 'string' && first.trim() !== '' ? first.trim() : null;
 }
 
-/**
- * Builds {@link SinglePostViewDto} from `condenser_api.get_content` when the post is not in ODL DB.
- */
-export function mapHiveContentToSinglePostView(
+/** Maps `HiveContentType` (e.g. from `get_discussions_by_comments`) to a feed card row. */
+export function mapHiveContentToFeedStoryItemDto(
   content: HiveContentType,
-  authorProfile: SinglePostAuthorProfileSlice,
+  authorProfile: FeedStoryItemDto['authorProfile'],
   viewerAccount: string | undefined,
-): SinglePostViewDto {
+): FeedStoryItemDto {
   const jsonMetadata = normalizeHiveContentJsonMetadata(content.json_metadata);
   const body = content.body ?? '';
   const excerpt = truncateExcerpt(stripHtmlForExcerpt(body));
@@ -75,7 +42,6 @@ export function mapHiveContentToSinglePostView(
     permlink,
     title: content.title ?? '',
     excerpt,
-    body,
     createdAt,
     feedAt: createdAt,
     rebloggedBy: rebloggedByFromHive(content),
