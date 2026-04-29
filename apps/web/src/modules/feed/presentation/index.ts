@@ -10,3 +10,5 @@ export { StoryContainer } from './components/story-container';
 export type { StoryContainerProps } from './components/story-container';
 export { StoryVoteButton } from './components/story-vote-button';
 export type { StoryVoteButtonProps } from './components/story-vote-button';
+export { ObjectCard } from './components/object-card';
+export type { ObjectCardProps } from './components/object-card';

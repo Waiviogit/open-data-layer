@@ -28,6 +28,16 @@ import {
   type UserCategoriesResponse,
   type UserCategoriesQuery,
 } from '../domain/categories';
+import {
+  GetUserShopObjectsEndpoint,
+  GetUserShopSectionsEndpoint,
+  shopObjectsQuerySchema,
+  shopSectionsQuerySchema,
+  type ShopObjectsQuery,
+  type ShopObjectsResponse,
+  type ShopSectionsQuery,
+  type ShopSectionsResponse,
+} from '../domain/shop';
 
 @Controller({ path: 'users', version: '1' })
 export class UsersController {
@@ -36,6 +46,8 @@ export class UsersController {
     private readonly getUserBlogFeed: GetUserBlogFeedEndpoint,
     private readonly getUserMentionsFeed: GetUserMentionsFeedEndpoint,
     private readonly getUserCategories: GetUserCategoriesEndpoint,
+    private readonly getUserShopObjects: GetUserShopObjectsEndpoint,
+    private readonly getUserShopSections: GetUserShopSectionsEndpoint,
   ) {}
 
   @Get(':name/categories')
@@ -44,6 +56,40 @@ export class UsersController {
     @Query(new ZodQueryPipe(userCategoriesQuerySchema)) query: UserCategoriesQuery,
   ): Promise<UserCategoriesResponse> {
     return this.getUserCategories.execute(name, query);
+  }
+
+  @Get(':name/shop-objects')
+  async getShopObjects(
+    @Param('name') name: string,
+    @Query(new ZodQueryPipe(shopObjectsQuerySchema)) query: ShopObjectsQuery,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<ShopObjectsResponse | null> {
+    return this.getUserShopObjects.execute(
+      name,
+      query,
+      locale,
+      governanceObjectIdFromHeader,
+      viewer,
+    );
+  }
+
+  @Get(':name/shop-sections')
+  async getShopSections(
+    @Param('name') name: string,
+    @Query(new ZodQueryPipe(shopSectionsQuerySchema)) query: ShopSectionsQuery,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<ShopSectionsResponse | null> {
+    return this.getUserShopSections.execute(
+      name,
+      query,
+      locale,
+      governanceObjectIdFromHeader,
+      viewer,
+    );
   }
 
   @Get(':name/profile')

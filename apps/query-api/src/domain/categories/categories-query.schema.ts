@@ -20,6 +20,8 @@ const typesArray = z.preprocess((v: unknown) => {
   return [String(v).trim()].filter(Boolean);
 }, z.array(z.string()).min(1));
 
+export { qsArray, typesArray };
+
 export const userCategoriesQuerySchema = z.object({
   /** Which `object_type` bucket to load (must match precomputed `scope_key`). */
   types: typesArray,

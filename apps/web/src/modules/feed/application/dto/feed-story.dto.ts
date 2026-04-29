@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { FEED_TABS } from '../../domain/feed-tab';
 
 /** Matches query-api `ProjectedObject` JSON shape. */
-const projectedObjectViewSchema = z.object({
+export const projectedObjectViewSchema = z.object({
   object_id: z.string(),
   object_type: z.string(),
   semantic_type: z.string().nullable(),

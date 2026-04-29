@@ -44,5 +44,9 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)'],
+  /**
+   * Skip framework assets only. Do not exclude paths merely because they contain `.` —
+   * Hive account names may include dots (e.g. `@coffee.time`); those must reach {@link proxy}.
+   */
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };

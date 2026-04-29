@@ -12,28 +12,29 @@ const MAX_UNIQUE_ATTEMPTS = 8;
 
 function getCrypto(): Crypto {
   const c = globalThis.crypto;
-  if (c?.getRandomValues) {
-    return c;
+  if (!c) {
+    throw new Error('Web Crypto API (globalThis.crypto.getRandomValues) is not available');
   }
-  throw new Error('Web Crypto API (globalThis.crypto.getRandomValues) is not available');
+  return c;
 }
 
 function encodeBase58(bytes: Uint8Array): string {
   const zeros = bytes.findIndex((b) => b !== 0);
   const leadingZeros = zeros === -1 ? bytes.length : zeros;
-  let num = 0n;
+  let num = BigInt(0);
   const slice = zeros === -1 ? new Uint8Array(0) : bytes.subarray(zeros);
   for (const b of slice) {
-    num = (num << 8n) + BigInt(b);
+    num = (num << BigInt(8)) + BigInt(b);
   }
-  if (num === 0n && bytes.length > 0) {
+  if (num === BigInt(0) && bytes.length > 0) {
     return '1'.repeat(leadingZeros);
   }
   let out = '';
-  while (num > 0n) {
-    const rem = Number(num % 58n);
+  const fiftyEight = BigInt(58);
+  while (num > BigInt(0)) {
+    const rem = Number(num % fiftyEight);
     out = BASE58_ALPHABET[rem] + out;
-    num = num / 58n;
+    num = num / fiftyEight;
   }
   return '1'.repeat(leadingZeros) + out;
 }

@@ -1,19 +1,20 @@
-import { ProfileShopMainContent } from '@/modules/user-profile';
+import { CategoryNav } from '@/modules/user-profile';
 
 type PageProps = {
   params: Promise<{ name: string }>;
 };
 
-export default async function UserProfileRecipePage({ params }: PageProps) {
+export default async function RecipeLeftSidebarPage({ params }: PageProps) {
   const { name } = await params;
   const accountName = decodeURIComponent(name);
   const basePath = `/@${accountName}/recipe`;
 
   return (
-    <ProfileShopMainContent
+    <CategoryNav
       accountName={accountName}
       types={['recipe']}
       basePath={basePath}
+      sectionKey="recipe"
       lineageSegments={[]}
     />
   );

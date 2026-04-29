@@ -23,7 +23,7 @@ export class HiveProcessorService implements OnApplicationBootstrap {
 
   onApplicationBootstrap() {
     this.logger.log('Hive Blockchain parser started');
-    void this.loop();
+    //void this.loop();
   }
 
   async loop() {

@@ -6,16 +6,17 @@ import {
   StickyRegion,
 } from '@/shared/presentation/layout';
 import {
-  LeftSidebar,
   RightSidebar,
   UserMenuVerticalRail,
 } from '@/modules/user-profile';
 
 export default async function UserProfileMainShellLayout({
   children,
+  leftSidebar,
   params,
 }: {
   children: ReactNode;
+  leftSidebar: ReactNode;
   params: Promise<{ name: string }>;
 }) {
   const { name } = await params;
@@ -32,7 +33,7 @@ export default async function UserProfileMainShellLayout({
         <div className="shell-profile-left-rail shell-hide-instagram">
           <div className="shell-hide-twitter">
             <StickyRegion offset="0">
-              <LeftSidebar />
+              {leftSidebar}
             </StickyRegion>
           </div>
           <div className="shell-show-twitter">

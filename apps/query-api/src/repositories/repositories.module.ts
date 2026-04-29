@@ -11,6 +11,9 @@ import { UserPostDraftsRepository } from './user-post-drafts.repository';
 import { UserAccountMutesRepository } from './user-account-mutes.repository';
 import { ThreadsRepository } from './threads.repository';
 import { ObjectCategoriesRelatedRepository } from './object-categories-related.repository';
+import { ObjectCategoriesRepository } from './object-categories.repository';
+import { UserMetadataRepository } from './user-metadata.repository';
+import { UserShopDeselectRepository } from './user-shop-deselect.repository';
 
 @Module({
   providers: [
@@ -26,6 +29,9 @@ import { ObjectCategoriesRelatedRepository } from './object-categories-related.r
     UserAccountMutesRepository,
     ThreadsRepository,
     ObjectCategoriesRelatedRepository,
+    ObjectCategoriesRepository,
+    UserMetadataRepository,
+    UserShopDeselectRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -40,6 +46,9 @@ import { ObjectCategoriesRelatedRepository } from './object-categories-related.r
     UserAccountMutesRepository,
     ThreadsRepository,
     ObjectCategoriesRelatedRepository,
+    ObjectCategoriesRepository,
+    UserMetadataRepository,
+    UserShopDeselectRepository,
   ],
 })
 export class RepositoriesModule {}

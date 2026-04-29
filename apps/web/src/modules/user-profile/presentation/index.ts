@@ -1,5 +1,14 @@
 export { PROFILE_LAYOUT_PRESETS } from './layout-presets';
+export { CategoryNav } from './components/category-nav';
+export type { CategoryNavProps } from './components/category-nav';
+export { decodeCategoryPathSegment, UNCATEGORIZED_SHOP_PATH_SEGMENT } from './components/category-nav-path';
 export { ProfileRouteStub } from './components/profile-route-stub';
+export { ProfileShopMainContent } from './components/profile-shop-main-content';
+export type { ProfileShopMainContentProps } from './components/profile-shop-main-content';
+export { ShopObjectList } from './components/shop-object-list';
+export type { ShopObjectListProps } from './components/shop-object-list';
+export { ShopSections } from './components/shop-sections';
+export type { ShopSectionsProps } from './components/shop-sections';
 export { UserProfileHeroClient } from './components/user-profile-hero-client';
 export type { UserProfileHeroClientProps } from './components/user-profile-hero-client';
 export { LeftSidebar } from './components/left-sidebar';
