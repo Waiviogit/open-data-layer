@@ -40,6 +40,7 @@ export interface OdlDatabase {
   user_subscriptions: UserSubscriptionsTable;
   user_account_mutes: UserAccountMutesTable;
   user_object_follows: UserObjectFollowsTable;
+  user_shop_deselect: UserShopDeselectTable;
   posts: PostsTable;
   post_active_votes: PostActiveVotesTable;
   post_objects: PostObjectsTable;
@@ -56,6 +57,10 @@ export interface OdlDatabase {
   scheduler_job_queue: SchedulerJobQueueTable;
   site_registry: SiteRegistryTable;
   canonical_recompute_queue: CanonicalRecomputeQueueTable;
+  object_categories: ObjectCategoriesTable;
+  object_categories_sync_queue: ObjectCategoriesSyncQueueTable;
+  object_categories_related: ObjectCategoriesRelatedTable;
+  object_categories_related_sync_queue: ObjectCategoriesRelatedSyncQueueTable;
 }
 
 // ---------------------------------------------------------------------------
@@ -214,11 +219,28 @@ export interface UserMetadataTable {
   vote_percent: number;
   voting_power: boolean;
   currency: string | null;
+  /** When true, exclude objects linked only via `post_objects` from shop category scope (book/product bucket). */
+  hide_linked_objects: boolean;
+  /** When true, exclude recipe objects linked via `post_objects` from the recipe bucket. */
+  hide_recipe_objects: boolean;
 }
 
 export type UserMetadata = Selectable<UserMetadataTable>;
 export type NewUserMetadata = Insertable<UserMetadataTable>;
 export type UserMetadataUpdate = Updateable<UserMetadataTable>;
+
+// ---------------------------------------------------------------------------
+// user_shop_deselect (manual hide for post-linked objects only; cleared when authority added)
+// ---------------------------------------------------------------------------
+
+export interface UserShopDeselectTable {
+  account: string;
+  object_id: string;
+}
+
+export type UserShopDeselect = Selectable<UserShopDeselectTable>;
+export type NewUserShopDeselect = Insertable<UserShopDeselectTable>;
+export type UserShopDeselectUpdate = Updateable<UserShopDeselectTable>;
 
 // ---------------------------------------------------------------------------
 // user_notification_settings (UserNotificationsSchema)
@@ -642,6 +664,70 @@ export interface CanonicalRecomputeQueueTable {
 export type CanonicalRecomputeQueueRow = Selectable<CanonicalRecomputeQueueTable>;
 export type NewCanonicalRecomputeQueueRow = Insertable<CanonicalRecomputeQueueTable>;
 export type CanonicalRecomputeQueueRowUpdate = Updateable<CanonicalRecomputeQueueTable>;
+
+// ---------------------------------------------------------------------------
+// object_categories (materialized CATEGORY field; chain-indexer)
+// ---------------------------------------------------------------------------
+
+export interface ObjectCategoriesTable {
+  object_id: string;
+  meta_group_id: string | null;
+  category_names: ColumnType<string[], string[] | undefined, string[]>;
+  updated_at_seq: bigint;
+}
+
+export type ObjectCategoriesRow = Selectable<ObjectCategoriesTable>;
+export type NewObjectCategoriesRow = Insertable<ObjectCategoriesTable>;
+export type ObjectCategoriesRowUpdate = Updateable<ObjectCategoriesTable>;
+
+// ---------------------------------------------------------------------------
+// object_categories_sync_queue
+// ---------------------------------------------------------------------------
+
+export interface ObjectCategoriesSyncQueueTable {
+  object_id: string;
+  enqueued_at: number;
+  attempts: number;
+  last_attempt_at: number | null;
+}
+
+export type ObjectCategoriesSyncQueueRow = Selectable<ObjectCategoriesSyncQueueTable>;
+export type NewObjectCategoriesSyncQueueRow = Insertable<ObjectCategoriesSyncQueueTable>;
+
+// ---------------------------------------------------------------------------
+// object_categories_related (per-scope aggregates for navigation)
+// ---------------------------------------------------------------------------
+
+export type ObjectCategoriesRelatedScopeType = 'global' | 'user';
+
+export interface ObjectCategoriesRelatedTable {
+  scope_type: ObjectCategoriesRelatedScopeType;
+  scope_key: string;
+  category_name: string;
+  objects_count: number | bigint;
+  group_keys: ColumnType<string[], string[] | undefined, string[]>;
+  related_names: ColumnType<string[], string[] | undefined, string[]>;
+}
+
+export type ObjectCategoriesRelatedRow = Selectable<ObjectCategoriesRelatedTable>;
+export type NewObjectCategoriesRelatedRow = Insertable<ObjectCategoriesRelatedTable>;
+export type ObjectCategoriesRelatedRowUpdate = Updateable<ObjectCategoriesRelatedTable>;
+
+// ---------------------------------------------------------------------------
+// object_categories_related_sync_queue
+// ---------------------------------------------------------------------------
+
+export interface ObjectCategoriesRelatedSyncQueueTable {
+  scope_type: ObjectCategoriesRelatedScopeType;
+  scope_key: string;
+  enqueued_at: number;
+  attempts: number;
+  last_attempt_at: number | null;
+}
+
+export type ObjectCategoriesRelatedSyncQueueRow = Selectable<ObjectCategoriesRelatedSyncQueueTable>;
+export type NewObjectCategoriesRelatedSyncQueueRow =
+  Insertable<ObjectCategoriesRelatedSyncQueueTable>;
 
 // ---------------------------------------------------------------------------
 // user_post_drafts

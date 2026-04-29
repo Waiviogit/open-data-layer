@@ -5,6 +5,7 @@ import './users.openapi';
 import './feed.openapi';
 import './posts.openapi';
 import './user-post-drafts.openapi';
+import './categories.openapi';
 
 export function generateOpenApiDocument() {
   const base = new OpenApiGeneratorV31(registry.definitions).generateDocument({

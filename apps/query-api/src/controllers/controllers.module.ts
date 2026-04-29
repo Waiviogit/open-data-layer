@@ -4,6 +4,7 @@ import { DraftsModule } from '../domain/drafts/drafts.module';
 import { FeedModule } from '../domain/feed';
 import { ObjectsModule } from '../domain/objects';
 import { UsersModule } from '../domain/users';
+import { CategoriesModule } from '../domain/categories/categories.module';
 import { ObjectsController } from './objects.controller';
 import { UserPostDraftsController } from './user-post-drafts.controller';
 import { PostsController } from './posts.controller';
@@ -11,7 +12,14 @@ import { UsersController } from './users.controller';
 import { UserThreadsController } from './user-threads.controller';
 
 @Module({
-  imports: [ObjectsModule, UsersModule, FeedModule, DraftsModule, AuthModule],
+  imports: [
+    ObjectsModule,
+    UsersModule,
+    FeedModule,
+    DraftsModule,
+    AuthModule,
+    CategoriesModule,
+  ],
   controllers: [
     ObjectsController,
     UsersController,

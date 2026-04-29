@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { NewPostObject } from '@opden-data-layer/core';
 import { MAX_POST_OBJECTS_PER_POST } from '../../constants/post-objects';
 import { isThreadParentAccount } from '../../constants/thread-accounts';
@@ -8,6 +9,10 @@ import { ThreadsRepository } from '../../repositories/threads.repository';
 import { extractObjectIdsFromCommentBody } from './comment-post-object-candidates';
 import type { CommentOperationPayload } from './hive-comment.schema';
 import { PostUpsertService } from './post-upsert.service';
+import {
+  POST_OBJECT_CHANGED_EVENT,
+  PostObjectChangedEvent,
+} from '../odl-parser/post-object-changed.event';
 
 /**
  * Binds `objects_core` objects to a **root post** when a user mentions them in a **comment** body
@@ -22,6 +27,7 @@ export class CommentPostObjectBindService {
     private readonly objectsCoreRepository: ObjectsCoreRepository,
     private readonly threadsRepository: ThreadsRepository,
     private readonly postUpsert: PostUpsertService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async tryBindObjectsFromComment(
@@ -94,5 +100,10 @@ export class CommentPostObjectBindService {
     }));
 
     await this.postsRepository.appendPostObjects(rows);
+
+    this.eventEmitter.emit(
+      POST_OBJECT_CHANGED_EVENT,
+      new PostObjectChangedEvent(parentAuthor),
+    );
   }
 }

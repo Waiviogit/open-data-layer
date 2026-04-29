@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { UPDATE_TYPES } from '@opden-data-layer/core';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import {
@@ -7,6 +7,10 @@ import {
   ObjectsCoreRepository,
 } from '../../../repositories';
 import { GovernanceCacheService } from '../../governance/governance-cache.service';
+import {
+  CategoryMutatedEvent,
+  CATEGORY_MUTATED_EVENT,
+} from '../category-mutated.event';
 import {
   GroupIdMutatedEvent,
   GROUP_ID_MUTATED_EVENT,
@@ -21,6 +25,7 @@ export class MetaGroupSyncHandler {
     private readonly objectViewService: ObjectViewService,
     private readonly governanceCacheService: GovernanceCacheService,
     private readonly objectsCoreRepository: ObjectsCoreRepository,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   @OnEvent(GROUP_ID_MUTATED_EVENT)
@@ -56,6 +61,7 @@ export class MetaGroupSyncHandler {
       }
 
       await this.objectsCoreRepository.update(objectId, { meta_group_id: winningGroupId });
+      this.eventEmitter.emit(CATEGORY_MUTATED_EVENT, new CategoryMutatedEvent(objectId));
     } catch (error) {
       this.logger.error(
         `meta_group sync failed for '${objectId}': ${error instanceof Error ? error.message : String(error)}`,

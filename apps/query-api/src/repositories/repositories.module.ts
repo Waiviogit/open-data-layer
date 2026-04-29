@@ -10,6 +10,7 @@ import { PostsRepository } from './posts.repository';
 import { UserPostDraftsRepository } from './user-post-drafts.repository';
 import { UserAccountMutesRepository } from './user-account-mutes.repository';
 import { ThreadsRepository } from './threads.repository';
+import { ObjectCategoriesRelatedRepository } from './object-categories-related.repository';
 
 @Module({
   providers: [
@@ -24,6 +25,7 @@ import { ThreadsRepository } from './threads.repository';
     UserPostDraftsRepository,
     UserAccountMutesRepository,
     ThreadsRepository,
+    ObjectCategoriesRelatedRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -37,6 +39,7 @@ import { ThreadsRepository } from './threads.repository';
     UserPostDraftsRepository,
     UserAccountMutesRepository,
     ThreadsRepository,
+    ObjectCategoriesRelatedRepository,
   ],
 })
 export class RepositoriesModule {}

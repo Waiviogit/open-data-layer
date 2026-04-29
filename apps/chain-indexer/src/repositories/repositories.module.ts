@@ -13,6 +13,12 @@ import { PostSyncQueueRepository } from './post-sync-queue.repository';
 import { AccountSyncQueueRepository } from './account-sync-queue.repository';
 import { CanonicalRecomputeRepository } from './canonical-recompute.repository';
 import { SiteRegistryRepository } from './site-registry.repository';
+import { ObjectCategoriesRepository } from './object-categories.repository';
+import { ObjectCategoriesSyncQueueRepository } from './object-categories-sync-queue.repository';
+import { ObjectCategoriesRelatedRepository } from './object-categories-related.repository';
+import { ObjectCategoriesRelatedSyncQueueRepository } from './object-categories-related-sync-queue.repository';
+import { UserMetadataRepository } from './user-metadata.repository';
+import { UserShopDeselectRepository } from './user-shop-deselect.repository';
 
 @Module({
   providers: [
@@ -30,6 +36,12 @@ import { SiteRegistryRepository } from './site-registry.repository';
     AccountSyncQueueRepository,
     CanonicalRecomputeRepository,
     SiteRegistryRepository,
+    ObjectCategoriesRepository,
+    ObjectCategoriesSyncQueueRepository,
+    ObjectCategoriesRelatedRepository,
+    ObjectCategoriesRelatedSyncQueueRepository,
+    UserMetadataRepository,
+    UserShopDeselectRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -46,6 +58,12 @@ import { SiteRegistryRepository } from './site-registry.repository';
     AccountSyncQueueRepository,
     CanonicalRecomputeRepository,
     SiteRegistryRepository,
+    ObjectCategoriesRepository,
+    ObjectCategoriesSyncQueueRepository,
+    ObjectCategoriesRelatedRepository,
+    ObjectCategoriesRelatedSyncQueueRepository,
+    UserMetadataRepository,
+    UserShopDeselectRepository,
   ],
 })
 export class RepositoriesModule {}

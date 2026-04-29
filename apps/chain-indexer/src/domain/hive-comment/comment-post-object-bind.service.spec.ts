@@ -21,11 +21,13 @@ describe('CommentPostObjectBindService', () => {
     const threads = { findByKey: jest.fn() };
     const postUpsert = { ensureRootPostInDb: jest.fn() };
 
+    const eventEmitter = { emit: jest.fn() };
     const svc = new CommentPostObjectBindService(
       posts as never,
       objectsCore as never,
       threads as never,
       postUpsert as never,
+      eventEmitter as never,
     );
 
     await svc.tryBindObjectsFromComment(
@@ -42,11 +44,13 @@ describe('CommentPostObjectBindService', () => {
     const threads = { findByKey: jest.fn().mockResolvedValue({ author: 'a', permlink: 'p' }) };
     const postUpsert = { ensureRootPostInDb: jest.fn() };
 
+    const eventEmitter = { emit: jest.fn() };
     const svc = new CommentPostObjectBindService(
       posts as never,
       objectsCore as never,
       threads as never,
       postUpsert as never,
+      eventEmitter as never,
     );
 
     await svc.tryBindObjectsFromComment(op({ body: '#x' }), '2000-01-01T00:00:00');
@@ -60,11 +64,13 @@ describe('CommentPostObjectBindService', () => {
     const threads = { findByKey: jest.fn().mockResolvedValue(undefined) };
     const postUpsert = { ensureRootPostInDb: jest.fn() };
 
+    const eventEmitter = { emit: jest.fn() };
     const svc = new CommentPostObjectBindService(
       posts as never,
       objectsCore as never,
       threads as never,
       postUpsert as never,
+      eventEmitter as never,
     );
 
     await svc.tryBindObjectsFromComment(op({ body: 'plain' }), '2000-01-01T00:00:00');
@@ -86,11 +92,13 @@ describe('CommentPostObjectBindService', () => {
     const threads = { findByKey: jest.fn().mockResolvedValue(undefined) };
     const postUpsert = { ensureRootPostInDb: jest.fn() };
 
+    const eventEmitter = { emit: jest.fn() };
     const svc = new CommentPostObjectBindService(
       posts as never,
       objectsCore as never,
       threads as never,
       postUpsert as never,
+      eventEmitter as never,
     );
 
     await svc.tryBindObjectsFromComment(op({ body: '#obj1' }), '2000-01-01T00:00:00');

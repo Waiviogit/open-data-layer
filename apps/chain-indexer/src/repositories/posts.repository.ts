@@ -170,6 +170,21 @@ export class PostsRepository {
   }
 
   /** Append-only; ignores duplicates (natural PK). */
+  /** Distinct authors that linked `object_id` in any post (`post_objects`). */
+  async findDistinctAuthorsByLinkedObject(objectId: string): Promise<string[]> {
+    const id = objectId.trim();
+    if (id.length === 0) {
+      return [];
+    }
+    const rows = await this.db
+      .selectFrom('post_objects')
+      .select('author')
+      .distinct()
+      .where('object_id', '=', id)
+      .execute();
+    return rows.map((r) => r.author);
+  }
+
   async appendPostObjects(rows: NewPostObject[]): Promise<void> {
     if (rows.length === 0) {
       return;

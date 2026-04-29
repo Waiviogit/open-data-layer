@@ -22,6 +22,7 @@ Each trigger emits an in-process event handled by `MetaGroupSyncHandler` (`apps/
 3. Call `ObjectViewService.resolve` with `update_types: ['productGroupId']` and that snapshot.
 4. Read the winning value from `fields.group_id.values[0].value_text`, or `null` if none.
 5. If it equals `objects_core.meta_group_id`, exit; otherwise `UPDATE objects_core SET meta_group_id = …`.
+6. After a successful `UPDATE`, emit `CATEGORY_MUTATED_EVENT` so `CategorySyncHandler` enqueues `object_categories_sync_queue` and user/global related scopes in `object_categories_related_sync_queue` (same path as category mutations — `meta_group_id` affects materialized categories).
 
 ## Invariant
 

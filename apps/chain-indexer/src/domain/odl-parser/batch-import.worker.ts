@@ -23,6 +23,8 @@ import { UpdateCreateHandler } from './handlers/update-create.handler';
 import { UpdateVoteHandler } from './handlers/update-vote.handler';
 import { RankVoteHandler } from './handlers/rank-vote.handler';
 import { AuthorityHandler } from './handlers/authority.handler';
+import { UserMetadataHandler } from './handlers/user-metadata.handler';
+import { ShopDeselectHandler } from './handlers/shop-deselect.handler';
 import { odlEnvelopeEventSchema } from './odl-envelope.schema';
 
 @Injectable()
@@ -38,6 +40,8 @@ export class BatchImportWorker {
     private readonly updateVoteHandler: UpdateVoteHandler,
     private readonly rankVoteHandler: RankVoteHandler,
     private readonly authorityHandler: AuthorityHandler,
+    private readonly userMetadataHandler: UserMetadataHandler,
+    private readonly shopDeselectHandler: ShopDeselectHandler,
   ) {
     this.handlerMap = {
       [this.objectCreateHandler.action]: this.objectCreateHandler,
@@ -45,6 +49,8 @@ export class BatchImportWorker {
       [this.updateVoteHandler.action]: this.updateVoteHandler,
       [this.rankVoteHandler.action]: this.rankVoteHandler,
       [this.authorityHandler.action]: this.authorityHandler,
+      [this.userMetadataHandler.action]: this.userMetadataHandler,
+      [this.shopDeselectHandler.action]: this.shopDeselectHandler,
     };
   }
 

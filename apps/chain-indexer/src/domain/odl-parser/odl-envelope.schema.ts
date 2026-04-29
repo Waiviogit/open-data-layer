@@ -53,6 +53,48 @@ export const authorityPayloadSchema = z.object({
 
 export type AuthorityPayload = z.infer<typeof authorityPayloadSchema>;
 
+/**
+ * Full `user_metadata` row (minus `account`, which is always `ctx.creator` on-chain).
+ * Replaces the entire row on upsert (legacy: full document overwrite).
+ */
+export const updateUserMetadataPayloadSchema = z
+  .object({
+    notifications_last_timestamp: z.number().int(),
+    exit_page_setting: z.boolean(),
+    locale: z.string().min(1).max(64),
+    /** JSONB (`JsonValue`-like); must be JSON-serializable for Postgres. */
+    post_locales: z.any().superRefine((value, ctx) => {
+      try {
+        JSON.stringify(value);
+      } catch {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'post_locales must be JSON-serializable',
+        });
+      }
+    }),
+    nightmode: z.boolean(),
+    reward_setting: z.enum(['HP', '50', 'HIVE']),
+    rewrite_links: z.boolean(),
+    show_nsfw_posts: z.boolean(),
+    upvote_setting: z.boolean(),
+    vote_percent: z.number().int().min(0).max(10000),
+    voting_power: z.boolean(),
+    currency: z.union([z.string(), z.null()]),
+    hide_linked_objects: z.boolean(),
+    hide_recipe_objects: z.boolean(),
+  })
+  .strict();
+
+export type UpdateUserMetadataPayload = z.infer<typeof updateUserMetadataPayloadSchema>;
+
+export const userShopDeselectPayloadSchema = z.object({
+  object_id: z.string().min(1).max(256),
+  method: z.enum(['add', 'remove']),
+});
+
+export type UserShopDeselectPayload = z.infer<typeof userShopDeselectPayloadSchema>;
+
 export const batchImportPayloadSchema = z.object({
   type: z.literal('ipfs'),
   ref: z.string().min(1),
@@ -71,6 +113,8 @@ const odlEventSchema = z.object({
     'update_vote',
     'rank_vote',
     'object_authority',
+    'update_user_metadata',
+    'user_shop_deselect',
     'batch_import',
   ]),
   v: z.number().int().min(1),

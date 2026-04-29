@@ -18,7 +18,7 @@ src/
   http/            request decorators (viewer header, governance object id)
   pipes/           ZodBodyPipe, ZodQueryPipe
   openapi/         per-resource spec fragments + registry + generate script
-  domain/          feature modules: governance/, objects/, users/, feed/, drafts/
+  domain/          feature modules: governance/, objects/, users/, feed/, drafts/, categories/
 ```
 
 ## Request flow

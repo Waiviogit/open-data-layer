@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { HiveContentType } from '@opden-data-layer/clients';
 import { HiveClient } from '@opden-data-layer/clients';
 import type {
@@ -26,6 +27,10 @@ import { parseJsonMetadata } from './json-metadata.util';
 import { bindPostObjectsToPost, parsePostObjectsForInsert, validateWobjectPercentSum } from './post-objects.parse';
 import { detectPostLanguagesBcp47 } from './post-languages';
 import { extractLinks, extractMentions } from './thread-extractors';
+import {
+  POST_OBJECT_CHANGED_EVENT,
+  PostObjectChangedEvent,
+} from '../odl-parser/post-object-changed.event';
 
 function toBigIntNaive(v: number | string | undefined | null): bigint {
   if (v === undefined || v === null) {
@@ -47,6 +52,7 @@ export class PostUpsertService {
     private readonly objectsCoreRepository: ObjectsCoreRepository,
     private readonly hiveClient: HiveClient,
     private readonly governanceCache: GovernanceCacheService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -190,6 +196,7 @@ export class PostUpsertService {
         languages,
         votes,
       });
+      this.eventEmitter.emit(POST_OBJECT_CHANGED_EVENT, new PostObjectChangedEvent(author));
       return;
     }
 
@@ -245,6 +252,8 @@ export class PostUpsertService {
       languages: finalLanguages,
       votes: voteRows,
     });
+
+    this.eventEmitter.emit(POST_OBJECT_CHANGED_EVENT, new PostObjectChangedEvent(op.author));
   }
 
   private buildCreateRow(

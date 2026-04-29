@@ -1,4 +1,12 @@
-import { Body, Controller, Get, NotFoundException, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ReqLocale } from '@opden-data-layer/core';
 import {
   GetUserBlogFeedEndpoint,
@@ -13,7 +21,13 @@ import {
 } from '../domain/users';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
-import { ZodBodyPipe } from '../pipes';
+import { ZodBodyPipe, ZodQueryPipe } from '../pipes';
+import {
+  GetUserCategoriesEndpoint,
+  userCategoriesQuerySchema,
+  type UserCategoriesResponse,
+  type UserCategoriesQuery,
+} from '../domain/categories';
 
 @Controller({ path: 'users', version: '1' })
 export class UsersController {
@@ -21,7 +35,16 @@ export class UsersController {
     private readonly getUserProfile: GetUserProfileEndpoint,
     private readonly getUserBlogFeed: GetUserBlogFeedEndpoint,
     private readonly getUserMentionsFeed: GetUserMentionsFeedEndpoint,
+    private readonly getUserCategories: GetUserCategoriesEndpoint,
   ) {}
+
+  @Get(':name/categories')
+  async getCategories(
+    @Param('name') name: string,
+    @Query(new ZodQueryPipe(userCategoriesQuerySchema)) query: UserCategoriesQuery,
+  ): Promise<UserCategoriesResponse> {
+    return this.getUserCategories.execute(name, query);
+  }
 
   @Get(':name/profile')
   async getProfile(@Param('name') name: string): Promise<UserProfileView> {

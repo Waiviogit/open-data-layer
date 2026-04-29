@@ -22,6 +22,10 @@ import {
   GroupIdMutatedEvent,
   GROUP_ID_MUTATED_EVENT,
 } from '../group-id-mutated.event';
+import {
+  CategoryMutatedEvent,
+  CATEGORY_MUTATED_EVENT,
+} from '../category-mutated.event';
 
 @Injectable()
 export class UpdateVoteHandler implements OdlActionHandler {
@@ -81,6 +85,9 @@ export class UpdateVoteHandler implements OdlActionHandler {
 
     if (vote === 'remove') {
       await this.validityVotesRepository.delete(update_id, voter);
+      if (votedUpdate.update_type === UPDATE_TYPES.CATEGORY) {
+        this.eventEmitter.emit(CATEGORY_MUTATED_EVENT, new CategoryMutatedEvent(object_id));
+      }
       if (votedUpdate.update_type === UPDATE_TYPES.PRODUCT_GROUP_ID) {
         this.eventEmitter.emit(GROUP_ID_MUTATED_EVENT, new GroupIdMutatedEvent(object_id));
       }
@@ -107,6 +114,9 @@ export class UpdateVoteHandler implements OdlActionHandler {
     };
 
     await this.validityVotesRepository.create(row);
+    if (votedUpdate.update_type === UPDATE_TYPES.CATEGORY) {
+      this.eventEmitter.emit(CATEGORY_MUTATED_EVENT, new CategoryMutatedEvent(object_id));
+    }
     if (votedUpdate.update_type === UPDATE_TYPES.PRODUCT_GROUP_ID) {
       this.eventEmitter.emit(GROUP_ID_MUTATED_EVENT, new GroupIdMutatedEvent(object_id));
     }
