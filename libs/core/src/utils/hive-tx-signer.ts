@@ -1,23 +1,17 @@
-import { Client, DEFAULT_CHAIN_ID, Signature, SignedTransaction, cryptoUtils } from '@hiveio/dhive';
-
-export type PostingSignerRelation = 'owner-posting-key' | 'delegated-posting-account';
-
-export type PostingSignerCandidate = {
-  account: string;
-  relation: PostingSignerRelation;
-  publicKey: string;
-  weight: number;
-};
+import { DEFAULT_CHAIN_ID, Signature, SignedTransaction, cryptoUtils } from '@hiveio/dhive';
 
 export type PostingSignerResult = {
-  owner: string;
-  threshold: number;
   recoveredPublicKeys: string[];
-  matches: PostingSignerCandidate[];
-  probableSignerAccounts: string[];
+  /** Accounts resolved from recovered keys via get_key_references. */
+  resolvedAccounts: string[][];
+  /** Accounts from resolvedAccounts that are also in required_posting_auths. */
+  signers: string[];
 };
 
 type OperationTuple = [string, Record<string, unknown>];
+
+/** JSON-RPC caller — pass the node's hiveRequest or any compatible fetch wrapper. */
+export type HiveRpcCaller = <T>(method: string, params: unknown) => Promise<T | undefined>;
 
 function getRequiredPostingAuths(tx: SignedTransaction): string[] {
   const result = new Set<string>();
@@ -42,84 +36,44 @@ function getRequiredPostingAuths(tx: SignedTransaction): string[] {
 function recoverPublicKeysFromTx(tx: SignedTransaction): string[] {
   const { signatures, ...txBody } = tx;
 
-  // Digest must be computed over the body without signatures.
-  // transactionDigest accepts Buffer for chainId — DEFAULT_CHAIN_ID is the mainnet constant.
+  // Digest is computed over the body without signatures.
+  // transactionDigest expects Buffer for chainId — DEFAULT_CHAIN_ID is the mainnet constant.
   const digest = cryptoUtils.transactionDigest(txBody as SignedTransaction, DEFAULT_CHAIN_ID);
 
   return signatures.map((sig) => Signature.fromString(sig).recover(digest).toString());
 }
 
-async function buildPostingCandidates(
-  owner: string,
-  client: Client,
-): Promise<{ owner: string; threshold: number; candidates: PostingSignerCandidate[] }> {
-  const [ownerAccount] = await client.database.getAccounts([owner]);
-  if (!ownerAccount) {
-    throw new Error(`Account not found: ${owner}`);
-  }
-
-  const candidates: PostingSignerCandidate[] = [];
-
-  for (const [key, weight] of ownerAccount.posting.key_auths) {
-    candidates.push({
-      account: owner,
-      relation: 'owner-posting-key',
-      // key_auths is typed [string | PublicKey, number][] — normalize to string
-      publicKey: String(key),
-      weight,
-    });
-  }
-
-  for (const [delegatedAccountName, delegatedWeight] of ownerAccount.posting.account_auths) {
-    const [delegatedAccount] = await client.database.getAccounts([delegatedAccountName]);
-    if (!delegatedAccount) {
-      continue;
-    }
-
-    for (const [key] of delegatedAccount.posting.key_auths) {
-      candidates.push({
-        account: delegatedAccountName,
-        relation: 'delegated-posting-account',
-        publicKey: String(key),
-        weight: delegatedWeight,
-      });
-    }
-  }
-
-  return { owner, threshold: ownerAccount.posting.weight_threshold, candidates };
-}
-
 /**
- * Recovers which Hive account(s) signed a transaction using the posting authority.
+ * Recovers which Hive account(s) signed a transaction.
  *
- * For each account listed in required_posting_auths (and common operation-specific
- * authority fields), it resolves the posting key candidates — including one level
- * of account_auths delegation — and cross-checks them against the public keys
- * recovered from the transaction signatures.
+ * Uses `condenser_api.get_key_references` to map recovered public keys directly
+ * to account names — no need to iterate account authorities manually.
+ * The `signers` field contains only accounts that appear in `required_posting_auths`
+ * (or operation-specific authority fields).
+ *
+ * @param tx     A fully signed Hive transaction.
+ * @param rpc    Any function that calls a Hive JSON-RPC node, matching the
+ *               `HiveRpcCaller` signature. Pass `hiveClient`'s internal caller
+ *               or a simple fetch wrapper.
  *
  * @see docs/spec/hive-tx-signer.md
  */
 export async function detectPostingSigner(
   tx: SignedTransaction,
-  client: Client,
-): Promise<PostingSignerResult[]> {
+  rpc: HiveRpcCaller,
+): Promise<PostingSignerResult> {
   const recoveredPublicKeys = recoverPublicKeysFromTx(tx);
-  const requiredPostingAuths = getRequiredPostingAuths(tx);
+  const requiredPostingAuths = new Set(getRequiredPostingAuths(tx));
 
-  const results: PostingSignerResult[] = [];
+  // get_key_references: [publicKey[]] → account[][] (one inner array per key)
+  const resolvedAccounts =
+    (await rpc<string[][]>('condenser_api.get_key_references', [recoveredPublicKeys])) ?? [];
 
-  for (const owner of requiredPostingAuths) {
-    const auth = await buildPostingCandidates(owner, client);
-    const matches = auth.candidates.filter((c) => recoveredPublicKeys.includes(c.publicKey));
+  const signers = [
+    ...new Set(
+      resolvedAccounts.flat().filter((account) => requiredPostingAuths.has(account)),
+    ),
+  ];
 
-    results.push({
-      owner,
-      threshold: auth.threshold,
-      recoveredPublicKeys,
-      matches,
-      probableSignerAccounts: [...new Set(matches.map((m) => m.account))],
-    });
-  }
-
-  return results;
+  return { recoveredPublicKeys, resolvedAccounts, signers };
 }
