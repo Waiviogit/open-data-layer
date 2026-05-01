@@ -1,0 +1,10 @@
+{
+  "name": "hive-engine-processor",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/hive-engine-processor/src",
+  "projectType": "library",
+  "tags": [],
+  "implicitDependencies": ["clients"],
+  "// targets": "to see all targets run: nx show project hive-engine-processor --web",
+  "targets": {}
+}
