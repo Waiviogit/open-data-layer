@@ -75,7 +75,7 @@ export class ObjectCategoriesWorker implements OnModuleInit, OnModuleDestroy {
     maxAttempts: number,
   ): Promise<void> {
     try {
-      const { objects, voterReputations } =
+      const { objects, voterWaivPowers } =
         await this.aggregatedObjectRepository.loadByObjectIds([objectId]);
       const aggregated = objects[0];
       if (!aggregated) {
@@ -85,7 +85,7 @@ export class ObjectCategoriesWorker implements OnModuleInit, OnModuleDestroy {
       }
 
       const governance = await this.governanceCacheService.resolvePlatform();
-      const views = this.objectViewService.resolve([aggregated], voterReputations, {
+      const views = this.objectViewService.resolve([aggregated], voterWaivPowers, {
         update_types: [UPDATE_TYPES.CATEGORY],
         governance,
       });

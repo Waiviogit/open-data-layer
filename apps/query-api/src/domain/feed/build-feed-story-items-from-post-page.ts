@@ -74,11 +74,11 @@ export async function buildFeedStoryItemsFromPostPage(
   let viewsByObjectId = new Map<string, ResolvedObjectView>();
   const weightByObjectId = new Map<string, number | null>();
   if (objectIds.length > 0) {
-    const { objects, voterReputations } = await aggregatedObjectRepo.loadByObjectIds(objectIds);
+    const { objects, voterWaivPowers } = await aggregatedObjectRepo.loadByObjectIds(objectIds);
     for (const o of objects) {
       weightByObjectId.set(o.core.object_id, o.core.weight);
     }
-    const views = objectViewService.resolve(objects, voterReputations, {
+    const views = objectViewService.resolve(objects, voterWaivPowers, {
       update_types: [...FEED_OBJECT_UPDATE_TYPES],
       locale,
       include_rejected: false,

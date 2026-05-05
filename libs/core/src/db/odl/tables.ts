@@ -31,6 +31,7 @@ export interface OdlDatabase {
   object_updates: ObjectUpdatesTable;
   validity_votes: ValidityVotesTable;
   rank_votes: RankVotesTable;
+  user_object_powers: UserObjectPowersTable;
   object_authority: ObjectAuthorityTable;
   accounts_current: AccountsCurrentTable;
   user_metadata: UserMetadataTable;
@@ -109,6 +110,11 @@ export interface ObjectUpdatesTable {
   /** GENERATED ALWAYS AS (LOWER(TRIM(value_text))) STORED; read-only. */
   value_text_normalized: Generated<string | null>;
   search_vector: unknown;
+  /** 0..10000; computed at indexer from rank_votes + governance + waiv_power. */
+  rank_score: number | null;
+  rank_context: string | null;
+  /** event_seq of decisive rank vote when applicable; tie-break at read time. */
+  rank_decisive_event_seq: bigint | null;
 }
 
 export type ObjectUpdate = Selectable<ObjectUpdatesTable>;
@@ -152,6 +158,19 @@ export interface RankVotesTable {
 export type RankVote = Selectable<RankVotesTable>;
 export type NewRankVote = Insertable<RankVotesTable>;
 export type RankVoteUpdate = Updateable<RankVotesTable>;
+
+// ---------------------------------------------------------------------------
+// user_object_powers
+// ---------------------------------------------------------------------------
+
+export interface UserObjectPowersTable {
+  account: string;
+  waiv_power: number;
+}
+
+export type UserObjectPower = Selectable<UserObjectPowersTable>;
+export type NewUserObjectPower = Insertable<UserObjectPowersTable>;
+export type UserObjectPowerUpdate = Updateable<UserObjectPowersTable>;
 
 // ---------------------------------------------------------------------------
 // object_authority

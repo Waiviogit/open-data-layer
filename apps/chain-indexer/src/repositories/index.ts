@@ -13,3 +13,4 @@ export { PostSyncQueueRepository } from './post-sync-queue.repository';
 export { AccountSyncQueueRepository } from './account-sync-queue.repository';
 export { CanonicalRecomputeRepository } from './canonical-recompute.repository';
 export { SiteRegistryRepository } from './site-registry.repository';
+export { UserObjectPowersRepository } from './user-object-powers.repository';

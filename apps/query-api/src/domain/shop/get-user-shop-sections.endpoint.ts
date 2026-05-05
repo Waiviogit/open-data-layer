@@ -110,9 +110,9 @@ export class GetUserShopSectionsEndpoint {
     }
     const uniqueIds = [...new Set(allIdsOrdered)];
 
-    const { objects, voterReputations } = await this.aggregatedObjectRepo.loadByObjectIds(uniqueIds);
+    const { objects, voterWaivPowers } = await this.aggregatedObjectRepo.loadByObjectIds(uniqueIds);
     const orderedObjs = orderAggregatedByIds(objects, uniqueIds);
-    const views = this.objectViewService.resolve(orderedObjs, voterReputations, {
+    const views = this.objectViewService.resolve(orderedObjs, voterWaivPowers, {
       update_types: [...SHOP_CARD_UPDATE_TYPES],
       locale,
       include_rejected: false,

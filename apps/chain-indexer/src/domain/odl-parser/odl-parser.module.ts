@@ -16,6 +16,7 @@ import { MetaGroupSyncHandler } from './handlers/meta-group-sync.handler';
 import { CategorySyncHandler } from './handlers/category-sync.handler';
 import { ObjectCategoriesWorker } from './object-categories.worker';
 import { ObjectCategoriesRelatedWorker } from './object-categories-related.worker';
+import { RankScoreModule } from '../rank-score/rank-score.module';
 import {
   GovernanceWriteGuard,
   WRITE_GUARDS,
@@ -23,7 +24,7 @@ import {
 } from './guards';
 
 @Module({
-  imports: [RepositoriesModule, GovernanceModule, ObjectsDomainModule],
+  imports: [RepositoriesModule, GovernanceModule, ObjectsDomainModule, RankScoreModule],
   providers: [
     GovernanceWriteGuard,
     WriteGuardRunner,

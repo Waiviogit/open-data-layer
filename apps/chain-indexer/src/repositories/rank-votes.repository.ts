@@ -12,6 +12,14 @@ import type {
 export class RankVotesRepository {
   constructor(@Inject(KYSELY) private readonly db: Kysely<Database>) {}
 
+  async listByUpdateId(updateId: string): Promise<RankVote[]> {
+    return this.db
+      .selectFrom('rank_votes')
+      .where('update_id', '=', updateId)
+      .selectAll()
+      .execute();
+  }
+
   async findByUpdateIdVoterAndContext(
     updateId: string,
     voter: string,

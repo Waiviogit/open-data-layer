@@ -19,6 +19,7 @@ import { ObjectCategoriesRelatedRepository } from './object-categories-related.r
 import { ObjectCategoriesRelatedSyncQueueRepository } from './object-categories-related-sync-queue.repository';
 import { UserMetadataRepository } from './user-metadata.repository';
 import { UserShopDeselectRepository } from './user-shop-deselect.repository';
+import { UserObjectPowersRepository } from './user-object-powers.repository';
 
 @Module({
   providers: [
@@ -42,6 +43,7 @@ import { UserShopDeselectRepository } from './user-shop-deselect.repository';
     ObjectCategoriesRelatedSyncQueueRepository,
     UserMetadataRepository,
     UserShopDeselectRepository,
+    UserObjectPowersRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -64,6 +66,7 @@ import { UserShopDeselectRepository } from './user-shop-deselect.repository';
     ObjectCategoriesRelatedSyncQueueRepository,
     UserMetadataRepository,
     UserShopDeselectRepository,
+    UserObjectPowersRepository,
   ],
 })
 export class RepositoriesModule {}

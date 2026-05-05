@@ -1,5 +1,5 @@
 import { UPDATE_REGISTRY } from '@opden-data-layer/core';
-import type { AggregatedObject, VoterReputationMap } from '../types/aggregated-object';
+import type { AggregatedObject, VoterWaivPowerMap } from '../types/aggregated-object';
 import type { ResolveOptions } from '../types/resolve-options';
 import type { ResolvedField, ResolvedObjectView, ResolvedUpdate } from '../types/resolved-view';
 import { computeCuratorSet, resolveUpdateValidity } from './resolve-validity';
@@ -44,7 +44,7 @@ export function filterByLocalePreference(
  */
 export function resolveObjectViews(
   objects: AggregatedObject[],
-  voterReputations: VoterReputationMap,
+  voterWaivPowers: VoterWaivPowerMap,
   options: ResolveOptions,
 ): ResolvedObjectView[] {
   const bannedSet = new Set(options.governance.banned);
@@ -52,12 +52,12 @@ export function resolveObjectViews(
 
   return objects
     .filter((obj) => !bannedSet.has(obj.core.creator))
-    .map((obj) => resolveObject(obj, voterReputations, options, bannedSet, requestedTypes));
+    .map((obj) => resolveObject(obj, voterWaivPowers, options, bannedSet, requestedTypes));
 }
 
 function resolveObject(
   obj: AggregatedObject,
-  voterReputations: VoterReputationMap,
+  voterWaivPowers: VoterWaivPowerMap,
   options: ResolveOptions,
   bannedSet: Set<string>,
   requestedTypes: Set<string>,
@@ -95,7 +95,7 @@ function resolveObject(
         updateVotes,
         curatorSet,
         options.governance,
-        voterReputations,
+        voterWaivPowers,
         obj.authorities,
       );
 
@@ -111,14 +111,11 @@ function resolveObject(
         value_json: update.value_json ?? null,
         validity_status: status,
         field_weight,
-        rank_score: null,
-        rank_context: null,
+        rank_score: update.rank_score ?? null,
+        rank_context: update.rank_context ?? null,
+        rank_decisive_event_seq: update.rank_decisive_event_seq ?? null,
       };
     });
-
-    const rankVotesForType = obj.rank_votes.filter((v) =>
-      updateIds.includes(v.update_id),
-    );
 
     const validResolved = resolvedUpdates.filter((u) => u.validity_status === 'VALID');
     const localeScoped =
@@ -130,12 +127,7 @@ function resolveObject(
     if (cardinality === 'single') {
       resolved = resolveSingleCardinality(localeScoped);
     } else {
-      resolved = resolveMultiCardinality(
-        localeScoped,
-        rankVotesForType,
-        options.governance,
-        definition?.rank_aggregation,
-      );
+      resolved = resolveMultiCardinality(localeScoped);
     }
 
     if (options.include_rejected) {

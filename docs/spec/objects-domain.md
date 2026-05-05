@@ -8,9 +8,9 @@ Given raw DB rows for a batch of objects (core, updates, votes, authorities) and
 
 1. Filters banned creators
 2. Computes the curator set `C` per object
-3. Resolves validity for each update using the tiered hierarchy (curator filter → admin LWAW → trusted LWTW → community vote weight → baseline VALID)
+3. Resolves validity for each update using the tiered hierarchy (curator filter → admin LWAW → trusted LWTW → **waiv_power** community weight → baseline VALID). See [waiv-power.md](waiv-power.md).
 4. Applies **locale preference** on VALID rows per `update_type` (see [Locale filtering](#locale-filtering))
-5. Applies single/multi cardinality rules and ranking
+5. Applies single/multi cardinality rules; **multi** ordering uses persisted `rank_score` / `rank_decisive_event_seq` on `object_updates`
 6. Returns a typed `ResolvedObjectView[]` ready for API serialization
 
 ## Integration in an application
@@ -46,10 +46,10 @@ export class MyQueryService {
   ) {}
 
   async getResolvedObjects(objectIds: string[]): Promise<ResolvedObjectView[]> {
-    const { objects, voterReputations } =
+    const { objects, voterWaivPowers } =
       await this.aggregatedObjectRepository.loadByObjectIds(objectIds);
 
-    return this.objectViewService.resolve(objects, voterReputations, {
+    return this.objectViewService.resolve(objects, voterWaivPowers, {
       update_types: ['name', 'description', 'location'],
     });
   }
@@ -59,7 +59,7 @@ export class MyQueryService {
 ### 3. `ObjectViewService.resolve` options
 
 ```typescript
-objectViewService.resolve(objects, voterReputations, {
+objectViewService.resolve(objects, voterWaivPowers, {
   update_types: ['name', 'price'],  // required — which update types to include
   locale: 'en-US',                  // optional, default 'en-US'
   include_rejected: false,          // optional, default false
@@ -117,25 +117,25 @@ interface ResolvedUpdate {
   value_json: JsonValue | null;
   validity_status: 'VALID' | 'REJECTED';
   field_weight: number | null;   // community vote weight; null if admin/trusted decided
-  rank_score: number | null;     // 0..10000; null for single-cardinality fields
+  rank_score: number | null;     // 0..10000 from object_updates; indexer-maintained for multi
   rank_context: string | null;
+  rank_decisive_event_seq: bigint | null;
 }
 ```
 
 ## Data loading: AggregatedObjectRepository
 
-The repository is app-scoped (currently in `chain-indexer`). It runs the 6-query pipeline described in [data-model/flow.md](data-model/flow.md) §Step 3:
+The repository is app-scoped (`chain-indexer` and `query-api`). It runs the **five-query** pipeline described in [data-model/flow.md](data-model/flow.md) §Step 3:
 
 ```
 1. objects_core       ─┐
-2. object_updates      │  parallel Promise.all
+2. object_updates      │  parallel Promise.all (includes rank fields)
 3. validity_votes      │
-4. rank_votes          │
-5. object_authority   ─┘
-6. accounts_current   — sequential, uses distinct voter names from queries 3+4
+4. object_authority   ─┘
+5. user_object_powers — uses distinct validity voter names from step 3
 ```
 
-All six queries use `object_id IN (...)` so a single call loads a full batch efficiently.
+Raw `rank_votes` are **not** loaded for resolution; rank is read from `object_updates`.
 
 ## Governance snapshot
 
@@ -148,7 +148,7 @@ The library ships `DEFAULT_GOVERNANCE_SNAPSHOT` — an empty stub where all sets
 Replace the default with a real `GovernanceSnapshot` when governance resolution is implemented:
 
 ```typescript
-objectViewService.resolve(objects, voterReputations, {
+objectViewService.resolve(objects, voterWaivPowers, {
   update_types: ['name'],
   governance: await governanceService.resolveSnapshot(governanceObjectId),
 });
@@ -170,7 +170,8 @@ This is useful in scripts, workers, or unit tests that do not run a full NestJS 
 
 ## Related specs
 
-- [data-model/flow.md](data-model/flow.md) — read flow, 6-query pipeline, ResolvedView assembly steps
+- [data-model/flow.md](data-model/flow.md) — read flow, five-query pipeline, ResolvedView assembly steps
 - [vote-semantics.md](vote-semantics.md) — validity tiers, community vote weight, ranking
+- [waiv-power.md](waiv-power.md) — WAIV stake weighting and `user_object_powers`
 - [authority-entity.md](authority-entity.md) — curator filter, ownership vs administrative authority
 - [governance-resolution.md](governance-resolution.md) — GovernanceSnapshot construction

@@ -1,6 +1,7 @@
 import type { ObjectUpdate, ValidityVote, ObjectAuthority } from '@opden-data-layer/core';
 import type { GovernanceSnapshot } from '../types/governance-snapshot';
-import type { ValidityStatus, VoterReputationMap } from '../types';
+import type { ValidityStatus, VoterWaivPowerMap } from '../types';
+import { waivVoteWeight } from './resolve-ranking';
 
 /**
  * Compute the curator set C for an object.
@@ -50,7 +51,7 @@ export function computeCuratorSet(
  * Hierarchy (empty curator set):
  *   1. Admin decisive vote (LWAW)
  *   2. Trusted decisive vote on objects they have authority over (LWTW)
- *   3. Community vote weight: field_weight = Σ(votePower × sign)
+ *   3. Community vote weight: field_weight = Σ(weight × sign) where weight = waiv_vote_weight(waiv_power)
  *   4. No votes → baseline VALID
  *
  * @see docs/spec/data-model/flow.md §Step 4
@@ -61,13 +62,13 @@ export function resolveUpdateValidity(
   validityVotes: ValidityVote[],
   curatorSet: Set<string>,
   governance: GovernanceSnapshot,
-  voterReputations: VoterReputationMap,
+  voterWaivPowers: VoterWaivPowerMap,
   objectAuthorities: ObjectAuthority[],
 ): { status: ValidityStatus; field_weight: number | null } {
   if (curatorSet.size > 0) {
     return resolveCuratorFilter(update, validityVotes, curatorSet);
   }
-  return resolveHierarchy(update, validityVotes, governance, voterReputations, objectAuthorities);
+  return resolveHierarchy(update, validityVotes, governance, voterWaivPowers, objectAuthorities);
 }
 
 function resolveCuratorFilter(
@@ -88,7 +89,7 @@ function resolveHierarchy(
   update: ObjectUpdate,
   validityVotes: ValidityVote[],
   governance: GovernanceSnapshot,
-  voterReputations: VoterReputationMap,
+  voterWaivPowers: VoterWaivPowerMap,
   objectAuthorities: ObjectAuthority[],
 ): { status: ValidityStatus; field_weight: number | null } {
   const updateVotes = validityVotes.filter((v) => v.update_id === update.update_id);
@@ -118,10 +119,9 @@ function resolveHierarchy(
 
   let field_weight = 0;
   for (const vote of communityVotes) {
-    const reputation = voterReputations.get(vote.voter) ?? 0;
-    const votePower = 1 + Math.log2(1 + reputation);
+    const weight = waivVoteWeight(voterWaivPowers.get(vote.voter) ?? 0);
     const sign = vote.vote === 'for' ? 1 : -1;
-    field_weight += votePower * sign;
+    field_weight += weight * sign;
   }
   return {
     status: field_weight >= 0 ? 'VALID' : 'REJECTED',

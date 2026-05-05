@@ -1,140 +1,114 @@
 import type { RankVote } from '@opden-data-layer/core';
 import type { GovernanceSnapshot } from '../types/governance-snapshot';
 import type { ResolvedUpdate } from '../types/resolved-view';
+import type { VoterWaivPowerMap } from '../types/aggregated-object';
+
+export function waivVoteWeight(waivPower: number): number {
+  return waivPower > 1 ? waivPower : 1;
+}
 
 /**
- * Resolve the decisive rank_score for a single update within a rank_context.
- *
- * Hierarchy (mirrors validity tier order, rank channel only):
- *   1. Latest admin rank wins (LWAW) — highest event_seq among admin voters
- *   2. Latest trusted rank wins (LWTW) — highest event_seq among trusted voters
- *   3. No decisive rank → rank_score = null
- *
- * @see docs/spec/vote-semantics.md §B
+ * Persisted rank metadata for one update row (indexer calls this after each rank_vote).
  */
-function resolveDecisiveRankScore(
+export function computeUpdateRankPersistence(
   rankVotes: RankVote[],
   governance: GovernanceSnapshot,
-): { rank_score: number | null; rank_context: string | null } {
+  voterWaivPowers: VoterWaivPowerMap,
+  rankAggregation: 'average' | 'winner' | undefined,
+): {
+  rank_score: number | null;
+  rank_context: string | null;
+  rank_decisive_event_seq: bigint | null;
+} {
   if (rankVotes.length === 0) {
-    return { rank_score: null, rank_context: null };
+    return { rank_score: null, rank_context: null, rank_decisive_event_seq: null };
+  }
+
+  const mode = rankAggregation === 'average' ? 'average' : 'winner';
+
+  if (mode === 'average') {
+    let weightedSum = 0;
+    let weightTotal = 0;
+    for (const v of rankVotes) {
+      const w = waivVoteWeight(voterWaivPowers.get(v.voter) ?? 0);
+      weightedSum += v.rank * w;
+      weightTotal += w;
+    }
+    if (weightTotal === 0) {
+      return { rank_score: null, rank_context: null, rank_decisive_event_seq: null };
+    }
+    return {
+      rank_score: Math.round(weightedSum / weightTotal),
+      rank_context: null,
+      rank_decisive_event_seq: null,
+    };
   }
 
   const adminVotes = rankVotes.filter((v) => governance.admins.includes(v.voter));
   if (adminVotes.length > 0) {
     const latest = latestRankVote(adminVotes);
-    return { rank_score: latest.rank, rank_context: latest.rank_context };
+    return {
+      rank_score: latest.rank,
+      rank_context: latest.rank_context,
+      rank_decisive_event_seq: latest.event_seq,
+    };
   }
 
   const trustedVotes = rankVotes.filter((v) => governance.trusted.includes(v.voter));
   if (trustedVotes.length > 0) {
     const latest = latestRankVote(trustedVotes);
-    return { rank_score: latest.rank, rank_context: latest.rank_context };
+    return {
+      rank_score: latest.rank,
+      rank_context: latest.rank_context,
+      rank_decisive_event_seq: latest.event_seq,
+    };
   }
 
-  return { rank_score: null, rank_context: null };
+  const maxPower = Math.max(...rankVotes.map((v) => voterWaivPowers.get(v.voter) ?? 0));
+  const candidates = rankVotes.filter((v) => (voterWaivPowers.get(v.voter) ?? 0) === maxPower);
+  const best = candidates.reduce((a, v) => (v.event_seq > a.event_seq ? v : a));
+  return {
+    rank_score: best.rank,
+    rank_context: best.rank_context,
+    rank_decisive_event_seq: best.event_seq,
+  };
 }
 
 /**
- * Sort resolved VALID updates by decisive rank_score.
+ * Sort key for multi-cardinality ordering using persisted rank fields on {@link ResolvedUpdate}.
  *
- * Tie-break order (per spec vote-semantics.md §B):
- *   1. rank_score ASC (lower = higher rank)
- *   2. latest decisive rank vote event_seq DESC
- *   3. latest update event_seq DESC
+ * Tie-break order:
+ *   1. rank_score ASC (nulls last)
+ *   2. rank_decisive_event_seq DESC
+ *   3. update event_seq DESC
  *   4. update_id ASC
- */
-export function resolveRanking(
-  updates: ResolvedUpdate[],
-  rankVotes: RankVote[],
-  governance: GovernanceSnapshot,
-): ResolvedUpdate[] {
-  const withScores = updates.map((u) => {
-    const votesForUpdate = rankVotes.filter((v) => v.update_id === u.update_id);
-    const { rank_score, rank_context } = resolveDecisiveRankScore(votesForUpdate, governance);
-
-    const latestDecisiveSeq = getLatestDecisiveRankSeq(votesForUpdate, governance);
-
-    return { update: { ...u, rank_score, rank_context }, latestDecisiveSeq };
-  });
-
-  return withScores
-    .sort((a, b) => compareRanked(a, b))
-    .map((entry) => entry.update);
-}
-
-/**
- * Sort VALID updates by arithmetic mean of all rank votes per update.
- * `rank_context` is always null (no single decisive voter).
  *
- * Tie-break order matches {@link resolveRanking} when `latestDecisiveSeq` is null:
- *   rank_score ASC, then update event_seq DESC, then update_id ASC.
+ * @see docs/spec/vote-semantics.md §B
  */
-export function resolveAverageRanking(
-  updates: ResolvedUpdate[],
-  rankVotes: RankVote[],
-): ResolvedUpdate[] {
-  const withScores = updates.map((u) => {
-    const votesForUpdate = rankVotes.filter((v) => v.update_id === u.update_id);
-    let rank_score: number | null = null;
-    if (votesForUpdate.length > 0) {
-      const sum = votesForUpdate.reduce((s, v) => s + v.rank, 0);
-      rank_score = Math.round(sum / votesForUpdate.length);
-    }
-    return {
-      update: { ...u, rank_score, rank_context: null },
-      latestDecisiveSeq: null as bigint | null,
-    };
-  });
-
-  return withScores
-    .sort((a, b) => compareRanked(a, b))
-    .map((entry) => entry.update);
-}
-
-function compareRanked(
-  a: { update: ResolvedUpdate; latestDecisiveSeq: bigint | null },
-  b: { update: ResolvedUpdate; latestDecisiveSeq: bigint | null },
+export function compareResolvedUpdatesByRanking(
+  a: ResolvedUpdate,
+  b: ResolvedUpdate,
 ): number {
-  const aScore = a.update.rank_score;
-  const bScore = b.update.rank_score;
+  const aScore = a.rank_score;
+  const bScore = b.rank_score;
 
-  // Unranked updates go to the end
   if (aScore !== null && bScore === null) return -1;
   if (aScore === null && bScore !== null) return 1;
   if (aScore !== null && bScore !== null && aScore !== bScore) return aScore - bScore;
 
-  // Tie-break 2: latest decisive rank vote event_seq DESC
-  const aSeq = a.latestDecisiveSeq;
-  const bSeq = b.latestDecisiveSeq;
+  const aSeq = a.rank_decisive_event_seq;
+  const bSeq = b.rank_decisive_event_seq;
   if (aSeq !== null && bSeq === null) return -1;
   if (aSeq === null && bSeq !== null) return 1;
   if (aSeq !== null && bSeq !== null && aSeq !== bSeq) {
     return aSeq > bSeq ? -1 : 1;
   }
 
-  // Tie-break 3: latest update event_seq DESC
-  if (a.update.event_seq !== b.update.event_seq) {
-    return a.update.event_seq > b.update.event_seq ? -1 : 1;
+  if (a.event_seq !== b.event_seq) {
+    return a.event_seq > b.event_seq ? -1 : 1;
   }
 
-  // Tie-break 4: update_id ASC
-  return a.update.update_id < b.update.update_id ? -1 : 1;
-}
-
-function getLatestDecisiveRankSeq(
-  rankVotes: RankVote[],
-  governance: GovernanceSnapshot,
-): bigint | null {
-  const adminVotes = rankVotes.filter((v) => governance.admins.includes(v.voter));
-  if (adminVotes.length > 0) {
-    return latestRankVote(adminVotes).event_seq;
-  }
-  const trustedVotes = rankVotes.filter((v) => governance.trusted.includes(v.voter));
-  if (trustedVotes.length > 0) {
-    return latestRankVote(trustedVotes).event_seq;
-  }
-  return null;
+  return a.update_id < b.update_id ? -1 : 1;
 }
 
 function latestRankVote(votes: RankVote[]): RankVote {

@@ -20,7 +20,7 @@ describe('GetObjectByIdEndpoint', () => {
     const repo = {
       loadByObjectIds: jest.fn().mockResolvedValue({
         objects: [],
-        voterReputations: new Map(),
+        voterWaivPowers: new Map(),
       }),
     } as unknown as AggregatedObjectRepository;
     const viewService = {
@@ -57,11 +57,10 @@ describe('GetObjectByIdEndpoint', () => {
             core: { object_id: 'o1', object_type: 'x', creator: 'c' },
             updates: [],
             validity_votes: [],
-            rank_votes: [],
             authorities: [],
           },
         ],
-        voterReputations: new Map(),
+        voterWaivPowers: new Map(),
       }),
     } as unknown as AggregatedObjectRepository;
     const viewService = {
@@ -131,11 +130,10 @@ describe('GetObjectByIdEndpoint', () => {
               },
             ],
             validity_votes: [],
-            rank_votes: [],
             authorities: [],
           },
         ],
-        voterReputations: new Map(),
+        voterWaivPowers: new Map(),
       }),
     } as unknown as AggregatedObjectRepository;
     const viewService = {
@@ -183,11 +181,10 @@ describe('GetObjectByIdEndpoint', () => {
             core: { object_id: 'o1', object_type: 'x', creator: 'c' },
             updates: [],
             validity_votes: [],
-            rank_votes: [],
             authorities: [],
           },
         ],
-        voterReputations: new Map(),
+        voterWaivPowers: new Map(),
       }),
     } as unknown as AggregatedObjectRepository;
     const viewService = {
@@ -231,11 +228,10 @@ describe('GetObjectByIdEndpoint', () => {
             core: { object_id: 'o1', object_type: 'x', creator: 'c' },
             updates: [],
             validity_votes: [],
-            rank_votes: [],
             authorities: [],
           },
         ],
-        voterReputations: new Map(),
+        voterWaivPowers: new Map(),
       }),
     } as unknown as AggregatedObjectRepository;
     const viewService = {

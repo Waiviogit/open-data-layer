@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { NewRankVote } from '@opden-data-layer/core';
+import { UPDATE_REGISTRY } from '@opden-data-layer/core';
 import {
   ObjectUpdatesRepository,
   ObjectsCoreRepository,
@@ -13,6 +14,11 @@ import {
   GovernanceObjectMutatedEvent,
   GOVERNANCE_OBJECT_MUTATED_EVENT,
 } from '../../governance/governance-object-mutated.event';
+import {
+  USER_OBJECT_POWERS_CREATE_EVENT,
+  UserObjectPowersCreateEvent,
+} from '../../user-object-powers/user-object-powers.events';
+import { RankScoreService } from '../../rank-score/rank-score.service';
 
 @Injectable()
 export class RankVoteHandler implements OdlActionHandler {
@@ -25,6 +31,7 @@ export class RankVoteHandler implements OdlActionHandler {
     private readonly objectsCoreRepository: ObjectsCoreRepository,
     private readonly writeGuardRunner: WriteGuardRunner,
     private readonly eventEmitter: EventEmitter2,
+    private readonly rankScoreService: RankScoreService,
   ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
@@ -49,6 +56,20 @@ export class RankVoteHandler implements OdlActionHandler {
     const core = await this.objectsCoreRepository.findByObjectId(object_id);
     if (!core) {
       this.logger.warn(`rank_vote: object '${object_id}' not found; skipping`);
+      return;
+    }
+
+    const votedUpdate = await this.objectUpdatesRepository.findByUpdateId(update_id);
+    if (!votedUpdate) {
+      this.logger.warn(`rank_vote: update_id '${update_id}' not found; skipping`);
+      return;
+    }
+
+    const def = UPDATE_REGISTRY[votedUpdate.update_type];
+    if (!def || def.cardinality !== 'multi') {
+      this.logger.warn(
+        `rank_vote: update_type '${votedUpdate.update_type}' is not multi-cardinality; skipping (UNSUPPORTED_RANK_TARGET)`,
+      );
       return;
     }
 
@@ -79,5 +100,10 @@ export class RankVoteHandler implements OdlActionHandler {
       GOVERNANCE_OBJECT_MUTATED_EVENT,
       new GovernanceObjectMutatedEvent(object_id),
     );
+    this.eventEmitter.emit(
+      USER_OBJECT_POWERS_CREATE_EVENT,
+      new UserObjectPowersCreateEvent(ctx.creator),
+    );
+    await this.rankScoreService.recalculateForUpdateId(update_id);
   }
 }

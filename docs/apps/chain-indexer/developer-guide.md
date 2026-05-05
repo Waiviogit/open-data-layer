@@ -80,6 +80,20 @@ Redis **key names** for the block cursor and governance cache are defined in cod
 | `HIVE_URL_ROTATION_DB` | No | — | DB index for URL rotation |
 | `ODL_NETWORK` | No | `mainnet` | `mainnet` → ODL id `odl-mainnet`; `testnet` → `odl-testnet` |
 
+### Hive Engine (WAIV `user_object_powers`)
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `HIVE_ENGINE_NODES` | No | Built-in node list | Comma-separated Engine RPC URLs; if unset, defaults from `@opden-data-layer/clients` |
+| `HIVE_ENGINE_CACHE_PREFIX` | No | `chain_indexer_hive_engine` | Redis URL rotation prefix |
+| `HIVE_ENGINE_CACHE_TTL_SECONDS` | No | `1200` | URL rotation cache TTL |
+| `HIVE_ENGINE_MAX_RESPONSE_TIME_MS` | No | `8000` | Request timeout |
+| `HIVE_ENGINE_URL_ROTATION_DB` | No | `0` | Redis DB for rotation |
+| `HIVE_ENGINE_BLOCK_CACHE_KEY` | No | `chain-indexer:cache:hive-engine:block-number` | Redis key for Engine block cursor |
+| `HIVE_ENGINE_START_BLOCK` | No | `95000000` | First Engine block if cursor missing |
+
+See [waiv-power.md](../../spec/waiv-power.md).
+
 ### IPFS (batch import)
 
 | Variable | Required | Default | Description |

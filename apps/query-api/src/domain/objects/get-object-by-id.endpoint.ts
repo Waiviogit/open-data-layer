@@ -22,7 +22,7 @@ export class GetObjectByIdEndpoint {
   ) {}
 
   async execute(input: GetObjectByIdInput): Promise<ResolvedObjectView | null> {
-    const { objects, voterReputations } = await this.aggregatedObjectRepo.loadByObjectIds([
+    const { objects, voterWaivPowers } = await this.aggregatedObjectRepo.loadByObjectIds([
       input.objectId,
     ]);
     const agg = objects[0];
@@ -39,7 +39,7 @@ export class GetObjectByIdEndpoint {
       input.governanceObjectIdFromHeader,
     );
 
-    const views = this.objectViewService.resolve(objects, voterReputations, {
+    const views = this.objectViewService.resolve(objects, voterWaivPowers, {
       update_types: updateTypes,
       locale: input.locale,
       include_rejected: input.includeRejected ?? false,

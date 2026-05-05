@@ -15,6 +15,7 @@ The **chain-indexer** application is the **Hive write path**: it reads blocks in
 | Runtime | NestJS `ApplicationContext` (no HTTP server) |
 | Chain access | `@hiveio/dhive` via `@opden-data-layer/clients` (`HiveClient`) |
 | Block loop | `HiveProcessorService` in `@opden-data-layer/hive-processor` |
+| Hive Engine | `HiveEngineProcessorService` + `WaivStakeParser` (`@opden-data-layer/hive-engine-processor`); Redis cursor for Engine block number |
 | Cursor | Redis (`BlockCacheService`) |
 | Persistence | Kysely + PostgreSQL (app repositories under `apps/chain-indexer/src/repositories/`) |
 | Large imports | Optional IPFS (`batch_import` → `BatchImportWorker`) |
@@ -65,6 +66,8 @@ flowchart LR
 | [Account sync](account-sync.md) | `account_sync_queue`: `get_accounts` + followers/following/muted backfill when account is missing or on create |
 | [Meta group sync](meta-group-sync.md) | `meta_group_id` on `objects_core` synced from winning `group_id` via `ObjectViewService` + platform governance |
 | [Object categories](object-categories.md) | Materialized `category` per object + scoped `object_categories_related` for shop navigation queues |
+
+**WAIV voting weight:** [waiv-power.md](../../../spec/waiv-power.md) — `user_object_powers`, ODL-triggered create events, Hive Engine stake/delegate increments.
 
 **Schema and migrations:** [Data model](../../../spec/data-model/flow.md), [Migrations](../../../operations/migrations.md).
 

@@ -95,5 +95,8 @@ export type {
   NewObjectCategoriesSyncQueueRow,
   ObjectCategoriesRelatedSyncQueueRow,
   NewObjectCategoriesRelatedSyncQueueRow,
+  UserObjectPower,
+  NewUserObjectPower,
+  UserObjectPowerUpdate,
 } from './odl/tables';
 export type { OdlDatabase } from './odl/database';

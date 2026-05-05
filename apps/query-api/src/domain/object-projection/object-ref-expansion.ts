@@ -32,8 +32,8 @@ export async function expandObjectRefs(
     return out;
   }
 
-  const { objects, voterReputations } = await aggregatedObjectRepo.loadByObjectIds(refIds);
-  const views = objectViewService.resolve(objects, voterReputations, {
+  const { objects, voterWaivPowers } = await aggregatedObjectRepo.loadByObjectIds(refIds);
+  const views = objectViewService.resolve(objects, voterWaivPowers, {
     update_types: [...REF_SUMMARY_UPDATE_TYPES],
     locale,
     include_rejected: false,

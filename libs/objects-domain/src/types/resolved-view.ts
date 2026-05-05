@@ -31,6 +31,10 @@ export interface ResolvedUpdate {
    * Rank context identifier. Null for single-cardinality update types.
    */
   rank_context: string | null;
+  /**
+   * From `object_updates.rank_decisive_event_seq`; tie-break between equal rank_score.
+   */
+  rank_decisive_event_seq: bigint | null;
 }
 
 /**

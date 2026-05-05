@@ -16,6 +16,10 @@ import {
   GOVERNANCE_OBJECT_MUTATED_EVENT,
 } from '../../governance/governance-object-mutated.event';
 import {
+  USER_OBJECT_POWERS_CREATE_EVENT,
+  UserObjectPowersCreateEvent,
+} from '../../user-object-powers/user-object-powers.events';
+import {
   SITE_CANONICAL_RECOMPUTE_EVENT,
   SiteCanonicalRecomputeEvent,
 } from '../../site-canonical/site-canonical-recompute.event';
@@ -199,6 +203,10 @@ export class UpdateCreateHandler implements OdlActionHandler {
     this.eventEmitter.emit(
       GOVERNANCE_OBJECT_MUTATED_EVENT,
       new GovernanceObjectMutatedEvent(object_id),
+    );
+    this.eventEmitter.emit(
+      USER_OBJECT_POWERS_CREATE_EVENT,
+      new UserObjectPowersCreateEvent(creator),
     );
   }
 }

@@ -1,5 +1,5 @@
-import type { ObjectsCore, ObjectUpdate, ValidityVote, RankVote, ObjectAuthority } from '@opden-data-layer/core';
-import type { AggregatedObject, VoterReputationMap } from '../types/aggregated-object';
+import type { ObjectsCore, ObjectUpdate, ValidityVote, ObjectAuthority } from '@opden-data-layer/core';
+import type { AggregatedObject, VoterWaivPowerMap } from '../types/aggregated-object';
 import type { ResolveOptions } from '../types/resolve-options';
 import type { ResolvedUpdate } from '../types/resolved-view';
 import { DEFAULT_GOVERNANCE_SNAPSHOT } from '../types/governance-snapshot';
@@ -41,6 +41,9 @@ function makeUpdate(
     value_json: null,
     value_text_normalized: `value-${updateId}`,
     search_vector: null,
+    rank_score: null,
+    rank_context: null,
+    rank_decisive_event_seq: null,
   };
 }
 
@@ -48,7 +51,6 @@ function makeAggregated(
   objectId: string,
   updates: ObjectUpdate[],
   validityVotes: ValidityVote[] = [],
-  rankVotes: RankVote[] = [],
   authorities: ObjectAuthority[] = [],
   creator = 'alice',
   canonical: string | null = null,
@@ -57,7 +59,6 @@ function makeAggregated(
     core: makeCore(objectId, creator, canonical),
     updates,
     validity_votes: validityVotes,
-    rank_votes: rankVotes,
     authorities,
   };
 }
@@ -75,17 +76,17 @@ function makeOptions(
   };
 }
 
-const EMPTY_REPUTATION: VoterReputationMap = new Map();
+const EMPTY_WAIV_POWERS: VoterWaivPowerMap = new Map();
 
 describe('resolveObjectViews', () => {
   it('returns empty array for empty input', () => {
-    expect(resolveObjectViews([], EMPTY_REPUTATION, makeOptions(['name']))).toEqual([]);
+    expect(resolveObjectViews([], EMPTY_WAIV_POWERS, makeOptions(['name']))).toEqual([]);
   });
 
   it('skips objects whose creator is banned', () => {
     const governance = { ...DEFAULT_GOVERNANCE_SNAPSHOT, banned: ['banned_creator'] };
-    const obj = makeAggregated('obj1', [], [], [], [], 'banned_creator');
-    const result = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['name'], { governance }));
+    const obj = makeAggregated('obj1', [], [], [], 'banned_creator');
+    const result = resolveObjectViews([obj], EMPTY_WAIV_POWERS, makeOptions(['name'], { governance }));
     expect(result).toHaveLength(0);
   });
 
@@ -95,7 +96,7 @@ describe('resolveObjectViews', () => {
       makeUpdate('u2', 'obj1', 'description'),
     ];
     const obj = makeAggregated('obj1', updates);
-    const result = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['name']));
+    const result = resolveObjectViews([obj], EMPTY_WAIV_POWERS, makeOptions(['name']));
     expect(result).toHaveLength(1);
     expect(result[0].fields).toHaveProperty('name');
     expect(result[0].fields).not.toHaveProperty('description');
@@ -108,7 +109,7 @@ describe('resolveObjectViews', () => {
       makeUpdate('u2', 'obj1', 'name', 'bad_actor'),
     ];
     const obj = makeAggregated('obj1', updates);
-    const result = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['name'], { governance }));
+    const result = resolveObjectViews([obj], EMPTY_WAIV_POWERS, makeOptions(['name'], { governance }));
     const nameField = result[0].fields['name'];
     expect(nameField.values.every((v) => v.creator !== 'bad_actor')).toBe(true);
   });
@@ -125,7 +126,7 @@ describe('resolveObjectViews', () => {
       transaction_id: 'tx-vote',
     };
     const obj = makeAggregated('obj1', [update], [voteAgainst]);
-    const result = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['name'], { governance }));
+    const result = resolveObjectViews([obj], EMPTY_WAIV_POWERS, makeOptions(['name'], { governance }));
     const nameField = result[0].fields['name'];
     expect(nameField.values).toHaveLength(0);
   });
@@ -144,7 +145,7 @@ describe('resolveObjectViews', () => {
     const obj = makeAggregated('obj1', [update], [voteAgainst]);
     const result = resolveObjectViews(
       [obj],
-      EMPTY_REPUTATION,
+      EMPTY_WAIV_POWERS,
       makeOptions(['name'], { governance, include_rejected: true }),
     );
     const nameField = result[0].fields['name'];
@@ -170,7 +171,7 @@ describe('resolveObjectViews', () => {
     const obj = makeAggregated('obj1', updates, [voteAgainst]);
     const result = resolveObjectViews(
       [obj],
-      EMPTY_REPUTATION,
+      EMPTY_WAIV_POWERS,
       makeOptions(['tag'], { governance, include_rejected: true }),
     );
     const tagField = result[0].fields['tag'];
@@ -181,8 +182,8 @@ describe('resolveObjectViews', () => {
 
   it('assembles basic ResolvedObjectView shape correctly', () => {
     const update = makeUpdate('u1', 'obj1', 'name');
-    const obj = makeAggregated('obj1', [update], [], [], [], 'alice', 'https://a.example/');
-    const [view] = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['name']));
+    const obj = makeAggregated('obj1', [update], [], [], 'alice', 'https://a.example/');
+    const [view] = resolveObjectViews([obj], EMPTY_WAIV_POWERS, makeOptions(['name']));
     expect(view.object_id).toBe('obj1');
     expect(view.object_type).toBe('place');
     expect(view.creator).toBe('alice');
@@ -198,7 +199,7 @@ describe('resolveObjectViews', () => {
         makeUpdate('u_en', 'obj1', 'name', 'bob', BigInt(50), 'en-US'),
       ];
       const obj = makeAggregated('obj1', updates);
-      const result = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['name'], { locale: 'fr-FR' }));
+      const result = resolveObjectViews([obj], EMPTY_WAIV_POWERS, makeOptions(['name'], { locale: 'fr-FR' }));
       expect(result[0].fields['name'].values[0].update_id).toBe('u_fr');
     });
 
@@ -208,7 +209,7 @@ describe('resolveObjectViews', () => {
         makeUpdate('u_fr2', 'obj1', 'name', 'bob', BigInt(10), 'fr-FR'),
       ];
       const obj = makeAggregated('obj1', updates);
-      const result = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['name'], { locale: 'en-US' }));
+      const result = resolveObjectViews([obj], EMPTY_WAIV_POWERS, makeOptions(['name'], { locale: 'en-US' }));
       expect(result[0].fields['name'].values[0].update_id).toBe('u_fr2');
     });
 
@@ -227,14 +228,14 @@ describe('resolveObjectViews', () => {
         transaction_id: 'tx-vote',
       };
       const obj = makeAggregated('obj1', updates, [voteAgainst]);
-      const result = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['name'], { governance, locale: 'en-US' }));
+      const result = resolveObjectViews([obj], EMPTY_WAIV_POWERS, makeOptions(['name'], { governance, locale: 'en-US' }));
       expect(result[0].fields['name'].values[0].update_id).toBe('u_fr');
     });
 
     it('uses language-neutral rows when no locale-specific match exists', () => {
       const updates = [makeUpdate('u1', 'obj1', 'name', 'alice', BigInt(10), null)];
       const obj = makeAggregated('obj1', updates);
-      const result = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['name'], { locale: 'de-DE' }));
+      const result = resolveObjectViews([obj], EMPTY_WAIV_POWERS, makeOptions(['name'], { locale: 'de-DE' }));
       expect(result[0].fields['name'].values[0].update_id).toBe('u1');
     });
 
@@ -244,7 +245,7 @@ describe('resolveObjectViews', () => {
         makeUpdate('u2', 'obj1', 'name', 'alice', BigInt(10), null),
       ];
       const obj = makeAggregated('obj1', updates);
-      const result = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['name'], { locale: 'en-US' }));
+      const result = resolveObjectViews([obj], EMPTY_WAIV_POWERS, makeOptions(['name'], { locale: 'en-US' }));
       expect(result[0].fields['name'].values[0].update_id).toBe('u2');
     });
 
@@ -254,7 +255,7 @@ describe('resolveObjectViews', () => {
         makeUpdate('u_fr', 'obj1', 'tagCategory', 'bob', BigInt(2), 'fr-FR'),
       ];
       const obj = makeAggregated('obj1', updates);
-      const result = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['tagCategory'], { locale: 'en-US' }));
+      const result = resolveObjectViews([obj], EMPTY_WAIV_POWERS, makeOptions(['tagCategory'], { locale: 'en-US' }));
       expect(result[0].fields['tagCategory'].values).toHaveLength(1);
       expect(result[0].fields['tagCategory'].values[0].update_id).toBe('u_en');
     });
@@ -266,7 +267,7 @@ describe('resolveObjectViews', () => {
         makeUpdate('u_fr', 'obj1', 'tagCategory', 'carol', BigInt(3), 'fr-FR'),
       ];
       const obj = makeAggregated('obj1', updates);
-      const result = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['tagCategory'], { locale: 'en-US' }));
+      const result = resolveObjectViews([obj], EMPTY_WAIV_POWERS, makeOptions(['tagCategory'], { locale: 'en-US' }));
       const ids = new Set(result[0].fields['tagCategory'].values.map((v) => v.update_id));
       expect(ids).toEqual(new Set(['u_en', 'u_neutral']));
     });
@@ -277,7 +278,7 @@ describe('resolveObjectViews', () => {
         makeUpdate('u_en', 'obj1', 'parent', 'bob', BigInt(50), 'en-US'),
       ];
       const obj = makeAggregated('obj1', updates);
-      const result = resolveObjectViews([obj], EMPTY_REPUTATION, makeOptions(['parent'], { locale: 'fr-FR' }));
+      const result = resolveObjectViews([obj], EMPTY_WAIV_POWERS, makeOptions(['parent'], { locale: 'fr-FR' }));
       expect(result[0].fields['parent'].values[0].update_id).toBe('u_en');
     });
   });
@@ -299,6 +300,7 @@ describe('filterByLocalePreference', () => {
       field_weight: null,
       rank_score: null,
       rank_context: null,
+      rank_decisive_event_seq: null,
     };
   }
 

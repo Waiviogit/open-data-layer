@@ -57,7 +57,8 @@ Details: [architecture overview](../architecture/overview.md).
 | [object-uniqueness.md](object-uniqueness.md) | `object_id` global uniqueness, first-write-wins, collision rules |
 | [object-type-entity.md](object-type-entity.md) | `ObjectType` as a code-level construct; TypeScript interfaces, update registry, Zod validation |
 | [authority-entity.md](authority-entity.md) | Open `object_authority` registry; curator filter; `administrative` authority drives `object_reputation` |
-| [vote-semantics.md](vote-semantics.md) | Query-time validity and rank resolution; raw vote storage; community vote weight |
+| [vote-semantics.md](vote-semantics.md) | Query-time validity and rank resolution; raw vote storage; **waiv_power** community weight |
+| [waiv-power.md](waiv-power.md) | `user_object_powers`, Hive Engine WAIV balances, incremental stake updates |
 | [reject-codes.md](reject-codes.md) | Canonical indexer and query/masking error codes |
 
 ### Governance and query

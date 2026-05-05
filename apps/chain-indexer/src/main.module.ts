@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import {
   HIVE_RPC_NODES,
   HiveClientModule,
+  HiveEngineClientModule,
   IpfsClientModule,
   RedisClientModule,
 } from '@opden-data-layer/clients';
@@ -14,6 +15,8 @@ import chainIndexerConfig from './config/chain-indexer.config';
 import { HiveParserModule } from './domain/hive-parser/hive-parser.module';
 import { GovernanceModule } from './domain/governance';
 import { SiteCanonicalModule } from './domain/site-canonical/site-canonical.module';
+import { UserObjectPowersModule } from './domain/user-object-powers/user-object-powers.module';
+import { HiveEngineParserModule } from './domain/hive-engine-parser/hive-engine-parser.module';
 
 @Module({
   imports: [
@@ -47,11 +50,30 @@ import { SiteCanonicalModule } from './domain/site-canonical/site-canonical.modu
       }),
       inject: [ConfigService],
     }),
+    HiveEngineClientModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => {
+        const client = config.get<{
+          nodes: string[];
+          cachePrefix?: string;
+          cacheTtlSeconds?: number;
+          maxResponseTimeMs?: number;
+          urlRotationDb?: number;
+        }>('hiveEngine.client');
+        if (!client) {
+          throw new Error('MainModule: hiveEngine.client config is missing');
+        }
+        return client;
+      },
+      inject: [ConfigService],
+    }),
     DatabaseModule,
     RepositoriesModule,
     HiveParserModule,
     GovernanceModule,
     SiteCanonicalModule,
+    UserObjectPowersModule,
+    HiveEngineParserModule,
   ],
 })
 export class MainModule {}

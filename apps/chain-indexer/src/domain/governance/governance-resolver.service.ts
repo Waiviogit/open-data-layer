@@ -25,13 +25,13 @@ export class GovernanceResolverService {
   ) {}
 
   async resolve(objectId: string): Promise<GovernanceSnapshot> {
-    const { objects, voterReputations } = await this.aggregatedObjectRepo.loadByObjectIds([objectId]);
+    const { objects, voterWaivPowers } = await this.aggregatedObjectRepo.loadByObjectIds([objectId]);
     const root = objects[0];
     if (!root || root.core.object_type !== OBJECT_TYPES.GOVERNANCE) {
       return DEFAULT_GOVERNANCE_SNAPSHOT;
     }
 
-    const rootView = this.resolveFilteredView(root, voterReputations);
+    const rootView = this.resolveFilteredView(root, voterWaivPowers);
     const snapshot = assembleSnapshot(rootView);
 
     const inheritedIds = uniqueIds(snapshot.inherits_from.map((e) => e.object_id));
@@ -47,7 +47,7 @@ export class GovernanceResolverService {
           );
           continue;
         }
-        const childView = this.resolveFilteredView(childAgg, voterReputations);
+        const childView = this.resolveFilteredView(childAgg, voterWaivPowers);
         const childSnap = assembleSnapshot(childView);
         await this.applyModeratorMutes(childSnap);
         mergeInheritedScopes(snapshot, childSnap, entry.scope);
@@ -78,14 +78,14 @@ export class GovernanceResolverService {
     return mergeGovernanceSnapshots(overlay, base);
   }
 
-  private resolveFilteredView(agg: AggregatedObject, voterReputations: Map<string, number>) {
+  private resolveFilteredView(agg: AggregatedObject, voterWaivPowers: Map<string, number>) {
     const creator = agg.core.creator;
     const filtered: AggregatedObject = {
       ...agg,
       updates: agg.updates.filter((u) => u.creator === creator),
       validity_votes: agg.validity_votes.filter((v) => v.voter === creator),
     };
-    const [view] = this.objectViewService.resolve([filtered], voterReputations, {
+    const [view] = this.objectViewService.resolve([filtered], voterWaivPowers, {
       update_types: GOVERNANCE_UPDATE_TYPES,
       governance: DEFAULT_GOVERNANCE_SNAPSHOT,
     });

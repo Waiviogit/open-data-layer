@@ -30,11 +30,15 @@ Describe how ODL **envelopes** inside Hive `custom_json` are validated, sequence
 | `object_create` | `ObjectCreateHandler` | Insert core object row |
 | `update_create` | `UpdateCreateHandler` | Insert update row; validate `object_type` / `update_type` against registries; run write guards |
 | `update_vote` | `UpdateVoteHandler` | Validity votes |
-| `rank_vote` | `RankVoteHandler` | Rank votes |
+| `rank_vote` | `RankVoteHandler` | Rank votes; rejects single-cardinality targets; recomputes `object_updates.rank_score` |
 | `authority` | `AuthorityHandler` | Object authority edges |
 | `batch_import` | `BatchImportHandler` | Emit in-process event for async IPFS processing |
 
 Registry validation for `update_create` uses **`OBJECT_TYPE_REGISTRY`** / **`UPDATE_REGISTRY`** from `@opden-data-layer/core` (source of truth in code; see [AGENTS.md](../../../../AGENTS.md) — do not treat generated Markdown as canonical).
+
+### WAIV power (parallel path)
+
+[`user_object_powers`](../../../spec/waiv-power.md): ODL handlers emit **`user_object_powers.create`** for participating accounts; **`WaivStakeParser`** (Hive Engine blocks, `tokens` contract, symbol WAIV) emits **`user_object_powers.update`**. **`RankScoreService`** refreshes persisted rank fields on `object_updates` after each accepted `rank_vote`.
 
 ## 5) Persistence
 

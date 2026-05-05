@@ -40,6 +40,9 @@ CREATE TABLE object_updates (
   -- Generated column for case-insensitive exact match queries. Requires PG 12+.
   value_text_normalized TEXT GENERATED ALWAYS AS (LOWER(TRIM(value_text))) STORED,
   search_vector   TSVECTOR,
+  rank_score      INT,
+  rank_context    TEXT,
+  rank_decisive_event_seq BIGINT,
   -- Exactly one value column must be set.
   CONSTRAINT chk_exactly_one_value CHECK (
     (value_text IS NOT NULL)::int + (value_geo IS NOT NULL)::int + (value_json IS NOT NULL)::int = 1
@@ -52,6 +55,7 @@ CREATE INDEX idx_object_updates_value_geo ON object_updates USING GIST (value_ge
 CREATE INDEX idx_object_updates_update_type_value_text ON object_updates (update_type, value_text) WHERE value_text IS NOT NULL;
 -- Case-insensitive exact match (uses the generated column; faster than LOWER(value_text) = $1).
 CREATE INDEX idx_object_updates_update_type_value_text_normalized ON object_updates (update_type, value_text_normalized) WHERE value_text_normalized IS NOT NULL;
+CREATE INDEX idx_object_updates_object_rank_score ON object_updates (object_id, rank_score);
 
 -- Trigger: keep search_vector in sync with value_text
 CREATE OR REPLACE FUNCTION object_updates_search_vector_trigger()
@@ -116,6 +120,16 @@ CREATE TABLE object_authority (
 
 CREATE INDEX idx_object_authority_object_id_authority_type ON object_authority (object_id, authority_type);
 CREATE INDEX idx_object_authority_account ON object_authority (account);
+
+-- ---------------------------------------------------------------------------
+-- user_object_powers
+-- WAIV stake + delegationsIn snapshot for accounts that participate in ODL voting.
+-- See waiv-power.md (normative).
+-- ---------------------------------------------------------------------------
+CREATE TABLE user_object_powers (
+  account    TEXT NOT NULL PRIMARY KEY,
+  waiv_power DOUBLE PRECISION NOT NULL DEFAULT 0
+);
 
 -- ---------------------------------------------------------------------------
 -- accounts_current

@@ -59,6 +59,17 @@ export default () => {
     governance: {
       objectId: env.GOVERNANCE_OBJECT_ID,
     },
+    hiveEngine: {
+      client: {
+        nodes: env.HIVE_ENGINE_NODES,
+        cachePrefix: env.HIVE_ENGINE_CACHE_PREFIX,
+        cacheTtlSeconds: env.HIVE_ENGINE_CACHE_TTL_SECONDS,
+        maxResponseTimeMs: env.HIVE_ENGINE_MAX_RESPONSE_TIME_MS,
+        urlRotationDb: env.HIVE_ENGINE_URL_ROTATION_DB,
+      },
+      blockNumberKey: env.HIVE_ENGINE_BLOCK_CACHE_KEY,
+      startBlockNumber: env.HIVE_ENGINE_START_BLOCK,
+    },
     siteCanonical: {
       fallbackOrigin: env.CANONICAL_FALLBACK_ORIGIN,
       accountCacheTtlSec: env.CANONICAL_ACCOUNT_CACHE_TTL_SEC,

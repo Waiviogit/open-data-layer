@@ -16,6 +16,7 @@ function ru(partial: Partial<ResolvedUpdate>): ResolvedUpdate {
     field_weight: null,
     rank_score: null,
     rank_context: null,
+    rank_decisive_event_seq: null,
     ...partial,
   };
 }

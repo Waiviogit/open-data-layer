@@ -1,6 +1,6 @@
 # Vote semantics: query-time validity and rank resolution
 
-**Back:** [Spec index](README.md) · **Related:** [governance-resolution](governance-resolution.md), [object-type-entity](object-type-entity.md), [reject-codes](reject-codes.md)
+**Back:** [Spec index](README.md) · **Related:** [governance-resolution](governance-resolution.md), [object-type-entity](object-type-entity.md), [reject-codes](reject-codes.md), [waiv-power](waiv-power.md)
 
 Votes are stored as neutral raw events by the Indexer Service.
 All role-based interpretation is resolved in Query/Masking Service using governance context/snapshot.
@@ -26,7 +26,6 @@ All role-based interpretation is resolved in Query/Masking Service using governa
   - `voter`
   - `vote` (`for`, `against`, `remove`)
 
-
 ### Query-time decisive resolution
 
 Validity is derived at query time with tiered hierarchy:
@@ -41,8 +40,8 @@ Validity is derived at query time with tiered hierarchy:
 ### Output
 
 - Query layer derives `final_status` (`VALID` or `REJECTED`) from decisive validity vote:
-  - `for` -> `VALID`
-  - `against` -> `REJECTED`
+  - `for` → `VALID`
+  - `against` → `REJECTED`
 - Indexer does not persist authoritative `final_status` from role logic.
 
 ## B) Ranking channel (`rank_vote`)
@@ -70,28 +69,47 @@ Validity is derived at query time with tiered hierarchy:
 - `rank_vote` is allowed only for updates whose target `update_type` has `multi` cardinality (per the update registry).
 - If the target `update_type` has `single` cardinality, event must be rejected with `UNSUPPORTED_RANK_TARGET`.
 
-### Query-time decisive ranking resolution
+### Persisted `rank_score` (indexer)
 
-Ranking uses the same hierarchy:
+Per update row (`object_updates`), the Indexer **writes** (and refreshes on each new `rank_vote` for that `update_id`):
 
-1. Latest `admin` wins (LWAW).
-2. If no admins vote exists, latest `trusted` wins but only on objects he has authority update (LWTW).
+- `rank_score` (`0..10000`, nullable when no votes)
+- `rank_context` (nullable; e.g. decisive context, or null for weighted-average aggregation)
+- `rank_decisive_event_seq` (nullable; `event_seq` of the decisive rank vote for tie-breaks at read time)
 
-`latest` is determined by `event_seq DESC`.
+Computation uses the same governance snapshot as ranking resolution (platform governance in indexer) and per-voter **waiv_power** from [`user_object_powers`](waiv-power.md). See `computeUpdateRankPersistence` in `@opden-data-layer/objects-domain`.
 
-### Ranking output
+### Default aggregation (`rank_aggregation` omitted or `winner`)
 
-- Decisive rank vote yields `rank_score` (`0..10000`) per update/context.
-- `rank_score` is used with other ranking signals.
-- Validity remains controlled by validity channel.
+Parallel to validity admin/trusted tiers:
 
-### Tie-break when `rank_score` is equal
+1. Latest `admin` rank wins (LWAW) — highest `event_seq` among admin rank votes for that `update_id`.
+2. Else latest `trusted` rank wins (LWTW) — highest `event_seq` among trusted rank votes for that `update_id`.
+3. **Else (community rank votes only):** take the **`rank` value** from the vote whose voter has the **highest** `waiv_power` in `user_object_powers`; ties break by **larger** rank vote `event_seq`.
 
-For updates with equal `rank_score` in same `rank_context`:
+This is **not** “compare rank votes to the update itself”; it is the same style of tiered list as validity (admins/trusted list, then stake-weighted community).
 
-1. latest decisive rank vote by `event_seq DESC`;
-2. latest update event by `event_seq DESC`;
-3. `update_id ASC`.
+### Average aggregation (`rank_aggregation = average`)
+
+Weighted mean of all rank votes for that `update_id`:
+
+```
+weight_i = waiv_power_i > 1 ? waiv_power_i : 1
+rank_score = round( Σ (rank_i × weight_i) / Σ weight_i )
+```
+
+`rank_context` and `rank_decisive_event_seq` are null for this mode.
+
+### Query-time ordering (multi-cardinality)
+
+Query layer orders **VALID** updates using persisted fields on `object_updates`:
+
+1. `rank_score` ASC (nulls last)
+2. `rank_decisive_event_seq` DESC (nulls last)
+3. `event_seq` (update row) DESC
+4. `update_id` ASC
+
+Raw `rank_votes` rows are not loaded for resolution; they remain the audit trail.
 
 ### Tie-break for single-cardinality field winner
 
@@ -101,45 +119,20 @@ For update types with `cardinality: single`, when multiple **VALID** candidates 
 
 When no admin or trusted decisive vote exists for an update, the **community vote weight** system determines validity. This is the lowest-priority tier in the resolution hierarchy.
 
-### Voter reputation (`object_reputation`)
+### Voter weight (`waiv_power`)
 
-Each voter's weight is derived from their `object_reputation` — a metric stored in [`accounts_current`](social-account-ingestion.md) and maintained incrementally by the Indexer.
-
-Definition:
+Each voter's weight uses **`waiv_power`** from [`user_object_powers`](waiv-power.md) (Hive Engine WAIV `stake + delegationsIn` for tracked accounts). This replaces **`object_reputation`** for validity weighting only; `object_reputation` on `accounts_current` may still exist for other features.
 
 ```
-object_reputation(voter) = count of unique users who hold
-    `administrative` authority claims on objects created by the voter
-    (excluding the voter themselves)
+weight_i = waiv_power_i > 1 ? waiv_power_i : 1
 ```
-
-Source data: `object_authority` records with `authority_type = 'administrative'` joined against `objects_core.creator`. See [authority-entity.md](authority-entity.md) for authority write rules.
-
-### Vote power formula
-
-```
-votePower = 1 + log₂(1 + object_reputation)
-```
-
-Scaling examples:
-
-| `object_reputation` | `votePower` |
-|--------------------:|------------:|
-| 0                   | 1.00        |
-| 1                   | 2.00        |
-| 3                   | 3.00        |
-| 7                   | 4.00        |
-| 15                  | 5.00        |
-| 100                 | ≈ 7.66      |
-
-Every voter starts with a base power of 1. Growth is logarithmic — diminishing returns prevent domination by a single high-reputation account.
 
 ### Field weight computation
 
 For each update, compute the field weight as the signed sum of all community validity votes:
 
 ```
-field_weight = Σ (votePower_i × sign_i)
+field_weight = Σ (weight_i × sign_i)
 ```
 
 Where:
@@ -161,7 +154,7 @@ The full validity resolution for a given update, in priority order:
 
 1. **Admin decisive vote** → latest admin `for`/`against` wins (LWAW).
 2. **Trusted decisive vote** → latest trusted `for`/`against` wins, only on objects the trusted user has authority over (LWTW).
-3. **Community vote weight** → `field_weight` computed from all non-admin, non-trusted voter reputations. Sign determines validity.
+3. **Community vote weight** → `field_weight` from all non-admin, non-trusted voters using `waiv_power` as above.
 4. **No votes at all** → baseline `VALID`.
 
 Tiers 1 and 2 produce a binary `VALID`/`REJECTED` and short-circuit — community weight is not evaluated. Tier 3 is evaluated only when no decisive admin/trusted vote exists.
@@ -177,4 +170,4 @@ For update types targeting a single-value field:
 
 - Same event stream must produce identical stored raw vote state.
 - Same governance context/snapshot must produce identical `final_status` and ranking output.
-- Same `object_reputation` values and same raw vote set must produce identical `field_weight` and community-tier validity.
+- Same `user_object_powers` values and same raw vote set must produce identical `field_weight` and community-tier validity, and identical persisted `rank_score` for a given `rank_vote` stream.

@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { HIVE_ENGINE_NODES } from '@opden-data-layer/clients';
+
+const DEFAULT_HIVE_ENGINE_NODES = [...HIVE_ENGINE_NODES];
 
 export const chainIndexerConfigSchema = z.object({
   REDIS_URI: z.string().optional().default('redis://localhost:6379'),
@@ -26,6 +29,27 @@ export const chainIndexerConfigSchema = z.object({
   ACCOUNT_SYNC_BATCH_SIZE: z.coerce.number().optional().default(20),
   ACCOUNT_SYNC_MAX_ATTEMPTS: z.coerce.number().optional().default(5),
   GOVERNANCE_OBJECT_ID: z.string().optional().default(''),
+  HIVE_ENGINE_NODES: z
+    .string()
+    .optional()
+    .transform((s) => {
+      if (!s || s.trim().length === 0) {
+        return [...DEFAULT_HIVE_ENGINE_NODES];
+      }
+      return s
+        .split(',')
+        .map((x) => x.trim())
+        .filter(Boolean);
+    }),
+  HIVE_ENGINE_CACHE_PREFIX: z.string().optional().default('chain_indexer_hive_engine'),
+  HIVE_ENGINE_CACHE_TTL_SECONDS: z.coerce.number().optional().default(1200),
+  HIVE_ENGINE_MAX_RESPONSE_TIME_MS: z.coerce.number().optional().default(8000),
+  HIVE_ENGINE_URL_ROTATION_DB: z.coerce.number().optional().default(0),
+  HIVE_ENGINE_BLOCK_CACHE_KEY: z
+    .string()
+    .optional()
+    .default('chain-indexer:cache:hive-engine:block-number'),
+  HIVE_ENGINE_START_BLOCK: z.coerce.number().optional().default(59_083_591),
   /** Origin for `buildFallbackCanonicalUrl` (https only), e.g. `https://fallback.example.com` */
   CANONICAL_FALLBACK_ORIGIN: z
     .string()

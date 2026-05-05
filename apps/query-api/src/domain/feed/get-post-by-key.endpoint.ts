@@ -154,11 +154,11 @@ export class GetPostByKeyEndpoint {
     let viewsByObjectId = new Map<string, ResolvedObjectView>();
     const weightByObjectId = new Map<string, number | null>();
     if (objectIds.length > 0) {
-      const { objects, voterReputations } = await this.aggregatedObjectRepo.loadByObjectIds(objectIds);
+      const { objects, voterWaivPowers } = await this.aggregatedObjectRepo.loadByObjectIds(objectIds);
       for (const o of objects) {
         weightByObjectId.set(o.core.object_id, o.core.weight);
       }
-      const views = this.objectViewService.resolve(objects, voterReputations, {
+      const views = this.objectViewService.resolve(objects, voterWaivPowers, {
         update_types: [...POST_LINKED_OBJECT_UPDATE_TYPES],
         locale,
         include_rejected: false,

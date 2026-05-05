@@ -36,7 +36,7 @@ export class MetaGroupSyncHandler {
     }
 
     try {
-      const { objects, voterReputations } =
+      const { objects, voterWaivPowers } =
         await this.aggregatedObjectRepository.loadByObjectIds([objectId]);
       const aggregated = objects[0];
       if (!aggregated) {
@@ -47,7 +47,7 @@ export class MetaGroupSyncHandler {
       const governance = await this.governanceCacheService.resolvePlatform();
       const views = this.objectViewService.resolve(
         [aggregated],
-        voterReputations,
+        voterWaivPowers,
         {
           update_types: [UPDATE_TYPES.PRODUCT_GROUP_ID],
           governance,

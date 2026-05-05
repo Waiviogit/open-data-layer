@@ -211,37 +211,34 @@ ORDER BY oc.weight DESC NULLS LAST
 LIMIT $2 OFFSET $3;
 ```
 
-### Step 3: Load core, updates, votes, authority, and voter reputations (six targeted queries)
+### Step 3: Load core, updates, votes, authority, and waiv_power (five targeted queries)
 
-A single multi-way JOIN produces a Cartesian product: if one update has 5 validity votes and 3 rank votes it generates 15 rows per update, requiring complex deduplication in the application. Use six separate queries instead:
+A single multi-way JOIN produces a Cartesian product: if one update has 5 validity votes and 3 rank votes it generates 15 rows per update, requiring complex deduplication in the application. Use **separate** queries instead. **Rank resolution** uses persisted columns on `object_updates` (`rank_score`, `rank_context`, `rank_decisive_event_seq`); raw `rank_votes` are indexer-only.
 
 ```sql
 -- 1. Core rows
 SELECT * FROM objects_core WHERE object_id = ANY($objectIds);
 
--- 2. Updates
+-- 2. Updates (includes rank_score / rank_context / rank_decisive_event_seq)
 SELECT * FROM object_updates WHERE object_id = ANY($objectIds);
 
 -- 3. Validity votes
 SELECT * FROM validity_votes WHERE object_id = ANY($objectIds);
 
--- 4. Rank votes
-SELECT * FROM rank_votes WHERE object_id = ANY($objectIds);
-
--- 5. Authority claims
+-- 4. Authority claims
 SELECT * FROM object_authority WHERE object_id = ANY($objectIds);
 
--- 6. Voter reputations (for community vote weight, section C of vote-semantics)
-SELECT name, object_reputation
-FROM accounts_current
-WHERE name = ANY($voterNames);
+-- 5. Voter waiv_power (community validity weight; see vote-semantics §C, waiv-power.md)
+SELECT account, waiv_power
+FROM user_object_powers
+WHERE account = ANY($voterNames);
 ```
 
-All six can be sent as a pipeline (single round-trip on most drivers). The application joins them in memory by `object_id`, `update_id`, and voter `name`. Query 6 uses the set of distinct voter names collected from queries 3 and 4.
+Queries 1–4 can run in parallel. Collect distinct voter names from **query 3 only**, then run query 5. The application groups rows in memory by `object_id`.
 
 ### Step 4: Assemble ResolvedView
 
-For each object, using the loaded rows, authority records, voter reputations, and the governance snapshot:
+For each object, using the loaded rows, authority records, voter **waiv_power** map, and the governance snapshot:
 
 1. **Compute curator set** `C = { ownership holders for object_id from object_authority } ∩ { governance admins ∪ governance trusted }`.
 2. Group updates by `update_type`.
@@ -250,15 +247,15 @@ For each object, using the loaded rows, authority records, voter reputations, an
    - If `C` is empty, apply the full validity resolution hierarchy:
      1. **Admin decisive vote** — latest admin `for`/`against` wins (LWAW). Short-circuit.
      2. **Trusted decisive vote** — latest trusted `for`/`against` wins, only on objects the trusted user has authority over (LWTW). Short-circuit.
-     3. **Community vote weight** — for each non-admin, non-trusted validity vote, compute `votePower = 1 + log₂(1 + object_reputation)` using the voter's `object_reputation` from `accounts_current`. Sum: `field_weight = Σ (votePower × sign)` where `for → +1`, `against → −1`. If `field_weight < 0` the update is INVALID; if `field_weight >= 0` the update is VALID.
+     3. **Community vote weight** — for each non-admin, non-trusted validity vote, use `weight = waiv_power > 1 ? waiv_power : 1` from `user_object_powers`. Sum: `field_weight = Σ (weight × sign)` where `for → +1`, `against → −1`. If `field_weight < 0` the update is INVALID; if `field_weight >= 0` the update is VALID.
      4. **No votes** — baseline VALID.
-4. **Locale preference** — Each `object_updates` row may carry an optional BCP-47 `locale` (NULL = language-neutral). For each `update_type` group, among **VALID** updates only: prefer rows whose `locale` equals the request locale. For **multi**-cardinality types, also include language-neutral (`locale` IS NULL) updates in that preferred set. If the preferred set is empty (no VALID rows match), fall back to **all** VALID rows in the group — same winner ordering as before locale was introduced (single: highest `event_seq`; multi: ranking rules).
+4. **Locale preference** — Each `object_updates` row may carry an optional BCP-47 `locale` (NULL = language-neutral). For each `update_type` group, among **VALID** updates only: prefer rows whose `locale` equals the request locale. For **multi**-cardinality types, also include language-neutral (`locale` IS NULL) updates in that preferred set. If the preferred set is empty (no VALID rows match), fall back to **all** VALID rows in the group — same winner ordering as before locale was introduced (single: highest `event_seq`; multi: sort by persisted rank fields on `object_updates`).
 5. Resolve single-cardinality update types (pick one valid value per the update registry).
-6. Resolve multi-cardinality update types and apply ranking.
+6. Resolve multi-cardinality update types: sort **VALID** rows by `rank_score`, `rank_decisive_event_seq`, `event_seq`, `update_id` (see [vote-semantics §B](../vote-semantics.md#b-ranking-channel-rank_vote)).
 7. Apply visibility options (e.g. omit rejected if `includeRejected=false`).
 8. Shape the API response (ResolvedView).
 
-See [vote-semantics.md § C](../vote-semantics.md#c-community-vote-weight) for the complete community weight specification.
+See [vote-semantics.md § C](../vote-semantics.md#c-community-vote-weight) and [waiv-power.md](../waiv-power.md) for WAIV weighting.
 
 ## Index strategy
 
@@ -274,6 +271,8 @@ See [vote-semantics.md § C](../vote-semantics.md#c-community-vote-weight) for t
 | object_updates | value_geo                                           | GiST             | Geo proximity                             |
 | object_updates | (update_type, value_text)                           | B-tree (partial) | Raw exact match by field type             |
 | object_updates | (update_type, value_text_normalized)                | B-tree (partial) | Case-insensitive exact match              |
+| object_updates | (object_id, rank_score)                             | B-tree           | Multi-cardinality sort                    |
+| user_object_powers | account                                           | PK / B-tree      | Lookup waiv_power                         |
 | validity_votes | (update_id, voter)                                  | UNIQUE           | One vote per voter per update             |
 | validity_votes | (object_id)                                         | B-tree           | Bulk load votes for an object             |
 | rank_votes       | (update_id, voter, rank_context)                    | UNIQUE           | One rank per voter per context                          |

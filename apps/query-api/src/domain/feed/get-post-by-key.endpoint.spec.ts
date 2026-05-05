@@ -277,11 +277,10 @@ describe('GetPostByKeyEndpoint', () => {
           },
           updates: [],
           validity_votes: [],
-          rank_votes: [],
           authorities: [],
         },
       ],
-      voterReputations: new Map(),
+      voterWaivPowers: new Map(),
     });
     objectViewService.resolve.mockReturnValue([
       {
@@ -330,11 +329,10 @@ describe('GetPostByKeyEndpoint', () => {
           },
           updates: [],
           validity_votes: [],
-          rank_votes: [],
           authorities: [],
         },
       ],
-      voterReputations: new Map(),
+      voterWaivPowers: new Map(),
     });
     objectViewService.resolve.mockReturnValue([
       {

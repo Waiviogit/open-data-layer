@@ -47,7 +47,7 @@ export class SiteCanonicalService {
       'siteCanonical.fallbackOrigin',
       'https://example.com',
     );
-    const { objects, voterReputations } =
+    const { objects, voterWaivPowers } =
       await this.aggregatedObjectRepository.loadByObjectIds([trimmed]);
     const aggregated = objects[0];
     if (!aggregated) {
@@ -57,7 +57,7 @@ export class SiteCanonicalService {
     const governance = await this.governanceCacheService.resolve(trimmed);
     const views = this.objectViewService.resolve(
       [aggregated],
-      voterReputations,
+      voterWaivPowers,
       {
         update_types: [UPDATE_TYPES.DESCRIPTION],
         governance,
