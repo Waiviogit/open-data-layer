@@ -14,6 +14,8 @@ import { ObjectCategoriesRelatedRepository } from './object-categories-related.r
 import { ObjectCategoriesRepository } from './object-categories.repository';
 import { UserMetadataRepository } from './user-metadata.repository';
 import { UserShopDeselectRepository } from './user-shop-deselect.repository';
+import { UserSubscriptionsRepository } from './user-subscriptions.repository';
+import { UserObjectFollowsRepository } from './user-object-follows.repository';
 
 @Module({
   providers: [
@@ -32,6 +34,8 @@ import { UserShopDeselectRepository } from './user-shop-deselect.repository';
     ObjectCategoriesRepository,
     UserMetadataRepository,
     UserShopDeselectRepository,
+    UserSubscriptionsRepository,
+    UserObjectFollowsRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -49,6 +53,8 @@ import { UserShopDeselectRepository } from './user-shop-deselect.repository';
     ObjectCategoriesRepository,
     UserMetadataRepository,
     UserShopDeselectRepository,
+    UserSubscriptionsRepository,
+    UserObjectFollowsRepository,
   ],
 })
 export class RepositoriesModule {}

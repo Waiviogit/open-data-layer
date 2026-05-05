@@ -6,6 +6,7 @@ function projected(overrides: Partial<ProjectedObject> = {}): ProjectedObject {
     object_id: 'a',
     object_type: 'recipe',
     semantic_type: null,
+    weight: null,
     fields: {},
     hasAdministrativeAuthority: false,
     hasOwnershipAuthority: false,

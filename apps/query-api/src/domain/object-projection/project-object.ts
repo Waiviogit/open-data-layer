@@ -87,6 +87,7 @@ export function projectObjectCore(input: ProjectObjectInput): ProjectedObjectCor
     object_id: view.object_id,
     object_type: view.object_type,
     semantic_type: SEMANTIC_TYPE_BY_OBJECT_TYPE[view.object_type] ?? null,
+    weight: view.weight,
     fields,
   };
 }

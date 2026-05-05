@@ -11,6 +11,7 @@ Read-path API — governance masking, object resolution (via shared domain libra
 | [Objects domain](../../spec/objects-domain.md) | ResolvedView assembly |
 | [Governance resolution](../../spec/governance-resolution.md) | Masks and snapshots |
 | [User profile endpoint](spec/users-profile-endpoint.md) | `GET /query/v1/users/:name/profile` |
+| [User social lists](spec/user-social-lists.md) | `GET .../:name/followers`, `/following`, `/following-objects` |
 | [Shop categories](spec/categories.md) | `GET /query/v1/users/:name/categories` |
 | [Shop / recipe object feeds](spec/shop-feed-endpoints.md) | `GET .../shop-objects`, `GET .../shop-sections` |
 | [User blog feed endpoint](spec/user-blog-feed-endpoint.md) | `POST /query/v1/users/:name/blog` |

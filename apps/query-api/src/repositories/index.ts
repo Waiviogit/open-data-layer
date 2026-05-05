@@ -9,6 +9,16 @@ export { ObjectCategoriesRelatedRepository } from './object-categories-related.r
 export { ObjectCategoriesRepository } from './object-categories.repository';
 export { UserMetadataRepository } from './user-metadata.repository';
 export { UserShopDeselectRepository } from './user-shop-deselect.repository';
+export { UserSubscriptionsRepository } from './user-subscriptions.repository';
+export type {
+  UserSubscriptionSort,
+  SubscriptionJoinedAccountRow,
+} from './user-subscriptions.repository';
+export { UserObjectFollowsRepository } from './user-object-follows.repository';
+export type {
+  UserObjectFollowSortMode,
+  ObjectFollowJoinedRow,
+} from './user-object-follows.repository';
 export { AggregatedObjectRepository } from './aggregated-object.repository';
 export { PostsRepository } from './posts.repository';
 export type { FeedBranchRow, PostVoteSummary } from './posts.repository';

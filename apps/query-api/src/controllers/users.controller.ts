@@ -38,6 +38,17 @@ import {
   type ShopSectionsQuery,
   type ShopSectionsResponse,
 } from '../domain/shop';
+import {
+  GetUserFollowersEndpoint,
+  GetUserFollowingEndpoint,
+  GetUserFollowingObjectsEndpoint,
+  userSocialListQuerySchema,
+  userFollowingObjectsQuerySchema,
+  type PaginatedProjectedObjects,
+  type PaginatedUserFollowList,
+  type UserFollowingObjectsQuery,
+  type UserSocialListQuery,
+} from '../domain/social';
 
 @Controller({ path: 'users', version: '1' })
 export class UsersController {
@@ -48,6 +59,9 @@ export class UsersController {
     private readonly getUserCategories: GetUserCategoriesEndpoint,
     private readonly getUserShopObjects: GetUserShopObjectsEndpoint,
     private readonly getUserShopSections: GetUserShopSectionsEndpoint,
+    private readonly getUserFollowers: GetUserFollowersEndpoint,
+    private readonly getUserFollowing: GetUserFollowingEndpoint,
+    private readonly getUserFollowingObjects: GetUserFollowingObjectsEndpoint,
   ) {}
 
   @Get(':name/categories')
@@ -90,6 +104,53 @@ export class UsersController {
       governanceObjectIdFromHeader,
       viewer,
     );
+  }
+
+  @Get(':name/followers')
+  async getFollowers(
+    @Param('name') name: string,
+    @Query(new ZodQueryPipe(userSocialListQuerySchema)) query: UserSocialListQuery,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<PaginatedUserFollowList> {
+    const result = await this.getUserFollowers.execute(name, query, viewer);
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Get(':name/following')
+  async getFollowing(
+    @Param('name') name: string,
+    @Query(new ZodQueryPipe(userSocialListQuerySchema)) query: UserSocialListQuery,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<PaginatedUserFollowList> {
+    const result = await this.getUserFollowing.execute(name, query, viewer);
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Get(':name/following-objects')
+  async getFollowingObjects(
+    @Param('name') name: string,
+    @Query(new ZodQueryPipe(userFollowingObjectsQuerySchema)) query: UserFollowingObjectsQuery,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<PaginatedProjectedObjects> {
+    const result = await this.getUserFollowingObjects.execute(
+      name,
+      query,
+      locale,
+      governanceObjectIdFromHeader,
+      viewer,
+    );
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
   }
 
   @Get(':name/profile')

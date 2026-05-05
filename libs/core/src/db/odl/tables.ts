@@ -330,6 +330,8 @@ export interface UserSubscriptionsTable {
   follower: string;
   following: string;
   bell: boolean | null;
+  /** When the follow relationship was recorded (chain event or migration). */
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
 }
 
 export type UserSubscription = Selectable<UserSubscriptionsTable>;
@@ -357,6 +359,8 @@ export interface UserObjectFollowsTable {
   account: string;
   object_id: string;
   bell: boolean;
+  /** When the object follow was recorded (migration backfill or future writes). */
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
 }
 
 export type UserObjectFollow = Selectable<UserObjectFollowsTable>;

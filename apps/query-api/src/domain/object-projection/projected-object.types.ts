@@ -30,6 +30,8 @@ export interface ProjectedObject {
   object_id: string;
   object_type: string;
   semantic_type: string | null;
+  /** From `objects_core.weight`. */
+  weight: number | null;
   fields: Record<string, unknown>;
   /** True when `viewerAccount` has an `administrative` row for this object. */
   hasAdministrativeAuthority: boolean;

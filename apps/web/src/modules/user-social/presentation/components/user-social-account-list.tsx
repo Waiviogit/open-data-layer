@@ -1,0 +1,83 @@
+'use client';
+
+import { useState, useTransition } from 'react';
+
+import { useI18n } from '@/i18n/providers/i18n-provider';
+
+import type {
+  PaginatedUserFollowListView,
+  UserSubscriptionSort,
+  LoadMoreUserSocialAccountListFn,
+} from '@/modules/user-social/application/dto/user-social.dto';
+
+import { UserSocialAccountRow } from './user-social-account-row';
+import { UserSocialSubscriptionSort } from './user-social-subscription-sort';
+
+export type UserSocialAccountListProps = {
+  profileAccountName: string;
+  listKind: 'followers' | 'following';
+  initialPage: PaginatedUserFollowListView;
+  sort: UserSubscriptionSort;
+  currentUsername: string | null;
+  loadMoreAction: LoadMoreUserSocialAccountListFn;
+};
+
+export function UserSocialAccountList({
+  profileAccountName,
+  listKind,
+  initialPage,
+  sort,
+  currentUsername,
+  loadMoreAction,
+}: UserSocialAccountListProps) {
+  const { t } = useI18n();
+  const [items, setItems] = useState(initialPage.items);
+  const [hasMore, setHasMore] = useState(initialPage.hasMore);
+  const [pending, startTransition] = useTransition();
+
+  const emptyKey =
+    listKind === 'followers' ? 'social_list_empty_followers' : 'social_list_empty_following';
+
+  return (
+    <section
+      className="rounded-card border border-border bg-surface/80 p-card-padding"
+      aria-labelledby={`social-list-${listKind}-${profileAccountName}`}
+    >
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+        <h2 id={`social-list-${listKind}-${profileAccountName}`} className="sr-only">
+          {listKind === 'followers' ? t('followers') : t('following')}
+        </h2>
+        <UserSocialSubscriptionSort />
+      </div>
+      {items.length === 0 ? (
+        <p className="text-body-sm text-muted">{t(emptyKey)}</p>
+      ) : (
+        <>
+          <ul>
+            {items.map((row) => (
+              <UserSocialAccountRow key={row.name} row={row} viewerUsername={currentUsername} />
+            ))}
+          </ul>
+          {hasMore ? (
+            <div className="mt-4 flex justify-center">
+              <button
+                type="button"
+                disabled={pending}
+                className="rounded-btn border border-border bg-surface-control px-4 py-2 text-body-sm font-medium text-fg hover:bg-surface-control-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-50"
+                onClick={() => {
+                  startTransition(async () => {
+                    const next = await loadMoreAction(profileAccountName, sort, items.length);
+                    setItems((prev) => [...prev, ...next.items]);
+                    setHasMore(next.hasMore);
+                  });
+                }}
+              >
+                {pending ? t('drafts_loading') : t('drafts_load_more')}
+              </button>
+            </div>
+          ) : null}
+        </>
+      )}
+    </section>
+  );
+}

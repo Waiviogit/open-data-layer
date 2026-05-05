@@ -238,13 +238,16 @@ CREATE INDEX idx_user_post_bookmarks_account ON user_post_bookmarks (account);
 -- user_subscriptions (SubscriptionSchema: follower / following)
 -- ---------------------------------------------------------------------------
 CREATE TABLE user_subscriptions (
-  follower   TEXT NOT NULL,
-  following  TEXT NOT NULL,
-  bell       BOOLEAN,
+  follower    TEXT NOT NULL,
+  following   TEXT NOT NULL,
+  bell        BOOLEAN,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (follower, following)
 );
 
 CREATE INDEX idx_user_subscriptions_following ON user_subscriptions (following);
+CREATE INDEX idx_user_subscriptions_following_created_at ON user_subscriptions (following, created_at DESC);
+CREATE INDEX idx_user_subscriptions_follower_created_at ON user_subscriptions (follower, created_at DESC);
 
 -- ---------------------------------------------------------------------------
 -- user_account_mutes (Hive follow ignore — pair-level social mute)
@@ -264,10 +267,12 @@ CREATE TABLE user_object_follows (
   account    TEXT NOT NULL REFERENCES accounts_current (name) ON DELETE CASCADE,
   object_id  TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
   bell       BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (account, object_id)
 );
 
 CREATE INDEX idx_user_object_follows_object_id ON user_object_follows (object_id);
+CREATE INDEX idx_user_object_follows_account_created_at ON user_object_follows (account, created_at DESC);
 
 -- ---------------------------------------------------------------------------
 -- posts (Hive post; normalized from legacy Mongo PostSchema)

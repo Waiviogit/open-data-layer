@@ -15,6 +15,7 @@ function placeholderProjectedObject(o: PostObject): ProjectedObject {
     object_id: o.object_id,
     object_type: o.object_type ?? '',
     semantic_type: null,
+    weight: null,
     fields: {},
     hasAdministrativeAuthority: false,
     hasOwnershipAuthority: false,

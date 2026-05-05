@@ -21,6 +21,7 @@ describe('normalizeProjectedObjectForJson', () => {
     expect(json.fields).toEqual({});
     expect(json.hasAdministrativeAuthority).toBe(false);
     expect(json.hasOwnershipAuthority).toBe(false);
+    expect(json.weight).toBeNull();
     expect(json.seo).toBeUndefined();
   });
 
@@ -29,6 +30,7 @@ describe('normalizeProjectedObjectForJson', () => {
       object_id: 'y',
       object_type: 'recipe',
       semantic_type: null,
+      weight: 1.5,
       fields: {},
       hasAdministrativeAuthority: false,
       hasOwnershipAuthority: false,

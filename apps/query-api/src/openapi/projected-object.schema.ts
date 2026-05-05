@@ -11,6 +11,7 @@ export const projectedObjectOpenApiSchema = registry.register(
     object_id: z.string(),
     object_type: z.string(),
     semantic_type: z.string().nullable(),
+    weight: z.number().nullable(),
     fields: z.record(z.string(), z.unknown()),
     hasAdministrativeAuthority: z.boolean(),
     hasOwnershipAuthority: z.boolean(),

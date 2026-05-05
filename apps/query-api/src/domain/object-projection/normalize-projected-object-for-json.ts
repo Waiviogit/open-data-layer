@@ -16,6 +16,10 @@ export function normalizeProjectedObjectForJson(input: ProjectedObject): Project
     object_id: input.object_id,
     object_type: input.object_type ?? '',
     semantic_type: input.semantic_type ?? null,
+    weight:
+      typeof input.weight === 'number' && Number.isFinite(input.weight)
+        ? input.weight
+        : null,
     fields,
     hasAdministrativeAuthority: input.hasAdministrativeAuthority ?? false,
     hasOwnershipAuthority: input.hasOwnershipAuthority ?? false,

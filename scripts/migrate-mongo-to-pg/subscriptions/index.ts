@@ -13,6 +13,7 @@ import { Kysely, PostgresDialect } from 'kysely';
 import { Pool } from 'pg';
 import streamArray from 'stream-json/streamers/stream-array.js';
 
+import { dateFromMongoObjectIdHex, mongoOidHex } from '../mongo-object-id-date';
 import type { MongoSubscription } from './types';
 
 const BATCH_SIZE = 5000;
@@ -71,10 +72,13 @@ class MongoSubscriptionsMigrator {
       this.stats.rowsSkippedMissingPk += 1;
       return;
     }
+    const createdAt =
+      dateFromMongoObjectIdHex(mongoOidHex(doc._id)) ?? new Date(0);
     this.buffer.push({
       follower,
       following,
       bell: doc.bell ?? null,
+      created_at: createdAt,
     });
     this.stats.rowsBuffered += 1;
   }

@@ -2,6 +2,7 @@ import { OpenApiGeneratorV31 } from '@asteasolutions/zod-to-openapi';
 import { registry } from './registry';
 import './objects.openapi';
 import './users.openapi';
+import './users-social.openapi';
 import './feed.openapi';
 import './posts.openapi';
 import './user-post-drafts.openapi';

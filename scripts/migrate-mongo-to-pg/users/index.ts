@@ -22,6 +22,7 @@ import { Kysely, PostgresDialect, sql } from 'kysely';
 import { Pool } from 'pg';
 import streamArray from 'stream-json/streamers/stream-array.js';
 
+import { dateFromMongoObjectIdHex, mongoOidHex } from '../mongo-object-id-date';
 import type { MongoDate, MongoUser } from './types';
 
 const BATCH_SIZE = 5000;
@@ -388,6 +389,9 @@ class MongoUsersMigrator {
       this.stats.bookmarkRowsBuffered += 1;
     }
 
+    const objectFollowCreatedAt =
+      dateFromMongoObjectIdHex(mongoOidHex(doc._id)) ?? new Date(0);
+
     for (const oid of doc.objects_follow ?? []) {
       const object_id = oid?.trim();
       if (!object_id) {
@@ -397,6 +401,7 @@ class MongoUsersMigrator {
         account: name,
         object_id,
         bell: false,
+        created_at: objectFollowCreatedAt,
       });
       this.stats.objectFollowRowsBuffered += 1;
     }
