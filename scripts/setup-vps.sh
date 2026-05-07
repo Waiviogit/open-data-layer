@@ -118,6 +118,8 @@ if [[ -z "$DOMAIN_VAL" ]]; then
   error "DOMAIN is not set in .env. Edit $INSTALL_DIR/.env and re-run."
 fi
 envsubst '${DOMAIN}' < nginx/conf.d/default.conf.template > nginx/conf.d/default.conf
+# Remove template from conf.d so jonasal does not try to cert the literal "${DOMAIN}" string
+rm -f nginx/conf.d/default.conf.template
 info "nginx/conf.d/default.conf generated for domain: $DOMAIN_VAL"
 
 # ── 4d. HTTP Basic Auth for Portainer / nginx ────────────────────────────────
