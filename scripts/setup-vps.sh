@@ -45,16 +45,24 @@ if command -v docker &>/dev/null; then
 else
   info "Installing Docker..."
   apt-get update -qq
-  apt-get install -y -qq ca-certificates curl gnupg lsb-release
+  apt-get install -y -qq ca-certificates curl gnupg
+
+  # Detect distro from /etc/os-release (supports Ubuntu and Debian)
+  . /etc/os-release
+  case "$ID" in
+    ubuntu|debian) DOCKER_DISTRO="$ID" ;;
+    *) error "Unsupported distro: $ID. Supported: ubuntu, debian." ;;
+  esac
+  info "Detected distro: $DOCKER_DISTRO $VERSION_CODENAME"
 
   install -m 0755 -d /etc/apt/keyrings
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+  curl -fsSL "https://download.docker.com/linux/${DOCKER_DISTRO}/gpg" \
     | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
   chmod a+r /etc/apt/keyrings/docker.gpg
 
   echo \
     "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-    https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
+    https://download.docker.com/linux/${DOCKER_DISTRO} ${VERSION_CODENAME} stable" \
     > /etc/apt/sources.list.d/docker.list
 
   apt-get update -qq
