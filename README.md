@@ -19,4 +19,4 @@ curl -fsSL https://raw.githubusercontent.com/Waiviogit/open-data-layer/master/sc
 
 Optional overrides: `REPO_URL` (git clone URL), `INSTALL_DIR` (default `/opt/opden-data-layer`). Public GHCR images do not require Docker login.
 
-After `.env` is created, edit it at least for production: **`DOMAIN`**, **`CERTBOT_EMAIL`**, **`JWT_SECRET`**, **`POSTGRES_PASSWORD`**, and **`AUTH_JWT_SECRET`** (if used). The Compose stack serves HTTPS via `jonasal/nginx-certbot` and reloads when new images appear (Watchtower). More on Compose files and local infra: [docs/getting-started.md](docs/getting-started.md).
+After `.env` is created, edit it at least for production: **`DOMAIN`**, **`CERTBOT_EMAIL`**, **`JWT_SECRET`**, **`POSTGRES_PASSWORD`**, and **`AUTH_JWT_SECRET`** (if used). The Compose stack serves HTTPS via `jonasal/nginx-certbot` and reloads when new images appear (Watchtower). **Portainer** is at `https://<DOMAIN>/portainer/` (Basic Auth file + Portainer login). More on Compose files and local infra: [docs/getting-started.md](docs/getting-started.md).

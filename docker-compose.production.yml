@@ -136,6 +136,14 @@ services:
       - auth-api
     restart: unless-stopped
 
+  portainer:
+    image: portainer/portainer-ce:latest
+    pull_policy: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    restart: unless-stopped
+
   nginx:
     image: jonasal/nginx-certbot:latest
     environment:
@@ -146,6 +154,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
       - letsencrypt:/etc/letsencrypt
     depends_on:
       - web
@@ -153,6 +162,7 @@ services:
       - auth-api
       - notifications
       - ipfs-gateway
+      - portainer
     restart: unless-stopped
 
   watchtower:
@@ -167,3 +177,4 @@ volumes:
   redis_data:
   ipfs_data:
   letsencrypt:
+  portainer_data:

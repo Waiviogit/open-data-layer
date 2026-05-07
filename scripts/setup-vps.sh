@@ -96,6 +96,23 @@ if [[ ! -f .env ]]; then
   read -r -p "Press ENTER when .env is ready (or Ctrl+C to abort)..."
 fi
 
+# ── 4b. HTTP Basic Auth for Portainer / nginx ────────────────────────────────
+if [[ ! -f nginx/.htpasswd ]]; then
+  info "Creating nginx/.htpasswd for Portainer Basic Auth..."
+  apt-get update -qq
+  apt-get install -y -qq apache2-utils
+  read -r -p "Portainer Basic Auth username [admin]: " HTPASSWD_USER
+  HTPASSWD_USER="${HTPASSWD_USER:-admin}"
+  read -r -s -p "Portainer Basic Auth password: " HTPASSWD_PASS
+  echo
+  if [[ -z "${HTPASSWD_PASS}" ]]; then
+    error "Password must not be empty."
+  fi
+  htpasswd -bc nginx/.htpasswd "$HTPASSWD_USER" "$HTPASSWD_PASS"
+  unset HTPASSWD_PASS
+  info "nginx/.htpasswd created for user: $HTPASSWD_USER"
+fi
+
 # ── 5. Pull images and start stack ────────────────────────────────────────────
 info "Pulling images for environment: ${DEPLOY_ENV}..."
 docker compose -f "$COMPOSE_FILE" pull
@@ -103,7 +120,7 @@ docker compose -f "$COMPOSE_FILE" pull
 info "Starting stack..."
 docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
 
-# ── 7. Health summary ─────────────────────────────────────────────────────────
+# ── 6. Health summary ─────────────────────────────────────────────────────────
 info "Stack status:"
 docker compose -f "$COMPOSE_FILE" ps
 

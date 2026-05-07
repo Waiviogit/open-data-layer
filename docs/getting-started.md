@@ -59,6 +59,8 @@ Edit `.env` if you need non-default ports or credentials. Default root compose (
 
 **CI:** GitHub Actions → **Run workflow** on [`.github/workflows/build-images.yml`](../.github/workflows/build-images.yml): choose **Environment** (`staging` or `production`), the **branch/ref** to build from, and optionally **rebuild all**; pushes to `ghcr.io/waiviogit/<app>:(staging|production)`.
 
+**Portainer** (full stacks: staging, production, manual): `https://<DOMAIN>/portainer/` — HTTPS + nginx Basic Auth (`nginx/.htpasswd`) + Portainer’s own login. On a VPS, [`scripts/setup-vps.sh`](../scripts/setup-vps.sh) creates `nginx/.htpasswd` if missing. Locally for manual compose: `htpasswd -bc nginx/.htpasswd <user>`.
+
 Key variables and their defaults:
 
 | Variable | Default | Used by |
