@@ -166,7 +166,7 @@ services:
       - "${NGINX_HTTP_PORT:-80}:80"
       - "443:443"
     volumes:
-      - ./nginx/templates:/etc/nginx/templates:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d
       - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
       - letsencrypt:/etc/letsencrypt
     depends_on:
