@@ -7,6 +7,7 @@ RUN npm install -g pnpm
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY nx.json tsconfig.base.json ./
 COPY apps/notifications ./apps/notifications
+COPY libs ./libs
 
 RUN pnpm install --frozen-lockfile
 

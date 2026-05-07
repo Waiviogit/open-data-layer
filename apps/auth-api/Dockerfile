@@ -7,6 +7,7 @@ RUN npm install -g pnpm
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY nx.json tsconfig.base.json ./
 COPY apps/auth-api ./apps/auth-api
+COPY libs ./libs
 
 RUN pnpm install --frozen-lockfile
 
