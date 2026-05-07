@@ -18,7 +18,7 @@ If the query returns `null`, the layout calls `notFound()` (HTTP 404).
 
 | Env | Role |
 |-----|------|
-| `QUERY_API_URL` | Validated in `apps/web/src/config/env.ts` (single source of truth for server env). Base URL for **query-api** (no `NEXT_PUBLIC_`). Default: `http://localhost:3000`. |
+| `QUERY_API_URL` | Validated in `apps/web/src/config/env.ts` (single source of truth for server env). Base URL for **query-api** (no `NEXT_PUBLIC_`). Default: `http://localhost:7000`. |
 
 HTTP call (via `queryApiFetch` in `apps/web/src/modules/user-profile/infrastructure/clients/query-api.client.ts`, which reads `env.QUERY_API_URL`):
 

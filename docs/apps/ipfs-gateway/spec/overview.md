@@ -36,7 +36,7 @@ Kubo’s **Mutable File System (MFS)** holds logical directories separate from t
 
 Optional **replica** behaviour. If `IPFS_PEER_URLS` is unset or empty, **no** sync runs.
 
-When configured (comma-separated base URLs of peer gateways, e.g. `http://node-a:3001/ipfs-gateway,http://node-b:3001/ipfs-gateway`):
+When configured (comma-separated base URLs of peer gateways, e.g. `http://node-a:7300/ipfs-gateway,http://node-b:7300/ipfs-gateway`):
 
 1. On startup and on a fixed interval (`PIN_SYNC_INTERVAL_MS`, default 300000 ms), for each namespace `images` and `files`:
 2. **Fetch** remote directory CID: `GET {peer}/namespaces/{namespace}/cid` — peers are tried **in order**; first successful response wins.
@@ -60,7 +60,7 @@ No Redis or external load balancer is required for this fallback; it is sequenti
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `PORT` | No | `3001` | HTTP listen port for the Nest app |
+| `PORT` | No | `7300` | HTTP listen port for the Nest app |
 | `IPFS_API_URL` | No | `http://localhost:5001` | Kubo HTTP API base URL |
 | `IPFS_GATEWAY_URL` | No | — | Public URL of an IPFS **HTTP gateway** (e.g. for `url` fields in upload responses) |
 | `IPFS_PEER_URLS` | No | — | Comma-separated peer **ipfs-gateway** base URLs (include path prefix `/ipfs-gateway` if used) |

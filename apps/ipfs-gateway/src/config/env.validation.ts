@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
 export const ipfsGatewayConfigSchema = z.object({
-  PORT: z.coerce.number().optional().default(3001),
+  PORT: z.coerce.number().optional().default(7300),
   IPFS_API_URL: z.string().url().default('http://localhost:5001'),
   IPFS_GATEWAY_URL: z.string().url().optional(),
-  /** Comma-separated peer ipfs-gateway base URLs (e.g. http://host:3001/ipfs-gateway) */
+  /** Comma-separated peer ipfs-gateway base URLs (e.g. http://host:7300/ipfs-gateway) */
   IPFS_PEER_URLS: z.string().optional(),
   PIN_SYNC_INTERVAL_MS: z.coerce.number().optional().default(300_000),
 });
