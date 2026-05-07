@@ -22,7 +22,7 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      POSTGRES_HOST: postgres
     depends_on:
       - postgres
     restart: "no"

@@ -10,10 +10,11 @@
  * Usage:
  *   pnpm backfill:user-object-powers [--dry-run] [--batch-size 100]
  *
- * Requires DATABASE_URL.
+ * Requires POSTGRES_HOST, POSTGRES_USER, POSTGRES_DATABASE (and optionally POSTGRES_PASSWORD, POSTGRES_PORT).
  * Optional HIVE_ENGINE_NODES (comma-separated); defaults from libs/clients hive-engine constants.
  */
 import type { OdlDatabase } from '../libs/core/src/index';
+import { resolveConnectionString } from '../libs/migrations/src/connection';
 import {
   HIVE_ENGINE_NODES,
   JSON_RPC_REQUEST_ID,
@@ -205,12 +206,8 @@ function chunk<T>(arr: T[], size: number): T[][] {
 async function main(): Promise<void> {
   const opts = parseArgs(process.argv.slice(2));
 
-  if (!process.env['DATABASE_URL']?.trim()) {
-    fail('DATABASE_URL is required.');
-  }
-
   const nodes = resolveHiveEngineNodes();
-  const pool = new pg.Pool({ connectionString: process.env['DATABASE_URL'] });
+  const pool = new pg.Pool({ connectionString: resolveConnectionString() });
   const db = new Kysely<OdlDatabase>({ dialect: new PostgresDialect({ pool }) });
 
   try {

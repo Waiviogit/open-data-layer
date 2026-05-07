@@ -8,8 +8,10 @@
  * `--user <account>`: only objects tied to that account (creator, ownership/admin authority, or
  * post_objects.author) and only that user's shop/recipe scope keys (no global scope row).
  *
- * Requires DATABASE_URL (unless --dry-run).
+ * Requires POSTGRES_HOST, POSTGRES_USER, POSTGRES_DATABASE (and optionally POSTGRES_PASSWORD, POSTGRES_PORT).
+ * DB connection is skipped when --dry-run.
  */
+import { resolveConnectionString } from '../libs/migrations/src/connection';
 import {
   type OdlDatabase,
   buildUserScopeKey,
@@ -69,11 +71,7 @@ function fail(message: string): never {
 
 async function main(): Promise<void> {
   const opts = parseArgs(process.argv.slice(2));
-  if (!opts.dryRun && !process.env['DATABASE_URL']?.trim()) {
-    fail('DATABASE_URL is required unless --dry-run.');
-  }
-
-  const pool = opts.dryRun ? null : new pg.Pool({ connectionString: process.env['DATABASE_URL'] });
+  const pool = opts.dryRun ? null : new pg.Pool({ connectionString: resolveConnectionString() });
   const db = pool
     ? new Kysely<OdlDatabase>({ dialect: new PostgresDialect({ pool }) })
     : null;

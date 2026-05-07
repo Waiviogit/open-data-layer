@@ -10,6 +10,8 @@ import type { NewThread, NewThreadActiveVote, OdlDatabase } from '@opden-data-la
 import { Kysely, PostgresDialect } from 'kysely';
 import pg from 'pg';
 
+import { resolveConnectionString } from '../libs/migrations/src/connection';
+
 import { HIVE_RPC_NODES } from '../libs/clients/src/hive-client/constants';
 import {
   DEFAULT_PERCENT_HBD,
@@ -296,13 +298,6 @@ async function main(): Promise<void> {
     );
   }
 
-  if (!opts.dryRun) {
-    const dbUrl = process.env['DATABASE_URL']?.trim();
-    if (!dbUrl) {
-      fail('DATABASE_URL is required unless --dry-run.');
-    }
-  }
-
   const client = new Client(opts.hiveNodes);
 
   let startAuthor: string | undefined;
@@ -312,7 +307,7 @@ async function main(): Promise<void> {
 
   const pool = opts.dryRun
     ? null
-    : new pg.Pool({ connectionString: process.env['DATABASE_URL'] });
+    : new pg.Pool({ connectionString: resolveConnectionString() });
 
   const db = pool
     ? new Kysely<OdlDatabase>({

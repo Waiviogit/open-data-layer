@@ -14,14 +14,14 @@
 # Env overrides:
 #   DEPLOY_ENV       staging | production   (default: staging)
 #   REPO_URL         git repo to clone       (default: github.com/Waiviogit/open-data-layer)
-#   INSTALL_DIR      where to clone          (default: /opt/opden-data-layer)
+#   INSTALL_DIR      where to clone          (default: /opt/open-data-layer)
 #   (no GHCR login needed — images are public)
 # =============================================================================
 set -euo pipefail
 
 DEPLOY_ENV="${DEPLOY_ENV:-staging}"
 REPO_URL="${REPO_URL:-https://github.com/Waiviogit/open-data-layer.git}"
-INSTALL_DIR="${INSTALL_DIR:-/opt/opden-data-layer}"
+INSTALL_DIR="${INSTALL_DIR:-/opt/open-data-layer}"
 COMPOSE_FILE="docker-compose.${DEPLOY_ENV}.yml"
 
 # ── colors ────────────────────────────────────────────────────────────────────

@@ -4,7 +4,7 @@ One-off **data** migrations from Mongo export files into the ODL Postgres schema
 
 ## Prerequisites
 
-- `DATABASE_URL` pointing at the target database (e.g. via root `.env` with `tsx --env-file=.env`).
+- `POSTGRES_HOST`, `POSTGRES_USER`, `POSTGRES_DATABASE` (and optionally `POSTGRES_PASSWORD`, `POSTGRES_PORT`) set in the environment (e.g. via root `.env` with `tsx --env-file=.env`).
 - JSON exports as **arrays** of documents (same format as `stream-json` array streaming expects).
 
 ## Commands

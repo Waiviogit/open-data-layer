@@ -73,7 +73,7 @@ Migrations run in **alphanumeric order** of the keys. Do not rename or remove al
 
 ## CLI commands
 
-All commands require **`DATABASE_URL`** in the environment (e.g. `postgresql://user:pass@host:5432/dbname`). Use a `.env` file or export it in the shell.
+All commands read connection details from `POSTGRES_HOST`, `POSTGRES_USER`, `POSTGRES_DATABASE` (and optionally `POSTGRES_PASSWORD`, `POSTGRES_PORT`). Use a `.env` file or export them in the shell.
 
 | Command | Description |
 |--------|-------------|
@@ -81,10 +81,13 @@ All commands require **`DATABASE_URL`** in the environment (e.g. `postgresql://u
 | `pnpm migrate:down` | Roll back the last executed migration. |
 | `pnpm migrate:status` | List all migrations and their status (executed timestamp or `pending`). |
 
-Example:
+Example (host-only, Postgres running locally or in Docker with published port):
 
 ```bash
-export DATABASE_URL="postgresql://localhost:5432/odl"
+export POSTGRES_HOST=localhost
+export POSTGRES_USER=postgres
+export POSTGRES_PASSWORD=postgres
+export POSTGRES_DATABASE=odl
 pnpm migrate
 pnpm migrate:status
 ```
@@ -102,13 +105,14 @@ import { Pool } from 'pg';
 
 // Option A: pass a Kysely instance (reuse existing connection)
 const db = new Kysely<OdlDatabase>({
-  dialect: new PostgresDialect({ pool: new Pool({ connectionString: process.env.DATABASE_URL }) }),
+  dialect: new PostgresDialect({ pool: new Pool({ host: process.env.POSTGRES_HOST, user: process.env.POSTGRES_USER, password: process.env.POSTGRES_PASSWORD, database: process.env.POSTGRES_DATABASE }) }),
 });
 const result = await migrateToLatest(db);
 if (result.error) throw result.error;
 
 // Option B: pass connection config (library creates and destroys its own connection)
-const result = await migrateToLatest({ connectionString: process.env.DATABASE_URL! });
+import { resolveConnectionString } from '@opden-data-layer/migrations';
+const result = await migrateToLatest({ connectionString: resolveConnectionString() });
 
 // Rollback last migration
 await migrateDown(db);
@@ -137,21 +141,25 @@ Example:
 ```typescript
 import { createSnapshot, restoreSnapshot, resetDatabase } from '@opden-data-layer/migrations';
 
+import { resolveConnectionString } from '@opden-data-layer/migrations';
+
+const connectionString = resolveConnectionString();
+
 await createSnapshot({
-  connectionString: process.env.DATABASE_URL!,
+  connectionString,
   outputPath: './snapshots/backup.dump',
   schemaOnly: false,
 });
 
 await restoreSnapshot({
-  connectionString: process.env.DATABASE_URL!,
+  connectionString,
   inputPath: './snapshots/backup.dump',
   clean: true,
 });
 
 // Or for a full reset (drop + restore):
 await resetDatabase({
-  connectionString: process.env.DATABASE_URL!,
+  connectionString,
   inputPath: './snapshots/backup.dump',
 });
 ```
@@ -170,9 +178,9 @@ If a migration process crashes while holding the lock, the next run may wait. Ky
 
 Kysely expects migrations to run in alphanumeric order. If you add a new migration whose name sorts *before* an already-executed one, `migrateToLatest` can report an error (depending on `allowUnorderedMigrations`). Fix by naming new migrations so they sort after the latest (e.g. `00003_...` after `00002_...`).
 
-**DATABASE_URL not loaded in CLI**
+**Migration CLI: connection not configured**
 
-The CLI scripts (`pnpm migrate`, `pnpm migrate:status`, etc.) load `.env` automatically from the workspace root via `tsx --env-file=.env`. If you run the CLI directly without going through the package scripts, export `DATABASE_URL` in the shell first.
+The CLI scripts (`pnpm migrate`, `pnpm migrate:status`, etc.) load `.env` automatically from the workspace root via `tsx --env-file=.env`. If you run the CLI directly without going through the package scripts, export `POSTGRES_HOST`, `POSTGRES_USER`, `POSTGRES_DATABASE` (and optionally `POSTGRES_PASSWORD`, `POSTGRES_PORT`) in the shell first.
 
 ---
 
@@ -188,35 +196,42 @@ The CLI scripts (`pnpm migrate`, `pnpm migrate:status`, etc.) load `.env` automa
 
 Use the **`migrator`** image (`ghcr.io/waiviogit/migrator:(staging|production)`). It bundles `libs/migrations`, `libs/core`, `scripts/`, and runs commands with `pnpm` / `tsx` (no `.env` file required inside the image—pass env vars or `--env-file`).
 
-**`DATABASE_URL` inside Compose:** the DB host must be the Postgres **service name** (`postgres`), not `localhost`. In the repo root `.env` used with `docker-compose.*.yml`, use for example:
+The compose files pass `POSTGRES_HOST: postgres` (the Compose service name) to the migrator; all other `POSTGRES_*` come from `.env` via `env_file`. For bare `docker run`, set them explicitly.
 
-`postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DATABASE}`
-
-(or override only when running the migrator). Discover the Compose network name with `docker network ls` (usually `<project>_default`).
+Discover the Compose network name with `docker network ls` (usually `<project>_default`).
 
 ### Schema migrations (no extra files)
 
 ```bash
-# Ephemeral one-off: apply latest Kysely migrations (default image CMD)
+# Ephemeral one-off via Compose (recommended — env is loaded automatically)
 docker compose -f docker-compose.production.yml --profile tools run --rm migrator
 
 # Plain docker run (replace network and credentials)
 docker run --rm \
   --network opden-data-layer_default \
-  -e DATABASE_URL=postgres://postgres:PASS@postgres:5432/odl \
+  -e POSTGRES_HOST=postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=PASS \
+  -e POSTGRES_DATABASE=odl \
   ghcr.io/waiviogit/migrator:production
 
 # Status
 docker run --rm \
   --network opden-data-layer_default \
-  -e DATABASE_URL=postgres://postgres:PASS@postgres:5432/odl \
+  -e POSTGRES_HOST=postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=PASS \
+  -e POSTGRES_DATABASE=odl \
   ghcr.io/waiviogit/migrator:production \
   pnpm exec tsx libs/migrations/src/cli.ts status
 
 # Roll back last migration
 docker run --rm \
   --network opden-data-layer_default \
-  -e DATABASE_URL=postgres://postgres:PASS@postgres:5432/odl \
+  -e POSTGRES_HOST=postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=PASS \
+  -e POSTGRES_DATABASE=odl \
   ghcr.io/waiviogit/migrator:production \
   pnpm exec tsx libs/migrations/src/cli.ts down
 ```
@@ -228,7 +243,10 @@ Do not bake export files into the image; mount them with `-v`:
 ```bash
 docker run --rm \
   --network opden-data-layer_default \
-  -e DATABASE_URL=postgres://postgres:PASS@postgres:5432/odl \
+  -e POSTGRES_HOST=postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=PASS \
+  -e POSTGRES_DATABASE=odl \
   -v /path/to/wobjects.json:/data/wobjects.json \
   ghcr.io/waiviogit/migrator:production \
   pnpm migrate:mongo-objects /data/wobjects.json
@@ -236,7 +254,10 @@ docker run --rm \
 # Large wobject dump: drop/recreate heavy indexes during load
 docker run --rm \
   --network opden-data-layer_default \
-  -e DATABASE_URL=postgres://postgres:PASS@postgres:5432/odl \
+  -e POSTGRES_HOST=postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=PASS \
+  -e POSTGRES_DATABASE=odl \
   -v /path/to/wobjects.json:/data/wobjects.json \
   ghcr.io/waiviogit/migrator:production \
   pnpm migrate:mongo-objects /data/wobjects.json --skip-indexes
@@ -244,7 +265,10 @@ docker run --rm \
 # Posts export
 docker run --rm \
   --network opden-data-layer_default \
-  -e DATABASE_URL=postgres://postgres:PASS@postgres:5432/odl \
+  -e POSTGRES_HOST=postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=PASS \
+  -e POSTGRES_DATABASE=odl \
   -v /path/to/posts.json:/data/posts.json \
   ghcr.io/waiviogit/migrator:production \
   pnpm migrate:mongo-posts /data/posts.json

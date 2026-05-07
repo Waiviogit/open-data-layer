@@ -1,7 +1,7 @@
 /**
  * Stream MongoDB post JSON array export into ODL Postgres `posts` and satellite tables.
  * Usage: pnpm migrate:mongo-posts <path-to-posts.json>
- * Requires DATABASE_URL (e.g. via .env with tsx --env-file).
+ * Requires POSTGRES_HOST, POSTGRES_USER, POSTGRES_DATABASE (and optionally POSTGRES_PASSWORD, POSTGRES_PORT).
  */
 
 import * as fs from 'fs';
@@ -9,6 +9,7 @@ import * as path from 'path';
 import { pipeline as streamPipeline } from 'node:stream/promises';
 import { Writable } from 'node:stream';
 
+import { resolveConnectionString } from '../../../libs/migrations/src/connection';
 import type {
   JsonValue,
   NewPost,
@@ -609,10 +610,7 @@ async function migrateFile(filePath: string): Promise<void> {
     fail(`File not found: ${resolved}`);
   }
 
-  const databaseUrl = process.env['DATABASE_URL']?.trim();
-  if (!databaseUrl) {
-    fail('DATABASE_URL is required. Set it in the environment or .env.');
-  }
+  const databaseUrl = resolveConnectionString();
 
   const migrator = new MongoPostsMigrator(databaseUrl);
 

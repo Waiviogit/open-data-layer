@@ -8,6 +8,7 @@ import * as path from 'path';
 import { pipeline as streamPipeline } from 'node:stream/promises';
 import { Writable } from 'node:stream';
 
+import { resolveConnectionString } from '../../../libs/migrations/src/connection';
 import type { NewUserSubscription, OdlDatabase } from '../../../libs/core/src/db';
 import { Kysely, PostgresDialect } from 'kysely';
 import { Pool } from 'pg';
@@ -100,10 +101,7 @@ async function migrateFile(filePath: string): Promise<void> {
     fail(`File not found: ${resolved}`);
   }
 
-  const databaseUrl = process.env['DATABASE_URL']?.trim();
-  if (!databaseUrl) {
-    fail('DATABASE_URL is required. Set it in the environment or .env.');
-  }
+  const databaseUrl = resolveConnectionString();
 
   const migrator = new MongoSubscriptionsMigrator(databaseUrl);
 

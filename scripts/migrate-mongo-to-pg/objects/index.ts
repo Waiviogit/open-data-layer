@@ -1,7 +1,7 @@
 /**
  * Stream MongoDB wobject JSON array export into ODL Postgres tables.
  * Usage: pnpm migrate:mongo-objects <path-to.json> [--skip-indexes]
- * Requires DATABASE_URL (e.g. via .env with tsx --env-file).
+ * Requires POSTGRES_HOST, POSTGRES_USER, POSTGRES_DATABASE (and optionally POSTGRES_PASSWORD, POSTGRES_PORT).
  *
  * --skip-indexes  Drop object_updates indexes and trigger before bulk insert,
  *                 recreate them after. Dramatically faster for large files
@@ -12,6 +12,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { pipeline as streamPipeline } from 'node:stream/promises';
 import { Writable } from 'node:stream';
+
+import { resolveConnectionString } from '../../../libs/migrations/src/connection';
 
 import type {
   NewObjectAuthority,
@@ -681,10 +683,7 @@ async function migrateFile(filePath: string, skipIndexes: boolean): Promise<void
     fail(`File not found: ${resolved}`);
   }
 
-  const databaseUrl = process.env['DATABASE_URL']?.trim();
-  if (!databaseUrl) {
-    fail('DATABASE_URL is required. Set it in the environment or .env.');
-  }
+  const databaseUrl = resolveConnectionString();
 
   const migrator = new MongoToPgMigrator(databaseUrl);
 

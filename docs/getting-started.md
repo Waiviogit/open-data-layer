@@ -74,7 +74,7 @@ Key variables and their defaults:
 | `POSTGRES_POOL_MAX` | `10` | chain-indexer |
 | `REDIS_URI` | `redis://localhost:6379` | chain-indexer |
 | `REDIS_PORT` | `6379` | Redis container |
-| `DATABASE_URL` | `postgres://postgres:postgres@localhost:5432/odl` | migrations CLI |
+| `POSTGRES_HOST` | `localhost` | migrations CLI + chain-indexer |
 | `START_BLOCK_NUMBER` | `102138605` | chain-indexer |
 | `QUERY_API_URL` | `http://localhost:7000` | web (server — query-api **origin**; HTTP paths use `/query/v1/...`) |
 | `WEB_THEME_SYNC_URL` | *(unset)* | web (server — optional theme sync endpoint) |
@@ -99,7 +99,7 @@ docker compose ps
 
 ## 4. Run database migrations
 
-The migration CLI reads `DATABASE_URL` from the environment. With `.env` loaded:
+The migration CLI reads `POSTGRES_HOST`, `POSTGRES_USER`, `POSTGRES_DATABASE` (and optionally `POSTGRES_PASSWORD`, `POSTGRES_PORT`) from the environment. With `.env` loaded:
 
 ```bash
 pnpm migrate
@@ -160,8 +160,8 @@ node dist/apps/chain-indexer/main.js
 **Postgres connection refused**
 Make sure the container is running (`docker compose ps`) and that `POSTGRES_HOST=localhost` and `POSTGRES_PORT` match the published port (see `docker-compose.manual.yml`; default `5432`).
 
-**`DATABASE_URL` not set (migration CLI)**
-The CLI fails fast with `DATABASE_URL is required`. Source your `.env` before running migrations (see step 4).
+**Migration CLI: connection not configured**
+The CLI fails fast if `POSTGRES_HOST`, `POSTGRES_USER`, or `POSTGRES_DATABASE` are missing. Make sure your `.env` is loaded (see step 4).
 
 **Port conflict**
 If `5432` or `6379` are in use, change `POSTGRES_PORT` / `REDIS_PORT` in `.env`. Compose maps `${POSTGRES_PORT:-5432}` and `${REDIS_PORT:-6379}` on `postgres` / `redis` in `docker-compose.manual.yml`.

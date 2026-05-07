@@ -3,8 +3,7 @@ import {
   migrateDown,
   migrateToLatest,
 } from './runner';
-
-const DATABASE_URL = process.env['DATABASE_URL'];
+import { resolveConnectionString } from './connection';
 
 function fail(message: string): never {
   console.error(message);
@@ -12,12 +11,9 @@ function fail(message: string): never {
 }
 
 async function run(): Promise<void> {
-  if (!DATABASE_URL?.trim()) {
-    fail('DATABASE_URL is required. Set it in the environment or .env.');
-  }
-
+  const connectionString = resolveConnectionString();
   const command = process.argv[2] ?? 'latest';
-  const config = { connectionString: DATABASE_URL };
+  const config = { connectionString };
 
   switch (command) {
     case 'latest': {
