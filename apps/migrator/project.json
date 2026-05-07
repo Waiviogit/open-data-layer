@@ -1,10 +1,20 @@
 {
   "name": "migrator",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/migrator",
   "projectType": "application",
   "targets": {
     "docker-image": {
       "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/Dockerfile",
+        "{workspaceRoot}/libs/migrations/**/*",
+        "{workspaceRoot}/libs/core/**/*",
+        "{workspaceRoot}/scripts/**/*",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/pnpm-lock.yaml",
+        "{workspaceRoot}/tsconfig.base.json"
+      ],
       "options": {
         "command": "echo CI builds the migrator Docker image"
       }
