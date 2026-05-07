@@ -111,7 +111,16 @@ if [[ ! -f .env ]]; then
   read -r -p "Press ENTER when .env is ready (or Ctrl+C to abort)..."
 fi
 
-# ── 4b. HTTP Basic Auth for Portainer / nginx ────────────────────────────────
+# ── 4b. Generate nginx/conf.d/default.conf from template ─────────────────────
+info "Generating nginx/conf.d/default.conf..."
+DOMAIN_VAL="$(grep -E '^DOMAIN=' .env | cut -d= -f2- | tr -d '[:space:]')"
+if [[ -z "$DOMAIN_VAL" ]]; then
+  error "DOMAIN is not set in .env. Edit $INSTALL_DIR/.env and re-run."
+fi
+envsubst '${DOMAIN}' < nginx/conf.d/default.conf.template > nginx/conf.d/default.conf
+info "nginx/conf.d/default.conf generated for domain: $DOMAIN_VAL"
+
+# ── 4d. HTTP Basic Auth for Portainer / nginx ────────────────────────────────
 if [[ ! -f nginx/.htpasswd ]]; then
   info "Creating nginx/.htpasswd for Portainer Basic Auth..."
   apt-get update -qq

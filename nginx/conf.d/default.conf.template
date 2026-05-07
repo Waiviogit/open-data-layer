@@ -1,7 +1,8 @@
 # SSL virtual host for staging/production (served by jonasal/nginx-certbot).
-# ${DOMAIN} is substituted at container startup via envsubst (nginx template mechanism).
-# Nginx variables are escaped as $$ so envsubst leaves them intact.
-# Set DOMAIN and CERTBOT_EMAIL in .env before the first deploy.
+# This file is a template — do not use directly.
+# setup-vps.sh generates nginx/conf.d/default.conf via:
+#   envsubst '${DOMAIN}' < default.conf.template > default.conf
+# Only ${DOMAIN} is substituted; all nginx $variables are left untouched.
 
 upstream web_app {
     server web:3000;
@@ -17,7 +18,7 @@ server {
     }
 
     location / {
-        return 301 https://$$host$$request_uri;
+        return 301 https://$host$request_uri;
     }
 }
 
@@ -36,21 +37,21 @@ server {
         auth_basic_user_file /etc/nginx/.htpasswd;
 
         proxy_http_version 1.1;
-        proxy_set_header Host $$host;
-        proxy_set_header X-Real-IP $$remote_addr;
-        proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $$scheme;
-        proxy_set_header Upgrade $$http_upgrade;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
         proxy_pass http://portainer:9000/;
     }
 
     location / {
         proxy_http_version 1.1;
-        proxy_set_header Host $$host;
-        proxy_set_header X-Real-IP $$remote_addr;
-        proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $$scheme;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
         proxy_pass http://web_app;
     }
 }
