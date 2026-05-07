@@ -13,7 +13,7 @@
 
 Use an official Kubo release or Docker image. The gateway expects the **HTTP API** at `IPFS_API_URL` (default `http://localhost:5001`).
 
-Example (Docker — align the image tag with [docker-compose.yml](../../../docker-compose.yml) in this repo):
+Example (Docker — same Kubo tag as the `ipfs` service in [`docker-compose.manual.yml`](../../../docker-compose.manual.yml) / root compose):
 
 ```bash
 docker run -d --name kubo -p 4001:4001 -p 5001:5001 -p 8080:8080 ipfs/kubo:v0.40.1

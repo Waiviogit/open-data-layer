@@ -18,6 +18,13 @@
         }
       }
     },
+    "docker-image": {
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "echo CI builds the Docker image for this app"
+      }
+    },
     "prune-lockfile": {
       "dependsOn": ["build"],
       "cache": true,

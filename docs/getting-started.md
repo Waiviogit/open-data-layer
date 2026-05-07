@@ -45,7 +45,18 @@ You only need app-level `.env` files when you want values that differ from the r
 2. For Nest apps (`chain-indexer`, `query-api`, `ipfs-gateway`), `apps/<app>/.env` overrides the workspace root `.env` for the same key.
 3. Next.js reads `apps/web/.env` (and `.env.local`, etc.) from `apps/web/`; use those for web-only settings.
 
-Edit `.env` if you need non-default ports or credentials. The defaults work with the `docker-compose.yml` as-is.
+Edit `.env` if you need non-default ports or credentials. Default root compose (`docker-compose.yml` includes `docker-compose.manual.yml`) publishes Postgres and Redis for local `pnpm nx serve` on the host.
+
+### Compose file reference
+
+| File | Use |
+|------|-----|
+| [`docker-compose.yml`](../docker-compose.yml) | Default entry: includes manual compose |
+| [`docker-compose.manual.yml`](../docker-compose.manual.yml) | **Local image builds** + infra; Postgres/Redis ports published |
+| [`docker-compose.staging.yml`](../docker-compose.staging.yml) | Pre-built apps from GHCR (`:staging`) |
+| [`docker-compose.production.yml`](../docker-compose.production.yml) | Pre-built apps (`:production`) |
+
+**CI:** pushes images to `ghcr.io/waiviogit/<app>:(staging|production)` on push to `staging` and `master` — see [`.github/workflows/build-images.yml`](../.github/workflows/build-images.yml).
 
 Key variables and their defaults:
 
@@ -144,10 +155,10 @@ node dist/apps/chain-indexer/main.js
 ## Troubleshooting
 
 **Postgres connection refused**
-Make sure the container is running (`docker compose ps`) and that `POSTGRES_HOST=localhost` and `POSTGRES_PORT` match the exposed port in `docker-compose.yml`.
+Make sure the container is running (`docker compose ps`) and that `POSTGRES_HOST=localhost` and `POSTGRES_PORT` match the published port (see `docker-compose.manual.yml`; default `5432`).
 
 **`DATABASE_URL` not set (migration CLI)**
 The CLI fails fast with `DATABASE_URL is required`. Source your `.env` before running migrations (see step 4).
 
 **Port conflict**
-If `5432` or `6379` are in use, change `POSTGRES_PORT` / `REDIS_PORT` in `.env`. The `docker-compose.yml` reads these via `${POSTGRES_PORT:-5432}` / `${REDIS_PORT:-6379}`.
+If `5432` or `6379` are in use, change `POSTGRES_PORT` / `REDIS_PORT` in `.env`. Compose maps `${POSTGRES_PORT:-5432}` and `${REDIS_PORT:-6379}` on `postgres` / `redis` in `docker-compose.manual.yml`.

@@ -1,0 +1,156 @@
+name: Build and push Docker images
+
+on:
+  push:
+    branches: [staging, master]
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAMESPACE: waiviogit
+
+jobs:
+  affected:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      has_matrix: ${{ steps.set-matrix.outputs.has_matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve nx affected base
+        id: base
+        run: |
+          set -e
+          case "${GITHUB_REF_NAME}" in
+            staging)
+              git fetch origin master:refs/remotes/origin/master
+              echo "base=origin/master" >> "$GITHUB_OUTPUT"
+              ;;
+            master)
+              git fetch origin master:refs/remotes/origin/master || true
+              if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+                echo "base=HEAD~1" >> "$GITHUB_OUTPUT"
+              else
+                echo "base=origin/master" >> "$GITHUB_OUTPUT"
+              fi
+              ;;
+          esac
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Compute affected apps (docker-image)
+        id: set-matrix
+        run: |
+          set -euo pipefail
+          BASE="${{ steps.base.outputs.base }}"
+          RAW="$(pnpm exec nx show projects --affected --type app --withTarget docker-image --base "$BASE" --head HEAD | tr -d '\r' | grep -v '^$' || true)"
+          if [ -z "$RAW" ]; then
+            printf '%s\n' 'matrix=[]' >> "$GITHUB_OUTPUT"
+            printf '%s\n' 'has_matrix=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          JSON="$(printf '%s\n' "$RAW" | node -e "
+            const fs = require('fs');
+            const lines = fs.readFileSync(0, 'utf8').trim().split(/\\n+/).filter(Boolean);
+            const allow = new Set([
+              'chain-indexer',
+              'query-api',
+              'auth-api',
+              'notifications',
+              'scheduler',
+              'ipfs-gateway',
+              'web',
+            ]);
+            const out = [...new Set(lines)].filter((p) => allow.has(p));
+            process.stdout.write(JSON.stringify(out));
+          ")"
+          {
+            echo "matrix=$JSON"
+            if [ "$JSON" = '[]' ]; then
+              echo 'has_matrix=false'
+            else
+              echo 'has_matrix=true'
+            fi
+          } >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: affected
+    if: needs.affected.outputs.has_matrix == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJson(needs.affected.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Image tag for branch
+        id: tag
+        run: |
+          case "${GITHUB_REF_NAME}" in
+            staging) echo "tag=staging" >> "$GITHUB_OUTPUT" ;;
+            master) echo "tag=production" >> "$GITHUB_OUTPUT" ;;
+            *) echo "Unsupported branch"; exit 1 ;;
+          esac
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.app }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/${{ matrix.app }}/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/${{ matrix.app }}:${{ steps.tag.outputs.tag }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,scope=${{ matrix.app }},mode=max
+
+  cleanup:
+    needs: [affected, build]
+    if: >
+      always() &&
+      needs.affected.outputs.has_matrix == 'true' &&
+      needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJson(needs.affected.outputs.matrix) }}
+    steps:
+      - uses: actions/delete-package-versions@v5
+        continue-on-error: true
+        with:
+          owner: ${{ github.repository_owner }}
+          package-name: ${{ matrix.app }}
+          package-type: container
+          min-versions-to-keep: 5
+          delete-only-untagged-versions: true
+          token: ${{ secrets.GITHUB_TOKEN }}
