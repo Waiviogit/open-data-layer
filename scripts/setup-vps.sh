@@ -86,9 +86,12 @@ if [[ ! -f .env ]]; then
   cp .env.example .env
   warn "============================================================"
   warn " ACTION REQUIRED: edit $INSTALL_DIR/.env"
+  warn "  - Set DOMAIN          your real domain (e.g. example.com)"
+  warn "  - Set CERTBOT_EMAIL   valid email for Let's Encrypt"
   warn "  - Set a strong JWT_SECRET (min 16 chars)"
   warn "  - Set POSTGRES_PASSWORD"
   warn "  - Set AUTH_JWT_SECRET (same as JWT_SECRET or separate)"
+  warn " On first start, certbot will request an SSL cert automatically."
   warn "============================================================"
   read -r -p "Press ENTER when .env is ready (or Ctrl+C to abort)..."
 fi

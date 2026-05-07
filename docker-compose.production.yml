@@ -137,12 +137,16 @@ services:
     restart: unless-stopped
 
   nginx:
-    image: nginx:1.28-alpine
+    image: jonasal/nginx-certbot:latest
+    environment:
+      CERTBOT_EMAIL: ${CERTBOT_EMAIL}
+      DOMAIN: ${DOMAIN}
     ports:
       - "${NGINX_HTTP_PORT:-80}:80"
+      - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/http.d:/etc/nginx/http.d:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - letsencrypt:/etc/letsencrypt
     depends_on:
       - web
       - query-api
@@ -162,3 +166,4 @@ volumes:
   postgres_data:
   redis_data:
   ipfs_data:
+  letsencrypt:

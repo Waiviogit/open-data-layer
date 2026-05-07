@@ -1,8 +1,11 @@
+# Full stack built from local sources (no GHCR images).
+# Use when you need to build and test all apps together on a server or CI without pushing images.
+#
+# For local host development (pnpm nx serve): use docker-compose.infra.yml instead.
+# Pre-built images: docker-compose.staging.yml, docker-compose.production.yml
 services:
   postgres:
     image: postgis/postgis:18-3.6
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
     environment:
       POSTGRES_DB: ${POSTGRES_DATABASE:-odl}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -13,8 +16,6 @@ services:
 
   redis:
     image: redis:8.6
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped
@@ -146,12 +147,17 @@ services:
     restart: unless-stopped
 
   nginx:
-    image: nginx:1.28-alpine
+    image: jonasal/nginx-certbot:latest
+    environment:
+      CERTBOT_EMAIL: ${CERTBOT_EMAIL}
+      DOMAIN: ${DOMAIN}
     ports:
       - "${NGINX_HTTP_PORT:-80}:80"
+      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/http.d:/etc/nginx/http.d:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - letsencrypt:/etc/letsencrypt
     depends_on:
       - web
       - query-api
@@ -164,3 +170,4 @@ volumes:
   postgres_data:
   redis_data:
   ipfs_data:
+  letsencrypt:

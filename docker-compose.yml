@@ -1,5 +1,9 @@
-# Default compose: local builds + Postgres/Redis ports for host tooling (`pnpm nx serve`, migrations).
-# Pre-built images: `docker-compose.staging.yml`, `docker-compose.production.yml`
-# CI: `.github/workflows/build-images.yml`
+# Default compose: local Postgres/Redis/IPFS with ports published to the host.
+# Run apps with `pnpm nx serve` on the host against this infra.
+#
+# Full stacks:
+#   manual build  → docker-compose.manual.yml
+#   staging       → docker-compose.staging.yml
+#   production    → docker-compose.production.yml
 include:
-  - docker-compose.manual.yml
+  - docker-compose.infra.yml

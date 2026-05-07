@@ -1,0 +1,38 @@
+# Local infrastructure only: Postgres, Redis, IPFS with ports published to the host.
+# Use this when running apps with `pnpm nx serve` directly on the host.
+#
+# Usage:
+#   docker compose -f docker-compose.infra.yml up -d
+services:
+  postgres:
+    image: postgis/postgis:18-3.6
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE:-odl}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    restart: unless-stopped
+
+  redis:
+    image: redis:8.6
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  ipfs:
+    image: ipfs/kubo:v0.40.1
+    volumes:
+      - ipfs_data:/data/ipfs
+    environment:
+      - IPFS_PROFILE=server
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  ipfs_data:
