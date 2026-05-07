@@ -181,3 +181,81 @@ The CLI scripts (`pnpm migrate`, `pnpm migrate:status`, etc.) load `.env` automa
 - **Schema and types:** [`data-model/schema.sql`](../spec/data-model/schema.sql), [`data-model/flow.md`](../spec/data-model/flow.md), and `@opden-data-layer/core` (`OdlDatabase`, table row types).
 - **Kysely:** [kysely.dev/docs](https://kysely.dev/docs), including [Migrations](https://kysely.dev/docs/migrations).
 - **Mongo → Postgres data import** (one-off JSON array loads, not Kysely schema migrations): [`scripts/migrate-mongo-to-pg/README.md`](../../scripts/migrate-mongo-to-pg/README.md) (`pnpm migrate:mongo-objects`, `pnpm migrate:mongo-posts`).
+
+---
+
+## Running migrations on VPS / Docker
+
+Use the **`migrator`** image (`ghcr.io/waiviogit/migrator:(staging|production)`). It bundles `libs/migrations`, `libs/core`, `scripts/`, and runs commands with `pnpm` / `tsx` (no `.env` file required inside the image—pass env vars or `--env-file`).
+
+**`DATABASE_URL` inside Compose:** the DB host must be the Postgres **service name** (`postgres`), not `localhost`. In the repo root `.env` used with `docker-compose.*.yml`, use for example:
+
+`postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DATABASE}`
+
+(or override only when running the migrator). Discover the Compose network name with `docker network ls` (usually `<project>_default`).
+
+### Schema migrations (no extra files)
+
+```bash
+# Ephemeral one-off: apply latest Kysely migrations (default image CMD)
+docker compose -f docker-compose.production.yml --profile tools run --rm migrator
+
+# Plain docker run (replace network and credentials)
+docker run --rm \
+  --network opden-data-layer_default \
+  -e DATABASE_URL=postgres://postgres:PASS@postgres:5432/odl \
+  ghcr.io/waiviogit/migrator:production
+
+# Status
+docker run --rm \
+  --network opden-data-layer_default \
+  -e DATABASE_URL=postgres://postgres:PASS@postgres:5432/odl \
+  ghcr.io/waiviogit/migrator:production \
+  pnpm exec tsx libs/migrations/src/cli.ts status
+
+# Roll back last migration
+docker run --rm \
+  --network opden-data-layer_default \
+  -e DATABASE_URL=postgres://postgres:PASS@postgres:5432/odl \
+  ghcr.io/waiviogit/migrator:production \
+  pnpm exec tsx libs/migrations/src/cli.ts down
+```
+
+### Mongo data import (mount JSON files)
+
+Do not bake export files into the image; mount them with `-v`:
+
+```bash
+docker run --rm \
+  --network opden-data-layer_default \
+  -e DATABASE_URL=postgres://postgres:PASS@postgres:5432/odl \
+  -v /path/to/wobjects.json:/data/wobjects.json \
+  ghcr.io/waiviogit/migrator:production \
+  pnpm migrate:mongo-objects /data/wobjects.json
+
+# Large wobject dump: drop/recreate heavy indexes during load
+docker run --rm \
+  --network opden-data-layer_default \
+  -e DATABASE_URL=postgres://postgres:PASS@postgres:5432/odl \
+  -v /path/to/wobjects.json:/data/wobjects.json \
+  ghcr.io/waiviogit/migrator:production \
+  pnpm migrate:mongo-objects /data/wobjects.json --skip-indexes
+
+# Posts export
+docker run --rm \
+  --network opden-data-layer_default \
+  -e DATABASE_URL=postgres://postgres:PASS@postgres:5432/odl \
+  -v /path/to/posts.json:/data/posts.json \
+  ghcr.io/waiviogit/migrator:production \
+  pnpm migrate:mongo-posts /data/posts.json
+```
+
+Other package scripts from the root `package.json` work the same way (e.g. `pnpm migrate:mongo-users`, `pnpm backfill:threads`) as long as their inputs are passed via mounted paths or env.
+
+### Local manual stack
+
+```bash
+docker compose -f docker-compose.manual.yml --profile tools run --rm migrator
+```
+
+Build context uses [`apps/migrator/Dockerfile`](../../apps/migrator/Dockerfile).

@@ -86,11 +86,18 @@ if [[ ! -f .env ]]; then
   cp .env.example .env
   warn "============================================================"
   warn " ACTION REQUIRED: edit $INSTALL_DIR/.env"
-  warn "  - Set DOMAIN          your real domain (e.g. example.com)"
-  warn "  - Set CERTBOT_EMAIL   valid email for Let's Encrypt"
-  warn "  - Set a strong JWT_SECRET (min 16 chars)"
+  warn "  - Set DOMAIN                your real domain (e.g. example.com)"
+  warn "  - Set CERTBOT_EMAIL         valid email for Let's Encrypt"
+  warn "  - Set a strong JWT_SECRET   (min 16 chars)"
   warn "  - Set POSTGRES_PASSWORD"
-  warn "  - Set AUTH_JWT_SECRET (same as JWT_SECRET or separate)"
+  warn "  - Set AUTH_JWT_SECRET       (same as JWT_SECRET or separate)"
+  warn ""
+  warn "  chain-indexer start blocks (defaults used if not set):"
+  warn "  - START_BLOCK_NUMBER        Hive parser start block (default: 102138605)"
+  warn "  - HIVE_ENGINE_START_BLOCK   Hive Engine parser start block (default: 59083591)"
+  warn "  Tip: set both to a recent block number on a fresh VPS to skip"
+  warn "  historical data and start syncing from the current chain head."
+  warn ""
   warn " On first start, certbot will request an SSL cert automatically."
   warn "============================================================"
   read -r -p "Press ENTER when .env is ready (or Ctrl+C to abort)..."
@@ -113,14 +120,34 @@ if [[ ! -f nginx/.htpasswd ]]; then
   info "nginx/.htpasswd created for user: $HTPASSWD_USER"
 fi
 
-# ── 5. Pull images and start stack ────────────────────────────────────────────
+# ── 5. Pull images ────────────────────────────────────────────────────────────
 info "Pulling images for environment: ${DEPLOY_ENV}..."
 docker compose -f "$COMPOSE_FILE" pull
 
+# ── 6. Start Postgres and run migrations before the full stack ────────────────
+info "Starting Postgres..."
+docker compose -f "$COMPOSE_FILE" up -d postgres
+
+info "Waiting for Postgres to be ready..."
+for i in $(seq 1 30); do
+  docker compose -f "$COMPOSE_FILE" exec -T postgres \
+    pg_isready -U "${POSTGRES_USER:-postgres}" -d "${POSTGRES_DATABASE:-odl}" \
+    &>/dev/null && break
+  sleep 2
+done
+docker compose -f "$COMPOSE_FILE" exec -T postgres \
+  pg_isready -U "${POSTGRES_USER:-postgres}" -d "${POSTGRES_DATABASE:-odl}" \
+  || error "Postgres did not become ready in time."
+
+info "Running database migrations..."
+docker compose -f "$COMPOSE_FILE" --profile tools run --rm migrator
+info "Migrations complete."
+
+# ── 7. Start full stack ────────────────────────────────────────────────────────
 info "Starting stack..."
 docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
 
-# ── 6. Health summary ─────────────────────────────────────────────────────────
+# ── 8. Health summary ─────────────────────────────────────────────────────────
 info "Stack status:"
 docker compose -f "$COMPOSE_FILE" ps
 

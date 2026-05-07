@@ -11,6 +11,18 @@ services:
       - postgres_data:/var/lib/postgresql
     restart: unless-stopped
 
+  migrator:
+    image: ghcr.io/waiviogit/migrator:staging
+    pull_policy: always
+    profiles: ["tools"]
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      - postgres
+    restart: "no"
+
   redis:
     image: redis:8.6
     volumes:
