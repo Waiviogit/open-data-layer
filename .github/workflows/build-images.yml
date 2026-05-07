@@ -1,8 +1,22 @@
+# Manual only: Actions → Run workflow → choose **Environment** (`staging` | `production`),
+# branch/ref, and optional **rebuild all** (full image matrix, skip nx affected).
 name: Build and push Docker images
 
 on:
-  push:
-    branches: [staging, master]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Image tag / target (GHCR)
+        type: choice
+        options:
+          - staging
+          - production
+        required: true
+        default: staging
+      rebuild_all:
+        description: Build every app image (ignore nx affected)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -27,19 +41,30 @@ jobs:
       - name: Resolve nx affected base
         id: base
         run: |
-          set -e
-          case "${GITHUB_REF_NAME}" in
+          set -euo pipefail
+          if [ "${{ inputs.rebuild_all }}" = "true" ]; then
+            echo "mode=all" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "mode=affected" >> "$GITHUB_OUTPUT"
+          git fetch origin master:refs/remotes/origin/master || true
+          case "${{ inputs.environment }}" in
             staging)
-              git fetch origin master:refs/remotes/origin/master
               echo "base=origin/master" >> "$GITHUB_OUTPUT"
               ;;
-            master)
-              git fetch origin master:refs/remotes/origin/master || true
-              if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
-                echo "base=HEAD~1" >> "$GITHUB_OUTPUT"
+            production)
+              if [ "${GITHUB_REF_NAME}" = "master" ]; then
+                if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+                  echo "base=HEAD~1" >> "$GITHUB_OUTPUT"
+                else
+                  echo "base=origin/master" >> "$GITHUB_OUTPUT"
+                fi
               else
                 echo "base=origin/master" >> "$GITHUB_OUTPUT"
               fi
+              ;;
+            *)
+              echo "Unsupported environment: ${{ inputs.environment }}"; exit 1
               ;;
           esac
 
@@ -59,6 +84,15 @@ jobs:
         id: set-matrix
         run: |
           set -euo pipefail
+          MODE="${{ steps.base.outputs.mode }}"
+          if [ "$MODE" = "all" ]; then
+            JSON='["chain-indexer","query-api","auth-api","notifications","scheduler","ipfs-gateway","web"]'
+            {
+              echo "matrix=$JSON"
+              echo 'has_matrix=true'
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           BASE="${{ steps.base.outputs.base }}"
           RAW="$(pnpm exec nx show projects --affected --type app --withTarget docker-image --base "$BASE" --head HEAD | tr -d '\r' | grep -v '^$' || true)"
           if [ -z "$RAW" ]; then
@@ -101,13 +135,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Image tag for branch
+      - name: Image tag from workflow input
         id: tag
         run: |
-          case "${GITHUB_REF_NAME}" in
-            staging) echo "tag=staging" >> "$GITHUB_OUTPUT" ;;
-            master) echo "tag=production" >> "$GITHUB_OUTPUT" ;;
-            *) echo "Unsupported branch"; exit 1 ;;
+          set -euo pipefail
+          case "${{ inputs.environment }}" in
+            staging|production)
+              echo "tag=${{ inputs.environment }}" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "Unsupported environment: ${{ inputs.environment }}"; exit 1
+              ;;
           esac
 
       - uses: docker/setup-buildx-action@v3

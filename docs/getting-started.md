@@ -45,18 +45,19 @@ You only need app-level `.env` files when you want values that differ from the r
 2. For Nest apps (`chain-indexer`, `query-api`, `ipfs-gateway`), `apps/<app>/.env` overrides the workspace root `.env` for the same key.
 3. Next.js reads `apps/web/.env` (and `.env.local`, etc.) from `apps/web/`; use those for web-only settings.
 
-Edit `.env` if you need non-default ports or credentials. Default root compose (`docker-compose.yml` includes `docker-compose.manual.yml`) publishes Postgres and Redis for local `pnpm nx serve` on the host.
+Edit `.env` if you need non-default ports or credentials. Default root compose (`docker-compose.yml` includes `docker-compose.infra.yml`) publishes Postgres, Redis, and IPFS for local `pnpm nx serve` on the host.
 
 ### Compose file reference
 
 | File | Use |
 |------|-----|
-| [`docker-compose.yml`](../docker-compose.yml) | Default entry: includes manual compose |
-| [`docker-compose.manual.yml`](../docker-compose.manual.yml) | **Local image builds** + infra; Postgres/Redis ports published |
-| [`docker-compose.staging.yml`](../docker-compose.staging.yml) | Pre-built apps from GHCR (`:staging`) |
-| [`docker-compose.production.yml`](../docker-compose.production.yml) | Pre-built apps (`:production`) |
+| [`docker-compose.yml`](../docker-compose.yml) | Default entry: infra only (Postgres, Redis, IPFS; ports published) |
+| [`docker-compose.infra.yml`](../docker-compose.infra.yml) | Same infra stack (can run directly) |
+| [`docker-compose.manual.yml`](../docker-compose.manual.yml) | Full stack: **local Dockerfile builds** (no GHCR) + TLS nginx |
+| [`docker-compose.staging.yml`](../docker-compose.staging.yml) | Pre-built apps from GHCR (`:staging`); images built via manual workflow |
+| [`docker-compose.production.yml`](../docker-compose.production.yml) | Pre-built apps (`:production`); images built via manual workflow |
 
-**CI:** pushes images to `ghcr.io/waiviogit/<app>:(staging|production)` on push to `staging` and `master` — see [`.github/workflows/build-images.yml`](../.github/workflows/build-images.yml).
+**CI:** GitHub Actions → **Run workflow** on [`.github/workflows/build-images.yml`](../.github/workflows/build-images.yml): choose **Environment** (`staging` or `production`), the **branch/ref** to build from, and optionally **rebuild all**; pushes to `ghcr.io/waiviogit/<app>:(staging|production)`.
 
 Key variables and their defaults:
 
