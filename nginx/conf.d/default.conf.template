@@ -1,25 +1,12 @@
-# SSL virtual host for staging/production (served by jonasal/nginx-certbot).
+# HTTPS virtual host for staging/production (served by jonasal/nginx-certbot).
 # This file is a template — do not use directly.
 # setup-vps.sh generates nginx/conf.d/default.conf via:
 #   envsubst '${DOMAIN}' < default.conf.template > default.conf
-# Only ${DOMAIN} is substituted; all nginx $variables are left untouched.
+# jonasal disables this file (renames to .nokey) when cert is missing,
+# and re-enables it once the cert is obtained. HTTP is handled by 00-acme.conf.
 
 upstream web_app {
     server web:3000;
-}
-
-# HTTP: pass ACME challenge through, redirect everything else to HTTPS.
-server {
-    listen 80;
-    server_name ${DOMAIN};
-
-    location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
-    }
-
-    location / {
-        return 301 https://$host$request_uri;
-    }
 }
 
 server {
