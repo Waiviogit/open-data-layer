@@ -86,7 +86,7 @@ jobs:
           set -euo pipefail
           MODE="${{ steps.base.outputs.mode }}"
           if [ "$MODE" = "all" ]; then
-            JSON='["chain-indexer","query-api","auth-api","notifications","scheduler","ipfs-gateway","web","migrator"]'
+            JSON='["chain-indexer","query-api","auth-api","notifications","scheduler","ipfs-gateway","stack-watchdog","web","migrator"]'
             {
               echo "matrix=$JSON"
               echo 'has_matrix=true'
@@ -110,6 +110,7 @@ jobs:
               'notifications',
               'scheduler',
               'ipfs-gateway',
+              'stack-watchdog',
               'web',
               'migrator',
             ]);

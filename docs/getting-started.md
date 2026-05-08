@@ -55,13 +55,15 @@ Edit `.env` if you need non-default ports or credentials. Default root compose (
 | [`docker-compose.infra.yml`](../docker-compose.infra.yml) | Same infra stack (can run directly) |
 | [`docker-compose.manual.yml`](../docker-compose.manual.yml) | Full stack: **local Dockerfile builds** (no GHCR) + TLS nginx |
 | [`docker-compose.staging.apps.yml`](../docker-compose.staging.apps.yml) | Pre-built apps from GHCR (`:staging`); use with matching `.infra.yml` on VPS |
-| [`docker-compose.staging.infra.yml`](../docker-compose.staging.infra.yml) | VPS infra: Postgres, Redis, IPFS, Komodo, nginx (`:staging` env) |
+| [`docker-compose.staging.infra.yml`](../docker-compose.staging.infra.yml) | VPS infra: Postgres, Redis, IPFS, Portainer CE, nginx (`:staging` env) |
 | [`docker-compose.production.apps.yml`](../docker-compose.production.apps.yml) | Pre-built apps (`:production`); use with matching `.infra.yml` on VPS |
 | [`docker-compose.production.infra.yml`](../docker-compose.production.infra.yml) | VPS infra (`:production` env) |
 
 **CI:** GitHub Actions → **Run workflow** on [`.github/workflows/build-images.yml`](../.github/workflows/build-images.yml): choose **Environment** (`staging` or `production`), the **branch/ref** to build from, and optionally **rebuild all**; pushes to `ghcr.io/waiviogit/<app>:(staging|production)`.
 
-**Komodo** (staging/production VPS): **`http://127.0.0.1:9120`** on the host (`komodo-core` binds loopback only) or via **`ssh -L 9120:127.0.0.1:9120`**. Not served through public nginx. [`scripts/setup-vps.sh`](../scripts/setup-vps.sh) creates `compose.env`. Full steps: [Komodo deployment](deployment/komodo.md).
+**Portainer CE** (staging/production VPS): **`https://127.0.0.1:9443`** on the host (loopback only) or via **`ssh -L 9443:127.0.0.1:9443`**. Not served through public nginx. [`scripts/setup-vps.sh`](../scripts/setup-vps.sh) uses `.env` only for infra. Full steps: [Portainer deployment](deployment/portainer.md).
+
+**stack-watchdog** (same VPS): optional NestJS sidecar in [`docker-compose.<env>.apps.yml`](../docker-compose.staging.apps.yml) runs **`docker compose pull`** (including **migrator**) and **`compose up -d`** on long-running services about every **5 minutes**. Full detail: [stack-watchdog spec](apps/stack-watchdog/spec/overview.md).
 
 Key variables and their defaults:
 

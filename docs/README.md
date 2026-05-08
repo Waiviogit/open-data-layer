@@ -11,7 +11,7 @@ Entry point for Open Data Layer documentation.
 | [Specification index](spec/README.md) | Domain specs, data model, governance |
 | [Documentation standards](standards/docs-standards.md) | How we write docs |
 | [Migrations](operations/migrations.md) | Kysely migrator, CLI, snapshots |
-| [Komodo (VPS deploy)](deployment/komodo.md) | Auto-updates for the `apps` Compose stack |
+| [Portainer (VPS deploy)](deployment/portainer.md) | Docker UI (localhost-only); optional manual `apps` updates alongside stack-watchdog |
 
 ## Apps
 
@@ -23,6 +23,7 @@ Entry point for Open Data Layer documentation.
 | `auth-api` | [Overview](apps/auth-api/overview.md) |
 | `notifications` | [Overview](apps/notifications/overview.md) |
 | `scheduler` | [Spec](apps/scheduler/spec/overview.md) |
+| `stack-watchdog` | [Spec](apps/stack-watchdog/spec/overview.md) |
 | `web` | [README](apps/web/README.md) |
 
 ## Libraries (cross-cutting)

@@ -5,7 +5,7 @@
 # setup also removes stale .nokey and recreates nginx so certbot can issue to live/<DOMAIN>/ .
 # HTTP for ACME is handled by 00-acme.conf.
 #
-# Komodo Core UI is not proxied here — use http://127.0.0.1:9120 on the host (see compose.env KOMODO_HOST).
+# Portainer CE is not proxied here — use https://127.0.0.1:9443 on the host (loopback only).
 
 upstream web_app {
     server web:3000;

@@ -1,8 +1,6 @@
-# VPS infra: Postgres, Redis, IPFS, nginx + Komodo (Mongo, Core, Periphery).
-# Shared Docker network for the separate apps stack (Komodo-managed auto-updates).
+# VPS infra: Postgres, Redis, IPFS, nginx + Portainer CE (Docker UI, localhost-only).
+# Shared Docker network for the separate apps stack (operator-managed: CLI or Portainer).
 # Bootstrap: scripts/setup-vps.sh (creates external network, brings up infra then apps).
-#
-# Komodo must not manage this file — only docker-compose.*.apps.yml is imported as a Stack.
 services:
   postgres:
     image: postgis/postgis:18-3.6
@@ -34,52 +32,14 @@ services:
       - opden-data-layer-net
     restart: unless-stopped
 
-  komodo-mongo:
-    image: mongo
-    labels:
-      komodo.skip: ''
-    command: --quiet --wiredTigerCacheSizeGB 0.25
+  portainer:
+    image: portainer/portainer-ce:2.33.6
     restart: unless-stopped
     volumes:
-      - komodo-mongo-data:/data/db
-      - komodo-mongo-config:/data/configdb
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${KOMODO_DATABASE_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${KOMODO_DATABASE_PASSWORD}
-    networks:
-      - opden-data-layer-net
-
-  komodo-core:
-    image: ghcr.io/moghtech/komodo-core:${COMPOSE_KOMODO_IMAGE_TAG:-2}
-    init: true
-    restart: unless-stopped
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - portainer_data:/data
     ports:
-      - '127.0.0.1:9120:9120'
-    depends_on:
-      - komodo-mongo
-    env_file:
-      - compose.env
-    environment:
-      KOMODO_DATABASE_ADDRESS: komodo-mongo:27017
-    volumes:
-      - komodo-keys:/config/keys
-      - ${COMPOSE_KOMODO_BACKUPS_PATH:-/opt/open-data-layer/komodo-backups}:/backups
-    networks:
-      - opden-data-layer-net
-
-  komodo-periphery:
-    image: ghcr.io/moghtech/komodo-periphery:${COMPOSE_KOMODO_IMAGE_TAG:-2}
-    init: true
-    restart: unless-stopped
-    depends_on:
-      - komodo-core
-    env_file:
-      - compose.env
-    volumes:
-      - komodo-keys:/config/keys
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /proc:/proc
-      - ${INSTALL_DIR:-/opt/open-data-layer}:${INSTALL_DIR:-/opt/open-data-layer}
+      - '127.0.0.1:9443:9443'
     networks:
       - opden-data-layer-net
 
@@ -103,9 +63,7 @@ volumes:
   redis_data:
   ipfs_data:
   letsencrypt:
-  komodo-mongo-data:
-  komodo-mongo-config:
-  komodo-keys:
+  portainer_data:
 
 networks:
   opden-data-layer-net:

@@ -1,4 +1,4 @@
-# GHCR app images (staging). Managed by Komodo on the VPS: auto_update + poll_for_updates.
+# GHCR app images (staging). `stack-watchdog` pulls/upgrades images periodically; optional Portainer.
 # Requires shared network `opden-data-layer-net` (created by scripts/setup-vps.sh).
 services:
   migrator:
@@ -117,6 +117,23 @@ services:
       QUERY_API_URL: ${QUERY_API_URL:-http://query-api:7000}
       AUTH_API_BASE_URL: ${AUTH_API_BASE_URL:-http://auth-api:7100}
       AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-${JWT_SECRET:-change-me-min-16-chars-for-dev}}
+    networks:
+      - opden-data-layer-net
+    restart: unless-stopped
+
+  stack-watchdog:
+    image: ghcr.io/waiviogit/stack-watchdog:staging
+    pull_policy: always
+    user: root
+    env_file:
+      - .env
+    environment:
+      DEPLOY_ENV: staging
+      INSTALL_DIR: ${INSTALL_DIR:-/opt/open-data-layer}
+      STACK_WATCHDOG_ENABLED: 'true'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${INSTALL_DIR:-/opt/open-data-layer}:${INSTALL_DIR:-/opt/open-data-layer}:ro
     networks:
       - opden-data-layer-net
     restart: unless-stopped

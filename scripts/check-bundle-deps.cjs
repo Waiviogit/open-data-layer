@@ -23,6 +23,7 @@ const WEBPACK_APPS = [
   'notifications',
   'scheduler',
   'ipfs-gateway',
+  'stack-watchdog',
 ];
 
 function npmPackageName(spec) {
