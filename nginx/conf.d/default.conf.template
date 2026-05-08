@@ -18,8 +18,9 @@ server {
 
     client_max_body_size 30m;
 
-    # Portainer UI — nginx Basic Auth (see nginx/.htpasswd, setup-vps.sh).
-    location /portainer/ {
+    # Komodo UI — nginx Basic Auth (see nginx/.htpasswd, setup-vps.sh).
+    # Set KOMODO_HOST=https://${DOMAIN}/komodo in compose.env (see compose.env.example).
+    location /komodo/ {
         auth_basic "Restricted";
         auth_basic_user_file /etc/nginx/.htpasswd;
 
@@ -30,7 +31,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
-        proxy_pass http://portainer:9000/;
+        proxy_pass http://komodo-core:9120/;
     }
 
     location / {

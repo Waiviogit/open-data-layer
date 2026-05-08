@@ -3,7 +3,7 @@
 #
 # Full stacks:
 #   manual build  → docker-compose.manual.yml
-#   staging       → docker-compose.staging.yml
-#   production    → docker-compose.production.yml
+#   staging       → docker-compose.staging.{infra,apps}.yml
+#   production    → docker-compose.production.{infra,apps}.yml
 include:
   - docker-compose.infra.yml

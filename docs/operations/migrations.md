@@ -198,17 +198,18 @@ Use the **`migrator`** image (`ghcr.io/waiviogit/migrator:(staging|production)`)
 
 The compose files pass `POSTGRES_HOST: postgres` (the Compose service name) to the migrator; all other `POSTGRES_*` come from `.env` via `env_file`. For bare `docker run`, set them explicitly.
 
-Discover the Compose network name with `docker network ls` (usually `<project>_default`).
+Discover the shared VPS network with `docker network ls` (staging/production **`opden-data-layer-net`** from `scripts/setup-vps.sh`).
 
 ### Schema migrations (no extra files)
 
 ```bash
-# Ephemeral one-off via Compose (recommended — env is loaded automatically)
-docker compose -f docker-compose.production.yml --profile tools run --rm migrator
+# Ephemeral one-off via Compose (recommended — env is loaded automatically).
+# Apps stack project name is `apps` (see scripts/setup-vps.sh).
+docker compose -p apps --env-file .env -f docker-compose.production.apps.yml --profile tools run --rm migrator
 
-# Plain docker run (replace network and credentials)
+# Plain docker run (replace network and credentials; production apps use external network opden-data-layer-net)
 docker run --rm \
-  --network opden-data-layer_default \
+  --network opden-data-layer-net \
   -e POSTGRES_HOST=postgres \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=PASS \
@@ -217,7 +218,7 @@ docker run --rm \
 
 # Status
 docker run --rm \
-  --network opden-data-layer_default \
+  --network opden-data-layer-net \
   -e POSTGRES_HOST=postgres \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=PASS \
@@ -227,7 +228,7 @@ docker run --rm \
 
 # Roll back last migration
 docker run --rm \
-  --network opden-data-layer_default \
+  --network opden-data-layer-net \
   -e POSTGRES_HOST=postgres \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=PASS \
@@ -242,7 +243,7 @@ Do not bake export files into the image; mount them with `-v`:
 
 ```bash
 docker run --rm \
-  --network opden-data-layer_default \
+  --network opden-data-layer-net \
   -e POSTGRES_HOST=postgres \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=PASS \
@@ -253,7 +254,7 @@ docker run --rm \
 
 # Large wobject dump: drop/recreate heavy indexes during load
 docker run --rm \
-  --network opden-data-layer_default \
+  --network opden-data-layer-net \
   -e POSTGRES_HOST=postgres \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=PASS \
@@ -264,7 +265,7 @@ docker run --rm \
 
 # Posts export
 docker run --rm \
-  --network opden-data-layer_default \
+  --network opden-data-layer-net \
   -e POSTGRES_HOST=postgres \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=PASS \

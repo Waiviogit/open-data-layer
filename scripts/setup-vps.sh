@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# VPS bootstrap: Docker, Docker Compose plugin, app stack from GHCR.
+# VPS bootstrap: Docker, Docker Compose plugin, Komodo + app stack from GHCR.
 #
 # Usage:
 #   # staging
@@ -22,7 +22,8 @@ set -euo pipefail
 DEPLOY_ENV="${DEPLOY_ENV:-staging}"
 REPO_URL="${REPO_URL:-https://github.com/Waiviogit/open-data-layer.git}"
 INSTALL_DIR="${INSTALL_DIR:-/opt/open-data-layer}"
-COMPOSE_FILE="docker-compose.${DEPLOY_ENV}.yml"
+COMPOSE_INFRA_FILE="docker-compose.${DEPLOY_ENV}.infra.yml"
+COMPOSE_APPS_FILE="docker-compose.${DEPLOY_ENV}.apps.yml"
 
 # ── colors ────────────────────────────────────────────────────────────────────
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
@@ -45,7 +46,7 @@ if command -v docker &>/dev/null; then
 else
   info "Installing Docker..."
   apt-get update -qq
-  apt-get install -y -qq ca-certificates curl gnupg
+  apt-get install -y -qq ca-certificates curl gnupg openssl
 
   # Detect distro from /etc/os-release (supports Ubuntu and Debian)
   . /etc/os-release
@@ -74,6 +75,8 @@ else
   info "Docker installed: $(docker --version)"
 fi
 
+command -v openssl &>/dev/null || apt-get install -y -qq openssl
+
 # ── 2. Install git (usually present, but ensure) ──────────────────────────────
 command -v git &>/dev/null || apt-get install -y -qq git
 
@@ -99,6 +102,7 @@ if [[ ! -f .env ]]; then
   warn "  - Set a strong JWT_SECRET   (min 16 chars)"
   warn "  - Set POSTGRES_PASSWORD"
   warn "  - Set AUTH_JWT_SECRET       (same as JWT_SECRET or separate)"
+  warn "  - Set INSTALL_DIR if not using default: $INSTALL_DIR"
   warn ""
   warn "  chain-indexer start blocks (defaults used if not set):"
   warn "  - START_BLOCK_NUMBER        Hive parser start block (default: 102138605)"
@@ -111,25 +115,64 @@ if [[ ! -f .env ]]; then
   read -r -p "Press ENTER when .env is ready (or Ctrl+C to abort)..."
 fi
 
+# Ensure INSTALL_DIR / backups path for Komodo + compose interpolation
+if ! grep -qE '^INSTALL_DIR=' .env; then
+  echo "INSTALL_DIR=${INSTALL_DIR}" >> .env
+fi
+if ! grep -qE '^COMPOSE_KOMODO_BACKUPS_PATH=' .env; then
+  echo "COMPOSE_KOMODO_BACKUPS_PATH=${INSTALL_DIR}/komodo-backups" >> .env
+fi
+
 # ── 4b. Generate nginx/conf.d/default.conf from template ─────────────────────
+command -v envsubst &>/dev/null || apt-get install -y -qq gettext-base
 info "Generating nginx/conf.d/default.conf..."
 DOMAIN_VAL="$(grep -E '^DOMAIN=' .env | cut -d= -f2- | tr -d '[:space:]')"
 if [[ -z "$DOMAIN_VAL" ]]; then
   error "DOMAIN is not set in .env. Edit $INSTALL_DIR/.env and re-run."
 fi
-envsubst '${DOMAIN}' < nginx/conf.d/default.conf.template > nginx/conf.d/default.conf
-# Remove template from conf.d so jonasal does not try to cert the literal "${DOMAIN}" string
-rm -f nginx/conf.d/default.conf.template
-info "nginx/conf.d/default.conf generated for domain: $DOMAIN_VAL"
+if [[ -f nginx/conf.d/default.conf.template ]]; then
+  envsubst '${DOMAIN}' < nginx/conf.d/default.conf.template > nginx/conf.d/default.conf
+  rm -f nginx/conf.d/default.conf.template
+  info "nginx/conf.d/default.conf generated for domain: $DOMAIN_VAL"
+else
+  warn "nginx/conf.d/default.conf.template missing — skipping (already generated?)"
+fi
 
-# ── 4d. HTTP Basic Auth for Portainer / nginx ────────────────────────────────
+# ── 4c. Komodo compose.env (secrets + KOMODO_HOST) ───────────────────────────
+BACKUPS_PATH="${INSTALL_DIR}/komodo-backups"
+mkdir -p "$BACKUPS_PATH"
+
+if [[ ! -f compose.env ]]; then
+  info "Creating compose.env for Komodo from compose.env.example..."
+  if [[ ! -f compose.env.example ]]; then
+    error "compose.env.example not found in $INSTALL_DIR"
+  fi
+  KOMODO_DB_PASS="$(openssl rand -hex 16)"
+  KOMODO_ADMIN_PASS="$(openssl rand -hex 16)"
+  KOMODO_JWT="$(openssl rand -hex 32)"
+  KOMODO_WEBHOOK="$(openssl rand -hex 32)"
+  sed \
+    -e "s|^KOMODO_HOST=.*|KOMODO_HOST=https://${DOMAIN_VAL}/komodo|" \
+    -e "s|^KOMODO_DATABASE_PASSWORD=.*|KOMODO_DATABASE_PASSWORD=${KOMODO_DB_PASS}|" \
+    -e "s|^KOMODO_INIT_ADMIN_PASSWORD=.*|KOMODO_INIT_ADMIN_PASSWORD=${KOMODO_ADMIN_PASS}|" \
+    -e "s|^KOMODO_JWT_SECRET=.*|KOMODO_JWT_SECRET=${KOMODO_JWT}|" \
+    -e "s|^KOMODO_WEBHOOK_SECRET=.*|KOMODO_WEBHOOK_SECRET=${KOMODO_WEBHOOK}|" \
+    -e "s|^COMPOSE_KOMODO_BACKUPS_PATH=.*|COMPOSE_KOMODO_BACKUPS_PATH=${BACKUPS_PATH}|" \
+    -e "s|^PERIPHERY_ROOT_DIRECTORY=.*|PERIPHERY_ROOT_DIRECTORY=${INSTALL_DIR}|" \
+    compose.env.example > compose.env
+  chmod 600 compose.env
+  info "compose.env created. Save KOMODO_INIT_ADMIN_USERNAME / password from compose.env if you need them (also in Komodo UI at first login)."
+  unset KOMODO_DB_PASS KOMODO_ADMIN_PASS KOMODO_JWT KOMODO_WEBHOOK
+fi
+
+# ── 4d. HTTP Basic Auth for Komodo / nginx ──────────────────────────────────
 if [[ ! -f nginx/.htpasswd ]]; then
-  info "Creating nginx/.htpasswd for Portainer Basic Auth..."
+  info "Creating nginx/.htpasswd for Komodo Basic Auth (outer layer)..."
   apt-get update -qq
   apt-get install -y -qq apache2-utils
-  read -r -p "Portainer Basic Auth username [admin]: " HTPASSWD_USER
+  read -r -p "Komodo Basic Auth username [admin]: " HTPASSWD_USER
   HTPASSWD_USER="${HTPASSWD_USER:-admin}"
-  read -r -s -p "Portainer Basic Auth password: " HTPASSWD_PASS
+  read -r -s -p "Komodo Basic Auth password: " HTPASSWD_PASS
   echo
   if [[ -z "${HTPASSWD_PASS}" ]]; then
     error "Password must not be empty."
@@ -139,38 +182,55 @@ if [[ ! -f nginx/.htpasswd ]]; then
   info "nginx/.htpasswd created for user: $HTPASSWD_USER"
 fi
 
-# ── 5. Pull images ────────────────────────────────────────────────────────────
-info "Pulling images for environment: ${DEPLOY_ENV}..."
-docker compose -f "$COMPOSE_FILE" pull
+# ── 5. Shared Docker network ─────────────────────────────────────────────────
+info "Ensuring Docker network opden-data-layer-net exists..."
+docker network create opden-data-layer-net 2>/dev/null || true
 
-# ── 6. Start Postgres and run migrations before the full stack ────────────────
-info "Starting Postgres..."
-docker compose -f "$COMPOSE_FILE" up -d postgres
+# ── 6. Pull images ────────────────────────────────────────────────────────────
+info "Pulling infra images (${DEPLOY_ENV})..."
+docker compose -p infra --env-file .env --env-file compose.env -f "$COMPOSE_INFRA_FILE" pull
+
+info "Pulling app images (${DEPLOY_ENV})..."
+docker compose -p apps --env-file .env -f "$COMPOSE_APPS_FILE" pull
+
+# ── 7. Start Postgres / Redis / IPFS, migrate, then apps, then full infra ───
+info "Starting Postgres, Redis, IPFS (infra)..."
+docker compose -p infra --env-file .env --env-file compose.env -f "$COMPOSE_INFRA_FILE" up -d postgres redis ipfs
 
 info "Waiting for Postgres to be ready..."
-for i in $(seq 1 30); do
-  docker compose -f "$COMPOSE_FILE" exec -T postgres \
+for _ in $(seq 1 30); do
+  docker compose -p infra --env-file .env --env-file compose.env -f "$COMPOSE_INFRA_FILE" exec -T postgres \
     pg_isready -U "${POSTGRES_USER:-postgres}" -d "${POSTGRES_DATABASE:-odl}" \
     &>/dev/null && break
   sleep 2
 done
-docker compose -f "$COMPOSE_FILE" exec -T postgres \
+docker compose -p infra --env-file .env --env-file compose.env -f "$COMPOSE_INFRA_FILE" exec -T postgres \
   pg_isready -U "${POSTGRES_USER:-postgres}" -d "${POSTGRES_DATABASE:-odl}" \
   || error "Postgres did not become ready in time."
 
 info "Running database migrations..."
-docker compose -f "$COMPOSE_FILE" --profile tools run --rm migrator
+docker compose -p apps --env-file .env -f "$COMPOSE_APPS_FILE" --profile tools run --rm migrator
 info "Migrations complete."
 
-# ── 7. Start full stack ────────────────────────────────────────────────────────
-info "Starting stack..."
-docker compose -f "$COMPOSE_FILE" up -d --remove-orphans
+info "Starting application stack (project apps)..."
+docker compose -p apps --env-file .env -f "$COMPOSE_APPS_FILE" up -d --remove-orphans
+
+info "Starting Komodo + nginx (infra remainder)..."
+docker compose -p infra --env-file .env --env-file compose.env -f "$COMPOSE_INFRA_FILE" up -d --remove-orphans
 
 # ── 8. Health summary ─────────────────────────────────────────────────────────
-info "Stack status:"
-docker compose -f "$COMPOSE_FILE" ps
+info "Infra stack status:"
+docker compose -p infra --env-file .env --env-file compose.env -f "$COMPOSE_INFRA_FILE" ps
+
+info "Apps stack status:"
+docker compose -p apps --env-file .env -f "$COMPOSE_APPS_FILE" ps
 
 echo ""
-info "Done! Stack running from $INSTALL_DIR using $COMPOSE_FILE"
-info "Logs: docker compose -f $INSTALL_DIR/$COMPOSE_FILE logs -f"
-info "Stop: docker compose -f $INSTALL_DIR/$COMPOSE_FILE down"
+info "Done! Infra: $INSTALL_DIR/$COMPOSE_INFRA_FILE (project: infra)"
+info "      Apps:  $INSTALL_DIR/$COMPOSE_APPS_FILE (project: apps)"
+info "Logs (infra): docker compose -p infra --env-file .env --env-file compose.env -f $INSTALL_DIR/$COMPOSE_INFRA_FILE logs -f"
+info "Logs (apps):  docker compose -p apps --env-file .env -f $INSTALL_DIR/$COMPOSE_APPS_FILE logs -f"
+info ""
+info "Komodo UI: https://${DOMAIN_VAL}/komodo/ (nginx Basic Auth, then Komodo login — see compose.env for KOMODO_INIT_ADMIN_*)"
+info "Next: import the apps stack in Komodo (Server Local, run_directory=$INSTALL_DIR, file_paths=[\"$COMPOSE_APPS_FILE\"], project_name=apps, auto_update=true, poll_for_updates=true). See docs/deployment/komodo.md"
+info "Schedule procedure \"Global Auto Update\" e.g. every 15 minutes for digest polling."

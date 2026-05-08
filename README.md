@@ -10,13 +10,13 @@ The [`scripts/setup-vps.sh`](scripts/setup-vps.sh) script installs Docker and th
 
 **Run as root** (for example on Ubuntu). Point DNS **A/AAAA** for your public hostname to this server before first start so Let's Encrypt can validate.
 
-**Production** (uses [`docker-compose.production.yml`](docker-compose.production.yml), images tagged `:production`):
+**Production** (uses [`docker-compose.production.apps.yml`](docker-compose.production.apps.yml) + [`docker-compose.production.infra.yml`](docker-compose.production.infra.yml); images tagged `:production`):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Waiviogit/open-data-layer/master/scripts/setup-vps.sh | \
   DEPLOY_ENV=production bash
 ```
 
-Optional overrides: `REPO_URL` (git clone URL), `INSTALL_DIR` (default `/opt/opden-data-layer`). Public GHCR images do not require Docker login.
+Optional overrides: `REPO_URL` (git clone URL), `INSTALL_DIR` (default `/opt/open-data-layer`). Public GHCR images do not require Docker login.
 
-After `.env` is created, edit it at least for production: **`DOMAIN`**, **`CERTBOT_EMAIL`**, **`JWT_SECRET`**, **`POSTGRES_PASSWORD`**, and **`AUTH_JWT_SECRET`** (if used). The Compose stack serves HTTPS via `jonasal/nginx-certbot` and reloads when new images appear (Watchtower). **Portainer** is at `https://<DOMAIN>/portainer/` (Basic Auth file + Portainer login). More on Compose files and local infra: [docs/getting-started.md](docs/getting-started.md).
+After `.env` is created, edit it at least for production: **`DOMAIN`**, **`CERTBOT_EMAIL`**, **`JWT_SECRET`**, **`POSTGRES_PASSWORD`**, and **`AUTH_JWT_SECRET`** (if used). The stack serves HTTPS via `jonasal/nginx-certbot`. **Komodo** (stack manager + image polling) is at `https://<DOMAIN>/komodo/` (outer Basic Auth + Komodo login). Import the `apps` Compose project in Komodo and enable `auto_update` / `poll_for_updates` per [docs/deployment/komodo.md](docs/deployment/komodo.md). More on Compose files: [docs/getting-started.md](docs/getting-started.md).

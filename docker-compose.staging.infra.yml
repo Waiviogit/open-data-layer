@@ -1,0 +1,112 @@
+# VPS infra: Postgres, Redis, IPFS, nginx + Komodo (Mongo, Core, Periphery).
+# Shared Docker network for the separate apps stack (Komodo-managed auto-updates).
+# Bootstrap: scripts/setup-vps.sh (creates external network, brings up infra then apps).
+#
+# Komodo must not manage this file — only docker-compose.*.apps.yml is imported as a Stack.
+services:
+  postgres:
+    image: postgis/postgis:18-3.6
+    environment:
+      POSTGRES_DB: ${POSTGRES_DATABASE:-odl}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    networks:
+      - opden-data-layer-net
+    restart: unless-stopped
+
+  redis:
+    image: redis:8.6
+    volumes:
+      - redis_data:/data
+    networks:
+      - opden-data-layer-net
+    restart: unless-stopped
+
+  ipfs:
+    image: ipfs/kubo:v0.40.1
+    volumes:
+      - ipfs_data:/data/ipfs
+    environment:
+      - IPFS_PROFILE=server
+    networks:
+      - opden-data-layer-net
+    restart: unless-stopped
+
+  komodo-mongo:
+    image: mongo
+    labels:
+      komodo.skip: ''
+    command: --quiet --wiredTigerCacheSizeGB 0.25
+    restart: unless-stopped
+    volumes:
+      - komodo-mongo-data:/data/db
+      - komodo-mongo-config:/data/configdb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${KOMODO_DATABASE_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${KOMODO_DATABASE_PASSWORD}
+    networks:
+      - opden-data-layer-net
+
+  komodo-core:
+    image: ghcr.io/moghtech/komodo-core:${COMPOSE_KOMODO_IMAGE_TAG:-2}
+    init: true
+    restart: unless-stopped
+    depends_on:
+      - komodo-mongo
+    env_file:
+      - compose.env
+    environment:
+      KOMODO_DATABASE_ADDRESS: komodo-mongo:27017
+    volumes:
+      - komodo-keys:/config/keys
+      - ${COMPOSE_KOMODO_BACKUPS_PATH:-/opt/open-data-layer/komodo-backups}:/backups
+    networks:
+      - opden-data-layer-net
+
+  komodo-periphery:
+    image: ghcr.io/moghtech/komodo-periphery:${COMPOSE_KOMODO_IMAGE_TAG:-2}
+    init: true
+    restart: unless-stopped
+    depends_on:
+      - komodo-core
+    env_file:
+      - compose.env
+    volumes:
+      - komodo-keys:/config/keys
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /proc:/proc
+      - ${INSTALL_DIR:-/opt/open-data-layer}:${INSTALL_DIR:-/opt/open-data-layer}
+    networks:
+      - opden-data-layer-net
+
+  nginx:
+    image: jonasal/nginx-certbot:latest
+    environment:
+      CERTBOT_EMAIL: ${CERTBOT_EMAIL}
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
+      - letsencrypt:/etc/letsencrypt
+    networks:
+      - opden-data-layer-net
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  ipfs_data:
+  letsencrypt:
+  komodo-mongo-data:
+  komodo-mongo-config:
+  komodo-keys:
+
+networks:
+  opden-data-layer-net:
+    name: opden-data-layer-net
+    external: true

@@ -178,3 +178,7 @@ The monorepo includes a deployable **ipfs-gateway** application (`apps/ipfs-gate
 - Stream `GET /files/{cid}` from local Kubo first, then from peers if local read fails.
 
 Full specification: [ipfs-gateway](../apps/ipfs-gateway/spec/overview.md).
+
+## 12) VPS deployment (this monorepo)
+
+Staging and production use a **split** Docker Compose layout: an **`infra`** project (Postgres, Redis, IPFS, nginx, Komodo Core + Periphery + Mongo) and an **`apps`** project (GHCR images). Komodo polls the registry and redeploys the **`apps`** stack when image digests change on `:staging` / `:production`. Operator runbook: [Komodo deployment](../deployment/komodo.md).

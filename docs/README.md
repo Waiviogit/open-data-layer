@@ -11,6 +11,7 @@ Entry point for Open Data Layer documentation.
 | [Specification index](spec/README.md) | Domain specs, data model, governance |
 | [Documentation standards](standards/docs-standards.md) | How we write docs |
 | [Migrations](operations/migrations.md) | Kysely migrator, CLI, snapshots |
+| [Komodo (VPS deploy)](deployment/komodo.md) | Auto-updates for the `apps` Compose stack |
 
 ## Apps
 

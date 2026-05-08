@@ -1,44 +1,20 @@
-# Pre-built app images from GHCR (staging tag).
-# Manual local builds: use docker-compose.manual.yml
+# GHCR app images (production). Managed by Komodo on the VPS: auto_update + poll_for_updates.
+# Requires shared network `opden-data-layer-net` (created by scripts/setup-vps.sh).
 services:
-  postgres:
-    image: postgis/postgis:18-3.6
-    environment:
-      POSTGRES_DB: ${POSTGRES_DATABASE:-odl}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-    volumes:
-      - postgres_data:/var/lib/postgresql
-    restart: unless-stopped
-
   migrator:
-    image: ghcr.io/waiviogit/migrator:staging
+    image: ghcr.io/waiviogit/migrator:production
     pull_policy: always
     profiles: ["tools"]
     env_file:
       - .env
     environment:
       POSTGRES_HOST: postgres
-    depends_on:
-      - postgres
+    networks:
+      - opden-data-layer-net
     restart: "no"
 
-  redis:
-    image: redis:8.6
-    volumes:
-      - redis_data:/data
-    restart: unless-stopped
-
-  ipfs:
-    image: ipfs/kubo:v0.40.1
-    volumes:
-      - ipfs_data:/data/ipfs
-    environment:
-      - IPFS_PROFILE=server
-    restart: unless-stopped
-
   chain-indexer:
-    image: ghcr.io/waiviogit/chain-indexer:staging
+    image: ghcr.io/waiviogit/chain-indexer:production
     pull_policy: always
     env_file:
       - .env
@@ -50,26 +26,24 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       REDIS_URI: ${REDIS_URI:-redis://redis:6379}
       IPFS_API_URL: ${IPFS_API_URL:-http://ipfs:5001}
-    depends_on:
-      - postgres
-      - redis
-      - ipfs
+    networks:
+      - opden-data-layer-net
     restart: unless-stopped
 
   ipfs-gateway:
-    image: ghcr.io/waiviogit/ipfs-gateway:staging
+    image: ghcr.io/waiviogit/ipfs-gateway:production
     pull_policy: always
     env_file:
       - .env
     environment:
       PORT: ${IPFS_GATEWAY_APP_PORT:-7300}
       IPFS_API_URL: ${IPFS_API_URL:-http://ipfs:5001}
-    depends_on:
-      - ipfs
+    networks:
+      - opden-data-layer-net
     restart: unless-stopped
 
   query-api:
-    image: ghcr.io/waiviogit/query-api:staging
+    image: ghcr.io/waiviogit/query-api:production
     pull_policy: always
     env_file:
       - .env
@@ -83,13 +57,12 @@ services:
       POSTGRES_POOL_MAX: ${POSTGRES_POOL_MAX:-10}
       REDIS_URI: ${REDIS_URI:-redis://redis:6379}
       JWT_SECRET: ${JWT_SECRET:-change-me-min-16-chars-for-dev}
-    depends_on:
-      - postgres
-      - redis
+    networks:
+      - opden-data-layer-net
     restart: unless-stopped
 
   auth-api:
-    image: ghcr.io/waiviogit/auth-api:staging
+    image: ghcr.io/waiviogit/auth-api:production
     pull_policy: always
     env_file:
       - .env
@@ -102,23 +75,24 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       REDIS_URI: ${REDIS_URI:-redis://redis:6379}
       JWT_SECRET: ${JWT_SECRET:-change-me-min-16-chars-for-dev}
-    depends_on:
-      - postgres
-      - redis
+    networks:
+      - opden-data-layer-net
     restart: unless-stopped
 
   notifications:
-    image: ghcr.io/waiviogit/notifications:staging
+    image: ghcr.io/waiviogit/notifications:production
     pull_policy: always
     env_file:
       - .env
     environment:
       PORT: ${NOTIFICATIONS_PORT:-7200}
       JWT_SECRET: ${JWT_SECRET:-change-me-min-16-chars-for-dev}
+    networks:
+      - opden-data-layer-net
     restart: unless-stopped
 
   scheduler:
-    image: ghcr.io/waiviogit/scheduler:staging
+    image: ghcr.io/waiviogit/scheduler:production
     pull_policy: always
     env_file:
       - .env
@@ -129,13 +103,12 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       REDIS_URI: ${REDIS_URI:-redis://redis:6379}
-    depends_on:
-      - postgres
-      - redis
+    networks:
+      - opden-data-layer-net
     restart: unless-stopped
 
   web:
-    image: ghcr.io/waiviogit/web:staging
+    image: ghcr.io/waiviogit/web:production
     pull_policy: always
     env_file:
       - .env
@@ -144,43 +117,11 @@ services:
       QUERY_API_URL: ${QUERY_API_URL:-http://query-api:7000}
       AUTH_API_BASE_URL: ${AUTH_API_BASE_URL:-http://auth-api:7100}
       AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-${JWT_SECRET:-change-me-min-16-chars-for-dev}}
-    depends_on:
-      - query-api
-      - auth-api
+    networks:
+      - opden-data-layer-net
     restart: unless-stopped
 
-  portainer:
-    image: portainer/portainer-ce:latest
-    pull_policy: always
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - portainer_data:/data
-    restart: unless-stopped
-
-  nginx:
-    image: jonasal/nginx-certbot:latest
-    environment:
-      CERTBOT_EMAIL: ${CERTBOT_EMAIL}
-      DOMAIN: ${DOMAIN}
-    ports:
-      - "${NGINX_HTTP_PORT:-80}:80"
-      - "443:443"
-    volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
-      - letsencrypt:/etc/letsencrypt
-    depends_on:
-      - web
-      - query-api
-      - auth-api
-      - notifications
-      - ipfs-gateway
-      - portainer
-    restart: unless-stopped
-
-volumes:
-  postgres_data:
-  redis_data:
-  ipfs_data:
-  letsencrypt:
-  portainer_data:
+networks:
+  opden-data-layer-net:
+    name: opden-data-layer-net
+    external: true

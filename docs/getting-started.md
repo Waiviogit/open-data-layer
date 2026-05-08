@@ -54,12 +54,14 @@ Edit `.env` if you need non-default ports or credentials. Default root compose (
 | [`docker-compose.yml`](../docker-compose.yml) | Default entry: infra only (Postgres, Redis, IPFS; ports published) |
 | [`docker-compose.infra.yml`](../docker-compose.infra.yml) | Same infra stack (can run directly) |
 | [`docker-compose.manual.yml`](../docker-compose.manual.yml) | Full stack: **local Dockerfile builds** (no GHCR) + TLS nginx |
-| [`docker-compose.staging.yml`](../docker-compose.staging.yml) | Pre-built apps from GHCR (`:staging`); images built via manual workflow |
-| [`docker-compose.production.yml`](../docker-compose.production.yml) | Pre-built apps (`:production`); images built via manual workflow |
+| [`docker-compose.staging.apps.yml`](../docker-compose.staging.apps.yml) | Pre-built apps from GHCR (`:staging`); use with matching `.infra.yml` on VPS |
+| [`docker-compose.staging.infra.yml`](../docker-compose.staging.infra.yml) | VPS infra: Postgres, Redis, IPFS, Komodo, nginx (`:staging` env) |
+| [`docker-compose.production.apps.yml`](../docker-compose.production.apps.yml) | Pre-built apps (`:production`); use with matching `.infra.yml` on VPS |
+| [`docker-compose.production.infra.yml`](../docker-compose.production.infra.yml) | VPS infra (`:production` env) |
 
 **CI:** GitHub Actions → **Run workflow** on [`.github/workflows/build-images.yml`](../.github/workflows/build-images.yml): choose **Environment** (`staging` or `production`), the **branch/ref** to build from, and optionally **rebuild all**; pushes to `ghcr.io/waiviogit/<app>:(staging|production)`.
 
-**Portainer** (full stacks: staging, production, manual): `https://<DOMAIN>/portainer/` — HTTPS + nginx Basic Auth (`nginx/.htpasswd`) + Portainer’s own login. On a VPS, [`scripts/setup-vps.sh`](../scripts/setup-vps.sh) creates `nginx/.htpasswd` if missing. Locally for manual compose: `htpasswd -bc nginx/.htpasswd <user>`.
+**Komodo** (staging/production VPS): `https://<DOMAIN>/komodo/` — HTTPS + nginx Basic Auth (`nginx/.htpasswd`) + Komodo login. [`scripts/setup-vps.sh`](../scripts/setup-vps.sh) creates `compose.env` and `nginx/.htpasswd` as needed. Full steps: [Komodo deployment](deployment/komodo.md). For local manual compose only: `htpasswd -bc nginx/.htpasswd <user>` if you terminate TLS with the same template.
 
 Key variables and their defaults:
 

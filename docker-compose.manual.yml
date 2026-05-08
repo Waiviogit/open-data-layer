@@ -2,7 +2,7 @@
 # Use when you need to build and test all apps together on a server or CI without pushing images.
 #
 # For local host development (pnpm nx serve): use docker-compose.infra.yml instead.
-# Pre-built images: docker-compose.staging.yml, docker-compose.production.yml
+# Pre-built images: docker-compose.<env>.apps.yml (+ docker-compose.<env>.infra.yml on VPS)
 services:
   postgres:
     image: postgis/postgis:18-3.6
@@ -160,13 +160,6 @@ services:
       - auth-api
     restart: unless-stopped
 
-  portainer:
-    image: portainer/portainer-ce:latest
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - portainer_data:/data
-    restart: unless-stopped
-
   nginx:
     image: jonasal/nginx-certbot:latest
     environment:
@@ -186,7 +179,6 @@ services:
       - auth-api
       - notifications
       - ipfs-gateway
-      - portainer
     restart: unless-stopped
 
 volumes:
@@ -194,4 +186,3 @@ volumes:
   redis_data:
   ipfs_data:
   letsencrypt:
-  portainer_data:
