@@ -1,9 +1,9 @@
 # HTTPS virtual host for staging/production (served by jonasal/nginx-certbot).
-# This file is a template — do not use directly.
-# setup-vps.sh generates nginx/conf.d/default.conf via:
-#   envsubst '${DOMAIN}' < default.conf.template > default.conf
-# jonasal disables this file (renames to .nokey) when cert is missing,
-# and re-enables it once the cert is obtained. HTTP is handled by 00-acme.conf.
+# Source of truth in git. scripts/setup-vps.sh generates nginx/conf.d/default.conf on every run via
+#   export DOMAIN=<from .env>; envsubst '${DOMAIN}' < default.conf.template > default.conf
+# It does NOT delete this template. jonasal may rename default.conf to .nokey until a cert exists;
+# setup also removes stale .nokey and recreates nginx so certbot can issue to live/<DOMAIN>/ .
+# HTTP for ACME is handled by 00-acme.conf.
 
 upstream web_app {
     server web:3000;

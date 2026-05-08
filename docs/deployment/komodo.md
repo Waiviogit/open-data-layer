@@ -49,6 +49,8 @@ Use `docker-compose.production.infra.yml` on production.
 
 ## Troubleshooting
 
+- **HTTPS / `live//` in nginx logs / only `default.conf.nokey`:** set `DOMAIN` and `CERTBOT_EMAIL` in `.env`, then **re-run** `sudo bash scripts/setup-vps.sh` from `/opt/open-data-layer` (same `DEPLOY_ENV`). The script always rebuilds `default.conf` from `default.conf.template`, deletes stale `.nokey`, and recreates the nginx container.
+
 - **Stacks not updating:** confirm **Global Auto Update** procedure is enabled and scheduled; confirm stack has `auto_update` / `poll_for_updates` and uses rolling tags.
 - **Periphery cannot see compose files:** `PERIPHERY_ROOT_DIRECTORY` in `compose.env` must equal the host install path, and the same path must be bind-mounted into `komodo-periphery` (see infra compose).
 - **`compose.env` / Mongo password changed after first boot:** Mongo init only runs on an empty volume; rotate credentials via Komodo/Mongo docs if needed.

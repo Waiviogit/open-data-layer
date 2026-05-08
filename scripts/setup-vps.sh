@@ -123,20 +123,39 @@ if ! grep -qE '^COMPOSE_KOMODO_BACKUPS_PATH=' .env; then
   echo "COMPOSE_KOMODO_BACKUPS_PATH=${INSTALL_DIR}/komodo-backups" >> .env
 fi
 
-# ── 4b. Generate nginx/conf.d/default.conf from template ─────────────────────
+# ── 4b. Nginx HTTPS vhost from template (idempotent; NEVER remove the template)
 command -v envsubst &>/dev/null || apt-get install -y -qq gettext-base
-info "Generating nginx/conf.d/default.conf..."
 DOMAIN_VAL="$(grep -E '^DOMAIN=' .env | cut -d= -f2- | tr -d '[:space:]')"
+CERTBOT_EMAIL_VAL="$(grep -E '^CERTBOT_EMAIL=' .env | cut -d= -f2- | tr -d '[:space:]')"
 if [[ -z "$DOMAIN_VAL" ]]; then
   error "DOMAIN is not set in .env. Edit $INSTALL_DIR/.env and re-run."
 fi
-if [[ -f nginx/conf.d/default.conf.template ]]; then
-  envsubst '${DOMAIN}' < nginx/conf.d/default.conf.template > nginx/conf.d/default.conf
-  rm -f nginx/conf.d/default.conf.template
-  info "nginx/conf.d/default.conf generated for domain: $DOMAIN_VAL"
-else
-  warn "nginx/conf.d/default.conf.template missing — skipping (already generated?)"
+if [[ -z "$CERTBOT_EMAIL_VAL" ]]; then
+  error "CERTBOT_EMAIL is not set in .env (required for Let's Encrypt). Edit $INSTALL_DIR/.env and re-run."
 fi
+
+NGINX_TEMPLATE="nginx/conf.d/default.conf.template"
+NGINX_OUT="nginx/conf.d/default.conf"
+if [[ ! -f "$NGINX_TEMPLATE" ]]; then
+  error "Missing $INSTALL_DIR/$NGINX_TEMPLATE — run: git pull $INSTALL_DIR (template must stay in the repo)."
+fi
+
+info "Writing $NGINX_OUT from template for DOMAIN=$DOMAIN_VAL..."
+export DOMAIN="$DOMAIN_VAL"
+umask 022
+envsubst '${DOMAIN}' < "$NGINX_TEMPLATE" > "${NGINX_OUT}.tmp"
+mv "${NGINX_OUT}.tmp" "$NGINX_OUT"
+
+# Stale file left when cert was missing / DOMAIN was wrong — confuses jonasal/nginx-certbot
+if [[ -f nginx/conf.d/default.conf.nokey ]]; then
+  rm -f nginx/conf.d/default.conf.nokey
+  info "Removed stale nginx/conf.d/default.conf.nokey"
+fi
+
+if ! grep -qE "/etc/letsencrypt/live/${DOMAIN_VAL}/" "$NGINX_OUT"; then
+  error "Generated $NGINX_OUT does not contain expected cert paths for $DOMAIN_VAL — check $NGINX_TEMPLATE and envsubst."
+fi
+info "nginx TLS vhost ready (cert path: /etc/letsencrypt/live/${DOMAIN_VAL}/)."
 
 # ── 4c. Komodo compose.env (secrets + KOMODO_HOST) ───────────────────────────
 BACKUPS_PATH="${INSTALL_DIR}/komodo-backups"
@@ -165,6 +184,12 @@ if [[ ! -f compose.env ]]; then
   unset KOMODO_DB_PASS KOMODO_ADMIN_PASS KOMODO_JWT KOMODO_WEBHOOK
 fi
 
+# Keep Komodo OAuth / link hints in sync when DOMAIN changes or compose.env pre-exists
+if [[ -f compose.env ]] && grep -qE '^KOMODO_HOST=' compose.env; then
+  sed -i "s|^KOMODO_HOST=.*|KOMODO_HOST=https://${DOMAIN_VAL}/komodo|" compose.env
+  info "Synced KOMODO_HOST in compose.env to https://${DOMAIN_VAL}/komodo"
+fi
+
 # ── 4d. HTTP Basic Auth for Komodo / nginx ──────────────────────────────────
 if [[ ! -f nginx/.htpasswd ]]; then
   info "Creating nginx/.htpasswd for Komodo Basic Auth (outer layer)..."
@@ -181,6 +206,8 @@ if [[ ! -f nginx/.htpasswd ]]; then
   unset HTPASSWD_PASS
   info "nginx/.htpasswd created for user: $HTPASSWD_USER"
 fi
+
+[[ -f compose.env ]] || error "compose.env is missing — ensure compose.env.example exists and re-run from a clean state (see docs/deployment/komodo.md)."
 
 # ── 5. Shared Docker network ─────────────────────────────────────────────────
 info "Ensuring Docker network opden-data-layer-net exists..."
@@ -218,6 +245,26 @@ docker compose -p apps --env-file .env -f "$COMPOSE_APPS_FILE" up -d --remove-or
 info "Starting Komodo + nginx (infra remainder)..."
 docker compose -p infra --env-file .env --env-file compose.env -f "$COMPOSE_INFRA_FILE" up -d --remove-orphans
 
+# jonasal/nginx-certbot must see the new default.conf + DOMAIN/CERTBOT_EMAIL env; recreate always after setup
+info "Recreating nginx container to load TLS vhost + certbot (safe on first run and re-runs)..."
+docker compose -p infra --env-file .env --env-file compose.env -f "$COMPOSE_INFRA_FILE" up -d --no-deps --force-recreate nginx
+
+wait_certbot_attempts=0
+info "Waiting up to ~5 min for Let's Encrypt (see nginx logs if this times out)..."
+until [[ $wait_certbot_attempts -ge 60 ]]; do
+  if docker compose -p infra --env-file .env --env-file compose.env -f "$COMPOSE_INFRA_FILE" exec -T nginx \
+    test -s "/etc/letsencrypt/live/${DOMAIN_VAL}/fullchain.pem" 2>/dev/null; then
+    info "Certificate present: /etc/letsencrypt/live/${DOMAIN_VAL}/fullchain.pem"
+    break
+  fi
+  wait_certbot_attempts=$((wait_certbot_attempts + 1))
+  sleep 5
+done
+if [[ $wait_certbot_attempts -ge 60 ]]; then
+  warn "Certificate not detected after ~5 min — DNS A/AAAA must point here; port 80 open. Logs —"
+  warn "  docker compose -p infra --env-file .env --env-file compose.env -f $INSTALL_DIR/$COMPOSE_INFRA_FILE logs --tail 80 nginx"
+fi
+
 # ── 8. Health summary ─────────────────────────────────────────────────────────
 info "Infra stack status:"
 docker compose -p infra --env-file .env --env-file compose.env -f "$COMPOSE_INFRA_FILE" ps
@@ -234,3 +281,4 @@ info ""
 info "Komodo UI: https://${DOMAIN_VAL}/komodo/ (nginx Basic Auth, then Komodo login — see compose.env for KOMODO_INIT_ADMIN_*)"
 info "Next: import the apps stack in Komodo (Server Local, run_directory=$INSTALL_DIR, file_paths=[\"$COMPOSE_APPS_FILE\"], project_name=apps, auto_update=true, poll_for_updates=true). See docs/deployment/komodo.md"
 info "Schedule procedure \"Global Auto Update\" e.g. every 15 minutes for digest polling."
+info "Tip: after changing DOMAIN or CERTBOT_EMAIL in .env, re-run this script to regenerate nginx and sync Komodo KOMODO_HOST."
