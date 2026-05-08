@@ -140,24 +140,33 @@ export class SchedulerRepository {
         ORDER BY q2.available_at ASC, q2.id ASC
         LIMIT ${limit}
         FOR UPDATE SKIP LOCKED
+      ),
+      upd AS (
+        UPDATE scheduler_job_queue q
+        SET
+          status = 'claimed',
+          attempts = q.attempts + 1,
+          claimed_at = NOW()
+        WHERE q.id IN (SELECT id FROM picked)
+        RETURNING
+          q.id,
+          q.run_id,
+          q.job_name,
+          q.attempts,
+          q.max_attempts,
+          q.last_error
       )
-      UPDATE scheduler_job_queue q
-      SET
-        status = 'claimed',
-        attempts = q.attempts + 1,
-        claimed_at = NOW()
-      FROM picked
-      INNER JOIN scheduler_job_runs r ON r.id = q.run_id
-      WHERE q.id = picked.id
-      RETURNING
-        q.id as "qid",
-        q.run_id as "rid",
-        q.job_name as "jn",
-        q.attempts as "attempts",
-        q.max_attempts as "maxAttempts",
-        q.last_error as "lastError",
+      SELECT
+        u.id as "qid",
+        u.run_id as "rid",
+        u.job_name as "jn",
+        u.attempts as "attempts",
+        u.max_attempts as "maxAttempts",
+        u.last_error as "lastError",
         r.payload,
         r.trigger as "tg"
+      FROM upd u
+      INNER JOIN scheduler_job_runs r ON r.id = u.run_id
     `.execute(this.db);
 
     return rows.map((r) => ({

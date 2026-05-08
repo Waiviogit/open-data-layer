@@ -7,7 +7,9 @@ Portainer provides a Docker UI for operators. GHCR image updates for the **`apps
 The infra Compose file publishes Portainer as **`127.0.0.1:9443 → 9443`** (HTTPS inside the container). **nginx does not proxy Portainer**; there is no public route.
 
 - On the VPS: open **`https://127.0.0.1:9443`** in a browser.
-- From your machine: **`ssh -L 9443:127.0.0.1:9443 user@your-host`** then browse **`https://127.0.0.1:9443`** locally.
+- From your machine: **`ssh -L 9443:127.0.0.1:9443 user@your-host`** then browse **`https://127.0.0.1:9443`** locally (you can use another local port, e.g. `-L 12000:127.0.0.1:9443` → **`https://localhost:12000`**).
+
+Always use **`https://`** in the browser. If you open **`http://`**, you may see *“Client sent an HTTP request to an HTTPS server.”*
 
 Accept browser warnings if Portainer still presents its default certificate.
 
