@@ -4,9 +4,9 @@ FROM node:24.12.0-alpine3.23
 
 WORKDIR /app
 
-RUN npm install -g pnpm
-
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml nx.json tsconfig.base.json ./
+RUN corepack enable && corepack install
+
 COPY libs ./libs
 COPY scripts ./scripts
 

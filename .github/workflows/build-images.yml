@@ -69,8 +69,7 @@ jobs:
           esac
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
+        # version read from packageManager field in package.json
 
       - uses: actions/setup-node@v4
         with:
@@ -151,8 +150,7 @@ jobs:
           esac
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
+        # version read from packageManager field in package.json
 
       - uses: actions/setup-node@v4
         with:

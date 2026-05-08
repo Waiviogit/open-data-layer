@@ -2,9 +2,9 @@ FROM node:24.12.0-alpine3.23 AS builder
 
 WORKDIR /app
 
-RUN npm install -g pnpm
-
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN corepack enable && corepack install
+
 COPY nx.json tsconfig.base.json ./
 COPY apps/auth-api ./apps/auth-api
 COPY libs ./libs
@@ -17,7 +17,11 @@ FROM node:24.12.0-alpine3.23 AS production
 
 WORKDIR /app
 
-RUN npm install -g pnpm
+COPY --from=builder /app/package.json .root-package.json
+RUN corepack enable \
+    && PNPM_VER=$(node -p 'require("./.root-package.json").packageManager.split("@")[1].split("+")[0]') \
+    && corepack prepare "pnpm@${PNPM_VER}" --activate \
+    && rm .root-package.json
 
 COPY --from=builder /app/dist/apps/auth-api ./
 

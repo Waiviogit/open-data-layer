@@ -7,9 +7,9 @@ FROM node:24.12.0-alpine3.23 AS builder
 
 WORKDIR /app
 
-RUN npm install -g pnpm
-
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN corepack enable && corepack install
+
 COPY tsconfig.base.json ./
 COPY apps/web ./apps/web
 COPY libs ./libs
