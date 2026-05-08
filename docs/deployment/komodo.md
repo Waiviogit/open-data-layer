@@ -15,10 +15,23 @@ Shared Docker network: `opden-data-layer-net` (created by [`scripts/setup-vps.sh
 
 Bootstrap secrets for Komodo: **`compose.env`** (generated from [`compose.env.example`](../../compose.env.example), gitignored on the server).
 
+## Komodo UI access (localhost only)
+
+Komodo Core listens on **9120** inside Docker and is published as **`127.0.0.1:9120:9120`** on the host — not reachable from the public internet on that port binding.
+
+- **On the VPS:** open **`http://127.0.0.1:9120`** (browser or `curl`).
+- **From your laptop:** **`ssh -L 9120:127.0.0.1:9120 user@<vps>`** then **`http://127.0.0.1:9120`** in the local browser.
+
+Set **`KOMODO_HOST`** in `compose.env` to the **exact URL** the browser will use (default **`http://127.0.0.1:9120`**). If you map a different local SSH forward port, update `KOMODO_HOST` to match and recreate **`komodo-core`**.
+
+**nginx** terminates HTTPS only for the public site (`web`); Komodo is **not** proxied through nginx and **does not** use nginx Basic Auth.
+
+Periphery still connects over Docker DNS: **`PERIPHERY_CORE_ADDRESS=ws://komodo-core:9120`** (unchanged).
+
 ## First boot
 
 1. Run [`scripts/setup-vps.sh`](../../scripts/setup-vps.sh) with `DEPLOY_ENV=staging` or `production`.
-2. Open **`https://<DOMAIN>/komodo/`** — nginx Basic Auth (see `nginx/.htpasswd`), then **Komodo** login. Initial admin credentials are set in `compose.env` as `KOMODO_INIT_ADMIN_USERNAME` / `KOMODO_INIT_ADMIN_PASSWORD` (randomized on first `compose.env` creation).
+2. Open **`http://127.0.0.1:9120`** on the host or via SSH tunnel — **Komodo** login. Initial admin credentials are set in `compose.env` as `KOMODO_INIT_ADMIN_USERNAME` / `KOMODO_INIT_ADMIN_PASSWORD` (randomized on first `compose.env` creation).
 3. **Import the apps stack** as a `Stack` resource:
    - **Server:** the default “Local” server (Periphery on the same host).
    - **`run_directory`:** your clone path (default `/opt/open-data-layer`).
@@ -45,14 +58,24 @@ Use `docker-compose.production.infra.yml` on production.
 
 ## Reverse proxy note
 
-`KOMODO_HOST` in `compose.env` must be the public URL (e.g. `https://example.com/komodo`). If the UI misbehaves behind `/komodo/`, consider a dedicated subdomain and update nginx accordingly.
+The upstream Komodo UI does **not** support an arbitrary URL **path prefix** behind a reverse proxy (blank page); see [moghtech/komodo#353](https://github.com/moghtech/komodo/issues/353). This repo avoids that by serving the UI **only** on **`http://127.0.0.1:9120`**, not under `https://<DOMAIN>/…`.
+
+### Migrating from nginx / subdomain / `/komodo/` installs
+
+1. Pull this repo and re-run **`sudo bash scripts/setup-vps.sh`** (same `DEPLOY_ENV`) so `nginx/conf.d/default.conf`, `compose.env`, and containers align.
+2. Ensure **`KOMODO_HOST=http://127.0.0.1:9120`** (or your SSH-forward URL) and **`docker compose -p infra ... up -d`** so **`komodo-core`** reloads env.
+3. Old **`nginx/.htpasswd`** is unused — safe to delete after nginx no longer mounts it.
 
 ## Troubleshooting
+
+- **Komodo UI unreachable:** confirm **`docker compose -p infra ... ps`** shows `komodo-core` healthy; on the VPS run **`curl -sfS http://127.0.0.1:9120/`**. From remote, confirm SSH `-L` matches **`KOMODO_HOST`** in `compose.env`.
 
 - **HTTPS / `live//` in nginx logs / only `default.conf.nokey`:** set `DOMAIN` and `CERTBOT_EMAIL` in `.env`, then **re-run** `sudo bash scripts/setup-vps.sh` from `/opt/open-data-layer` (same `DEPLOY_ENV`). The script always rebuilds `default.conf` from `default.conf.template`, deletes stale `.nokey`, and recreates the nginx container.
 
 - **Stacks not updating:** confirm **Global Auto Update** procedure is enabled and scheduled; confirm stack has `auto_update` / `poll_for_updates` and uses rolling tags.
+
 - **Periphery cannot see compose files:** `PERIPHERY_ROOT_DIRECTORY` in `compose.env` must equal the host install path, and the same path must be bind-mounted into `komodo-periphery` (see infra compose).
+
 - **`compose.env` / Mongo password changed after first boot:** Mongo init only runs on an empty volume; rotate credentials via Komodo/Mongo docs if needed.
 
 ## Verification checklist
@@ -61,7 +84,7 @@ Use `docker-compose.production.infra.yml` on production.
    - `docker compose -p infra --env-file .env --env-file compose.env -f docker-compose.staging.infra.yml config`
    - `docker compose -p apps --env-file .env -f docker-compose.staging.apps.yml config`
    Do not commit `compose.env` (gitignored).
-2. **VPS:** Run `scripts/setup-vps.sh`, open `https://<DOMAIN>/komodo/`, import the `apps` stack with `project_name=apps`, enable `auto_update` and `poll_for_updates`, set **Global Auto Update** schedule (e.g. every 15 minutes), push a trivial image rebuild, confirm the affected service redeploys.
+2. **VPS:** Run `scripts/setup-vps.sh`, open **`http://127.0.0.1:9120`** (or tunnel), import the `apps` stack with `project_name=apps`, enable `auto_update` and `poll_for_updates`, set **Global Auto Update** schedule (e.g. every 15 minutes), push a trivial image rebuild, confirm the affected service redeploys.
 
 ## References
 

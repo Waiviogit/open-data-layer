@@ -61,7 +61,7 @@ Edit `.env` if you need non-default ports or credentials. Default root compose (
 
 **CI:** GitHub Actions → **Run workflow** on [`.github/workflows/build-images.yml`](../.github/workflows/build-images.yml): choose **Environment** (`staging` or `production`), the **branch/ref** to build from, and optionally **rebuild all**; pushes to `ghcr.io/waiviogit/<app>:(staging|production)`.
 
-**Komodo** (staging/production VPS): `https://<DOMAIN>/komodo/` — HTTPS + nginx Basic Auth (`nginx/.htpasswd`) + Komodo login. [`scripts/setup-vps.sh`](../scripts/setup-vps.sh) creates `compose.env` and `nginx/.htpasswd` as needed. Full steps: [Komodo deployment](deployment/komodo.md). For local manual compose only: `htpasswd -bc nginx/.htpasswd <user>` if you terminate TLS with the same template.
+**Komodo** (staging/production VPS): **`http://127.0.0.1:9120`** on the host (`komodo-core` binds loopback only) or via **`ssh -L 9120:127.0.0.1:9120`**. Not served through public nginx. [`scripts/setup-vps.sh`](../scripts/setup-vps.sh) creates `compose.env`. Full steps: [Komodo deployment](deployment/komodo.md).
 
 Key variables and their defaults:
 

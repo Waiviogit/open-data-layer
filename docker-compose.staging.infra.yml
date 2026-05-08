@@ -53,6 +53,8 @@ services:
     image: ghcr.io/moghtech/komodo-core:${COMPOSE_KOMODO_IMAGE_TAG:-2}
     init: true
     restart: unless-stopped
+    ports:
+      - '127.0.0.1:9120:9120'
     depends_on:
       - komodo-mongo
     env_file:
@@ -91,7 +93,6 @@ services:
       - "443:443"
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
       - letsencrypt:/etc/letsencrypt
     networks:
       - opden-data-layer-net

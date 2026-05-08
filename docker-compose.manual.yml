@@ -171,7 +171,6 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
       - letsencrypt:/etc/letsencrypt
     depends_on:
       - web

@@ -171,7 +171,7 @@ if [[ ! -f compose.env ]]; then
   KOMODO_JWT="$(openssl rand -hex 32)"
   KOMODO_WEBHOOK="$(openssl rand -hex 32)"
   sed \
-    -e "s|^KOMODO_HOST=.*|KOMODO_HOST=https://${DOMAIN_VAL}/komodo|" \
+    -e "s|^KOMODO_HOST=.*|KOMODO_HOST=http://127.0.0.1:9120|" \
     -e "s|^KOMODO_DATABASE_PASSWORD=.*|KOMODO_DATABASE_PASSWORD=${KOMODO_DB_PASS}|" \
     -e "s|^KOMODO_INIT_ADMIN_PASSWORD=.*|KOMODO_INIT_ADMIN_PASSWORD=${KOMODO_ADMIN_PASS}|" \
     -e "s|^KOMODO_JWT_SECRET=.*|KOMODO_JWT_SECRET=${KOMODO_JWT}|" \
@@ -184,27 +184,10 @@ if [[ ! -f compose.env ]]; then
   unset KOMODO_DB_PASS KOMODO_ADMIN_PASS KOMODO_JWT KOMODO_WEBHOOK
 fi
 
-# Keep Komodo OAuth / link hints in sync when DOMAIN changes or compose.env pre-exists
+# Keep Komodo UI URL stable (localhost-only; not exposed via nginx)
 if [[ -f compose.env ]] && grep -qE '^KOMODO_HOST=' compose.env; then
-  sed -i "s|^KOMODO_HOST=.*|KOMODO_HOST=https://${DOMAIN_VAL}/komodo|" compose.env
-  info "Synced KOMODO_HOST in compose.env to https://${DOMAIN_VAL}/komodo"
-fi
-
-# ── 4d. HTTP Basic Auth for Komodo / nginx ──────────────────────────────────
-if [[ ! -f nginx/.htpasswd ]]; then
-  info "Creating nginx/.htpasswd for Komodo Basic Auth (outer layer)..."
-  apt-get update -qq
-  apt-get install -y -qq apache2-utils
-  read -r -p "Komodo Basic Auth username [admin]: " HTPASSWD_USER
-  HTPASSWD_USER="${HTPASSWD_USER:-admin}"
-  read -r -s -p "Komodo Basic Auth password: " HTPASSWD_PASS
-  echo
-  if [[ -z "${HTPASSWD_PASS}" ]]; then
-    error "Password must not be empty."
-  fi
-  htpasswd -bc nginx/.htpasswd "$HTPASSWD_USER" "$HTPASSWD_PASS"
-  unset HTPASSWD_PASS
-  info "nginx/.htpasswd created for user: $HTPASSWD_USER"
+  sed -i "s|^KOMODO_HOST=.*|KOMODO_HOST=http://127.0.0.1:9120|" compose.env
+  info "Synced KOMODO_HOST in compose.env to http://127.0.0.1:9120"
 fi
 
 [[ -f compose.env ]] || error "compose.env is missing — ensure compose.env.example exists and re-run from a clean state (see docs/deployment/komodo.md)."
@@ -278,7 +261,8 @@ info "      Apps:  $INSTALL_DIR/$COMPOSE_APPS_FILE (project: apps)"
 info "Logs (infra): docker compose -p infra --env-file .env --env-file compose.env -f $INSTALL_DIR/$COMPOSE_INFRA_FILE logs -f"
 info "Logs (apps):  docker compose -p apps --env-file .env -f $INSTALL_DIR/$COMPOSE_APPS_FILE logs -f"
 info ""
-info "Komodo UI: https://${DOMAIN_VAL}/komodo/ (nginx Basic Auth, then Komodo login — see compose.env for KOMODO_INIT_ADMIN_*)"
+info "Komodo UI: http://127.0.0.1:9120 on this host (komodo-core binds loopback only). Remote: ssh -L 9120:127.0.0.1:9120 user@${DOMAIN_VAL}"
+info "Komodo login — see compose.env for KOMODO_INIT_ADMIN_*."
 info "Next: import the apps stack in Komodo (Server Local, run_directory=$INSTALL_DIR, file_paths=[\"$COMPOSE_APPS_FILE\"], project_name=apps, auto_update=true, poll_for_updates=true). See docs/deployment/komodo.md"
 info "Schedule procedure \"Global Auto Update\" e.g. every 15 minutes for digest polling."
-info "Tip: after changing DOMAIN or CERTBOT_EMAIL in .env, re-run this script to regenerate nginx and sync Komodo KOMODO_HOST."
+info "Tip: after changing DOMAIN or CERTBOT_EMAIL in .env, re-run this script to regenerate nginx. Recreate komodo-core if you edit KOMODO_HOST."

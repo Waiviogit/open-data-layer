@@ -181,4 +181,4 @@ Full specification: [ipfs-gateway](../apps/ipfs-gateway/spec/overview.md).
 
 ## 12) VPS deployment (this monorepo)
 
-Staging and production use a **split** Docker Compose layout: an **`infra`** project (Postgres, Redis, IPFS, nginx, Komodo Core + Periphery + Mongo) and an **`apps`** project (GHCR images). Komodo polls the registry and redeploys the **`apps`** stack when image digests change on `:staging` / `:production`. Operator runbook: [Komodo deployment](../deployment/komodo.md).
+Staging and production use a **split** Docker Compose layout: an **`infra`** project (Postgres, Redis, IPFS, nginx, Komodo Core + Periphery + Mongo) and an **`apps`** project (GHCR images). Komodo polls the registry and redeploys the **`apps`** stack when image digests change on `:staging` / `:production`. Komodo UI is **`http://127.0.0.1:9120`** on the host only (not via public nginx). Operator runbook: [Komodo deployment](../deployment/komodo.md).
