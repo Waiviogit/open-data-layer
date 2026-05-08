@@ -246,6 +246,7 @@ All rules for design tokens, shell mode, images, React hydration, and clean arch
 - Dev: `pnpm nx serve <project>` (watch mode, uses root `node_modules`).
 - Build: `pnpm nx build <app>` — webpack auto-generates `dist/apps/<app>/package.json` with only used packages.
 - Prune (optional, for Docker): `pnpm nx run <app>:prune-lockfile` — generates minimal lockfile.
+- **Nest Docker images:** webpack often leaves `require("pkg")` in `main.js` for runtime deps; **`apps/<app>/package.json` must list every such package** (not only the workspace root). After changing imports or adding libs that pull new externals, run **`pnpm nx build <app> && pnpm check:bundle-deps`** (or rely on CI — image builds fail the **Verify Nest webpack bundle deps** step if anything is missing).
 - Deploy: `cd dist/apps/<app> && pnpm install --frozen-lockfile --prod && node main`.
 - Docker: add `apps/<app>/Dockerfile` when containerized deployment is needed.
 - Libraries are bundled into app builds via webpack; standalone lib builds work best for libs without workspace deps.

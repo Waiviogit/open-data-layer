@@ -11,6 +11,7 @@
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/schedule": "^6.1.1",
     "diff": "^9.0.0",
+    "eld": "^2.0.3",
     "ioredis": "^5.10.0",
     "kysely": "^0.28.11",
     "pg": "^8.20.0",

@@ -354,6 +354,9 @@ importers:
       diff:
         specifier: ^9.0.0
         version: 9.0.0
+      eld:
+        specifier: ^2.0.3
+        version: 2.0.3
       ioredis:
         specifier: ^5.10.0
         version: 5.10.0
