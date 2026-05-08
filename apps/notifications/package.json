@@ -11,6 +11,7 @@
     "@nestjs/websockets": "^11.0.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
+    "tslib": "^2.8.1",
     "ws": "^8.0.0",
     "zod": "^4.3.6"
   }
