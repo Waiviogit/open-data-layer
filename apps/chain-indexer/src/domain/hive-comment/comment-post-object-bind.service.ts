@@ -3,9 +3,9 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   type NewPostObject,
   extractObjectIdsFromCommentBody,
+  isThreadParentAccount,
   MAX_POST_OBJECTS_PER_POST,
 } from '@opden-data-layer/core';
-import { isThreadParentAccount } from '../../constants/thread-accounts';
 import { ObjectsCoreRepository } from '../../repositories/objects-core.repository';
 import { PostsRepository } from '../../repositories/posts.repository';
 import { ThreadsRepository } from '../../repositories/threads.repository';

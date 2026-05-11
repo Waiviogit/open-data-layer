@@ -1,4 +1,4 @@
-import { CASHOUT_OFFSET_DAYS } from '../../constants/thread-accounts';
+import { CASHOUT_OFFSET_DAYS } from './thread-accounts';
 
 /** Parse Hive block `timestamp` string to Unix seconds. */
 export function blockTimestampToUnixSeconds(timestamp: string): number {

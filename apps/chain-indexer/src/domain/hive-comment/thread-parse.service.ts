@@ -1,15 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import type { NewThread } from '@opden-data-layer/core';
-import { ThreadsRepository } from '../../repositories/threads.repository';
 import {
   DEFAULT_PERCENT_HBD,
-  getThreadType,
-  SEED_TICKERS,
-  THREAD_TYPE_ECENCY,
-} from '../../constants/thread-accounts';
-import { blockTimestampToUnixSeconds, cashoutTimeFromBlock } from './hive-datetime.util';
-import type { CommentOperationPayload } from './hive-comment.schema';
-import {
+  blockTimestampToUnixSeconds,
+  cashoutTimeFromBlock,
   detectBulkMessage,
   extractCryptoTickers,
   extractHashtags,
@@ -17,7 +11,12 @@ import {
   extractImages,
   extractLinks,
   extractMentions,
-} from './thread-extractors';
+  getThreadType,
+  SEED_TICKERS,
+  THREAD_TYPE_ECENCY,
+} from '@opden-data-layer/core';
+import { ThreadsRepository } from '../../repositories/threads.repository';
+import type { CommentOperationPayload } from './hive-comment.schema';
 
 export interface ThreadParseOptions {
   percentHbd?: number;

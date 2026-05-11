@@ -4,7 +4,7 @@ import type { Database } from '../../database';
 import { KYSELY } from '../../database';
 import { PostSyncQueueRepository } from '../../repositories/post-sync-queue.repository';
 import { PostsRepository } from '../../repositories/posts.repository';
-import { blockTimestampToUnixSeconds } from '../hive-comment/hive-datetime.util';
+import { blockTimestampToUnixSeconds } from '@opden-data-layer/core';
 import type { HiveOperationHandlerContext } from '../hive-parser/hive-handler-context';
 import { voteOperationSchema } from './vote-hive.schema';
 

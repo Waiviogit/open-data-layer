@@ -9,28 +9,27 @@ import type {
   Post,
   PostActiveVote,
 } from '@opden-data-layer/core';
+import {
+  bindPostObjectsToPost,
+  blockTimestampToUnixSeconds,
+  cashoutTimeFromBlock,
+  extractLinks,
+  extractMentions,
+  formatHiveDateTime,
+  parseJsonMetadata,
+  parsePostObjectsForInsert,
+  validateWobjectPercentSum,
+} from '@opden-data-layer/core';
 import { ObjectsCoreRepository } from '../../repositories/objects-core.repository';
 import { PostsRepository } from '../../repositories/posts.repository';
 import { GovernanceCacheService } from '../governance/governance-cache.service';
 import { mergeHiveCommentBody } from './body-merge';
-import {
-  blockTimestampToUnixSeconds,
-  cashoutTimeFromBlock,
-  formatHiveDateTime,
-} from './hive-datetime.util';
 import type { CommentOperationPayload } from './hive-comment.schema';
 import {
   normalizeHiveBeneficiariesForStorage,
   normalizeHiveJsonMetadataForStorage,
 } from './hive-post-normalize.util';
-import { parseJsonMetadata } from './json-metadata.util';
-import {
-  bindPostObjectsToPost,
-  parsePostObjectsForInsert,
-  validateWobjectPercentSum,
-} from '@opden-data-layer/core';
 import { detectPostLanguagesBcp47 } from './post-languages';
-import { extractLinks, extractMentions } from './thread-extractors';
 import {
   POST_OBJECT_CHANGED_EVENT,
   PostObjectChangedEvent,

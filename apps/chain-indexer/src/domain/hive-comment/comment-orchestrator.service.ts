@@ -1,12 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PostsRepository } from '../../repositories/posts.repository';
 import { ThreadsRepository } from '../../repositories/threads.repository';
-import { isThreadParentAccount } from '../../constants/thread-accounts';
+import {
+  isThreadParentAccount,
+  isTruthyMetadata,
+  parseJsonMetadata,
+} from '@opden-data-layer/core';
 import {
   commentOperationPayloadSchema,
   deleteCommentOperationPayloadSchema,
 } from './hive-comment.schema';
-import { isTruthyMetadata, parseJsonMetadata } from './json-metadata.util';
 import { CommentPostObjectBindService } from './comment-post-object-bind.service';
 import { PostUpsertService } from './post-upsert.service';
 import { ThreadParseService } from './thread-parse.service';

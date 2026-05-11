@@ -6,7 +6,7 @@
  *   pnpm exec tsx --env-file=.env scripts/backfill-threads.ts [--author leothreads] [--page-size 20] [--dry-run]
  */
 import { Client } from '@hiveio/dhive';
-import type { NewThread, NewThreadActiveVote, OdlDatabase } from '@opden-data-layer/core';
+import type { NewThread, NewThreadActiveVote, OdlDatabase } from '../libs/core/src/db';
 import { Kysely, PostgresDialect } from 'kysely';
 import pg from 'pg';
 
@@ -15,17 +15,11 @@ import { resolveConnectionString } from '../libs/migrations/src/connection';
 import { HIVE_RPC_NODES } from '../libs/clients/src/hive-client/constants';
 import {
   DEFAULT_PERCENT_HBD,
-  getThreadType,
-  SEED_TICKERS,
   THREAD_ACCOUNTS,
   THREAD_TYPE_ECENCY,
   THREADS_ACC,
-} from '../apps/chain-indexer/src/constants/thread-accounts';
-import {
   blockTimestampToUnixSeconds,
   cashoutTimeFromBlock,
-} from '../apps/chain-indexer/src/domain/hive-comment/hive-datetime.util';
-import {
   detectBulkMessage,
   extractCryptoTickers,
   extractHashtags,
@@ -33,7 +27,9 @@ import {
   extractImages,
   extractLinks,
   extractMentions,
-} from '../apps/chain-indexer/src/domain/hive-comment/thread-extractors';
+  getThreadType,
+  SEED_TICKERS,
+} from '../libs/core/src/hive-thread';
 
 interface CliOptions {
   author: string;

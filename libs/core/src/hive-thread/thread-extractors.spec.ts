@@ -4,11 +4,7 @@ import {
   extractLinks,
   extractMentions,
 } from './thread-extractors';
-import {
-  getThreadType,
-  THREAD_TYPE_ECENCY,
-  THREAD_TYPE_LEO,
-} from '../../constants/thread-accounts';
+import { getThreadType, THREAD_TYPE_ECENCY, THREAD_TYPE_LEO } from './thread-accounts';
 
 describe('thread-extractors', () => {
   it('extractHashtags matches #tags and /object/slug', () => {

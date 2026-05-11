@@ -1,4 +1,4 @@
-import { OBJECT_PATH_BODY_RE } from '@opden-data-layer/core';
+import { OBJECT_PATH_BODY_RE } from '../post-objects/comment-post-object-candidates';
 import { parseJsonMetadata } from './json-metadata.util';
 
 const HASHTAG_BODY_RE = /#([\w-]+)/g;
@@ -17,7 +17,10 @@ export function extractHashtags(body: string): string[] {
   let m: RegExpExecArray | null;
   const bodyRe = new RegExp(HASHTAG_BODY_RE);
   while ((m = bodyRe.exec(body)) !== null) {
-    out.push(m[1]);
+    const tag = m[1];
+    if (tag) {
+      out.push(tag);
+    }
   }
   const slugRe = new RegExp(OBJECT_PATH_BODY_RE);
   while ((m = slugRe.exec(body)) !== null) {
@@ -30,7 +33,7 @@ export function extractHashtags(body: string): string[] {
 
 export function extractHashtagsFromMetadata(jsonMetadata: string): string[] {
   const meta = parseJsonMetadata(jsonMetadata);
-  const tags = meta?.tags;
+  const tags = meta?.['tags'];
   if (!Array.isArray(tags)) {
     return [];
   }
@@ -46,7 +49,10 @@ export function extractMentions(body: string): string[] {
   let m: RegExpExecArray | null;
   const re = new RegExp(MENTION_RE);
   while ((m = re.exec(body)) !== null) {
-    out.push(m[1]);
+    const name = m[1];
+    if (name) {
+      out.push(name);
+    }
   }
   return uniqueStrings(out);
 }
@@ -64,7 +70,7 @@ export function extractImages(jsonMetadata: string): string[] {
   if (!meta) {
     return [];
   }
-  const image = meta.image;
+  const image = meta['image'];
   if (Array.isArray(image)) {
     return uniqueStrings(image.filter((i): i is string => typeof i === 'string'));
   }
@@ -76,7 +82,7 @@ export function extractImages(jsonMetadata: string): string[] {
 
 export function detectBulkMessage(jsonMetadata: string): boolean {
   const meta = parseJsonMetadata(jsonMetadata);
-  return Boolean(meta && meta.bulkMessage);
+  return Boolean(meta && meta['bulkMessage']);
 }
 
 /**

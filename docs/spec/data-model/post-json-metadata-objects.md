@@ -1,6 +1,6 @@
 # Post `json_metadata`: linked objects (`post_objects`)
 
-Normative for **chain-indexer** when indexing Hive `comment` operations for **root posts** (`parent_author === ''`). Parsed metadata is the JSON object inside `comment.json_metadata` (see [`json-metadata.util.ts`](../../../apps/chain-indexer/src/domain/hive-comment/json-metadata.util.ts) in chain-indexer).
+Normative for **chain-indexer** when indexing Hive `comment` operations for **root posts** (`parent_author === ''`). Parsed metadata is the JSON object inside `comment.json_metadata` (see [`json-metadata.util.ts`](../../../libs/core/src/hive-thread/json-metadata.util.ts) in `@opden-data-layer/core`).
 
 Related: [`posts.md`](posts.md) (`post_objects` table), [`schema.sql`](schema.sql).
 

@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PostSyncQueueRepository } from '../../repositories/post-sync-queue.repository';
 import { PostsRepository } from '../../repositories/posts.repository';
 import type { HiveOperationHandlerContext } from '../hive-parser/hive-handler-context';
-import { blockTimestampToUnixSeconds } from '../hive-comment/hive-datetime.util';
+import { blockTimestampToUnixSeconds } from '@opden-data-layer/core';
 import type { ReblogBranchPayload } from './follow-json.parse';
 import { AccountEnsureService } from './account-ensure.service';
 
