@@ -1,5 +1,8 @@
 # Manual only: Actions → Run workflow → choose **Environment** (`staging` | `production`),
-# branch/ref, and optional **rebuild all** (full image matrix, skip nx affected).
+# branch/ref, optional **Apps** list, and optional **rebuild all**.
+# - **Apps** (comma-separated): build only those images; ignores Nx affected and rebuild all.
+# - **Rebuild all**: full matrix when Apps is empty.
+# - Otherwise: Nx affected.
 # Nx affected base: **staging** images → `origin/staging`; **production** → `origin/master`.
 name: Build and push Docker images
 
@@ -15,9 +18,18 @@ on:
         required: true
         default: staging
       rebuild_all:
-        description: Build every app image (ignore nx affected)
+        description: Build every app image (ignore nx affected). Ignored if **Apps** is set.
         type: boolean
         default: false
+      apps:
+        description: >-
+          Optional comma-separated app names (e.g. web,query-api,migrator). When set,
+          only these images are built; Nx affected and Rebuild all are ignored.
+          Allowed chain-indexer, query-api, auth-api, notifications, scheduler,
+          ipfs-gateway, stack-watchdog, web, migrator.
+        type: string
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -78,10 +90,28 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Compute affected apps (docker-image)
+      - name: Compute build matrix
         id: set-matrix
+        env:
+          APPS_EXPLICIT: ${{ inputs.apps }}
         run: |
           set -euo pipefail
+          set +e
+          JSON="$(node .github/scripts/pick-build-apps.mjs)"
+          PICK_EXIT=$?
+          set -e
+
+          if [ "$PICK_EXIT" -eq 0 ]; then
+            {
+              echo "matrix=$JSON"
+              echo 'has_matrix=true'
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "$PICK_EXIT" -ne 2 ]; then
+            exit "$PICK_EXIT"
+          fi
+
           MODE="${{ steps.base.outputs.mode }}"
           if [ "$MODE" = "all" ]; then
             JSON='["chain-indexer","query-api","auth-api","notifications","scheduler","ipfs-gateway","stack-watchdog","web","migrator"]'
