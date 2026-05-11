@@ -3,9 +3,10 @@
  * Usage: pnpm migrate:mongo-objects <path-to.json> [--skip-indexes]
  * Requires POSTGRES_HOST, POSTGRES_USER, POSTGRES_DATABASE (and optionally POSTGRES_PASSWORD, POSTGRES_PORT).
  *
- * --skip-indexes  Drop object_updates indexes and trigger before bulk insert,
- *                 recreate them after. Dramatically faster for large files
- *                 (avoids incremental index maintenance on every row).
+ * --skip-indexes  Drop secondary indexes (and object_updates FTS trigger) on
+ *                 objects_core, object_updates, validity_votes, rank_votes,
+ *                 object_authority before bulk insert; recreate after.
+ *                 Dramatically faster for large files.
  */
 
 import * as fs from 'fs';
@@ -646,26 +647,51 @@ class MongoToPgMigrator {
 }
 
 async function dropObjectUpdatesIndexes(db: Kysely<OdlDatabase>): Promise<void> {
-  console.log('Dropping object_updates indexes and trigger...');
+  console.log('Dropping object migration indexes and object_updates trigger...');
   await sql`ALTER TABLE object_updates DISABLE TRIGGER tr_object_updates_search_vector`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_object_updates_search_vector`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_object_updates_object_rank_score`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_object_updates_value_geo`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_object_updates_update_type_value_text`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_object_updates_update_type_value_text_normalized`.execute(db);
   await sql`DROP INDEX IF EXISTS idx_object_updates_object_id_update_type`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_object_authority_object_id_authority_type`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_object_authority_account`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_rank_votes_object_id`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_validity_votes_object_id`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_objects_core_object_type_weight`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_objects_core_creator`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_objects_core_canonical`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_objects_core_canonical_creator`.execute(db);
   console.log('Indexes dropped.');
 }
 
 async function recreateObjectUpdatesIndexes(db: Kysely<OdlDatabase>): Promise<void> {
-  console.log('Recreating object_updates indexes...');
+  console.log('Recreating object migration indexes...');
+  await sql`CREATE INDEX idx_objects_core_object_type_weight ON objects_core (object_type, weight DESC NULLS LAST)`.execute(db);
+  await sql`CREATE INDEX idx_objects_core_creator ON objects_core (creator)`.execute(db);
+  await sql`
+    CREATE INDEX idx_objects_core_canonical
+    ON objects_core (canonical)
+    WHERE canonical IS NOT NULL
+  `.execute(db);
+  await sql`
+    CREATE INDEX idx_objects_core_canonical_creator
+    ON objects_core (canonical_creator)
+    WHERE canonical_creator IS NOT NULL
+  `.execute(db);
+  console.log('  objects_core secondary indexes done');
+  await sql`CREATE INDEX idx_validity_votes_object_id ON validity_votes (object_id)`.execute(db);
+  await sql`CREATE INDEX idx_rank_votes_object_id ON rank_votes (object_id)`.execute(db);
+  await sql`CREATE INDEX idx_object_authority_object_id_authority_type ON object_authority (object_id, authority_type)`.execute(db);
+  await sql`CREATE INDEX idx_object_authority_account ON object_authority (account)`.execute(db);
+  console.log('  validity_votes / rank_votes / object_authority indexes done');
   await sql`CREATE INDEX idx_object_updates_object_id_update_type ON object_updates (object_id, update_type)`.execute(db);
-  console.log('  [1/5] idx_object_updates_object_id_update_type done');
   await sql`CREATE INDEX idx_object_updates_value_geo ON object_updates USING GIST (value_geo)`.execute(db);
-  console.log('  [2/5] idx_object_updates_value_geo done');
   await sql`CREATE INDEX idx_object_updates_update_type_value_text ON object_updates (update_type, LEFT(value_text, 2048)) WHERE value_text IS NOT NULL`.execute(db);
-  console.log('  [3/5] idx_object_updates_update_type_value_text done');
   await sql`CREATE INDEX idx_object_updates_update_type_value_text_normalized ON object_updates (update_type, LEFT(value_text_normalized, 2048)) WHERE value_text_normalized IS NOT NULL`.execute(db);
-  console.log('  [4/5] idx_object_updates_update_type_value_text_normalized done');
+  await sql`CREATE INDEX idx_object_updates_object_rank_score ON object_updates (object_id, rank_score)`.execute(db);
+  console.log('  object_updates btree/geo/rank indexes done');
   await sql`ALTER TABLE object_updates ENABLE TRIGGER tr_object_updates_search_vector`.execute(db);
   await sql`
     UPDATE object_updates
@@ -673,7 +699,7 @@ async function recreateObjectUpdatesIndexes(db: Kysely<OdlDatabase>): Promise<vo
     WHERE value_text IS NOT NULL
   `.execute(db);
   await sql`CREATE INDEX idx_object_updates_search_vector ON object_updates USING GIN (search_vector)`.execute(db);
-  console.log('  [5/5] idx_object_updates_search_vector done');
+  console.log('  object_updates search_vector GIN done');
   console.log('Indexes recreated.');
 }
 

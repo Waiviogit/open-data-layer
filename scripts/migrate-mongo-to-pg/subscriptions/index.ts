@@ -1,6 +1,11 @@
 /**
  * Stream MongoDB Subscriptions JSON array export into `user_subscriptions`.
- * Usage: pnpm migrate:mongo-subscriptions <path-to-subscriptions.json>
+ * Usage: pnpm migrate:mongo-subscriptions <path-to-subscriptions.json> [--skip-indexes]
+ *
+ * Skips pairs where `follower` or `following` contains `_`.
+ *
+ * --skip-indexes  Drop secondary indexes on `user_subscriptions` before bulk insert;
+ *                 recreate after.
  */
 
 import * as fs from 'fs';
@@ -10,7 +15,7 @@ import { Writable } from 'node:stream';
 
 import { resolveConnectionString } from '../../../libs/migrations/src/connection';
 import type { NewUserSubscription, OdlDatabase } from '../../../libs/core/src/db';
-import { Kysely, PostgresDialect } from 'kysely';
+import { Kysely, PostgresDialect, sql } from 'kysely';
 import { Pool } from 'pg';
 import streamArray from 'stream-json/streamers/stream-array.js';
 
@@ -22,6 +27,7 @@ const BATCH_SIZE = 5000;
 interface MigrationStats {
   rowsSeen: number;
   rowsSkippedMissingPk: number;
+  rowsSkippedUnderscoreInAccount: number;
   rowsBuffered: number;
 }
 
@@ -38,6 +44,7 @@ class MongoSubscriptionsMigrator {
   readonly stats: MigrationStats = {
     rowsSeen: 0,
     rowsSkippedMissingPk: 0,
+    rowsSkippedUnderscoreInAccount: 0,
     rowsBuffered: 0,
   };
 
@@ -73,6 +80,10 @@ class MongoSubscriptionsMigrator {
       this.stats.rowsSkippedMissingPk += 1;
       return;
     }
+    if (follower.includes('_') || following.includes('_')) {
+      this.stats.rowsSkippedUnderscoreInAccount += 1;
+      return;
+    }
     const createdAt =
       dateFromMongoObjectIdHex(mongoOidHex(doc._id)) ?? new Date(0);
     this.buffer.push({
@@ -95,7 +106,29 @@ class MongoSubscriptionsMigrator {
   }
 }
 
-async function migrateFile(filePath: string): Promise<void> {
+async function dropSubscriptionBulkIndexes(db: Kysely<OdlDatabase>): Promise<void> {
+  console.log('Dropping user_subscriptions indexes...');
+  await sql`DROP INDEX IF EXISTS idx_user_subscriptions_follower_created_at`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_user_subscriptions_following_created_at`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_user_subscriptions_following`.execute(db);
+  console.log('Indexes dropped.');
+}
+
+async function recreateSubscriptionBulkIndexes(db: Kysely<OdlDatabase>): Promise<void> {
+  console.log('Recreating user_subscriptions indexes...');
+  await sql`CREATE INDEX idx_user_subscriptions_following ON user_subscriptions (following)`.execute(db);
+  await sql`
+    CREATE INDEX idx_user_subscriptions_following_created_at
+    ON user_subscriptions (following, created_at DESC)
+  `.execute(db);
+  await sql`
+    CREATE INDEX idx_user_subscriptions_follower_created_at
+    ON user_subscriptions (follower, created_at DESC)
+  `.execute(db);
+  console.log('Indexes recreated.');
+}
+
+async function migrateFile(filePath: string, skipIndexes: boolean): Promise<void> {
   const resolved = path.resolve(filePath);
   if (!fs.existsSync(resolved)) {
     fail(`File not found: ${resolved}`);
@@ -104,6 +137,10 @@ async function migrateFile(filePath: string): Promise<void> {
   const databaseUrl = resolveConnectionString();
 
   const migrator = new MongoSubscriptionsMigrator(databaseUrl);
+
+  if (skipIndexes) {
+    await dropSubscriptionBulkIndexes(migrator.db);
+  }
 
   try {
     const sink = new Writable({
@@ -136,6 +173,9 @@ async function migrateFile(filePath: string): Promise<void> {
 
     await migrator.flushAll();
   } finally {
+    if (skipIndexes) {
+      await recreateSubscriptionBulkIndexes(migrator.db);
+    }
     await migrator.destroy();
   }
 
@@ -145,14 +185,15 @@ async function migrateFile(filePath: string): Promise<void> {
 function main(): void {
   const args = process.argv.slice(2);
   const fileArg = args.find((a) => !a.startsWith('--'));
+  const skipIndexes = args.includes('--skip-indexes');
 
   if (!fileArg?.trim()) {
     fail(
-      'Usage: tsx scripts/migrate-mongo-to-pg/subscriptions/index.ts <path-to-subscriptions.json>',
+      'Usage: tsx scripts/migrate-mongo-to-pg/subscriptions/index.ts <path-to-subscriptions.json> [--skip-indexes]',
     );
   }
 
-  migrateFile(fileArg).catch((err: unknown) => {
+  migrateFile(fileArg, skipIndexes).catch((err: unknown) => {
     console.error(err);
     process.exit(1);
   });

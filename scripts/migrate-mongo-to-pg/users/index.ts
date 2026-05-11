@@ -1,6 +1,11 @@
 /**
  * Stream MongoDB User JSON array export into ODL `accounts_current` (Waivio columns) and user_* tables.
- * Usage: pnpm migrate:mongo-users <path-to-users.json>
+ * Usage: pnpm migrate:mongo-users <path-to-users.json> [--skip-indexes]
+ *
+ * Skips accounts whose `name` contains `_` (legacy / non-Hive-style usernames).
+ *
+ * --skip-indexes  Drop secondary indexes on touched user tables before bulk insert;
+ *                 recreate after. Faster for large exports.
  */
 
 import * as fs from 'fs';
@@ -37,6 +42,7 @@ type UserMetadataInsert = Omit<NewUserMetadata, 'post_locales'> & {
 interface MigrationStats {
   usersSeen: number;
   usersSkippedMissingName: number;
+  usersSkippedUnderscoreInName: number;
   objectFollowsSkippedNoFk: number;
   bookmarksSkippedNoPostRef: number;
   accountRowsBuffered: number;
@@ -116,6 +122,7 @@ class MongoUsersMigrator {
   readonly stats: MigrationStats = {
     usersSeen: 0,
     usersSkippedMissingName: 0,
+    usersSkippedUnderscoreInName: 0,
     objectFollowsSkippedNoFk: 0,
     bookmarksSkippedNoPostRef: 0,
     accountRowsBuffered: 0,
@@ -277,6 +284,10 @@ class MongoUsersMigrator {
       this.stats.usersSkippedMissingName += 1;
       return;
     }
+    if (name.includes('_')) {
+      this.stats.usersSkippedUnderscoreInName += 1;
+      return;
+    }
 
     const um = doc.user_metadata;
     const settings = um?.settings;
@@ -409,7 +420,32 @@ class MongoUsersMigrator {
   }
 }
 
-async function migrateFile(filePath: string): Promise<void> {
+async function dropUserBulkIndexes(db: Kysely<OdlDatabase>): Promise<void> {
+  console.log('Dropping user migration table indexes...');
+  await sql`DROP INDEX IF EXISTS idx_user_object_follows_account_created_at`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_user_object_follows_object_id`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_user_post_bookmarks_account`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_user_referrals_agent`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_accounts_current_object_reputation`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_accounts_current_hive_id`.execute(db);
+  console.log('Indexes dropped.');
+}
+
+async function recreateUserBulkIndexes(db: Kysely<OdlDatabase>): Promise<void> {
+  console.log('Recreating user migration table indexes...');
+  await sql`CREATE INDEX idx_accounts_current_object_reputation ON accounts_current (object_reputation DESC NULLS LAST)`.execute(db);
+  await sql`CREATE INDEX idx_accounts_current_hive_id ON accounts_current (hive_id) WHERE hive_id IS NOT NULL`.execute(db);
+  await sql`CREATE INDEX idx_user_referrals_agent ON user_referrals (agent)`.execute(db);
+  await sql`CREATE INDEX idx_user_post_bookmarks_account ON user_post_bookmarks (account)`.execute(db);
+  await sql`CREATE INDEX idx_user_object_follows_object_id ON user_object_follows (object_id)`.execute(db);
+  await sql`
+    CREATE INDEX idx_user_object_follows_account_created_at
+    ON user_object_follows (account, created_at DESC)
+  `.execute(db);
+  console.log('Indexes recreated.');
+}
+
+async function migrateFile(filePath: string, skipIndexes: boolean): Promise<void> {
   const resolved = path.resolve(filePath);
   if (!fs.existsSync(resolved)) {
     fail(`File not found: ${resolved}`);
@@ -418,6 +454,10 @@ async function migrateFile(filePath: string): Promise<void> {
   const databaseUrl = resolveConnectionString();
 
   const migrator = new MongoUsersMigrator(databaseUrl);
+
+  if (skipIndexes) {
+    await dropUserBulkIndexes(migrator.db);
+  }
 
   try {
     const sink = new Writable({
@@ -450,6 +490,9 @@ async function migrateFile(filePath: string): Promise<void> {
 
     await migrator.flushAll();
   } finally {
+    if (skipIndexes) {
+      await recreateUserBulkIndexes(migrator.db);
+    }
     await migrator.destroy();
   }
 
@@ -459,12 +502,15 @@ async function migrateFile(filePath: string): Promise<void> {
 function main(): void {
   const args = process.argv.slice(2);
   const fileArg = args.find((a) => !a.startsWith('--'));
+  const skipIndexes = args.includes('--skip-indexes');
 
   if (!fileArg?.trim()) {
-    fail('Usage: tsx scripts/migrate-mongo-to-pg/users/index.ts <path-to-users.json>');
+    fail(
+      'Usage: tsx scripts/migrate-mongo-to-pg/users/index.ts <path-to-users.json> [--skip-indexes]',
+    );
   }
 
-  migrateFile(fileArg).catch((err: unknown) => {
+  migrateFile(fileArg, skipIndexes).catch((err: unknown) => {
     console.error(err);
     process.exit(1);
   });

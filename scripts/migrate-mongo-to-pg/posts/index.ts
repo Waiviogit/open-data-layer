@@ -1,7 +1,12 @@
 /**
  * Stream MongoDB post JSON array export into ODL Postgres `posts` and satellite tables.
- * Usage: pnpm migrate:mongo-posts <path-to-posts.json>
+ * Usage: pnpm migrate:mongo-posts <path-to-posts.json> [--skip-indexes]
  * Requires POSTGRES_HOST, POSTGRES_USER, POSTGRES_DATABASE (and optionally POSTGRES_PASSWORD, POSTGRES_PORT).
+ *
+ * Skips posts whose `author` contains `_`.
+ *
+ * --skip-indexes  Drop secondary indexes on `posts` and post_* satellites before bulk
+ *                 insert; recreate after. Faster for large exports.
  */
 
 import * as fs from 'fs';
@@ -46,6 +51,7 @@ type PostInsertBuffer = Omit<NewPost, 'beneficiaries'> & {
 interface MigrationStats {
   postsSeen: number;
   postsSkippedMissingPk: number;
+  postsSkippedUnderscoreInAuthor: number;
   postsSkippedEmptyTitleBody: number;
   postObjectsSkippedNoFk: number;
   postRowsBuffered: number;
@@ -215,6 +221,7 @@ class MongoPostsMigrator {
   readonly stats: MigrationStats = {
     postsSeen: 0,
     postsSkippedMissingPk: 0,
+    postsSkippedUnderscoreInAuthor: 0,
     postsSkippedEmptyTitleBody: 0,
     postObjectsSkippedNoFk: 0,
     postRowsBuffered: 0,
@@ -460,6 +467,10 @@ class MongoPostsMigrator {
       this.stats.postsSkippedMissingPk += 1;
       return;
     }
+    if (author.includes('_')) {
+      this.stats.postsSkippedUnderscoreInAuthor += 1;
+      return;
+    }
 
     const titleTrim = doc.title?.trim() ?? '';
     const bodyTrim = doc.body?.trim() ?? '';
@@ -604,7 +615,33 @@ class MongoPostsMigrator {
   }
 }
 
-async function migrateFile(filePath: string): Promise<void> {
+async function dropPostBulkIndexes(db: Kysely<OdlDatabase>): Promise<void> {
+  console.log('Dropping posts and satellite table indexes...');
+  await sql`DROP INDEX IF EXISTS idx_post_mentions_account`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_post_links_url`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_post_languages_language`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_post_reblogged_users_account_reblogged_at`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_post_objects_object_id`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_post_objects_object_type`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_post_active_votes_voter`.execute(db);
+  await sql`DROP INDEX IF EXISTS idx_posts_author_created_unix`.execute(db);
+  console.log('Indexes dropped.');
+}
+
+async function recreatePostBulkIndexes(db: Kysely<OdlDatabase>): Promise<void> {
+  console.log('Recreating posts and satellite table indexes...');
+  await sql`CREATE INDEX idx_posts_author_created_unix ON posts (author, created_unix DESC)`.execute(db);
+  await sql`CREATE INDEX idx_post_active_votes_voter ON post_active_votes (voter)`.execute(db);
+  await sql`CREATE INDEX idx_post_objects_object_id ON post_objects (object_id)`.execute(db);
+  await sql`CREATE INDEX idx_post_objects_object_type ON post_objects (object_type) WHERE object_type IS NOT NULL`.execute(db);
+  await sql`CREATE INDEX idx_post_reblogged_users_account_reblogged_at ON post_reblogged_users (account, reblogged_at_unix DESC)`.execute(db);
+  await sql`CREATE INDEX idx_post_languages_language ON post_languages (language)`.execute(db);
+  await sql`CREATE INDEX idx_post_links_url ON post_links (url)`.execute(db);
+  await sql`CREATE INDEX idx_post_mentions_account ON post_mentions (account)`.execute(db);
+  console.log('Indexes recreated.');
+}
+
+async function migrateFile(filePath: string, skipIndexes: boolean): Promise<void> {
   const resolved = path.resolve(filePath);
   if (!fs.existsSync(resolved)) {
     fail(`File not found: ${resolved}`);
@@ -613,6 +650,10 @@ async function migrateFile(filePath: string): Promise<void> {
   const databaseUrl = resolveConnectionString();
 
   const migrator = new MongoPostsMigrator(databaseUrl);
+
+  if (skipIndexes) {
+    await dropPostBulkIndexes(migrator.db);
+  }
 
   try {
     const sink = new Writable({
@@ -645,6 +686,9 @@ async function migrateFile(filePath: string): Promise<void> {
 
     await migrator.flushAll();
   } finally {
+    if (skipIndexes) {
+      await recreatePostBulkIndexes(migrator.db);
+    }
     await migrator.destroy();
   }
 
@@ -654,14 +698,15 @@ async function migrateFile(filePath: string): Promise<void> {
 function main(): void {
   const args = process.argv.slice(2);
   const fileArg = args.find((a) => !a.startsWith('--'));
+  const skipIndexes = args.includes('--skip-indexes');
 
   if (!fileArg?.trim()) {
     fail(
-      'Usage: tsx scripts/migrate-mongo-to-pg/posts/index.ts <path-to-posts.json>',
+      'Usage: tsx scripts/migrate-mongo-to-pg/posts/index.ts <path-to-posts.json> [--skip-indexes]',
     );
   }
 
-  migrateFile(fileArg).catch((err: unknown) => {
+  migrateFile(fileArg, skipIndexes).catch((err: unknown) => {
     console.error(err);
     process.exit(1);
   });
