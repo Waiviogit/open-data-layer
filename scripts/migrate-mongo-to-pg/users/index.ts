@@ -33,6 +33,9 @@ import type { MongoDate, MongoUser } from './types';
 
 const BATCH_SIZE = 5000;
 
+/** Rows per INSERT — PostgreSQL caps bind parameters (~32767–65535); wide rows need smaller chunks. */
+const PG_INSERT_CHUNK = 1000;
+
 const REWARD_SETTINGS = new Set(['HP', '50', 'HIVE']);
 
 type UserMetadataInsert = Omit<NewUserMetadata, 'post_locales'> & {
@@ -56,6 +59,12 @@ interface MigrationStats {
 function fail(message: string): never {
   console.error(message);
   process.exit(1);
+}
+
+function* chunkSlices<T>(items: T[], chunkSize: number): Generator<T[]> {
+  for (let i = 0; i < items.length; i += chunkSize) {
+    yield items.slice(i, i + chunkSize);
+  }
 }
 
 function parseMongoDate(u: unknown): number | null {
@@ -163,11 +172,13 @@ class MongoUsersMigrator {
     }
     const chunk = this.accountBuffer;
     this.accountBuffer = [];
-    await this.db
-      .insertInto('accounts_current')
-      .values(chunk)
-      .onConflict((oc) => oc.column('name').doNothing())
-      .execute();
+    for (const slice of chunkSlices(chunk, PG_INSERT_CHUNK)) {
+      await this.db
+        .insertInto('accounts_current')
+        .values(slice)
+        .onConflict((oc) => oc.column('name').doNothing())
+        .execute();
+    }
   }
 
   private async flushMetadata(): Promise<void> {
@@ -183,11 +194,13 @@ class MongoUsersMigrator {
         post_locales: sql`${JSON.stringify(postLocalesData ?? [])}::jsonb`,
       };
     });
-    await this.db
-      .insertInto('user_metadata')
-      .values(rows as unknown as NewUserMetadata[])
-      .onConflict((oc) => oc.column('account').doNothing())
-      .execute();
+    for (const slice of chunkSlices(rows, PG_INSERT_CHUNK)) {
+      await this.db
+        .insertInto('user_metadata')
+        .values(slice as unknown as NewUserMetadata[])
+        .onConflict((oc) => oc.column('account').doNothing())
+        .execute();
+    }
   }
 
   private async flushNotifications(): Promise<void> {
@@ -196,11 +209,13 @@ class MongoUsersMigrator {
     }
     const chunk = this.notificationBuffer;
     this.notificationBuffer = [];
-    await this.db
-      .insertInto('user_notification_settings')
-      .values(chunk)
-      .onConflict((oc) => oc.column('account').doNothing())
-      .execute();
+    for (const slice of chunkSlices(chunk, PG_INSERT_CHUNK)) {
+      await this.db
+        .insertInto('user_notification_settings')
+        .values(slice)
+        .onConflict((oc) => oc.column('account').doNothing())
+        .execute();
+    }
   }
 
   private async flushReferrals(): Promise<void> {
@@ -209,11 +224,13 @@ class MongoUsersMigrator {
     }
     const chunk = this.referralBuffer;
     this.referralBuffer = [];
-    await this.db
-      .insertInto('user_referrals')
-      .values(chunk)
-      .onConflict((oc) => oc.columns(['account', 'agent', 'type']).doNothing())
-      .execute();
+    for (const slice of chunkSlices(chunk, PG_INSERT_CHUNK)) {
+      await this.db
+        .insertInto('user_referrals')
+        .values(slice)
+        .onConflict((oc) => oc.columns(['account', 'agent', 'type']).doNothing())
+        .execute();
+    }
   }
 
   private async flushBookmarks(): Promise<void> {
@@ -222,11 +239,13 @@ class MongoUsersMigrator {
     }
     const chunk = this.bookmarkBuffer;
     this.bookmarkBuffer = [];
-    await this.db
-      .insertInto('user_post_bookmarks')
-      .values(chunk)
-      .onConflict((oc) => oc.columns(['account', 'author', 'permlink']).doNothing())
-      .execute();
+    for (const slice of chunkSlices(chunk, PG_INSERT_CHUNK)) {
+      await this.db
+        .insertInto('user_post_bookmarks')
+        .values(slice)
+        .onConflict((oc) => oc.columns(['account', 'author', 'permlink']).doNothing())
+        .execute();
+    }
   }
 
   private async flushObjectFollows(): Promise<void> {
@@ -248,11 +267,13 @@ class MongoUsersMigrator {
     if (filtered.length === 0) {
       return;
     }
-    await this.db
-      .insertInto('user_object_follows')
-      .values(filtered)
-      .onConflict((oc) => oc.columns(['account', 'object_id']).doNothing())
-      .execute();
+    for (const slice of chunkSlices(filtered, PG_INSERT_CHUNK)) {
+      await this.db
+        .insertInto('user_object_follows')
+        .values(slice)
+        .onConflict((oc) => oc.columns(['account', 'object_id']).doNothing())
+        .execute();
+    }
   }
 
   async flushAll(): Promise<void> {

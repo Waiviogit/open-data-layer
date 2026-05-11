@@ -239,40 +239,46 @@ docker run --rm \
 
 ### Mongo data import (mount JSON files)
 
-Do not bake export files into the image; mount them with `-v`:
+Do not bake export files into the image; bind-mount them with **`-v`** (host path → `/data/...` inside the container).
+
+**Via Compose (recommended on VPS):** use the same **`--env-file .env`** as the rest of the stack; the **`migrator`** service already has `env_file: .env` and **`POSTGRES_HOST: postgres`**, so credentials and `POSTGRES_DATABASE` come from your `.env`. Run from **`INSTALL_DIR`** (e.g. `/opt/open-data-layer`) where `.env` and the compose file live. Project name **`apps`** matches [`scripts/setup-vps.sh`](../../scripts/setup-vps.sh).
+
+```bash
+# Production migrator image + production compose
+docker compose -p apps --env-file .env -f docker-compose.production.apps.yml --profile tools run --rm \
+  -v /path/to/wobjects.json:/data/wobjects.json \
+  migrator \
+  pnpm migrate:mongo-objects /data/wobjects.json
+
+# Large wobject dump: drop/recreate heavy indexes during load
+docker compose -p apps --env-file .env -f docker-compose.production.apps.yml --profile tools run --rm \
+  -v /path/to/wobjects.json:/data/wobjects.json \
+  migrator \
+  pnpm migrate:mongo-objects /data/wobjects.json --skip-indexes
+
+# Staging image / stack
+docker compose -p apps --env-file .env -f docker-compose.staging.apps.yml --profile tools run --rm \
+  -v /path/to/wobjects.json:/data/wobjects.json \
+  migrator \
+  pnpm migrate:mongo-objects /data/wobjects.json
+
+# Posts export (same pattern)
+docker compose -p apps --env-file .env -f docker-compose.production.apps.yml --profile tools run --rm \
+  -v /path/to/posts.json:/data/posts.json \
+  migrator \
+  pnpm migrate:mongo-posts /data/posts.json
+```
+
+**Plain `docker run`** (no Compose file on host): pass env explicitly or `--env-file .env` on Docker:
 
 ```bash
 docker run --rm \
   --network opden-data-layer-net \
+  --env-file .env \
   -e POSTGRES_HOST=postgres \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=PASS \
-  -e POSTGRES_DATABASE=odl \
   -v /path/to/wobjects.json:/data/wobjects.json \
   ghcr.io/waiviogit/migrator:production \
   pnpm migrate:mongo-objects /data/wobjects.json
-
-# Large wobject dump: drop/recreate heavy indexes during load
-docker run --rm \
-  --network opden-data-layer-net \
-  -e POSTGRES_HOST=postgres \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=PASS \
-  -e POSTGRES_DATABASE=odl \
-  -v /path/to/wobjects.json:/data/wobjects.json \
-  ghcr.io/waiviogit/migrator:production \
-  pnpm migrate:mongo-objects /data/wobjects.json --skip-indexes
-
-# Posts export
-docker run --rm \
-  --network opden-data-layer-net \
-  -e POSTGRES_HOST=postgres \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=PASS \
-  -e POSTGRES_DATABASE=odl \
-  -v /path/to/posts.json:/data/posts.json \
-  ghcr.io/waiviogit/migrator:production \
-  pnpm migrate:mongo-posts /data/posts.json
 ```
 
 Other package scripts from the root `package.json` work the same way (e.g. `pnpm migrate:mongo-users`, `pnpm backfill:threads`) as long as their inputs are passed via mounted paths or env.
