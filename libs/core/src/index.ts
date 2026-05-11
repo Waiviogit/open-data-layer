@@ -1,5 +1,6 @@
 export * from './constants';
 export * from './constants/category-tree.constants';
+export * from './post-objects';
 export * from './redis';
 export * from './db';
 export * from './http';

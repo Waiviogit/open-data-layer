@@ -25,6 +25,7 @@ describe('UpdateCreateHandler write guard', () => {
     weight: null,
     meta_group_id: null,
     canonical: null,
+    canonical_creator: null,
     transaction_id: 'tx0',
     seq: 0,
   };

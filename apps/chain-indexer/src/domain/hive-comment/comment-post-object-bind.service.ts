@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import type { NewPostObject } from '@opden-data-layer/core';
-import { MAX_POST_OBJECTS_PER_POST } from '../../constants/post-objects';
+import {
+  type NewPostObject,
+  extractObjectIdsFromCommentBody,
+  MAX_POST_OBJECTS_PER_POST,
+} from '@opden-data-layer/core';
 import { isThreadParentAccount } from '../../constants/thread-accounts';
 import { ObjectsCoreRepository } from '../../repositories/objects-core.repository';
 import { PostsRepository } from '../../repositories/posts.repository';
 import { ThreadsRepository } from '../../repositories/threads.repository';
-import { extractObjectIdsFromCommentBody } from './comment-post-object-candidates';
 import type { CommentOperationPayload } from './hive-comment.schema';
 import { PostUpsertService } from './post-upsert.service';
 import {

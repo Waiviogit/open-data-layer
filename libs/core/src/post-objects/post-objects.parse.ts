@@ -1,5 +1,5 @@
-import type { NewPostObject } from '@opden-data-layer/core';
-import { MAX_POST_OBJECTS_PER_POST } from '../../constants/post-objects';
+import type { NewPostObject } from '../db';
+import { MAX_POST_OBJECTS_PER_POST } from './post-objects.constants';
 import {
   extractHashtagObjectIdsFromBody,
   extractObjectPathSlugsFromBody,
@@ -65,7 +65,7 @@ function parseMetadataObjects(raw: unknown): Array<{ object_id: string; percent:
 }
 
 function parseMetadataTagStrings(metadata: Record<string, unknown> | null): string[] {
-  const raw = metadata?.tags;
+  const raw = metadata?.['tags'];
   if (!Array.isArray(raw)) {
     return [];
   }
@@ -110,7 +110,7 @@ export function parsePostObjectsForInsert(
     }
   }
 
-  for (const { object_id, percent } of parseMetadataObjects(metadata?.objects)) {
+  for (const { object_id, percent } of parseMetadataObjects(metadata?.['objects'])) {
     byId.set(object_id, percent);
   }
 

@@ -15,7 +15,7 @@ Background indexer: NestJS **application context** only — **no HTTP server**, 
 ```
 src/
   config/          env.validation.ts + chain-indexer.config.ts
-  constants/       app-scoped constants (hive-parser, post-objects, thread-accounts)
+  constants/       app-scoped constants (hive-parser, thread-accounts)
   database/        DatabaseModule, KYSELY token, Database type
   repositories/    RepositoriesModule + repository classes (Kysely only, no business logic)
   domain/          feature areas: governance/, hive-parser/, hive-comment/, hive-social/, hive-vote/, odl-parser/

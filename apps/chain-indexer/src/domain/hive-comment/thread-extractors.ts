@@ -1,4 +1,4 @@
-import { OBJECT_PATH_BODY_RE } from './comment-post-object-candidates';
+import { OBJECT_PATH_BODY_RE } from '@opden-data-layer/core';
 import { parseJsonMetadata } from './json-metadata.util';
 
 const HASHTAG_BODY_RE = /#([\w-]+)/g;

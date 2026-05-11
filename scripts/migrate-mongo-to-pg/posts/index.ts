@@ -26,6 +26,7 @@ import type {
   NewPostRebloggedUser,
   OdlDatabase,
 } from '../../../libs/core/src/db';
+import { bindPostObjectsToPost, parsePostObjectsForInsert } from '@opden-data-layer/core';
 import { Kysely, PostgresDialect, sql } from 'kysely';
 import { Pool } from 'pg';
 import streamArray from 'stream-json/streamers/stream-array.js';
@@ -37,11 +38,6 @@ import {
 } from './build-mongo-post-metadata';
 import { normalizeMongoPostLanguage } from './normalize-post-language';
 import type { MongoDate, MongoPost } from './types';
-import {
-  bindPostObjectsToPost,
-  parsePostObjectsForInsert,
-} from '../../../apps/chain-indexer/src/domain/hive-comment/post-objects.parse';
-
 const BATCH_SIZE = 5000;
 
 type PostInsertBuffer = Omit<NewPost, 'beneficiaries'> & {

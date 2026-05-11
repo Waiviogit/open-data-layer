@@ -24,7 +24,11 @@ import {
   normalizeHiveJsonMetadataForStorage,
 } from './hive-post-normalize.util';
 import { parseJsonMetadata } from './json-metadata.util';
-import { bindPostObjectsToPost, parsePostObjectsForInsert, validateWobjectPercentSum } from './post-objects.parse';
+import {
+  bindPostObjectsToPost,
+  parsePostObjectsForInsert,
+  validateWobjectPercentSum,
+} from '@opden-data-layer/core';
 import { detectPostLanguagesBcp47 } from './post-languages';
 import { extractLinks, extractMentions } from './thread-extractors';
 import {

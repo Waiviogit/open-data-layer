@@ -27,7 +27,7 @@ Hive stores **`tags` as `string[]`** (categories / hashtags). For indexing, each
 
 ### Body
 
-- Paths matching `/object/<object_id>` anywhere in the text (including inside full URLs such as Waivio links) add **`object_id`** with **`percent: 0`** unless overridden by `objects`. The indexer uses a shared pattern (`OBJECT_PATH_BODY_RE` in [`comment-post-object-candidates.ts`](../../../apps/chain-indexer/src/domain/hive-comment/comment-post-object-candidates.ts)).
+- Paths matching `/object/<object_id>` anywhere in the text (including inside full URLs such as Waivio links) add **`object_id`** with **`percent: 0`** unless overridden by `objects`. The indexer uses a shared pattern (`OBJECT_PATH_BODY_RE` in [`comment-post-object-candidates.ts`](../../../libs/core/src/post-objects/comment-post-object-candidates.ts)).
 - **`#hashtags` in the post body** add **`object_id`** tokens (same `#…` rules as comment binding: see `RE_HASHTAGS` in that module) with **`percent: 0`** unless overridden by `objects`.
 
 ## Merge order (same `object_id` from several sources)
@@ -37,7 +37,7 @@ Hive stores **`tags` as `string[]`** (categories / hashtags). For indexing, each
 3. Add **body `#hashtags`** (`percent: 0` if not already present).
 4. Apply **`objects` last** so **manual percents win** over `tags` and body-derived ids.
 
-After merge and dedup, the indexer keeps at most **100** linked objects per post (`MAX_POST_OBJECTS_PER_POST` in [`post-objects.ts`](../../../apps/chain-indexer/src/constants/post-objects.ts)). Extra entries are dropped in `Map` iteration order (roughly: tags in array order, then new body paths, then hashtags, then `metadata.objects` entries).
+After merge and dedup, the indexer keeps at most **100** linked objects per post (`MAX_POST_OBJECTS_PER_POST` in [`post-objects.constants.ts`](../../../libs/core/src/post-objects/post-objects.constants.ts)). Extra entries are dropped in `Map` iteration order (roughly: tags in array order, then new body paths, then hashtags, then `metadata.objects` entries).
 
 ## Comment-driven binding to the parent post
 

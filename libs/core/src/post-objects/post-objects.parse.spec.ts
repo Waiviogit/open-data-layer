@@ -1,4 +1,4 @@
-import { MAX_POST_OBJECTS_PER_POST } from '../../constants/post-objects';
+import { MAX_POST_OBJECTS_PER_POST } from './post-objects.constants';
 import {
   bindPostObjectsToPost,
   parsePostObjectsForInsert,
