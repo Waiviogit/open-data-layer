@@ -1,5 +1,6 @@
 # Manual only: Actions → Run workflow → choose **Environment** (`staging` | `production`),
 # branch/ref, and optional **rebuild all** (full image matrix, skip nx affected).
+# Nx affected base: **staging** images → `origin/staging`; **production** → `origin/master`.
 name: Build and push Docker images
 
 on:
@@ -48,20 +49,18 @@ jobs:
           fi
           echo "mode=affected" >> "$GITHUB_OUTPUT"
           git fetch origin master:refs/remotes/origin/master || true
+          git fetch origin staging:refs/remotes/origin/staging || true
           case "${{ inputs.environment }}" in
             staging)
-              echo "base=origin/master" >> "$GITHUB_OUTPUT"
-              ;;
-            production)
-              if [ "${GITHUB_REF_NAME}" = "master" ]; then
-                if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
-                  echo "base=HEAD~1" >> "$GITHUB_OUTPUT"
-                else
-                  echo "base=origin/master" >> "$GITHUB_OUTPUT"
-                fi
+              if git rev-parse --verify refs/remotes/origin/staging >/dev/null 2>&1; then
+                echo "base=origin/staging" >> "$GITHUB_OUTPUT"
               else
+                echo "::warning::origin/staging not found; nx affected falls back to origin/master"
                 echo "base=origin/master" >> "$GITHUB_OUTPUT"
               fi
+              ;;
+            production)
+              echo "base=origin/master" >> "$GITHUB_OUTPUT"
               ;;
             *)
               echo "Unsupported environment: ${{ inputs.environment }}"; exit 1
