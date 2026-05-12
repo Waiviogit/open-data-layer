@@ -11,6 +11,7 @@ import {
   getWalletTypeFromSearch,
   isFeedSectionActive,
 } from './user-profile-subnav';
+import { useUserProfileSocialCounts } from './user-profile-social-counts-context';
 
 export type UserMenuDirection = 'horizontal' | 'vertical';
 
@@ -99,6 +100,23 @@ function subNavLinkClass(active: boolean, vertical: boolean) {
   ].join(' ');
 }
 
+function SocialSubmenuLinkLabel({
+  label,
+  count,
+}: {
+  label: string;
+  count?: number;
+}) {
+  return (
+    <span className="inline-flex max-w-full min-w-0 items-center gap-1 whitespace-nowrap">
+      <span className="font-semibold">{label}</span>
+      {count !== undefined ? (
+        <span className="shrink-0 text-caption text-fg-secondary">{count}</span>
+      ) : null}
+    </span>
+  );
+}
+
 function getFeedSubActive(rest: string[], segment: 'posts' | string): boolean {
   if (segment === 'posts') {
     return rest.length === 0;
@@ -119,6 +137,7 @@ export function UserMenu({
   const base = `/@${accountName}`;
   const walletType = getWalletTypeFromSearch(search);
   const submenuVariant = getSubmenuVariant(pathname);
+  const socialCounts = useUserProfileSocialCounts();
 
   const items: {
     key: string;
@@ -231,9 +250,15 @@ export function UserMenu({
 
         {submenuVariant === 'followers' ? (
           <nav className="flex flex-col gap-0.5" aria-label={t('user_profile_submenu_followers_aria')}>
-            <Link href={`${base}/followers`} className={subNavLinkClass((rest[0] ?? '') === 'followers', true)} prefetch={false}>{t('followers')}</Link>
-            <Link href={`${base}/following`} className={subNavLinkClass((rest[0] ?? '') === 'following', true)} prefetch={false}>{t('following')}</Link>
-            <Link href={`${base}/following-objects`} className={subNavLinkClass((rest[0] ?? '') === 'following-objects', true)} prefetch={false}>{t('user_profile_following_objects')}</Link>
+            <Link href={`${base}/followers`} className={subNavLinkClass((rest[0] ?? '') === 'followers', true)} prefetch={false}>
+              <SocialSubmenuLinkLabel label={t('followers')} count={socialCounts?.followerCount} />
+            </Link>
+            <Link href={`${base}/following`} className={subNavLinkClass((rest[0] ?? '') === 'following', true)} prefetch={false}>
+              <SocialSubmenuLinkLabel label={t('following')} count={socialCounts?.followingCount} />
+            </Link>
+            <Link href={`${base}/following-objects`} className={subNavLinkClass((rest[0] ?? '') === 'following-objects', true)} prefetch={false}>
+              <SocialSubmenuLinkLabel label={t('user_profile_following_objects')} count={socialCounts?.followingObjectsCount} />
+            </Link>
           </nav>
         ) : null}
 
@@ -295,9 +320,15 @@ export function UserMenu({
 
         {submenuVariant === 'followers' ? (
           <nav className="mt-2 flex flex-wrap gap-1 border-t border-border pt-2" aria-label={t('user_profile_submenu_followers_aria')}>
-            <Link href={`${base}/followers`} className={subNavLinkClass((rest[0] ?? '') === 'followers', false)} prefetch={false}>{t('followers')}</Link>
-            <Link href={`${base}/following`} className={subNavLinkClass((rest[0] ?? '') === 'following', false)} prefetch={false}>{t('following')}</Link>
-            <Link href={`${base}/following-objects`} className={subNavLinkClass((rest[0] ?? '') === 'following-objects', false)} prefetch={false}>{t('user_profile_following_objects')}</Link>
+            <Link href={`${base}/followers`} className={subNavLinkClass((rest[0] ?? '') === 'followers', false)} prefetch={false}>
+              <SocialSubmenuLinkLabel label={t('followers')} count={socialCounts?.followerCount} />
+            </Link>
+            <Link href={`${base}/following`} className={subNavLinkClass((rest[0] ?? '') === 'following', false)} prefetch={false}>
+              <SocialSubmenuLinkLabel label={t('following')} count={socialCounts?.followingCount} />
+            </Link>
+            <Link href={`${base}/following-objects`} className={subNavLinkClass((rest[0] ?? '') === 'following-objects', false)} prefetch={false}>
+              <SocialSubmenuLinkLabel label={t('user_profile_following_objects')} count={socialCounts?.followingObjectsCount} />
+            </Link>
           </nav>
         ) : null}
 

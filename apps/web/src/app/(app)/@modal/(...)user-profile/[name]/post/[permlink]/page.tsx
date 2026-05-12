@@ -17,12 +17,14 @@ export default async function PostModalInterceptPage({
 }: {
   params: Promise<{ name: string; permlink: string }>;
 }) {
-  const { name, permlink } = await params;
+  const auth = createCookieAuthContextProvider();
+  const [{ name, permlink }, locale, currentUser] = await Promise.all([
+    params,
+    getRequestLocale(),
+    auth.getUser(),
+  ]);
   const accountName = decodeURIComponent(name);
   const permlinkDecoded = decodeURIComponent(permlink);
-  const locale = await getRequestLocale();
-  const auth = createCookieAuthContextProvider();
-  const currentUser = await auth.getUser();
   const post = await getSinglePostQuery(
     accountName,
     permlinkDecoded,

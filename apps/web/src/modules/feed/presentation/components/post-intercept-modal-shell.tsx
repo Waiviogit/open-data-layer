@@ -100,65 +100,74 @@ export function PostInterceptModalShell({ children }: PostInterceptModalShellPro
   const shareFb = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
 
   return (
-    <div
-      className="fixed inset-0 z-[100] overflow-y-auto bg-overlay/70 backdrop-blur-[2px]"
-      role="presentation"
-      onClick={onClose}
-    >
+    <>
       {/*
-        Outer: full-width flex column that simply fills min-h-full so the
-        backdrop covers the whole viewport. py-8 gives top/bottom breathing room.
+        Blur layer is a separate, non-scrolling element so the browser only
+        needs to composite the backdrop-filter once, not on every scroll frame.
+        Keeping overflow-y-auto and backdrop-filter on the same fixed div
+        forces a re-composite of the blur on every scroll tick → visible jank.
       */}
-      <div className="flex min-h-full flex-col items-center justify-start px-4 py-8 sm:px-6">
+      <div className="fixed inset-0 z-[100] bg-overlay/70 backdrop-blur-[2px]" aria-hidden />
+      <div
+        className="fixed inset-0 z-[100] overflow-y-auto"
+        role="presentation"
+        onClick={onClose}
+      >
         {/*
-          Inner: card + pills sit side-by-side, centered as a unit.
-          max-w caps the total width; on smaller screens the pills collapse.
+          Outer: full-width flex column that simply fills min-h-full so the
+          backdrop covers the whole viewport. py-8 gives top/bottom breathing room.
         */}
-        <div className="flex w-full max-w-container-post items-start gap-3">
-          {/* Modal card */}
-          <div
-            role="dialog"
-            aria-modal="true"
-            className="min-w-0 flex-1 rounded-sm border-0 bg-surface shadow-card-float"
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => e.stopPropagation()}
-          >
-            {/* Mobile close bar */}
-            <div className="flex items-center justify-end border-b border-border px-4 py-2 lg:hidden">
-              <button
-                type="button"
-                aria-label="Close"
-                onClick={onClose}
-                className="flex size-8 items-center justify-center rounded-circle text-fg-secondary hover:text-fg"
-              >
-                <IconClose />
-              </button>
+        <div className="flex min-h-full flex-col items-center justify-start px-4 py-8 sm:px-6">
+          {/*
+            Inner: card + pills sit side-by-side, centered as a unit.
+            max-w caps the total width; on smaller screens the pills collapse.
+          */}
+          <div className="flex w-full max-w-container-post items-start gap-3">
+            {/* Modal card */}
+            <div
+              role="dialog"
+              aria-modal="true"
+              className="min-w-0 flex-1 rounded-sm border-0 bg-surface shadow-card-float"
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+            >
+              {/* Mobile close bar */}
+              <div className="flex items-center justify-end border-b border-border px-4 py-2 lg:hidden">
+                <button
+                  type="button"
+                  aria-label="Close"
+                  onClick={onClose}
+                  className="flex size-8 items-center justify-center rounded-circle text-fg-secondary hover:text-fg"
+                >
+                  <IconClose />
+                </button>
+              </div>
+
+              <div className="px-6 py-5 sm:px-8 sm:py-6">{children}</div>
             </div>
 
-            <div className="px-6 py-5 sm:px-8 sm:py-6">{children}</div>
-          </div>
-
-          {/* Floating action pills — desktop only, right side of card */}
-          <div
-            className="hidden shrink-0 flex-col gap-2 pt-4 lg:flex"
-            onClick={(e) => e.stopPropagation()}
-            onKeyDown={(e) => e.stopPropagation()}
-          >
-            <ActionPill label="Close" onClick={onClose}>
-              <IconClose />
-            </ActionPill>
-            <ActionPill label="Reblog">
-              <IconReblog />
-            </ActionPill>
-            <ActionPill label="Share on X" onClick={() => window.open(shareX, '_blank', 'noopener')}>
-              <IconShareX />
-            </ActionPill>
-            <ActionPill label="Share on Facebook" onClick={() => window.open(shareFb, '_blank', 'noopener')}>
-              <IconShareFacebook />
-            </ActionPill>
+            {/* Floating action pills — desktop only, right side of card */}
+            <div
+              className="hidden shrink-0 flex-col gap-2 pt-4 lg:flex"
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+            >
+              <ActionPill label="Close" onClick={onClose}>
+                <IconClose />
+              </ActionPill>
+              <ActionPill label="Reblog">
+                <IconReblog />
+              </ActionPill>
+              <ActionPill label="Share on X" onClick={() => window.open(shareX, '_blank', 'noopener')}>
+                <IconShareX />
+              </ActionPill>
+              <ActionPill label="Share on Facebook" onClick={() => window.open(shareFb, '_blank', 'noopener')}>
+                <IconShareFacebook />
+              </ActionPill>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

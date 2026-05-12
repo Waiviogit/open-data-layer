@@ -11,6 +11,11 @@ export { ShopSections } from './components/shop-sections';
 export type { ShopSectionsProps } from './components/shop-sections';
 export { UserProfileHeroClient } from './components/user-profile-hero-client';
 export type { UserProfileHeroClientProps } from './components/user-profile-hero-client';
+export {
+  UserProfileSocialCountsProvider,
+  useUserProfileSocialCounts,
+} from './components/user-profile-social-counts-context';
+export type { UserProfileSocialCounts } from './components/user-profile-social-counts-context';
 export { LeftSidebar } from './components/left-sidebar';
 export { RightSidebar } from './components/right-sidebar';
 export { UserMenuVerticalRail } from './components/user-menu-vertical-rail';

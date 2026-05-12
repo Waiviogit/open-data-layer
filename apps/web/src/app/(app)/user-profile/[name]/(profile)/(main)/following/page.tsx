@@ -1,13 +1,9 @@
 import { Suspense } from 'react';
 
-import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
-import { getUserProfileQuery } from '@/modules/user-profile';
 import {
   getUserFollowingPageQuery,
-  getUserFollowingObjectsPageQuery,
   parseSubscriptionSortParam,
   UserSocialAccountList,
-  UserSocialTabs,
   USER_SOCIAL_PAGE_SIZE,
 } from '@/modules/user-social';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
@@ -29,23 +25,15 @@ export default async function UserProfileFollowingPage({
   const auth = createCookieAuthContextProvider();
   const user = await auth.getUser();
   const viewer = user?.username ?? null;
-  const locale = await getRequestLocale();
 
-  const [profile, initial, objectsHead] = await Promise.all([
-    getUserProfileQuery(decoded),
-    getUserFollowingPageQuery(decoded, { sort, skip: 0, limit: USER_SOCIAL_PAGE_SIZE }, viewer),
-    getUserFollowingObjectsPageQuery(decoded, { sort: 'weight', skip: 0, limit: 0 }, locale, viewer),
-  ]);
+  const initial = await getUserFollowingPageQuery(
+    decoded,
+    { sort, skip: 0, limit: USER_SOCIAL_PAGE_SIZE },
+    viewer,
+  );
 
   return (
     <div className="mx-auto max-w-container-content pb-section-y">
-      <UserSocialTabs
-        accountName={decoded}
-        active="following"
-        followerCount={profile?.followerCount ?? 0}
-        followingCount={profile?.followingCount ?? 0}
-        objectsCount={objectsHead.total}
-      />
       <Suspense fallback={<div className="h-40 animate-pulse rounded-card bg-surface/80" aria-hidden />}>
         <UserSocialAccountList
           key={sort}
