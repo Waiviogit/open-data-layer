@@ -283,6 +283,14 @@ Full standards: [`docs/standards/docs-standards.md`](docs/standards/docs-standar
 - **Generated registry docs** — `pnpm tsx scripts/gen-object-types-spec.ts` and `pnpm tsx scripts/gen-object-updates-spec.ts` write to `generated/` (gitignored). Source of truth: `OBJECT_TYPE_REGISTRY` and `UPDATE_REGISTRY` in `@opden-data-layer/core`; never edit generated files by hand.
 - **Code comments** — `@see` references use repo-root paths such as `docs/spec/data-model/flow.md`.
 
+## Web i18n locale catalogs (`apps/web`)
+
+- Message JSON lives under **`apps/web/src/i18n/locales/*.json`**. Files must be **strict UTF-8 without BOM**, valid JSON. GitHub Actions workflow **[`.github/workflows/verify.yml`](.github/workflows/verify.yml)** runs **`node scripts/verify-web-locale-json-utf8.cjs`** on every push and pull request.
+- When agents or scripts **read or write** these catalogs: use an **explicit UTF-8** API so the OS default encoding (e.g. Windows) never applies.
+  - **Python:** `open(path, encoding='utf-8')`, `Path.read_text(encoding='utf-8')`, `Path.write_text(..., encoding='utf-8')`.
+  - **Node:** read as **`Buffer`** and decode with **`TextDecoder('utf-8', { fatal: true })`** (avoid relying on helpers that substitute invalid UTF-8 bytes).
+- Local check: **`pnpm check:web-i18n-utf8`**.
+
 ## Restrictions
 
 - Never create apps or libs by hand — use Nx generators.
@@ -300,6 +308,7 @@ Full standards: [`docs/standards/docs-standards.md`](docs/standards/docs-standar
 - Never commit `generated/` (registry Markdown output) or edit those files by hand.
 - Never add **axios** or use it for HTTP — use **`fetch`** (e.g. in E2E tests).
 - Never violate `apps/web`-specific conventions — see [`apps/web/AGENTS.md`](apps/web/AGENTS.md).
+- Never save **`apps/web/src/i18n/locales/*.json`** in any encoding other than **strict UTF-8 without BOM** — see **Web i18n locale catalogs** above.
 
 ### Conflict resolution:
 

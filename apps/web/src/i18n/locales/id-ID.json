@@ -1254,7 +1254,7 @@
   "confirmed_by_email": "Transaksi ini harus dikonfirmasi melalui email:",
   "agree_to": "Saya menyetujui",
   "blocktrades_conditions": "Syarat dan Ketentuan Penggunaan Blocktrades.us",
-  "blocktrades_rules": "Saya berusia setidaknya 18 tahun dan tidak tinggal di Jurisdiksi yang Dilarang (New York dan Belarusia, Burma, Cote DвЂ™Ivoire (Ivory Coast), Kuba, Republik Demokratik Kongo, Iran, Irak, Lebanon, Liberia, Libya, Korea Utara, Sudan, Suriah, Somalia, dan Zimbabwe).",
+  "blocktrades_rules": "Saya berusia setidaknya 18 tahun dan tidak tinggal di Jurisdiksi yang Dilarang (New York dan Belarusia, Burma, Cote D’Ivoire (Ivory Coast), Kuba, Republik Demokratik Kongo, Iran, Irak, Lebanon, Liberia, Libya, Korea Utara, Sudan, Suriah, Somalia, dan Zimbabwe).",
   "email_change_request": "Permintaan perubahan email",
   "email_change_message": "Untuk mengganti alamat email, Anda harus terlebih dahulu tidak menghubungkan alamat email yang ada.",
   "unlink_request": "Permintaan tidak menghubungkan akan dikirim ke:",
@@ -2605,5 +2605,5 @@
   "drafts_last_updated": "Last updated",
   "drafts_untitled": "Untitled draft",
   "drafts_delete_one": "Delete",
-  "drafts_loading": "LoadingвЂ¦"
+  "drafts_loading": "Loading…"
 }

@@ -1,0 +1,19 @@
+name: Verify
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  web-locale-json-utf8:
+    name: Web i18n — locale JSON strict UTF-8
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Verify apps/web locale catalogs (strict UTF-8, no BOM, valid JSON)
+        run: node scripts/verify-web-locale-json-utf8.cjs

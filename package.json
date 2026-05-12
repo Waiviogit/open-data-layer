@@ -26,7 +26,8 @@
     "backfill:threads": "tsx --env-file=.env scripts/backfill-threads.ts",
     "backfill:user-object-powers": "tsx --env-file=.env scripts/backfill-user-object-powers.ts",
     "backfill:object-categories": "tsx --env-file=.env scripts/backfill-object-categories.ts",
-    "check:bundle-deps": "node scripts/check-bundle-deps.cjs"
+    "check:bundle-deps": "node scripts/check-bundle-deps.cjs",
+    "check:web-i18n-utf8": "node scripts/verify-web-locale-json-utf8.cjs"
   },
   "private": true,
   "packageManager": "pnpm@10.30.3",

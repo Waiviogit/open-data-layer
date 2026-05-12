@@ -35,7 +35,8 @@ index.ts         public barrel — other features import only from here
 
 ## i18n (custom — not `next-intl`)
 
-- Message catalogs: `src/i18n/locales/*.json`.
+- Message catalogs: `src/i18n/locales/*.json`. **Strict UTF-8, no BOM**, valid JSON — enforced in CI (`verify.yml` → `scripts/verify-web-locale-json-utf8.cjs`); local: `pnpm check:web-i18n-utf8`.
+- Scripts/agents that edit catalogs: **explicit UTF-8** on every read/write (Python `encoding='utf-8'`; Node **Buffer** + `TextDecoder('utf-8', { fatal: true })`). See repo root [`AGENTS.md`](../../AGENTS.md) **Web i18n locale catalogs**.
 - Server: **`getRequestLocale()`** (cookies + `Accept-Language`), **`loadMessages()`** for the active catalog.
 - Client: **`I18nProvider`** and **`useI18n()`** for `t(key)` lookups.
 - Locale is **not** a URL segment — do **not** introduce `[locale]` segment routing.
