@@ -3,6 +3,12 @@
 #
 # Usage:
 #   docker compose -f docker-compose.infra.yml up -d
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "3"
+
 services:
   postgres:
     image: postgis/postgis:18-3.6
@@ -15,6 +21,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
     restart: unless-stopped
+    logging: *default-logging
 
   redis:
     image: redis:8.6
@@ -23,6 +30,7 @@ services:
     volumes:
       - redis_data:/data
     restart: unless-stopped
+    logging: *default-logging
 
   ipfs:
     image: ipfs/kubo:v0.40.1
@@ -31,6 +39,7 @@ services:
     environment:
       - IPFS_PROFILE=server
     restart: unless-stopped
+    logging: *default-logging
 
 volumes:
   postgres_data:

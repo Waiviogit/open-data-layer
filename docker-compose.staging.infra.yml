@@ -1,6 +1,12 @@
 # VPS infra: Postgres, Redis, IPFS, nginx + Portainer CE (Docker UI, localhost-only).
 # Shared Docker network for the separate apps stack (operator-managed: CLI or Portainer).
 # Bootstrap: scripts/setup-vps.sh (creates external network, brings up infra then apps).
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "3"
+
 services:
   postgres:
     image: postgis/postgis:18-3.6
@@ -13,6 +19,7 @@ services:
     networks:
       - opden-data-layer-net
     restart: unless-stopped
+    logging: *default-logging
 
   redis:
     image: redis:8.6
@@ -21,6 +28,7 @@ services:
     networks:
       - opden-data-layer-net
     restart: unless-stopped
+    logging: *default-logging
 
   ipfs:
     image: ipfs/kubo:v0.40.1
@@ -31,6 +39,7 @@ services:
     networks:
       - opden-data-layer-net
     restart: unless-stopped
+    logging: *default-logging
 
   portainer:
     image: portainer/portainer-ce:2.33.6
@@ -42,6 +51,7 @@ services:
       - '127.0.0.1:9443:9443'
     networks:
       - opden-data-layer-net
+    logging: *default-logging
 
   nginx:
     image: jonasal/nginx-certbot:latest
@@ -57,6 +67,7 @@ services:
     networks:
       - opden-data-layer-net
     restart: unless-stopped
+    logging: *default-logging
 
 volumes:
   postgres_data:

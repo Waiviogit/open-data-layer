@@ -1,5 +1,11 @@
 # GHCR app images (production). `stack-watchdog` pulls/upgrades images periodically; optional Portainer.
 # Requires shared network `opden-data-layer-net` (created by scripts/setup-vps.sh).
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "3"
+
 services:
   migrator:
     image: ghcr.io/waiviogit/migrator:production
@@ -12,6 +18,7 @@ services:
     networks:
       - opden-data-layer-net
     restart: "no"
+    logging: *default-logging
 
   chain-indexer:
     image: ghcr.io/waiviogit/chain-indexer:production
@@ -29,6 +36,7 @@ services:
     networks:
       - opden-data-layer-net
     restart: unless-stopped
+    logging: *default-logging
 
   ipfs-gateway:
     image: ghcr.io/waiviogit/ipfs-gateway:production
@@ -41,6 +49,7 @@ services:
     networks:
       - opden-data-layer-net
     restart: unless-stopped
+    logging: *default-logging
 
   query-api:
     image: ghcr.io/waiviogit/query-api:production
@@ -60,6 +69,7 @@ services:
     networks:
       - opden-data-layer-net
     restart: unless-stopped
+    logging: *default-logging
 
   auth-api:
     image: ghcr.io/waiviogit/auth-api:production
@@ -78,6 +88,7 @@ services:
     networks:
       - opden-data-layer-net
     restart: unless-stopped
+    logging: *default-logging
 
   notifications:
     image: ghcr.io/waiviogit/notifications:production
@@ -90,6 +101,7 @@ services:
     networks:
       - opden-data-layer-net
     restart: unless-stopped
+    logging: *default-logging
 
   scheduler:
     image: ghcr.io/waiviogit/scheduler:production
@@ -106,6 +118,7 @@ services:
     networks:
       - opden-data-layer-net
     restart: unless-stopped
+    logging: *default-logging
 
   web:
     image: ghcr.io/waiviogit/web:production
@@ -120,6 +133,7 @@ services:
     networks:
       - opden-data-layer-net
     restart: unless-stopped
+    logging: *default-logging
 
   stack-watchdog:
     image: ghcr.io/waiviogit/stack-watchdog:production
@@ -137,6 +151,7 @@ services:
     networks:
       - opden-data-layer-net
     restart: unless-stopped
+    logging: *default-logging
 
 networks:
   opden-data-layer-net:

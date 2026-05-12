@@ -6,9 +6,14 @@
 # HTTP for ACME is handled by 00-acme.conf.
 #
 # Portainer CE is not proxied here — use https://127.0.0.1:9443 on the host (loopback only).
+#
+# Docker embedded DNS. Upstream DNS refresh needs resolver + upstream zone + server ... resolve (nginx >= 1.27.3 OSS).
+resolver 127.0.0.11 valid=10s ipv6=off;
 
 upstream web_app {
-    server web:3000;
+    zone web_app 64k;
+
+    server web:3000 resolve;
 }
 
 server {

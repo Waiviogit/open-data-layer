@@ -3,6 +3,12 @@
 #
 # For local host development (pnpm nx serve): use docker-compose.infra.yml instead.
 # Pre-built images: docker-compose.<env>.apps.yml (+ docker-compose.<env>.infra.yml on VPS)
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "3"
+
 services:
   postgres:
     image: postgis/postgis:18-3.6
@@ -13,6 +19,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
     restart: unless-stopped
+    logging: *default-logging
 
   migrator:
     build:
@@ -26,12 +33,14 @@ services:
     depends_on:
       - postgres
     restart: "no"
+    logging: *default-logging
 
   redis:
     image: redis:8.6
     volumes:
       - redis_data:/data
     restart: unless-stopped
+    logging: *default-logging
 
   ipfs:
     image: ipfs/kubo:v0.40.1
@@ -40,6 +49,7 @@ services:
     environment:
       - IPFS_PROFILE=server
     restart: unless-stopped
+    logging: *default-logging
 
   chain-indexer:
     build:
@@ -60,6 +70,7 @@ services:
       - redis
       - ipfs
     restart: unless-stopped
+    logging: *default-logging
 
   ipfs-gateway:
     build:
@@ -73,6 +84,7 @@ services:
     depends_on:
       - ipfs
     restart: unless-stopped
+    logging: *default-logging
 
   query-api:
     build:
@@ -94,6 +106,7 @@ services:
       - postgres
       - redis
     restart: unless-stopped
+    logging: *default-logging
 
   auth-api:
     build:
@@ -114,6 +127,7 @@ services:
       - postgres
       - redis
     restart: unless-stopped
+    logging: *default-logging
 
   notifications:
     build:
@@ -125,6 +139,7 @@ services:
       PORT: ${NOTIFICATIONS_PORT:-7200}
       JWT_SECRET: ${JWT_SECRET:-change-me-min-16-chars-for-dev}
     restart: unless-stopped
+    logging: *default-logging
 
   scheduler:
     build:
@@ -143,6 +158,7 @@ services:
       - postgres
       - redis
     restart: unless-stopped
+    logging: *default-logging
 
   web:
     build:
@@ -159,6 +175,7 @@ services:
       - query-api
       - auth-api
     restart: unless-stopped
+    logging: *default-logging
 
   nginx:
     image: jonasal/nginx-certbot:latest
@@ -179,6 +196,7 @@ services:
       - notifications
       - ipfs-gateway
     restart: unless-stopped
+    logging: *default-logging
 
 volumes:
   postgres_data:
