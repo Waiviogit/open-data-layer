@@ -18,7 +18,11 @@ export type { FeedTab } from './domain/feed-tab';
 export {
   BlogPostScreen,
   FeedList,
+  FeedListSkeleton,
   FeedPostGrid,
+  FeedPostsLoadingSkeleton,
+  FeedPostGridSkeleton,
+  FeedStoryCardSkeleton,
   PostInterceptModalShell,
   Story,
   StoryContainer,
@@ -26,7 +30,9 @@ export {
   StoryVoteButton,
 } from './presentation';
 export type {
+  FeedListSkeletonProps,
   FeedPostGridProps,
+  FeedPostGridSkeletonProps,
   StoryContainerProps,
   StoryPreviewTileProps,
   StoryVoteButtonProps,
