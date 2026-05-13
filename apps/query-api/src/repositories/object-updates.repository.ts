@@ -1,5 +1,6 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import type { Kysely } from 'kysely';
+import { sql } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
 import type {
@@ -10,7 +11,23 @@ import type {
 
 @Injectable()
 export class ObjectUpdatesRepository {
+  private readonly logger = new Logger(ObjectUpdatesRepository.name);
+
   constructor(@Inject(KYSELY) private readonly db: Kysely<Database>) {}
+
+  async countByObjectId(objectId: string): Promise<number> {
+    try {
+      const row = await this.db
+        .selectFrom('object_updates')
+        .where('object_id', '=', objectId)
+        .select(sql<number>`count(*)::int`.as('c'))
+        .executeTakeFirst();
+      return Number(row?.c ?? 0);
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return 0;
+    }
+  }
 
   async findByUpdateId(updateId: string) {
     return this.db

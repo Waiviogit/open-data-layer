@@ -18,6 +18,20 @@ export class UserObjectFollowsRepository {
 
   constructor(@Inject(KYSELY) private readonly db: Kysely<Database>) {}
 
+  async countByObjectId(objectId: string): Promise<number> {
+    try {
+      const row = await this.db
+        .selectFrom('user_object_follows')
+        .where('object_id', '=', objectId)
+        .select(sql<number>`count(*)::int`.as('c'))
+        .executeTakeFirst();
+      return Number(row?.c ?? 0);
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return 0;
+    }
+  }
+
   async countByAccount(account: string): Promise<number> {
     try {
       const row = await this.db

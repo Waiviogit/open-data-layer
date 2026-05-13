@@ -1,8 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
-import { AggregatedObjectRepository } from '../../repositories';
+import {
+  AggregatedObjectRepository,
+  ObjectUpdatesRepository,
+  UserObjectFollowsRepository,
+} from '../../repositories';
 import { GovernanceResolverService } from '../governance';
+import { ObjectProjectionService } from '../object-projection/object-projection.service';
+import type { ProjectedObjectWithCounts } from './projected-object-with-counts.types';
 
 export interface GetObjectByIdInput {
   objectId: string;
@@ -11,6 +16,8 @@ export interface GetObjectByIdInput {
   includeRejected?: boolean;
   /** Optional `X-Governance-Object-Id` value; merged with config governance when set. */
   governanceObjectIdFromHeader?: string;
+  /** Optional `X-Viewer` Hive account for projection authority / rating context. */
+  viewerAccount?: string;
 }
 
 @Injectable()
@@ -19,9 +26,12 @@ export class GetObjectByIdEndpoint {
     private readonly aggregatedObjectRepo: AggregatedObjectRepository,
     private readonly objectViewService: ObjectViewService,
     private readonly governanceResolver: GovernanceResolverService,
+    private readonly objectProjectionService: ObjectProjectionService,
+    private readonly userObjectFollowsRepo: UserObjectFollowsRepository,
+    private readonly objectUpdatesRepo: ObjectUpdatesRepository,
   ) {}
 
-  async execute(input: GetObjectByIdInput): Promise<ResolvedObjectView | null> {
+  async execute(input: GetObjectByIdInput): Promise<ProjectedObjectWithCounts | null> {
     const { objects, voterWaivPowers } = await this.aggregatedObjectRepo.loadByObjectIds([
       input.objectId,
     ]);
@@ -46,6 +56,27 @@ export class GetObjectByIdEndpoint {
       governance,
     });
 
-    return views[0] ?? null;
+    const view = views[0];
+    if (!view) {
+      return null;
+    }
+
+    const objectId = view.object_id;
+
+    const [projected, followers_count, updates_count] = await Promise.all([
+      this.objectProjectionService.project(view, {
+        locale: input.locale,
+        governanceObjectIdFromHeader: input.governanceObjectIdFromHeader,
+        viewerAccount: input.viewerAccount,
+      }),
+      this.userObjectFollowsRepo.countByObjectId(objectId),
+      this.objectUpdatesRepo.countByObjectId(objectId),
+    ]);
+
+    return {
+      ...projected,
+      followers_count,
+      updates_count,
+    };
   }
 }

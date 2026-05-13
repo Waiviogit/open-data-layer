@@ -58,7 +58,7 @@ export function ObjectPageClient({ model }: ObjectPageClientProps) {
       hero={
         <ObjectHero
           title={model.title}
-          objectId={model.objectId}
+          subtitleTitle={model.subtitleTitle}
           avatarUrl={model.avatarUrl}
           coverImageUrl={model.coverImageUrl}
           tagline={model.tagline}

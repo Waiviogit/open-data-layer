@@ -43,7 +43,10 @@ export type ObjectAboutPanelView = {
 
 export type ObjectPageViewModel = {
   objectId: string;
+  /** Hero heading from `name` update. */
   title: string;
+  /** Second line under name from `title` update (when present). */
+  subtitleTitle: string | null;
   /** Resolved image URL or null → placeholder */
   avatarUrl: string | null;
   /** Optional hero cover image URL */

@@ -30,17 +30,42 @@ function IconStar({ filled }: { filled: boolean }) {
   );
 }
 
+/** Max characters shown for About description preview in the left column. */
+const OBJECT_ABOUT_INTRO_PREVIEW_MAX_CHARS = 250;
+
+function truncateIntroForPreview(text: string): { display: string; isTruncated: boolean } {
+  const trimmed = text.trim();
+  if (trimmed.length === 0) {
+    return { display: '', isTruncated: false };
+  }
+  if (trimmed.length <= OBJECT_ABOUT_INTRO_PREVIEW_MAX_CHARS) {
+    return { display: trimmed, isTruncated: false };
+  }
+  const clipped = trimmed
+    .slice(0, OBJECT_ABOUT_INTRO_PREVIEW_MAX_CHARS)
+    .trimEnd();
+  return { display: `${clipped}...`, isTruncated: true };
+}
+
 export function ObjectAboutPanel({ panel, rating01To5 }: ObjectAboutPanelProps) {
   const { t } = useI18n();
   const displayRating =
     rating01To5 != null ? Math.min(5, Math.max(0, rating01To5)) : null;
 
+  const introRaw = panel.introParagraph?.trim() ?? '';
+  const intro = introRaw ? truncateIntroForPreview(panel.introParagraph) : null;
+
   return (
     <div className="flex min-w-0 flex-col gap-card-padding">
       <aside className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
         <p className="font-medium text-fg">{t('object_detail_about_heading')}</p>
-        {panel.introParagraph ? (
-          <p className="mt-2 leading-relaxed">{panel.introParagraph}</p>
+        {intro && intro.display ? (
+          <p
+            className="mt-2 leading-relaxed"
+            title={intro.isTruncated ? introRaw : undefined}
+          >
+            {intro.display}
+          </p>
         ) : null}
         <button
           type="button"

@@ -11,6 +11,11 @@ export const objectFields = {
     const v = o.fields['name'];
     return typeof v === 'string' ? v : undefined;
   },
+  /** Distinct from `name`: single-cardinality `title` update on the object. */
+  titleUpdate: (o: ProjectedObjectView): string | undefined => {
+    const v = o.fields['title'];
+    return typeof v === 'string' ? v : undefined;
+  },
   image: (o: ProjectedObjectView): string | undefined => {
     const v = o.fields['image'];
     return typeof v === 'string' && v.length > 0 ? v : undefined;

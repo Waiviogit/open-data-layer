@@ -1,56 +1,13 @@
 import { z } from 'zod';
 import { resolveObjectBodySchema } from '../domain/objects/schemas/resolve-object.schema';
+import { projectedObjectOpenApiSchema } from './projected-object.schema';
 import { registry } from './registry';
 
-const validityStatusSchema = z.enum(['VALID', 'REJECTED']);
-
-const resolvedUpdateSchema = registry.register(
-  'ResolvedUpdate',
-  z.object({
-    update_id: z.string(),
-    update_type: z.string(),
-    creator: z.string(),
-    locale: z.string().nullable().openapi({
-      description: 'BCP-47 tag from the update row; null means language-neutral.',
-    }),
-    created_at_unix: z.number().int(),
-    event_seq: z.string().openapi({
-      description:
-        'Monotonic sequence (bigint in domain). Represented as string when serialized to JSON.',
-    }),
-    value_text: z.string().nullable(),
-    value_geo: z.unknown().nullable().openapi({ description: 'GeoJSON from value_geo when present.' }),
-    value_json: z.unknown().nullable().openapi({ description: 'JSON value when present.' }),
-    validity_status: validityStatusSchema,
-    field_weight: z.number().nullable(),
-    rank_score: z.number().nullable(),
-    rank_context: z.string().nullable(),
-  }),
-);
-
-const resolvedFieldSchema = registry.register(
-  'ResolvedField',
-  z.object({
-    update_type: z.string(),
-    cardinality: z.enum(['single', 'multi']),
-    values: z.array(resolvedUpdateSchema),
-  }),
-);
-
-const resolvedObjectViewSchema = registry.register(
-  'ResolvedObjectView',
-  z.object({
-    object_id: z.string(),
-    object_type: z.string(),
-    creator: z.string(),
-    weight: z.number().nullable(),
-    meta_group_id: z.string().nullable(),
-    canonical: z.string().nullable().openapi({
-      description: 'Site URL from `objects_core.canonical` (`https://...` only), not from resolved fields.',
-    }),
-    fields: z.record(z.string(), resolvedFieldSchema).openapi({
-      description: 'Keyed by update_type. Only requested update_types are present.',
-    }),
+const projectedObjectWithCountsSchema = registry.register(
+  'ProjectedObjectWithCounts',
+  projectedObjectOpenApiSchema.extend({
+    followers_count: z.number().int(),
+    updates_count: z.number().int(),
   }),
 );
 
@@ -70,9 +27,9 @@ const resolveObjectRequestSchema = registry.register('ResolveObjectBody', resolv
 registry.registerPath({
   method: 'post',
   path: '/query/v1/objects/resolve',
-  summary: 'Resolve object view by id',
+  summary: 'Resolve projected object by id',
   description:
-    'Loads aggregated DB rows for `object_id`, applies `ObjectViewService` with the given `update_types` and locale (from headers). When `update_types` is omitted or empty, every update type present on the object is resolved. Only `objects_core` rows with `status = active` are loaded. Returns a `ResolvedObjectView` or 404 when the object does not exist.',
+    'Loads aggregated DB rows for `object_id`, resolves fields via `ObjectViewService`, projects to `ProjectedObject` JSON (IPFS URLs, ref summaries, authority flags). When `update_types` is omitted or empty, every update type present on the object is resolved. Only `objects_core` rows with `status = active` are loaded. Includes `followers_count` from `user_object_follows` and `updates_count` as total rows in `object_updates` for this object. Returns 404 when the object does not exist.',
   request: {
     headers: z.object({
       'accept-language': z.string().optional().openapi({
@@ -86,6 +43,10 @@ registry.registerPath({
         description:
           'Optional governance object ID; resolved and merged with platform governance from `GOVERNANCE_OBJECT_ID`.',
       }),
+      'x-viewer': z.string().optional().openapi({
+        description:
+          'Optional Hive account viewing the object; used for `hasAdministrativeAuthority`, `hasOwnershipAuthority`, and aggregate rating viewer vote.',
+      }),
     }),
     body: {
       content: {
@@ -98,10 +59,10 @@ registry.registerPath({
   },
   responses: {
     200: {
-      description: 'Resolved object view for the requested update types.',
+      description: 'Projected object with follower and update counts.',
       content: {
         'application/json': {
-          schema: resolvedObjectViewSchema,
+          schema: projectedObjectWithCountsSchema,
         },
       },
     },

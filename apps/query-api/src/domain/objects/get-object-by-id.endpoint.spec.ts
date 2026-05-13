@@ -1,7 +1,11 @@
 import type { GovernanceSnapshot, ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { DEFAULT_GOVERNANCE_SNAPSHOT, ObjectViewService } from '@opden-data-layer/objects-domain';
 import { AggregatedObjectRepository } from '../../repositories';
+import type { ObjectUpdatesRepository } from '../../repositories/object-updates.repository';
+import type { UserObjectFollowsRepository } from '../../repositories/user-object-follows.repository';
 import { GovernanceResolverService } from '../governance';
+import { ObjectProjectionService } from '../object-projection/object-projection.service';
+import type { ProjectedObject } from '../object-projection/projected-object.types';
 import { GetObjectByIdEndpoint } from './get-object-by-id.endpoint';
 
 function createEndpointDeps(overrides?: {
@@ -15,6 +19,18 @@ function createEndpointDeps(overrides?: {
   return { governanceResolver };
 }
 
+function projectedFixture(objectId: string): ProjectedObject {
+  return {
+    object_id: objectId,
+    object_type: 'x',
+    semantic_type: null,
+    weight: null,
+    fields: {},
+    hasAdministrativeAuthority: false,
+    hasOwnershipAuthority: false,
+  };
+}
+
 describe('GetObjectByIdEndpoint', () => {
   it('returns null when repository returns no object', async () => {
     const repo = {
@@ -26,9 +42,25 @@ describe('GetObjectByIdEndpoint', () => {
     const viewService = {
       resolve: jest.fn(),
     } as unknown as ObjectViewService;
+    const projectionService = {
+      project: jest.fn(),
+    } as unknown as ObjectProjectionService;
+    const followsRepo = {
+      countByObjectId: jest.fn(),
+    } as unknown as UserObjectFollowsRepository;
+    const updatesRepo = {
+      countByObjectId: jest.fn(),
+    } as unknown as ObjectUpdatesRepository;
     const { governanceResolver } = createEndpointDeps();
 
-    const endpoint = new GetObjectByIdEndpoint(repo, viewService, governanceResolver);
+    const endpoint = new GetObjectByIdEndpoint(
+      repo,
+      viewService,
+      governanceResolver,
+      projectionService,
+      followsRepo,
+      updatesRepo,
+    );
     const result = await endpoint.execute({
       objectId: 'missing',
       updateTypes: ['name'],
@@ -38,9 +70,10 @@ describe('GetObjectByIdEndpoint', () => {
     expect(result).toBeNull();
     expect(viewService.resolve).not.toHaveBeenCalled();
     expect(governanceResolver.resolveMergedForObjectView).not.toHaveBeenCalled();
+    expect(projectionService.project).not.toHaveBeenCalled();
   });
 
-  it('returns resolved view when object exists', async () => {
+  it('returns projected object with counts when object exists', async () => {
     const mockView: ResolvedObjectView = {
       object_id: 'o1',
       object_type: 'x',
@@ -66,17 +99,39 @@ describe('GetObjectByIdEndpoint', () => {
     const viewService = {
       resolve: jest.fn().mockReturnValue([mockView]),
     } as unknown as ObjectViewService;
+    const projected = projectedFixture('o1');
+    const projectionService = {
+      project: jest.fn().mockResolvedValue(projected),
+    } as unknown as ObjectProjectionService;
+    const followsRepo = {
+      countByObjectId: jest.fn().mockResolvedValue(7),
+    } as unknown as UserObjectFollowsRepository;
+    const updatesRepo = {
+      countByObjectId: jest.fn().mockResolvedValue(25),
+    } as unknown as ObjectUpdatesRepository;
     const { governanceResolver } = createEndpointDeps();
 
-    const endpoint = new GetObjectByIdEndpoint(repo, viewService, governanceResolver);
+    const endpoint = new GetObjectByIdEndpoint(
+      repo,
+      viewService,
+      governanceResolver,
+      projectionService,
+      followsRepo,
+      updatesRepo,
+    );
     const result = await endpoint.execute({
       objectId: 'o1',
       updateTypes: ['name'],
       locale: 'en-US',
       includeRejected: true,
+      viewerAccount: 'alice',
     });
 
-    expect(result).toEqual(mockView);
+    expect(result).toEqual({
+      ...projected,
+      followers_count: 7,
+      updates_count: 25,
+    });
     expect(governanceResolver.resolveMergedForObjectView).toHaveBeenCalledWith(undefined);
     expect(viewService.resolve).toHaveBeenCalledWith(
       expect.any(Array),
@@ -88,6 +143,13 @@ describe('GetObjectByIdEndpoint', () => {
         governance: DEFAULT_GOVERNANCE_SNAPSHOT,
       }),
     );
+    expect(projectionService.project).toHaveBeenCalledWith(mockView, {
+      locale: 'en-US',
+      governanceObjectIdFromHeader: undefined,
+      viewerAccount: 'alice',
+    });
+    expect(followsRepo.countByObjectId).toHaveBeenCalledWith('o1');
+    expect(updatesRepo.countByObjectId).toHaveBeenCalledWith('o1');
   });
 
   it('when updateTypes is empty, resolves all distinct update types from aggregated updates', async () => {
@@ -139,9 +201,25 @@ describe('GetObjectByIdEndpoint', () => {
     const viewService = {
       resolve: jest.fn().mockReturnValue([mockView]),
     } as unknown as ObjectViewService;
+    const projectionService = {
+      project: jest.fn().mockResolvedValue(projectedFixture('o1')),
+    } as unknown as ObjectProjectionService;
+    const followsRepo = {
+      countByObjectId: jest.fn().mockResolvedValue(0),
+    } as unknown as UserObjectFollowsRepository;
+    const updatesRepo = {
+      countByObjectId: jest.fn().mockResolvedValue(0),
+    } as unknown as ObjectUpdatesRepository;
     const { governanceResolver } = createEndpointDeps();
 
-    const endpoint = new GetObjectByIdEndpoint(repo, viewService, governanceResolver);
+    const endpoint = new GetObjectByIdEndpoint(
+      repo,
+      viewService,
+      governanceResolver,
+      projectionService,
+      followsRepo,
+      updatesRepo,
+    );
     await endpoint.execute({
       objectId: 'o1',
       updateTypes: [],
@@ -190,11 +268,27 @@ describe('GetObjectByIdEndpoint', () => {
     const viewService = {
       resolve: jest.fn().mockReturnValue([mockView]),
     } as unknown as ObjectViewService;
+    const projectionService = {
+      project: jest.fn().mockResolvedValue(projectedFixture('o1')),
+    } as unknown as ObjectProjectionService;
+    const followsRepo = {
+      countByObjectId: jest.fn().mockResolvedValue(0),
+    } as unknown as UserObjectFollowsRepository;
+    const updatesRepo = {
+      countByObjectId: jest.fn().mockResolvedValue(0),
+    } as unknown as ObjectUpdatesRepository;
     const { governanceResolver } = createEndpointDeps({
       resolveMerged: customGovernance,
     });
 
-    const endpoint = new GetObjectByIdEndpoint(repo, viewService, governanceResolver);
+    const endpoint = new GetObjectByIdEndpoint(
+      repo,
+      viewService,
+      governanceResolver,
+      projectionService,
+      followsRepo,
+      updatesRepo,
+    );
     await endpoint.execute({
       objectId: 'o1',
       updateTypes: ['name'],
@@ -237,9 +331,25 @@ describe('GetObjectByIdEndpoint', () => {
     const viewService = {
       resolve: jest.fn().mockReturnValue([mockView]),
     } as unknown as ObjectViewService;
+    const projectionService = {
+      project: jest.fn().mockResolvedValue(projectedFixture('o1')),
+    } as unknown as ObjectProjectionService;
+    const followsRepo = {
+      countByObjectId: jest.fn().mockResolvedValue(0),
+    } as unknown as UserObjectFollowsRepository;
+    const updatesRepo = {
+      countByObjectId: jest.fn().mockResolvedValue(0),
+    } as unknown as ObjectUpdatesRepository;
     const { governanceResolver } = createEndpointDeps();
 
-    const endpoint = new GetObjectByIdEndpoint(repo, viewService, governanceResolver);
+    const endpoint = new GetObjectByIdEndpoint(
+      repo,
+      viewService,
+      governanceResolver,
+      projectionService,
+      followsRepo,
+      updatesRepo,
+    );
     await endpoint.execute({
       objectId: 'o1',
       updateTypes: ['name'],
@@ -248,5 +358,58 @@ describe('GetObjectByIdEndpoint', () => {
     });
 
     expect(governanceResolver.resolveMergedForObjectView).toHaveBeenCalledWith('hdr-gov');
+    expect(projectionService.project).toHaveBeenCalledWith(
+      mockView,
+      expect.objectContaining({
+        governanceObjectIdFromHeader: 'hdr-gov',
+      }),
+    );
+  });
+
+  it('returns null when resolve yields no view', async () => {
+    const repo = {
+      loadByObjectIds: jest.fn().mockResolvedValue({
+        objects: [
+          {
+            core: { object_id: 'o1', object_type: 'x', creator: 'c' },
+            updates: [],
+            validity_votes: [],
+            authorities: [],
+          },
+        ],
+        voterWaivPowers: new Map(),
+      }),
+    } as unknown as AggregatedObjectRepository;
+    const viewService = {
+      resolve: jest.fn().mockReturnValue([]),
+    } as unknown as ObjectViewService;
+    const projectionService = {
+      project: jest.fn(),
+    } as unknown as ObjectProjectionService;
+    const followsRepo = {
+      countByObjectId: jest.fn(),
+    } as unknown as UserObjectFollowsRepository;
+    const updatesRepo = {
+      countByObjectId: jest.fn(),
+    } as unknown as ObjectUpdatesRepository;
+    const { governanceResolver } = createEndpointDeps();
+
+    const endpoint = new GetObjectByIdEndpoint(
+      repo,
+      viewService,
+      governanceResolver,
+      projectionService,
+      followsRepo,
+      updatesRepo,
+    );
+    const result = await endpoint.execute({
+      objectId: 'o1',
+      updateTypes: ['name'],
+      locale: 'en-US',
+    });
+
+    expect(result).toBeNull();
+    expect(projectionService.project).not.toHaveBeenCalled();
+    expect(followsRepo.countByObjectId).not.toHaveBeenCalled();
   });
 });
