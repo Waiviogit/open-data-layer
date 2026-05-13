@@ -1,10 +1,12 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { objectFields, type ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
 import type { SocialProjectedObjectView } from '@/modules/user-social/application/dto/user-social.dto';
 import { AVATAR_PLACEHOLDER_SRC, shouldUnoptimizeRemoteImage } from '@/shared/presentation';
+import { objectPagePath } from '@/shared/routes/object-page-path';
 
 const THUMB = 44;
 
@@ -18,33 +20,47 @@ export function UserSocialObjectRow({ object: o }: UserSocialObjectRowProps) {
   const img = objectFields.image(view);
   const weight = o.weight ?? null;
   const weightLabel = weight == null ? '—' : weight.toFixed(2);
+  const href = objectPagePath(o.object_id);
 
   return (
     <li className="flex items-center gap-3 border-b border-border py-3 last:border-b-0">
       <div className="shrink-0">
-        <span className="flex size-11 items-center justify-center overflow-hidden rounded-md border border-border bg-surface ring-1 ring-border/60">
-          {img ? (
-            <Image
-              src={img}
-              alt=""
-              width={THUMB}
-              height={THUMB}
-              className="size-full object-cover"
-              unoptimized={shouldUnoptimizeRemoteImage(img)}
-            />
-          ) : (
-            <Image
-              src={AVATAR_PLACEHOLDER_SRC}
-              alt=""
-              width={THUMB}
-              height={THUMB}
-              className="size-full object-cover"
-            />
-          )}
-        </span>
+        <Link
+          href={href}
+          prefetch={false}
+          className="inline-flex rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          aria-label={`View object: ${name}`}
+        >
+          <span className="flex size-11 items-center justify-center overflow-hidden rounded-md border border-border bg-surface ring-1 ring-border/60">
+            {img ? (
+              <Image
+                src={img}
+                alt=""
+                width={THUMB}
+                height={THUMB}
+                className="size-full object-cover"
+                unoptimized={shouldUnoptimizeRemoteImage(img)}
+              />
+            ) : (
+              <Image
+                src={AVATAR_PLACEHOLDER_SRC}
+                alt=""
+                width={THUMB}
+                height={THUMB}
+                className="size-full object-cover"
+              />
+            )}
+          </span>
+        </Link>
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate font-medium text-fg">{name}</p>
+        <Link
+          href={href}
+          prefetch={false}
+          className="block truncate font-medium text-fg underline-offset-2 hover:underline focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        >
+          {name}
+        </Link>
       </div>
       <span className="shrink-0 rounded-md border border-border bg-surface-control px-2 py-0.5 font-mono text-body-sm text-fg-secondary">
         {weightLabel}

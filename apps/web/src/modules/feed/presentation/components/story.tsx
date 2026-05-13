@@ -11,6 +11,7 @@ import {
   shouldUnoptimizeRemoteImage,
   UserAvatar,
 } from '@/shared/presentation';
+import { objectPagePath } from '@/shared/routes/object-page-path';
 
 import { objectFields } from '../../application/dto/object-fields';
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
@@ -229,30 +230,39 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
             {taggedObjects.map((o) => {
               const chipImage = objectFields.image(o);
               const chipName = objectFields.name(o);
+              const chipLabel = chipName ?? o.object_id;
               return (
-                <li key={o.object_id} className="list-none" title={chipName ?? o.object_id}>
-                  <span className="flex size-9 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-control ring-1 ring-border/60">
-                    {chipImage ? (
-                      <Image
-                        src={chipImage}
-                        alt=""
-                        className="size-full object-cover"
-                        width={36}
-                        height={36}
-                        sizes="36px"
-                        unoptimized={shouldUnoptimizeRemoteImage(chipImage)}
-                      />
-                    ) : (
-                      <Image
-                        src={AVATAR_PLACEHOLDER_SRC}
-                        alt=""
-                        className="size-full object-cover"
-                        width={36}
-                        height={36}
-                        sizes="36px"
-                      />
-                    )}
-                  </span>
+                <li key={o.object_id} className="list-none">
+                  <Link
+                    href={objectPagePath(o.object_id)}
+                    prefetch={false}
+                    title={chipLabel}
+                    aria-label={`View object: ${chipLabel}`}
+                    className="inline-flex rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  >
+                    <span className="flex size-9 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-control ring-1 ring-border/60">
+                      {chipImage ? (
+                        <Image
+                          src={chipImage}
+                          alt=""
+                          className="size-full object-cover"
+                          width={36}
+                          height={36}
+                          sizes="36px"
+                          unoptimized={shouldUnoptimizeRemoteImage(chipImage)}
+                        />
+                      ) : (
+                        <Image
+                          src={AVATAR_PLACEHOLDER_SRC}
+                          alt=""
+                          className="size-full object-cover"
+                          width={36}
+                          height={36}
+                          sizes="36px"
+                        />
+                      )}
+                    </span>
+                  </Link>
                 </li>
               );
             })}

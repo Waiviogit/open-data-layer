@@ -11,6 +11,16 @@ import type {
 
 import type { ProjectedObjectWithCountsView } from './object-resolve.types';
 
+/** Thousandths precision for hero weight badge (matches Waivio-style display). */
+const OBJECT_WEIGHT_DISPLAY_MAX_FRACTION_DIGITS = 3;
+
+function formatObjectWeightForDisplay(weight: number): string {
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: OBJECT_WEIGHT_DISPLAY_MAX_FRACTION_DIGITS,
+  }).format(weight);
+}
+
 const SWITCHER_KINDS = new Set<ObjectSwitcherKind>([
   'list',
   'page',
@@ -131,7 +141,9 @@ export function projectedObjectWithCountsToPageModel(
     kindLabel,
     tagline,
     displayWeightLabel:
-      api.weight != null && Number.isFinite(api.weight) ? String(api.weight) : null,
+      api.weight != null && Number.isFinite(api.weight)
+        ? formatObjectWeightForDisplay(api.weight)
+        : null,
     objectType: switcher,
     rating01To5: objectFields.ratingStars01To5(viewLike),
     primaryTabs: primaryTabs(api.updates_count, api.followers_count),

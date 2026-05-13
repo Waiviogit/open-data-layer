@@ -1,11 +1,13 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 
 import type { ProjectedObjectView } from '../../application/dto/object-fields';
 import { objectFields } from '../../application/dto/object-fields';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AVATAR_PLACEHOLDER_SRC, shouldUnoptimizeRemoteImage } from '@/shared/presentation';
+import { objectPagePath } from '@/shared/routes/object-page-path';
 
 const THUMB_SIZE = 80;
 
@@ -94,6 +96,8 @@ export function ObjectCard({ object: o }: ObjectCardProps) {
   const thumbUrl = objectFields.image(o);
   const name = objectFields.name(o);
   const description = objectFields.description(o);
+  const href = objectPagePath(o.object_id);
+  const titleLabel = name ?? o.object_id;
 
   return (
     <li className="relative list-none rounded-card border border-border bg-surface-control/40 p-card-padding shadow-whisper">
@@ -108,31 +112,44 @@ export function ObjectCard({ object: o }: ObjectCardProps) {
       </div>
       <div className="flex gap-3 pe-8">
         <div className="shrink-0">
-          <span className="flex size-20 items-center justify-center overflow-hidden rounded-md border border-border bg-surface ring-1 ring-border/60">
-            {thumbUrl ? (
-              <Image
-                src={thumbUrl}
-                alt=""
-                className="size-full object-cover"
-                width={THUMB_SIZE}
-                height={THUMB_SIZE}
-                sizes="80px"
-                unoptimized={shouldUnoptimizeRemoteImage(thumbUrl)}
-              />
-            ) : (
-              <Image
-                src={AVATAR_PLACEHOLDER_SRC}
-                alt=""
-                className="size-full object-cover"
-                width={THUMB_SIZE}
-                height={THUMB_SIZE}
-                sizes="80px"
-              />
-            )}
-          </span>
+          <Link
+            href={href}
+            prefetch={false}
+            className="inline-flex rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            aria-label={`View object: ${titleLabel}`}
+          >
+            <span className="flex size-20 items-center justify-center overflow-hidden rounded-md border border-border bg-surface ring-1 ring-border/60">
+              {thumbUrl ? (
+                <Image
+                  src={thumbUrl}
+                  alt=""
+                  className="size-full object-cover"
+                  width={THUMB_SIZE}
+                  height={THUMB_SIZE}
+                  sizes="80px"
+                  unoptimized={shouldUnoptimizeRemoteImage(thumbUrl)}
+                />
+              ) : (
+                <Image
+                  src={AVATAR_PLACEHOLDER_SRC}
+                  alt=""
+                  className="size-full object-cover"
+                  width={THUMB_SIZE}
+                  height={THUMB_SIZE}
+                  sizes="80px"
+                />
+              )}
+            </span>
+          </Link>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-weight-label text-body text-heading">{name ?? o.object_id}</p>
+          <Link
+            href={href}
+            prefetch={false}
+            className="inline-block max-w-full rounded-sm font-weight-label text-body text-heading underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            {titleLabel}
+          </Link>
           {subtitle ? <p className="mt-0.5 text-caption text-fg-secondary">{subtitle}</p> : null}
           <RatingRow rating01To5={objectFields.ratingStars01To5(o)} />
           {description ? (
