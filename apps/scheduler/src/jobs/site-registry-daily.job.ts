@@ -1,4 +1,4 @@
- import { Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import type { CronJobDefinition } from './cron-job.types';
 import { getSiteRegistryDailyRunnerForJob } from './site-registry-daily.runner';
 

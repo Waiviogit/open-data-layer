@@ -28,5 +28,26 @@ export default () => {
       fallbackOrigin: env.SITE_CANONICAL_FALLBACK_ORIGIN,
       dailyPageSize: env.SITE_CANONICAL_DAILY_PAGE_SIZE,
     },
+    currency: {
+      coinGecko: {
+        baseUrl: env.COINGECKO_API_BASE_URL,
+        apiKey: env.COINGECKO_API_KEY,
+        requestTimeoutMs: env.CURRENCY_EXTERNAL_REQUEST_TIMEOUT_MS,
+      },
+      exchangeRate: {
+        baseUrl: env.EXCHANGE_RATE_HOST_BASE_URL,
+        accessKey: env.EXCHANGE_RATE_ACCESS_KEY,
+        requestTimeoutMs: env.CURRENCY_EXTERNAL_REQUEST_TIMEOUT_MS,
+      },
+    },
+    hiveEngine: {
+      client: {
+        nodes: env.HIVE_ENGINE_NODES,
+        cachePrefix: 'scheduler:hive-engine',
+        cacheTtlSeconds: 1200,
+        maxResponseTimeMs: 8000,
+        urlRotationDb: 0,
+      },
+    },
   };
 };

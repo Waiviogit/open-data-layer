@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { HIVE_ENGINE_NODES } from '@opden-data-layer/clients';
+
+const DEFAULT_HIVE_ENGINE_NODES = [...HIVE_ENGINE_NODES];
 
 export const queryApiConfigSchema = z.object({
   REDIS_URI: z.string().optional().default('redis://localhost:6379'),
@@ -29,6 +32,28 @@ export const queryApiConfigSchema = z.object({
   HIVE_CACHE_TTL_SECONDS: z.coerce.number().optional(),
   HIVE_MAX_RESPONSE_TIME_MS: z.coerce.number().optional(),
   HIVE_URL_ROTATION_DB: z.coerce.number().optional(),
+  EXCHANGE_RATE_HOST_BASE_URL: z
+    .url()
+    .optional()
+    .default('https://api.exchangerate.host'),
+  EXCHANGE_RATE_ACCESS_KEY: z
+    .string()
+    .optional()
+    .transform((s) => (s?.trim() ? s.trim() : undefined)),
+  HIVE_ENGINE_NODES: z
+    .string()
+    .optional()
+    .transform((s) => {
+      if (!s || s.trim().length === 0) {
+        return [...DEFAULT_HIVE_ENGINE_NODES];
+      }
+      const parsed = s
+        .split(',')
+        .map((x) => x.trim())
+        .filter(Boolean);
+      return parsed.length > 0 ? parsed : [...DEFAULT_HIVE_ENGINE_NODES];
+    }),
+  CURRENCY_EXTERNAL_REQUEST_TIMEOUT_MS: z.coerce.number().optional().default(12_000),
 });
 
 export type QueryApiConfig = z.infer<typeof queryApiConfigSchema>;

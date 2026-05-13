@@ -16,6 +16,7 @@ One-off **data** migrations from Mongo export files into the ODL Postgres schema
 | `pnpm migrate:mongo-users` | User array JSON | `accounts_current` (Waivio columns), `user_metadata`, `user_notification_settings`, `user_referrals`, `user_post_bookmarks`, `user_object_follows` |
 | `pnpm migrate:mongo-subscriptions` | Subscription array JSON | `user_subscriptions` |
 | `pnpm migrate:mongo-mutes` | Mute / ignore pair array JSON | `user_account_mutes` |
+| `pnpm migrate:mongo-currency` | Up to three array JSON exports (CoinGecko stats, Hive Engine rates, fiat `currency_rates`) | `currency_statistics`, `hive_engine_rates`, `currency_rates` |
 
 ### Objects (wobjects)
 
@@ -50,6 +51,30 @@ pnpm migrate:mongo-mutes <path-to-mutes.json>
 ```
 
 Each document should follow legacy **`MutedUserSchema`**: `mutedBy` (who muted) and `userName` (muted account). These map to PostgreSQL `user_account_mutes` as `(muter, muted)`. Optional fallbacks: `muter`/`muted`, or `follower`/`following`. Requires schema migration that creates `user_account_mutes`.
+
+### Currency (legacy currency-service collections)
+
+Each input file must be a **top-level JSON array** of Mongo documents (same `stream-json` streaming format as objects/posts).
+
+```bash
+pnpm migrate:mongo-currency [--dry-run] [--only=stats,engine,fiat] \
+  [--stats=currency_statistics.json] [--engine=hive_engine_rates.json] [--fiat=currency_rates.json]
+```
+
+Or three positionals in order: `stats.json` `engine.json` `fiat.json` (omit files for buckets you are not importing). Field mapping is implemented in [`currency/index.ts`](currency/index.ts) (`hive` / `hive_dollar` blocks for statistics; Hive Engine WAIV-style rows; fiat columns or `quotes`).
+
+**Docker** (same pattern as other migrator one-shots: mount each export under `/data`, then pass those paths as positionals — **stats, engine, fiat**):
+
+```bash
+sudo docker compose -p apps --env-file .env -f docker-compose.staging.apps.yml --profile tools run --rm \
+  -v /home/waivio/currency_statistics.json:/data/currency_statistics.json \
+  -v /home/waivio/hive_engine_rates.json:/data/hive_engine_rates.json \
+  -v /home/waivio/currency_rates.json:/data/currency_rates.json \
+  migrator \
+  pnpm migrate:mongo-currency /data/currency_statistics.json /data/hive_engine_rates.json /data/currency_rates.json
+```
+
+Optionally add `--dry-run` or `--only=stats,engine,fiat` anywhere among the arguments. Host paths (`/home/waivio/...`) should match where your `mongoexport` JSON files live.
 
 **Breaking rename:** the old script name `migrate:mongo` was replaced by `migrate:mongo-objects`.
 

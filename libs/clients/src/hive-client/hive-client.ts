@@ -5,6 +5,7 @@ import {
   CommentStateType,
   HiveAccountType,
   HiveContentType,
+  HiveCurrentMedianHistoryPrice,
   HiveFollowRelation,
 } from './type';
 import { CommentOptionsOperation } from '@hiveio/dhive/lib/chain/operation';
@@ -229,6 +230,15 @@ export class HiveClient implements HiveClientInterface {
         CONDENSER_API.GET_FOLLOWING,
         [account, startFollowing, type, limit],
       )) ?? []
+    );
+  }
+
+  async getCurrentMedianHistoryPrice(): Promise<
+    HiveCurrentMedianHistoryPrice | undefined
+  > {
+    return this.hiveRequest<HiveCurrentMedianHistoryPrice>(
+      CONDENSER_API.GET_CURRENT_MEDIAN_HISTORY_PRICE,
+      [],
     );
   }
 

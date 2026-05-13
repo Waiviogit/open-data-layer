@@ -125,3 +125,9 @@ export type HiveFollowRelation = {
 export type HiveMutedAccount = {
   name: string;
 };
+
+/** Result of `condenser_api.get_current_median_history_price`. */
+export type HiveCurrentMedianHistoryPrice = {
+  base: string;
+  quote: string;
+};

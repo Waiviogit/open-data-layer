@@ -62,6 +62,9 @@ export interface OdlDatabase {
   object_categories_sync_queue: ObjectCategoriesSyncQueueTable;
   object_categories_related: ObjectCategoriesRelatedTable;
   object_categories_related_sync_queue: ObjectCategoriesRelatedSyncQueueTable;
+  currency_rates: CurrencyRatesTable;
+  currency_statistics: CurrencyStatisticsTable;
+  hive_engine_rates: HiveEngineRatesTable;
 }
 
 // ---------------------------------------------------------------------------
@@ -772,3 +775,70 @@ export interface UserPostDraftsTable {
 export type UserPostDraft = Selectable<UserPostDraftsTable>;
 export type NewUserPostDraft = Insertable<UserPostDraftsTable>;
 export type UserPostDraftUpdate = Updateable<UserPostDraftsTable>;
+
+// ---------------------------------------------------------------------------
+// currency_rates (FIAT; daily USD base — legacy currencies-service)
+// ---------------------------------------------------------------------------
+
+export interface CurrencyRatesTable {
+  id: Generated<bigint>;
+  base: string;
+  date: ColumnType<string, string | Date, string | Date>;
+  cad: number;
+  eur: number;
+  aud: number;
+  mxn: number;
+  gbp: number;
+  jpy: number;
+  cny: number;
+  rub: number;
+  uah: number;
+  chf: number;
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
+}
+
+export type CurrencyRatesRow = Selectable<CurrencyRatesTable>;
+export type NewCurrencyRatesRow = Insertable<CurrencyRatesTable>;
+export type CurrencyRatesRowUpdate = Updateable<CurrencyRatesTable>;
+
+// ---------------------------------------------------------------------------
+// currency_statistics (CoinGecko HIVE + HBD; 5m + daily aggregates)
+// ---------------------------------------------------------------------------
+
+export interface CurrencyStatisticsTable {
+  id: Generated<bigint>;
+  is_daily: boolean;
+  hive_usd: number;
+  hive_usd_24h_change: number;
+  hive_btc: number;
+  hive_btc_24h_change: number;
+  hbd_usd: number;
+  hbd_usd_24h_change: number;
+  hbd_btc: number;
+  hbd_btc_24h_change: number;
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
+}
+
+export type CurrencyStatisticsRow = Selectable<CurrencyStatisticsTable>;
+export type NewCurrencyStatisticsRow = Insertable<CurrencyStatisticsTable>;
+export type CurrencyStatisticsRowUpdate = Updateable<CurrencyStatisticsTable>;
+
+// ---------------------------------------------------------------------------
+// hive_engine_rates (WAIV vs HIVE/USD; 5m samples + daily aggregates)
+// ---------------------------------------------------------------------------
+
+export interface HiveEngineRatesTable {
+  id: Generated<bigint>;
+  base: string;
+  is_daily: boolean;
+  date: ColumnType<string, string | Date, string | Date>;
+  rate_hive: number;
+  rate_usd: number;
+  change_24h_hive: number | null;
+  change_24h_usd: number | null;
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
+}
+
+export type HiveEngineRatesRow = Selectable<HiveEngineRatesTable>;
+export type NewHiveEngineRatesRow = Insertable<HiveEngineRatesTable>;
+export type HiveEngineRatesRowUpdate = Updateable<HiveEngineRatesTable>;

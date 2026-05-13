@@ -23,6 +23,7 @@
     "migrate:mongo-subscriptions": "tsx --env-file=.env scripts/migrate-mongo-to-pg/subscriptions/index.ts",
     "migrate:mongo-wobject-subscriptions": "tsx --env-file=.env scripts/migrate-mongo-to-pg/wobject-subscriptions/index.ts",
     "migrate:mongo-mutes": "tsx --env-file=.env scripts/migrate-mongo-to-pg/mutes/index.ts",
+    "migrate:mongo-currency": "tsx --env-file=.env scripts/migrate-mongo-to-pg/currency/index.ts",
     "backfill:threads": "tsx --env-file=.env scripts/backfill-threads.ts",
     "backfill:user-object-powers": "tsx --env-file=.env scripts/backfill-user-object-powers.ts",
     "backfill:object-categories": "tsx --env-file=.env scripts/backfill-object-categories.ts",

@@ -7,6 +7,7 @@ import './feed.openapi';
 import './posts.openapi';
 import './user-post-drafts.openapi';
 import './categories.openapi';
+import './currency.openapi';
 
 export function generateOpenApiDocument() {
   const base = new OpenApiGeneratorV31(registry.definitions).generateDocument({
@@ -15,7 +16,7 @@ export function generateOpenApiDocument() {
       title: 'Opden Data Layer — Query API',
       version: '1.0.0',
       description:
-        'Read-side API: resolved object views, user profile reads, and authenticated post drafts.',
+        'Read-side API: resolved object views, user profile reads, currency market/engine/FX reads, and authenticated post drafts.',
     },
     servers: [{ url: '/' }],
   });

@@ -1,16 +1,20 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import {
-  HIVE_RPC_NODES,
+  ExchangeRateClientModule,
   HiveClientModule,
+  HiveEngineClientModule,
+  type HiveEngineClientModuleOptions,
+  HIVE_RPC_NODES,
   RedisClientModule,
 } from '@opden-data-layer/clients';
+import { CurrencyModule } from '@opden-data-layer/currency';
+import queryApiConfig from './config/query-api.config';
 import { ControllersModule } from './controllers';
-import { DatabaseModule } from './database';
-import { RepositoriesModule } from './repositories';
+import { DatabaseModule, KYSELY } from './database';
 import { GovernanceModule } from './domain/governance';
 import { ObjectProjectionModule } from './domain/object-projection';
-import queryApiConfig from './config/query-api.config';
+import { RepositoriesModule } from './repositories';
 
 @Module({
   imports: [
@@ -35,6 +39,23 @@ import queryApiConfig from './config/query-api.config';
       inject: [ConfigService],
     }),
     DatabaseModule,
+    CurrencyModule.register({ kyselyToken: KYSELY }),
+    ExchangeRateClientModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) =>
+        config.getOrThrow<{
+          baseUrl: string;
+          accessKey?: string;
+          requestTimeoutMs: number;
+        }>('currency.exchangeRate'),
+      inject: [ConfigService],
+    }),
+    HiveEngineClientModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService): HiveEngineClientModuleOptions =>
+        config.getOrThrow<HiveEngineClientModuleOptions>('hiveEngine.client'),
+      inject: [ConfigService],
+    }),
     RepositoriesModule,
     GovernanceModule,
     ObjectProjectionModule,
@@ -42,4 +63,3 @@ import queryApiConfig from './config/query-api.config';
   ],
 })
 export class MainModule {}
-

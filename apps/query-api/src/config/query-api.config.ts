@@ -37,5 +37,21 @@ export default () => {
         urlRotationDb: env.HIVE_URL_ROTATION_DB,
       },
     },
+    currency: {
+      exchangeRate: {
+        baseUrl: env.EXCHANGE_RATE_HOST_BASE_URL,
+        accessKey: env.EXCHANGE_RATE_ACCESS_KEY,
+        requestTimeoutMs: env.CURRENCY_EXTERNAL_REQUEST_TIMEOUT_MS,
+      },
+    },
+    hiveEngine: {
+      client: {
+        nodes: env.HIVE_ENGINE_NODES,
+        cachePrefix: 'query-api:hive-engine',
+        cacheTtlSeconds: 1200,
+        maxResponseTimeMs: 8000,
+        urlRotationDb: 0,
+      },
+    },
   };
 };

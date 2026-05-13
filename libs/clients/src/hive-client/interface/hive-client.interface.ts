@@ -4,6 +4,7 @@ import {
   CommentStateType,
   HiveAccountType,
   HiveContentType,
+  HiveCurrentMedianHistoryPrice,
   HiveFollowRelation,
   HiveMutedAccount,
 } from '../type';
@@ -52,6 +53,11 @@ export interface HiveClientInterface {
     type: 'blog',
     limit: number,
   ): Promise<HiveFollowRelation[]>;
+
+  /** Median historic base / quote (e.g. HBD per HIVE) from chain witnesses. */
+  getCurrentMedianHistoryPrice(): Promise<
+    HiveCurrentMedianHistoryPrice | undefined
+  >;
 
   getMutedList(observer: string): Promise<HiveMutedAccount[]>;
 }

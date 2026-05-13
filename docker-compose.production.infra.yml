@@ -10,6 +10,8 @@ x-logging: &default-logging
 services:
   postgres:
     image: postgis/postgis:18-3.6
+    ports:
+      - '127.0.0.1:5432:5432'
     environment:
       POSTGRES_DB: ${POSTGRES_DATABASE:-odl}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -23,6 +25,8 @@ services:
 
   redis:
     image: redis:8.6
+    ports:
+      - '127.0.0.1:6379:6379'
     volumes:
       - redis_data:/data
     networks:
@@ -32,6 +36,9 @@ services:
 
   ipfs:
     image: ipfs/kubo:v0.40.1
+    ports:
+      - '127.0.0.1:5001:5001'
+      - '127.0.0.1:8080:8080'
     volumes:
       - ipfs_data:/data/ipfs
     environment:

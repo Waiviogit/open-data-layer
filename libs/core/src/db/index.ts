@@ -98,5 +98,11 @@ export type {
   UserObjectPower,
   NewUserObjectPower,
   UserObjectPowerUpdate,
+  CurrencyRatesRow,
+  NewCurrencyRatesRow,
+  CurrencyStatisticsRow,
+  NewCurrencyStatisticsRow,
+  HiveEngineRatesRow,
+  NewHiveEngineRatesRow,
 } from './odl/tables';
 export type { OdlDatabase } from './odl/database';

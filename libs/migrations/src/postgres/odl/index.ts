@@ -7,6 +7,7 @@ import * as m00006 from './00006_user_metadata_shop_fields';
 import * as m00007 from './00007_user_object_powers';
 import * as m00008 from './00008_object_updates_rank_score';
 import * as m00009 from './00009_subscription_follow_timestamps';
+import * as m00010 from './00010_currency_tables';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/core OdlDatabase and docs/spec/data-model/schema.sql */
@@ -20,4 +21,5 @@ export const MIGRATIONS: Record<string, Migration> = {
   '00007_user_object_powers': { up: m00007.up, down: m00007.down },
   '00008_object_updates_rank_score': { up: m00008.up, down: m00008.down },
   '00009_subscription_follow_timestamps': { up: m00009.up, down: m00009.down },
+  '00010_currency_tables': { up: m00010.up, down: m00010.down },
 };

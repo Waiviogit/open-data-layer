@@ -10,42 +10,23 @@
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
-    "lib": [
-      "es2020",
-      "dom"
-    ],
+    "lib": ["es2020", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@opden-data-layer/core": [
-        "libs/core/src/index.ts"
-      ],
-      "@opden-data-layer/migrations": [
-        "libs/migrations/src/index.ts"
-      ],
-      "@opden-data-layer/clients": [
-        "libs/clients/src/index.ts"
-      ],
-      "@opden-data-layer/objects-domain": [
-        "libs/objects-domain/src/index.ts"
-      ],
-      "@opden-data-layer/site-canonical": [
-        "libs/site-canonical/src/index.ts"
-      ],
-      "@opden-data-layer/hive-processor": [
-        "libs/hive-processor/src/index.ts"
-      ],
-      "@opden-data-layer/hive-broadcast": [
-        "libs/hive-broadcast/src/index.ts"
-      ],
+      "@opden-data-layer/core": ["libs/core/src/index.ts"],
+      "@opden-data-layer/migrations": ["libs/migrations/src/index.ts"],
+      "@opden-data-layer/clients": ["libs/clients/src/index.ts"],
+      "@opden-data-layer/objects-domain": ["libs/objects-domain/src/index.ts"],
+      "@opden-data-layer/site-canonical": ["libs/site-canonical/src/index.ts"],
+      "@opden-data-layer/hive-processor": ["libs/hive-processor/src/index.ts"],
+      "@opden-data-layer/hive-broadcast": ["libs/hive-broadcast/src/index.ts"],
       "@opden-data-layer/hive-engine-processor": [
         "libs/hive-engine-processor/src/index.ts"
-      ]
+      ],
+      "@opden-data-layer/currency": ["libs/currency/src/index.ts"]
     }
   },
-  "exclude": [
-    "node_modules",
-    "tmp"
-  ]
+  "exclude": ["node_modules", "tmp"]
 }
