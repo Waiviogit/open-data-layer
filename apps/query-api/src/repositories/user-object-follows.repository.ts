@@ -42,7 +42,9 @@ export class UserObjectFollowsRepository {
       const qb = this.db
         .selectFrom('user_object_follows as uof')
         .innerJoin('objects_core as oc', (join) =>
-          join.onRef('uof.object_id', '=', 'oc.object_id'),
+          join
+            .onRef('uof.object_id', '=', 'oc.object_id')
+            .on('oc.status', '=', 'active'),
         )
         .where('uof.account', '=', account)
         .select([

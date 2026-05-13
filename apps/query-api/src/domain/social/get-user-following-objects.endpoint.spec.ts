@@ -58,6 +58,7 @@ describe('GetUserFollowingObjectsEndpoint', () => {
       canonical: null,
       canonical_creator: null,
       transaction_id: 'tx',
+      status: 'active',
       seq: 0,
     };
 

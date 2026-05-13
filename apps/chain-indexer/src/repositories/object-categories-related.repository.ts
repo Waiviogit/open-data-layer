@@ -120,10 +120,12 @@ export class ObjectCategoriesRelatedRepository {
           AND oa.account = ${account.trim()}
           AND oa.authority_type IN ('ownership', 'administrative')
           AND (${authorityTypeFilter})
+          AND oc.status = 'active'
       ),
       post_linked_objects AS (
         SELECT DISTINCT po.object_id
         FROM post_objects po
+        INNER JOIN objects_core oc ON oc.object_id = po.object_id AND oc.status = 'active'
         WHERE (${postPred})
       ),
       scoped_objects AS (
@@ -135,7 +137,7 @@ export class ObjectCategoriesRelatedRepository {
           UNION
           SELECT object_id FROM post_linked_objects
         ) obj
-        INNER JOIN objects_core oc ON oc.object_id = obj.object_id
+        INNER JOIN objects_core oc ON oc.object_id = obj.object_id AND oc.status = 'active'
         LEFT JOIN object_categories cat ON cat.object_id = obj.object_id
       ),
       exploded AS (
@@ -210,6 +212,7 @@ export class ObjectCategoriesRelatedRepository {
           cat.category_names
         FROM objects_core oc
         LEFT JOIN object_categories cat ON cat.object_id = oc.object_id
+        WHERE oc.status = 'active'
       ),
       exploded AS (
         SELECT

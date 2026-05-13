@@ -16,6 +16,7 @@ import type {
   Selectable,
   Updateable,
 } from 'kysely';
+import type { ObjectStatus } from '../../update-registry/updates/status';
 
 type JsonPrimitive = string | number | boolean | null;
 export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
@@ -84,6 +85,8 @@ export interface ObjectsCoreTable {
   /** Hive account of winning @en-US `description` author; used for bulk updates with site_registry. */
   canonical_creator: string | null;
   transaction_id: string;
+  /** DEFAULT `active`; optional on insert. */
+  status: ColumnType<ObjectStatus, ObjectStatus | undefined, ObjectStatus>;
   /** DEFAULT 0; optional on insert. */
   seq: ColumnType<number, number | undefined, number>;
 }

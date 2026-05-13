@@ -16,6 +16,7 @@ export class ObjectsCoreRepository {
     return this.db
       .selectFrom('objects_core')
       .where('object_id', '=', objectId)
+      .where('status', '=', 'active')
       .selectAll()
       .executeTakeFirst();
   }
@@ -63,7 +64,7 @@ export class ObjectsCoreRepository {
       query = query.where('seq', '=', criteria.seq);
     }
 
-    return query.selectAll().execute();
+    return query.where('status', '=', 'active').selectAll().execute();
   }
 
   async update(objectId: string, updateWith: ObjectsCoreUpdate) {

@@ -72,7 +72,7 @@ registry.registerPath({
   path: '/query/v1/objects/resolve',
   summary: 'Resolve object view by id',
   description:
-    'Loads aggregated DB rows for `object_id`, applies `ObjectViewService` with the given `update_types` and locale (from headers). When `update_types` is omitted or empty, every update type present on the object is resolved. Returns a `ResolvedObjectView` or 404 when the object does not exist.',
+    'Loads aggregated DB rows for `object_id`, applies `ObjectViewService` with the given `update_types` and locale (from headers). When `update_types` is omitted or empty, every update type present on the object is resolved. Only `objects_core` rows with `status = active` are loaded. Returns a `ResolvedObjectView` or 404 when the object does not exist.',
   request: {
     headers: z.object({
       'accept-language': z.string().optional().openapi({
@@ -114,7 +114,7 @@ registry.registerPath({
       },
     },
     404: {
-      description: 'No `objects_core` row for `object_id`, or object not returned by resolution.',
+      description: 'No `objects_core` row for `object_id`, non-active `status`, or object not returned by resolution.',
       content: {
         'application/json': {
           schema: notFoundSchema,

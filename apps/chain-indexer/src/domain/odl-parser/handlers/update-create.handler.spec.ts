@@ -4,6 +4,10 @@ import type { ObjectsCore } from '@opden-data-layer/core';
 import { UpdateCreateHandler } from './update-create.handler';
 import type { OdlEventContext } from '../odl-action-handler';
 import { GovernanceWriteGuard, WriteGuardRunner } from '../guards';
+import {
+  OBJECT_STATUS_CREATED_EVENT,
+  ObjectStatusCreatedEvent,
+} from '../object-status-created.event';
 
 describe('UpdateCreateHandler write guard', () => {
   const baseCtx: OdlEventContext = {
@@ -27,6 +31,20 @@ describe('UpdateCreateHandler write guard', () => {
     canonical: null,
     canonical_creator: null,
     transaction_id: 'tx0',
+    status: 'active',
+    seq: 0,
+  };
+
+  const placeCore: ObjectsCore = {
+    object_id: 'place1',
+    object_type: OBJECT_TYPES.PLACE,
+    creator: 'alice',
+    weight: null,
+    meta_group_id: null,
+    canonical: null,
+    canonical_creator: null,
+    transaction_id: 'tx0',
+    status: 'active',
     seq: 0,
   };
 
@@ -177,4 +195,54 @@ describe('UpdateCreateHandler write guard', () => {
     expect(createReplacingIfPresent).not.toHaveBeenCalled();
     expect(eventEmitter.emit).not.toHaveBeenCalled();
   });
+
+  it('emits OBJECT_STATUS_CREATED_EVENT after persisting a status update', async () => {
+      const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
+      const objectUpdatesRepository = {
+        createReplacingIfPresent,
+        findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
+        existsByObjectAndValue: jest.fn().mockResolvedValue(false),
+      } as unknown as import('../../../repositories').ObjectUpdatesRepository;
+      const objectsCoreRepository = {
+        findByObjectId: jest.fn().mockResolvedValue(placeCore),
+      } as unknown as import('../../../repositories').ObjectsCoreRepository;
+      const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
+      const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+      const handler = new UpdateCreateHandler(
+        objectUpdatesRepository,
+        objectsCoreRepository,
+        runner,
+        eventEmitter,
+      );
+
+      const ctx: OdlEventContext = {
+        ...baseCtx,
+        creator: 'alice',
+      };
+
+      await handler.handle(
+        {
+          object_id: 'place1',
+          update_type: 'status',
+          creator: 'alice',
+          transaction_id: 'tx1',
+          value_json: { title: 'unavailable', link: 'https://example.com/s' },
+        },
+        ctx,
+      );
+
+      expect(createReplacingIfPresent).toHaveBeenCalledTimes(1);
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        OBJECT_STATUS_CREATED_EVENT,
+        expect.objectContaining({
+          objectId: 'place1',
+          creator: 'alice',
+          status: 'unavailable',
+        }),
+      );
+      const statusEmit = (eventEmitter.emit as jest.Mock).mock.calls.find(
+        (c: unknown[]) => c[0] === OBJECT_STATUS_CREATED_EVENT,
+      );
+      expect(statusEmit?.[1]).toBeInstanceOf(ObjectStatusCreatedEvent);
+    });
 });

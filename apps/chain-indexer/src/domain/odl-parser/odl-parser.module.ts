@@ -3,6 +3,7 @@ import { ObjectsDomainModule } from '@opden-data-layer/objects-domain';
 import { GovernanceModule } from '../governance/governance.module';
 import { RepositoriesModule } from '../../repositories';
 import { ObjectCreateHandler } from './handlers/object-create.handler';
+import { ObjectStatusHandler } from './handlers/object-status.handler';
 import { UpdateCreateHandler } from './handlers/update-create.handler';
 import { UpdateVoteHandler } from './handlers/update-vote.handler';
 import { RankVoteHandler } from './handlers/rank-vote.handler';
@@ -35,6 +36,7 @@ import {
     },
     ObjectCreateHandler,
     UpdateCreateHandler,
+    ObjectStatusHandler,
     UpdateVoteHandler,
     RankVoteHandler,
     AuthorityHandler,

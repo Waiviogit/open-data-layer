@@ -55,6 +55,7 @@ describe('UpdateCreateHandler object_ref', () => {
     canonical: null,
     canonical_creator: null,
     transaction_id: 'tx0',
+    status: 'active',
     seq: 0,
   };
 

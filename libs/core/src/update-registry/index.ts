@@ -61,7 +61,11 @@ export { UPDATE_COMPARE_AT_PRICE } from './updates/compare-at-price';
 export { UPDATE_CONTENT_POSITION } from './updates/content-position';
 export { UPDATE_HTML_CONTENT } from './updates/html-content';
 export { UPDATE_CONTENT_VIEW } from './updates/content-view';
-export { UPDATE_STATUS } from './updates/status';
+export {
+  OBJECT_STATUS_VALUES,
+  type ObjectStatus,
+  UPDATE_STATUS,
+} from './updates/status';
 export { UPDATE_IMAGE } from './updates/image';
 export { UPDATE_TITLE } from './updates/title';
 export { UPDATE_DESCRIPTION } from './updates/description';

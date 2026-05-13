@@ -6,7 +6,7 @@ import {
   UPDATE_REGISTRY,
   UPDATE_TYPES,
 } from '@opden-data-layer/core';
-import type { JsonValue, NewObjectUpdate } from '@opden-data-layer/core';
+import type { JsonValue, NewObjectUpdate, ObjectStatus } from '@opden-data-layer/core';
 import { ObjectsCoreRepository, ObjectUpdatesRepository } from '../../../repositories';
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
 import { updateCreatePayloadSchema } from '../odl-envelope.schema';
@@ -31,6 +31,10 @@ import {
   CategoryMutatedEvent,
   CATEGORY_MUTATED_EVENT,
 } from '../category-mutated.event';
+import {
+  OBJECT_STATUS_CREATED_EVENT,
+  ObjectStatusCreatedEvent,
+} from '../object-status-created.event';
 
 @Injectable()
 export class UpdateCreateHandler implements OdlActionHandler {
@@ -188,6 +192,13 @@ export class UpdateCreateHandler implements OdlActionHandler {
     }
 
     await this.objectUpdatesRepository.createReplacingIfPresent(replaceUpdateId, row);
+    if (update_type === UPDATE_TYPES.STATUS) {
+      const statusPayload = valueResult.data as { title: ObjectStatus; link: string };
+      this.eventEmitter.emit(
+        OBJECT_STATUS_CREATED_EVENT,
+        new ObjectStatusCreatedEvent(object_id, ctx.creator, statusPayload.title),
+      );
+    }
     if (update_type === UPDATE_TYPES.CATEGORY) {
       this.eventEmitter.emit(CATEGORY_MUTATED_EVENT, new CategoryMutatedEvent(object_id));
     }

@@ -44,6 +44,7 @@ export class AggregatedObjectRepository {
         this.db
           .selectFrom('objects_core')
           .where('object_id', 'in', objectIds)
+          .where('status', '=', 'active')
           .selectAll()
           .execute(),
         this.db

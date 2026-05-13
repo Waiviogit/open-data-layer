@@ -20,7 +20,7 @@ Related files:
 
 | Table                | Role                                                                                                                                                   |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **objects_core**     | Slim identity and metadata per object. `canonical` is an optional normalized name for search/sort. `seq` incremented on every mutation.                                                                            |
+| **objects_core**     | Slim identity and metadata per object. `canonical` is an optional normalized name for search/sort. `status` is lifecycle visibility (`active` default); query-api reads only `active` rows (see [object status](../../apps/chain-indexer/spec/object-status.md)). `seq` incremented on every mutation. |
 | **object_updates**   | One row per active update. FK to objects_core ON DELETE CASCADE. Holds value (text/geo/json), plus `search_vector` (tsvector) and PostGIS `value_geo`. |
 | **validity_votes**   | One row per validity vote. FK to object_updates ON DELETE CASCADE — replacing an update deletes its votes automatically.                               |
 | **rank_votes**       | One row per rank vote. Same CASCADE. rank 0..10000 enforced by CHECK.                                                                                  |
@@ -43,6 +43,7 @@ erDiagram
     text object_type
     text creator
     text canonical
+    text status
     bigint seq
   }
 

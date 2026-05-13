@@ -15,6 +15,7 @@ function makeCore(objectId: string, creator = 'alice', canonical: string | null 
     canonical,
     canonical_creator: null,
     transaction_id: 'tx1',
+    status: 'active',
     seq: 1,
   };
 }
