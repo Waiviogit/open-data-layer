@@ -4,6 +4,11 @@ on:
   push:
   pull_request:
 
+# Opt into Node 24 for JavaScript actions (e.g. actions/checkout) until Node 24 is the runner default.
+# See https://docs.github.com/en/actions/reference/workflows-and-actions/metadata-syntax#runs-for-javascript-actions
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   web-locale-json-utf8:
     name: Web i18n — locale JSON strict UTF-8
@@ -13,7 +18,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: '24'
 
       - name: Verify apps/web locale catalogs (strict UTF-8, no BOM, valid JSON)
         run: node scripts/verify-web-locale-json-utf8.cjs

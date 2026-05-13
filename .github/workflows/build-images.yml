@@ -38,6 +38,8 @@ permissions:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAMESPACE: waiviogit
+  # Run JS actions on Node 24 (actions still declaring `runs.using: node20` use 24 when forced).
+  # https://docs.github.com/en/actions/reference/workflows-and-actions/metadata-syntax#runs-for-javascript-actions
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -84,7 +86,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: '24'
           cache: pnpm
 
       - name: Install dependencies
@@ -183,7 +185,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: '24'
           cache: pnpm
 
       - name: Install dependencies
