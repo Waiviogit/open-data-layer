@@ -39,7 +39,7 @@ import { RepositoriesModule } from './repositories';
       inject: [ConfigService],
     }),
     DatabaseModule,
-    CurrencyModule.register({ kyselyToken: KYSELY }),
+    CurrencyModule.register({ kyselyToken: KYSELY, includeCollectService: false }),
     ExchangeRateClientModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) =>

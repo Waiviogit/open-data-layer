@@ -30,48 +30,53 @@ import { SiteRegistryDailyRunner } from '../jobs/site-registry-daily.runner';
       maxResponseTimeMs: 8000,
       urlRotationDb: 0,
     }),
-    CurrencyModule.register({ kyselyToken: KYSELY }),
-    CoinGeckoClientModule.forRootAsync({
-      useFactory: (config: ConfigService) => ({
-        baseUrl: config.get<string>(
-          'currency.coinGecko.baseUrl',
-          'https://api.coingecko.com/api/v3',
-        ),
-        apiKey: config.get<string | undefined>('currency.coinGecko.apiKey'),
-        requestTimeoutMs: config.get<number>(
-          'currency.coinGecko.requestTimeoutMs',
-          12_000,
-        ),
-      }),
-      inject: [ConfigService],
-    }),
-    ExchangeRateClientModule.forRootAsync({
-      useFactory: (config: ConfigService) => ({
-        baseUrl: config.get<string>(
-          'currency.exchangeRate.baseUrl',
-          'https://api.exchangerate.host',
-        ),
-        accessKey: config.get<string | undefined>(
-          'currency.exchangeRate.accessKey',
-        ),
-        requestTimeoutMs: config.get<number>(
-          'currency.exchangeRate.requestTimeoutMs',
-          12_000,
-        ),
-      }),
-      inject: [ConfigService],
-    }),
-    HiveEngineClientModule.forRootAsync({
-      useFactory: (config: ConfigService): HiveEngineClientModuleOptions => {
-        const hive = config.get<HiveEngineClientModuleOptions | undefined>(
-          'hiveEngine.client',
-        );
-        if (!hive?.nodes?.length) {
-          throw new Error('scheduler: hiveEngine.client.nodes is missing or empty');
-        }
-        return hive;
-      },
-      inject: [ConfigService],
+    CurrencyModule.register({
+      kyselyToken: KYSELY,
+      includeCollectService: true,
+      imports: [
+        CoinGeckoClientModule.forRootAsync({
+          useFactory: (config: ConfigService) => ({
+            baseUrl: config.get<string>(
+              'currency.coinGecko.baseUrl',
+              'https://api.coingecko.com/api/v3',
+            ),
+            apiKey: config.get<string | undefined>('currency.coinGecko.apiKey'),
+            requestTimeoutMs: config.get<number>(
+              'currency.coinGecko.requestTimeoutMs',
+              12_000,
+            ),
+          }),
+          inject: [ConfigService],
+        }),
+        ExchangeRateClientModule.forRootAsync({
+          useFactory: (config: ConfigService) => ({
+            baseUrl: config.get<string>(
+              'currency.exchangeRate.baseUrl',
+              'https://api.exchangerate.host',
+            ),
+            accessKey: config.get<string | undefined>(
+              'currency.exchangeRate.accessKey',
+            ),
+            requestTimeoutMs: config.get<number>(
+              'currency.exchangeRate.requestTimeoutMs',
+              12_000,
+            ),
+          }),
+          inject: [ConfigService],
+        }),
+        HiveEngineClientModule.forRootAsync({
+          useFactory: (config: ConfigService): HiveEngineClientModuleOptions => {
+            const hive = config.get<HiveEngineClientModuleOptions | undefined>(
+              'hiveEngine.client',
+            );
+            if (!hive?.nodes?.length) {
+              throw new Error('scheduler: hiveEngine.client.nodes is missing or empty');
+            }
+            return hive;
+          },
+          inject: [ConfigService],
+        }),
+      ],
     }),
     RedisClientModule.forRootAsync({
       useFactory: (config: ConfigService) => ({
