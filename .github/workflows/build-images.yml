@@ -3,6 +3,10 @@
 # - **Apps** (comma-separated): build only those images; ignores Nx affected and rebuild all.
 # - **Rebuild all**: full matrix when Apps is empty.
 # - Otherwise: Nx affected.
+# - If the checked-out **HEAD** equals the affected **base** ref (common after pushing to
+#   `staging`/`master` and running this workflow on that tip), Nx affected is empty; the job
+#   then builds every app that has `docker-image` (same allowlist filter), so manual staging
+#   builds still produce images.
 # Nx affected base: **staging** images → `origin/staging`; **production** → `origin/master`.
 name: Build and push Docker images
 
@@ -124,7 +128,14 @@ jobs:
             exit 0
           fi
           BASE="${{ steps.base.outputs.base }}"
-          RAW="$(pnpm exec nx show projects --affected --type app --withTarget docker-image --base "$BASE" --head HEAD | tr -d '\r' | grep -v '^$' || true)"
+          BASE_SHA="$(git rev-parse "${BASE}^{commit}" 2>/dev/null || echo '')"
+          HEAD_SHA="$(git rev-parse 'HEAD^{commit}')"
+          if [ -n "$BASE_SHA" ] && [ "$BASE_SHA" = "$HEAD_SHA" ]; then
+            echo "::notice::HEAD equals affected base (${BASE}); Nx affected would be empty — building all apps with docker-image."
+            RAW="$(pnpm exec nx show projects --type app --withTarget docker-image | tr -d '\r' | grep -v '^$' || true)"
+          else
+            RAW="$(pnpm exec nx show projects --affected --type app --withTarget docker-image --base "$BASE" --head HEAD | tr -d '\r' | grep -v '^$' || true)"
+          fi
           if [ -z "$RAW" ]; then
             printf '%s\n' 'matrix=[]' >> "$GITHUB_OUTPUT"
             printf '%s\n' 'has_matrix=false' >> "$GITHUB_OUTPUT"
