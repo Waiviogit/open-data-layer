@@ -2,6 +2,8 @@
 
 NestJS sidecar for the VPS **`apps`** Compose stack. Every **5 minutes** it runs **`docker compose pull`** on configured services (long-running app containers plus **`migrator`** and **`stack-watchdog`** itself), then **`docker compose up -d --remove-orphans`** on **long-running services only** — so new GHCR digests roll out without pulling Komodo/Portainer automation.
 
+Once per day (cron **`0 3 * * *`**, 03:00 in the container’s local time — usually UTC) it runs **`docker image prune -a -f`** to drop **unused** images (not referenced by any container), reclaims disk from old image layers after pulls.
+
 ## Scope
 
 - **One host = one `DEPLOY_ENV`**: `staging` or `production`, matching `docker-compose.${DEPLOY_ENV}.apps.yml` on disk (`INSTALL_DIR`).

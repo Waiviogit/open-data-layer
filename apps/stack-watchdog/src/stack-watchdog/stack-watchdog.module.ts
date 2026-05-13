@@ -6,12 +6,14 @@ import {
   posixInstallRoot,
 } from './apps-stack-sync.service';
 import { DockerComposeRunnerService } from './docker-compose-runner.service';
+import { DockerImagePruneService } from './docker-image-prune.service';
 import { StackWatchdogCronService } from './stack-watchdog-cron.service';
 
 @Module({
   providers: [
     DockerComposeRunnerService,
     AppsStackSyncService,
+    DockerImagePruneService,
     StackWatchdogCronService,
   ],
 })
