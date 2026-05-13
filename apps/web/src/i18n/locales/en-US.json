@@ -2772,5 +2772,20 @@
   "user_profile_recipe": "Recipe",
   "user_profile_not_found_title": "Profile not found",
   "user_profile_not_found_body": "This account does not exist or could not be loaded.",
-  "user_profile_back_home": "Back to home"
+  "user_profile_back_home": "Back to home",
+  "object_detail_follow": "Follow",
+  "object_detail_following": "Following",
+  "object_detail_edit": "Edit",
+  "object_detail_view": "View",
+  "object_detail_rating": "Rating",
+  "object_detail_favorites_add": "Add to favorites",
+  "object_detail_favorites_remove": "Remove from favorites",
+  "object_detail_primary_nav_aria": "Object sections",
+  "object_detail_feed_sub_nav_aria": "Reviews feed mode",
+  "object_detail_about_heading": "About",
+  "object_detail_description_button": "Description",
+  "object_detail_overall_rating": "Overall",
+  "object_detail_pros_label": "Pros",
+  "object_detail_gallery_preview": "Gallery preview",
+  "object_detail_hours_heading": "Hours"
 }
