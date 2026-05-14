@@ -1,3 +1,5 @@
+import type { ProjectedMenuItem } from './projected-menu-item.types';
+
 /** Logical switcher kinds aligned with legacy `wobj-switcher-by-type.md`. */
 export type ObjectSwitcherKind =
   | 'list'
@@ -31,15 +33,71 @@ export type ObjectFeedSubTabView = {
   label: string;
 };
 
-/** Static left-column blocks (About, ratings recap, gallery thumbs, hours). */
-export type ObjectAboutPanelView = {
-  introParagraph: string;
-  prosTags?: string[];
-  galleryThumbUrls?: string[];
-  hoursLines?: string[];
-  /** Review count shown next to overall rating (e.g. 2 → "(2)"). */
-  overallReviewCount?: number;
-};
+/** Ordered blocks for the left rail (legacy `ObjectInfo` stack). */
+export type ObjectLeftRailBlock =
+  | {
+      kind: 'menuItems';
+      headingLabel: string;
+      items: ProjectedMenuItem[];
+    }
+  | {
+      kind: 'description';
+      headingLabel: string;
+      text: string;
+    }
+  | {
+      kind: 'rating';
+      headingLabel: string;
+      rating01To5: number;
+      /** Not projected yet — reserved for parity with legacy "(n)". */
+      reviewCount?: number;
+    }
+  | {
+      kind: 'tags';
+      headingLabel: string;
+      labels: string[];
+    }
+  | {
+      kind: 'gallery';
+      headingLabel: string;
+      urls: string[];
+    }
+  | {
+      kind: 'price';
+      headingLabel: string;
+      text: string;
+    }
+  | {
+      kind: 'workHours';
+      headingLabel: string;
+      lines: string[];
+    }
+  | {
+      kind: 'address';
+      headingLabel: string;
+      text: string;
+    }
+  | {
+      kind: 'geo';
+      headingLabel: string;
+      latitude: number;
+      longitude: number;
+    }
+  | {
+      kind: 'websites';
+      headingLabel: string;
+      entries: { title: string; link: string }[];
+    }
+  | {
+      kind: 'phones';
+      headingLabel: string;
+      numbers: string[];
+    }
+  | {
+      kind: 'email';
+      headingLabel: string;
+      address: string;
+    };
 
 export type ObjectPageViewModel = {
   objectId: string;
@@ -61,7 +119,8 @@ export type ObjectPageViewModel = {
   rating01To5: number | null;
   primaryTabs: ObjectPrimaryTabView[];
   feedSubTabs: ObjectFeedSubTabView[];
-  aboutPanel: ObjectAboutPanelView;
+  /** Legacy-order left column blocks derived from projected fields. */
+  leftRailBlocks: ObjectLeftRailBlock[];
   rightFeatured: ObjectSidebarMiniCardView[];
   rightRelated: ObjectSidebarMiniCardView[];
   rightSimilar: ObjectSidebarMiniCardView[];

@@ -1,6 +1,6 @@
 'use client';
 
 export {
-  ObjectAboutPanel as ObjectInfo,
-  type ObjectAboutPanelProps as ObjectInfoProps,
-} from './object-about-panel';
+  ObjectLeftRailPanel as ObjectInfo,
+  type ObjectLeftRailPanelProps as ObjectInfoProps,
+} from './object-left-rail-panel';

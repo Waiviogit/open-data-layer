@@ -1,9 +1,10 @@
-import type {
-  ObjectAboutPanelView,
-  ObjectFeedSubTabView,
-  ObjectPageViewModel,
-  ObjectPrimaryTabView,
-  ObjectSidebarMiniCardView,
+import {
+  projectedObjectWithCountsToPageModel,
+  type ObjectFeedSubTabView,
+  type ObjectPageViewModel,
+  type ObjectPrimaryTabView,
+  type ObjectSidebarMiniCardView,
+  type ProjectedObjectWithCountsView,
 } from '@/modules/object';
 
 export const DEMO_OBJECT_IDS = new Set(['demo-shop', 'demo-newsfeed']);
@@ -25,81 +26,121 @@ function miniCard(id: string, title: string): ObjectSidebarMiniCardView {
   return { id, title, imageSrc: null };
 }
 
-function defaultAbout(): ObjectAboutPanelView {
+function stubRights(): Pick<
+  ObjectPageViewModel,
+  'rightFeatured' | 'rightRelated' | 'rightSimilar'
+> {
   return {
-    introParagraph: '',
-    prosTags: [],
-    galleryThumbUrls: [],
-    hoursLines: [],
-    overallReviewCount: undefined,
-  };
-}
-
-const MOCK_OBJECTS: Record<string, ObjectPageViewModel> = {
-  'demo-shop': {
-    objectId: 'demo-shop',
-    title: 'Tolon Accesorios C.A.',
-    subtitleTitle: 'Phone accessories · repairs · same-day service',
-    avatarUrl: null,
-    coverImageUrl: null,
-    kindLabel: 'shop',
-    tagline: 'Cell phone accessory store',
-    displayWeightLabel: '178.98',
-    objectType: 'shop',
-    rating01To5: 4,
-    primaryTabs: MOCK_PRIMARY_TABS,
-    feedSubTabs: MOCK_FEED_SUB_TABS,
-    aboutPanel: {
-      introParagraph:
-        'Tolon Accesorios C.A. offers phone cases, chargers, and repairs with same-day service for common models. Mock description for layout parity.',
-      prosTags: ['hbd'],
-      galleryThumbUrls: [],
-      hoursLines: [
-        'Monday — 9:00 AM–7:00 PM',
-        'Tuesday — 9:00 AM–7:00 PM',
-        'Wednesday — 9:00 AM–7:00 PM',
-        'Thursday — 9:00 AM–7:00 PM',
-        'Friday — 9:00 AM–8:00 PM',
-        'Saturday — 10:00 AM–6:00 PM',
-        'Sunday — Closed',
-      ],
-      overallReviewCount: 2,
-    },
     rightFeatured: [
       miniCard('e1', 'Expert One'),
       miniCard('e2', 'Expert Two'),
       miniCard('e3', 'Expert Three'),
     ],
-    rightRelated: [
-      miniCard('n1', 'Nearby Shop A'),
-      miniCard('n2', 'Nearby Shop B'),
-    ],
+    rightRelated: [miniCard('n1', 'Nearby Shop A'), miniCard('n2', 'Nearby Shop B')],
     rightSimilar: [miniCard('s1', 'Similar venue')],
-  },
-  'demo-newsfeed': {
-    objectId: 'demo-newsfeed',
-    title: 'City Pulse Desk',
-    subtitleTitle: null,
-    avatarUrl: null,
-    coverImageUrl: null,
-    kindLabel: 'newsfeed',
-    tagline: null,
-    displayWeightLabel: null,
-    objectType: 'newsfeed',
-    rating01To5: null,
-    primaryTabs: MOCK_PRIMARY_TABS,
-    feedSubTabs: MOCK_FEED_SUB_TABS,
-    aboutPanel: {
-      ...defaultAbout(),
-      introParagraph:
-        'News digest placeholder — aggregated headlines will appear here when wired to the API.',
+  };
+}
+
+const DEMO_SHOP_API: ProjectedObjectWithCountsView = {
+  object_id: 'demo-shop',
+  object_type: 'shop',
+  semantic_type: null,
+  weight: 178.98,
+  hasAdministrativeAuthority: false,
+  hasOwnershipAuthority: false,
+  fields: {
+    name: 'Tolon Accesorios C.A.',
+    title: 'Phone accessories · repairs · same-day service',
+    description:
+      'Tolon Accesorios C.A. offers phone cases, chargers, and repairs with same-day service for common models. Mock description for layout parity.',
+    aggregateRating: { averageRating: 8000, userRating: null },
+    tagCategoryItem: [{ value: 'hbd', category: 'topics' }],
+    workHours: [
+      'Monday — 9:00 AM–7:00 PM',
+      'Tuesday — 9:00 AM–7:00 PM',
+      'Wednesday — 9:00 AM–7:00 PM',
+      'Thursday — 9:00 AM–7:00 PM',
+      'Friday — 9:00 AM–8:00 PM',
+      'Saturday — 10:00 AM–6:00 PM',
+      'Sunday — Closed',
+    ].join('\n'),
+    menuItem: [
+      {
+        title: 'Shop catalog',
+        style: 'default',
+        link_to_web: 'https://example.com/catalog',
+      },
+      {
+        title: 'Repairs info',
+        style: 'highlight',
+        link_to_object: 'demo-list-ref',
+        object_type: 'list',
+      },
+      {
+        title: 'Social',
+        style: 'icon',
+        image: '/images/icons/picture.svg',
+        link_to_web: 'https://example.com/social',
+      },
+    ],
+    sortCustom: {
+      include: ['Repairs info', 'Shop catalog'],
+      exclude: [],
     },
-    rightFeatured: [miniCard('nf-1', 'Breaking digest')],
-    rightRelated: [miniCard('nf-2', 'Metro newsletter')],
-    rightSimilar: [],
+    geo: { latitude: 10.4969, longitude: -66.8984 },
+    address: {
+      street: 'Av. Francisco de Miranda',
+      locality: 'Caracas',
+      postal_code: '1060',
+      country: 'Venezuela',
+      state: 'Miranda',
+    },
+    website: { title: 'Official site', link: 'https://example.com' },
+    telephone: '+58 212-555-0100',
+    email: 'hello@example.com',
+    price: '29.99',
   },
+  followers_count: 0,
+  updates_count: 25,
+};
+
+const DEMO_NEWSFEED_API: ProjectedObjectWithCountsView = {
+  object_id: 'demo-newsfeed',
+  object_type: 'newsfeed',
+  semantic_type: null,
+  weight: null,
+  hasAdministrativeAuthority: false,
+  hasOwnershipAuthority: false,
+  fields: {
+    name: 'City Pulse Desk',
+    description:
+      'News digest placeholder — aggregated headlines will appear here when wired to the API.',
+  },
+  followers_count: 0,
+  updates_count: 25,
+};
+
+const DEMO_BY_ID: Record<string, ProjectedObjectWithCountsView> = {
+  'demo-shop': DEMO_SHOP_API,
+  'demo-newsfeed': DEMO_NEWSFEED_API,
 };
 
 export function mockModelFromDemoPreset(objectId: string): ObjectPageViewModel | null {
-  return MOCK_OBJECTS[objectId] ?? null;
+  const api = DEMO_BY_ID[objectId];
+  if (!api) {
+    return null;
+  }
+  const core = projectedObjectWithCountsToPageModel(api);
+  return {
+    ...core,
+    primaryTabs: MOCK_PRIMARY_TABS,
+    feedSubTabs: MOCK_FEED_SUB_TABS,
+    ...(objectId === 'demo-shop'
+      ? stubRights()
+      : {
+          rightFeatured: [miniCard('nf-1', 'Breaking digest')],
+          rightRelated: [miniCard('nf-2', 'Metro newsletter')],
+          rightSimilar: [],
+        }),
+  };
 }

@@ -9,6 +9,12 @@ export interface AppMapProps {
   children?: ReactNode;
   className?: string;
   style?: CSSProperties;
+  /**
+   * Leaflet’s default attribution strip (often includes the Leaflet mark and tile HTML).
+   * Set `false` to hide it and supply OSM-required credit separately (tile policy).
+   * @default true
+   */
+  showBuiltInAttribution?: boolean;
   /** Raster tile URL template (e.g. `{z}/{x}/{y}`). Defaults to OpenStreetMap when using the Leaflet provider. */
   tileLayerUrl?: string;
   /** HTML attribution fragment for the tile layer (Leaflet provider). */

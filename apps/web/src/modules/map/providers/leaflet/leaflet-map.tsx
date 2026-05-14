@@ -30,9 +30,13 @@ export function LeafletAppMap({
   children,
   className,
   style,
+  showBuiltInAttribution = true,
   tileLayerUrl = DEFAULT_TILE_LAYER_URL,
   tileAttribution = DEFAULT_TILE_ATTRIBUTION,
 }: AppMapProps) {
+  const attributionForLayer =
+    showBuiltInAttribution === false ? '' : tileAttribution;
+
   return (
     <MapContainer
       center={[center[0], center[1]]}
@@ -40,8 +44,9 @@ export function LeafletAppMap({
       className={className}
       style={style}
       scrollWheelZoom
+      {...(showBuiltInAttribution === false ? ({ attributionControl: false } as const) : {})}
     >
-      <TileLayer attribution={tileAttribution} url={tileLayerUrl} />
+      <TileLayer attribution={attributionForLayer} url={tileLayerUrl} />
       {children}
     </MapContainer>
   );

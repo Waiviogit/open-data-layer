@@ -53,8 +53,9 @@ Coordinate type is **`MapPosition`**: `readonly [latitude, longitude]`.
 
 Optional props on **`AppMap`**:
 
+- `showBuiltInAttribution` — when `false`, Leaflet’s default attribution strip on the map is hidden. If you still use OpenStreetMap tiles, provide **© OpenStreetMap contributors** (with link to the [copyright page](https://www.openstreetmap.org/copyright)) elsewhere near the map to meet the [tile usage policy](https://operations.osmfoundation.org/policies/tiles/).
 - `tileLayerUrl` — URL template (e.g. `{z}/{x}/{y}`). Default is OpenStreetMap raster tiles; comply with their [tile usage policy](https://operations.osmfoundation.org/policies/tiles/).
-- `tileAttribution` — HTML attribution string for the tile layer.
+- `tileAttribution` — HTML attribution string for the tile layer when `showBuiltInAttribution` is not `false`.
 
 ### Default marker icons (Leaflet)
 

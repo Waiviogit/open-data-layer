@@ -5,8 +5,8 @@ import { useCallback, useMemo, useState } from 'react';
 import type { ObjectPageViewModel } from '@/modules/object';
 import {
   LeftObjectProfileSidebar,
-  ObjectAboutPanel,
   ObjectHero,
+  ObjectLeftRailPanel,
   ObjectPrimaryContent,
   ObjectPrimaryNav,
   ObjectRightSidebar,
@@ -46,10 +46,7 @@ export function ObjectPageClient({ model }: ObjectPageClientProps) {
 
   const leftRail = (
     <LeftObjectProfileSidebar>
-      <ObjectAboutPanel
-        panel={model.aboutPanel}
-        rating01To5={model.rating01To5}
-      />
+      <ObjectLeftRailPanel blocks={model.leftRailBlocks} />
     </LeftObjectProfileSidebar>
   );
 
