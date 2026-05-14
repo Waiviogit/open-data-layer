@@ -22,6 +22,7 @@ export const ABOUT_SECTION_BLOCK_ORDER = [
   'phones',
   'email',
   'walletAddress',
+  'identifier',
 ] as const;
 
 export type AboutSectionBlockId = (typeof ABOUT_SECTION_BLOCK_ORDER)[number];

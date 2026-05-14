@@ -20,6 +20,7 @@ import {
   projectedAddressDisplayLine,
   projectedEmail,
   projectedGalleryImageUrls,
+  projectedIdentifierRows,
   projectedGeoLatLon,
   projectedMenuItems,
   projectedObjectLinkRows,
@@ -291,6 +292,17 @@ function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock
             kind: 'walletAddress',
             headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.walletAddress,
             items: wallets,
+          });
+        }
+        break;
+      }
+      case 'identifier': {
+        const identifiers = projectedIdentifierRows(viewLike);
+        if (identifiers.length > 0) {
+          blocks.push({
+            kind: 'identifier',
+            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.identifier,
+            rows: identifiers,
           });
         }
         break;

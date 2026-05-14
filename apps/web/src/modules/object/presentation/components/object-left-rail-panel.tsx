@@ -1,5 +1,7 @@
 'use client';
 
+import { useId, useState } from 'react';
+
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -46,6 +48,64 @@ function IconStar({ filled }: { filled: boolean }) {
         opacity={filled ? 1 : 0.25}
       />
     </svg>
+  );
+}
+
+function ChevronAccordion({ expanded }: { expanded: boolean }) {
+  return (
+    <svg
+      width={14}
+      height={14}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={`shrink-0 text-muted transition-transform duration-200 ease-out motion-reduce:transition-none ${expanded ? 'rotate-180' : 'rotate-0'}`}
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+
+function LeftRailIdentifierSection({
+  cardClass,
+  headingLabel,
+  rows,
+}: {
+  cardClass: string;
+  headingLabel: string;
+  rows: { type: string; value: string }[];
+}) {
+  const [open, setOpen] = useState(false);
+  const contentId = useId();
+
+  return (
+    <aside className={cardClass}>
+      <button
+        type="button"
+        className="flex w-full min-w-0 items-center justify-between gap-2 text-left text-sm font-medium text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus rounded-sm"
+        aria-expanded={open}
+        aria-controls={contentId}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span>{headingLabel}</span>
+        <ChevronAccordion expanded={open} />
+      </button>
+      {open ? (
+        <div id={contentId} className="mt-3 space-y-4">
+          {rows.map((row, i) => (
+            <div key={`${row.type}-${row.value}-${i}`}>
+              <p className="text-sm font-medium uppercase tracking-wide text-fg">{row.type}</p>
+              <p className="mt-1 tabular-nums text-sm leading-snug text-fg">{row.value}</p>
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </aside>
   );
 }
 
@@ -300,6 +360,15 @@ export function ObjectLeftRailPanel({ blocks }: ObjectLeftRailPanelProps) {
                   ))}
                 </ul>
               </aside>
+            );
+          case 'identifier':
+            return (
+              <LeftRailIdentifierSection
+                key={`identifier-${index}`}
+                cardClass={cardClass}
+                headingLabel={block.headingLabel}
+                rows={block.rows}
+              />
             );
           case 'link':
             return (

@@ -117,6 +117,7 @@ const DEMO_SHOP_API: ProjectedObjectWithCountsView = {
       { title: 'You can support us with btc!', symbol: 'Bitcoin (BTC)', address: 'bc1qexample0123456789' },
       { symbol: 'HIVE', address: 'demo-hive-account' },
     ],
+    identifier: [{ type: 'TEST', value: '25011012' }],
     price: '29.99',
   },
   followers_count: 0,

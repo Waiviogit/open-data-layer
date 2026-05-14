@@ -116,6 +116,12 @@ export type ObjectLeftRailBlock =
       kind: 'walletAddress';
       headingLabel: string;
       items: { iconSrc: string; lineText: string }[];
+    }
+  | {
+      kind: 'identifier';
+      headingLabel: string;
+      /** From projected `identifier` update (`type` + `value`). */
+      rows: { type: string; value: string }[];
     };
 
 export type ObjectPageViewModel = {

@@ -23,6 +23,7 @@ const UPDATE_TYPE_TO_LABEL: Record<string, string> = {
   telephone: 'Phone',
   email: 'Email',
   walletAddress: 'Wallet',
+  identifier: 'Identifier',
   menuItem: 'Menu',
   sortCustom: 'Sort',
 };
@@ -44,6 +45,7 @@ export const OBJECT_LEFT_RAIL_BLOCK_LABEL: Record<string, string> = {
   phones: 'Phone',
   email: 'Email',
   walletAddress: 'Wallet',
+  identifier: 'Identifier',
 };
 
 export function labelForUpdateType(updateType: string): string {

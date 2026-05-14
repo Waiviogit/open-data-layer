@@ -3,6 +3,7 @@ import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-
 import {
   applySortCustomToMenuItems,
   projectedGeoLatLon,
+  projectedIdentifierRows,
   projectedMenuItems,
   projectedSortCustom,
   projectedTagCategorySections,
@@ -52,6 +53,21 @@ describe('object-projected-fields', () => {
     const v = viewWithMenu(menu, sort);
     const items = applySortCustomToMenuItems(projectedMenuItems(v), projectedSortCustom(v));
     expect(items.map((i) => i.displayTitle)).toEqual(['A']);
+  });
+
+  it('parses identifier rows from projected fields.identifier', () => {
+    const v: ProjectedObjectView = {
+      object_id: 'x',
+      object_type: 'business',
+      semantic_type: null,
+      weight: null,
+      fields: {
+        identifier: [{ type: 'TEST', value: '25011012' }],
+      },
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+    };
+    expect(projectedIdentifierRows(v)).toEqual([{ type: 'TEST', value: '25011012' }]);
   });
 
   it('uses embedded object name as displayTitle when title is missing', () => {

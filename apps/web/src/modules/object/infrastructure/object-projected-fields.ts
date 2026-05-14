@@ -363,6 +363,31 @@ export function projectedEmail(o: ProjectedObjectView): string | null {
   return typeof raw === 'string' && raw.includes('@') ? raw.trim() : null;
 }
 
+export type ProjectedIdentifierRow = {
+  type: string;
+  value: string;
+};
+
+/** Rows from projected `identifier` update (JSON `{ type, value }[]`). */
+export function projectedIdentifierRows(o: ProjectedObjectView): ProjectedIdentifierRow[] {
+  const raw = o.fields.identifier;
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  const out: ProjectedIdentifierRow[] = [];
+  for (const row of raw) {
+    if (!isRecord(row)) {
+      continue;
+    }
+    const type = readString(row.type);
+    const value = readString(row.value);
+    if (type && value) {
+      out.push({ type, value });
+    }
+  }
+  return out;
+}
+
 /**
  * Canonical `link.type` strings — mirror {@link libs/core/src/update-registry/updates/link.ts}
  * (do not import `@opden-data-layer/core` in this Next-facing module).
