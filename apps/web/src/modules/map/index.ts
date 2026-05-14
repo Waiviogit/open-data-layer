@@ -1,5 +1,6 @@
 export type {
   AppMapProps,
+  AppMapZoomUi,
   AppMarkerProps,
   AppPopupProps,
   MapPosition,
@@ -12,6 +13,7 @@ export type { MapProviderProps } from './providers/map-provider.context';
 export { AppMap } from './components/AppMap';
 export { AppMarker } from './components/AppMarker';
 export { AppPopup } from './components/AppPopup';
+export { MapInvalidateSizeOnMount } from './components/MapInvalidateSizeOnMount';
 
 export { leafletMapProvider } from './providers/leaflet';
 export {
