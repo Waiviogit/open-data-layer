@@ -39,6 +39,8 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
 # Static assets (must sit next to standalone server per Next.js Docker guide)
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
+# `public/` (e.g. `/images/icons/...`) is not included in standalone output; without this, <img src="/images/..."> 404s in production.
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
 
 USER nextjs
 
