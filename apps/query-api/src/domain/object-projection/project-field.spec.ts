@@ -1,4 +1,100 @@
-import { geoJsonPointToLatLon } from './project-field';
+import { UPDATE_TYPES } from '@opden-data-layer/core';
+import type { ResolvedField } from '@opden-data-layer/objects-domain';
+import type { RankVoteProjection } from './projected-object.types';
+import { geoJsonPointToLatLon, projectFieldValue } from './project-field';
+
+describe('projectFieldValue aggregateRating', () => {
+  it('returns an array aspect row with totals and viewer rank', () => {
+    const field: ResolvedField = {
+      update_type: 'aggregateRating',
+      cardinality: 'multi',
+      values: [
+        {
+          update_id: 'u1',
+          update_type: 'aggregateRating',
+          creator: 'c',
+          locale: 'en-US',
+          created_at_unix: 1,
+          event_seq: BigInt(1),
+          value_text: 'Overall',
+          value_geo: null,
+          value_json: null,
+          validity_status: 'VALID',
+          field_weight: null,
+          rank_score: 8000,
+          rank_context: null,
+          rank_decisive_event_seq: null,
+        },
+        {
+          update_id: 'u2',
+          update_type: 'aggregateRating',
+          creator: 'c',
+          locale: 'en-US',
+          created_at_unix: 1,
+          event_seq: BigInt(2),
+          value_text: 'Value',
+          value_geo: null,
+          value_json: null,
+          validity_status: 'VALID',
+          field_weight: null,
+          rank_score: 10000,
+          rank_context: null,
+          rank_decisive_event_seq: null,
+        },
+      ],
+    };
+    const rankVp: RankVoteProjection = {
+      countByUpdateId: new Map([
+        ['u1', 10],
+        ['u2', 200],
+      ]),
+      viewerRankByUpdateId: new Map([
+        ['u1', 7000],
+        ['u2', 9000],
+      ]),
+    };
+    const out = projectFieldValue(field, UPDATE_TYPES.AGGREGATE_RATING, 'https://ipfs.io', 'alice', rankVp);
+    expect(out).toEqual([
+      { dimension: 'Overall', averageRating: 8000, userRating: 7000, totalVoters: 10 },
+      { dimension: 'Value', averageRating: 10000, userRating: 9000, totalVoters: 200 },
+    ]);
+  });
+
+  it('sets userRating null when viewer has no votes', () => {
+    const field: ResolvedField = {
+      update_type: 'aggregateRating',
+      cardinality: 'multi',
+      values: [
+        {
+          update_id: 'u1',
+          update_type: 'aggregateRating',
+          creator: 'c',
+          locale: null,
+          created_at_unix: 1,
+          event_seq: BigInt(1),
+          value_text: 'X',
+          value_geo: null,
+          value_json: null,
+          validity_status: 'VALID',
+          field_weight: null,
+          rank_score: 5000,
+          rank_context: null,
+          rank_decisive_event_seq: null,
+        },
+      ],
+    };
+    const rankVp: RankVoteProjection = {
+      countByUpdateId: new Map([['u1', 3]]),
+      viewerRankByUpdateId: new Map(),
+    };
+    expect(
+      projectFieldValue(field, UPDATE_TYPES.AGGREGATE_RATING, 'https://ipfs.io', 'alice', rankVp),
+    ).toEqual([{ dimension: 'X', averageRating: 5000, userRating: null, totalVoters: 3 }]);
+    expect(projectFieldValue(field, UPDATE_TYPES.AGGREGATE_RATING, 'https://ipfs.io', undefined, rankVp)).toEqual([
+      { dimension: 'X', averageRating: 5000, userRating: null, totalVoters: 3 },
+    ]);
+  });
+});
 
 describe('geoJsonPointToLatLon', () => {
   const expected = { latitude: 49.187253, longitude: -123.131515 };

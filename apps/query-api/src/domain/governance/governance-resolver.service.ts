@@ -25,7 +25,9 @@ export class GovernanceResolverService {
   ) {}
 
   async resolve(objectId: string): Promise<GovernanceSnapshot> {
-    const { objects, voterWaivPowers } = await this.aggregatedObjectRepo.loadByObjectIds([objectId]);
+    const { objects, voterWaivPowers } = await this.aggregatedObjectRepo.loadByObjectIds([objectId], {
+      includeRankVoteProjection: false,
+    });
     const root = objects[0];
     if (!root || root.core.object_type !== OBJECT_TYPES.GOVERNANCE) {
       return DEFAULT_GOVERNANCE_SNAPSHOT;
@@ -36,7 +38,9 @@ export class GovernanceResolverService {
 
     const inheritedIds = uniqueIds(snapshot.inherits_from.map((e) => e.object_id));
     if (inheritedIds.length > 0) {
-      const { objects: inheritedRows } = await this.aggregatedObjectRepo.loadByObjectIds(inheritedIds);
+      const { objects: inheritedRows } = await this.aggregatedObjectRepo.loadByObjectIds(inheritedIds, {
+        includeRankVoteProjection: false,
+      });
       const byId = new Map(inheritedRows.map((o) => [o.core.object_id, o]));
 
       for (const entry of snapshot.inherits_from) {

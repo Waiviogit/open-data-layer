@@ -32,9 +32,10 @@ export class GetObjectByIdEndpoint {
   ) {}
 
   async execute(input: GetObjectByIdInput): Promise<ProjectedObjectWithCounts | null> {
-    const { objects, voterWaivPowers } = await this.aggregatedObjectRepo.loadByObjectIds([
-      input.objectId,
-    ]);
+    const { objects, voterWaivPowers, rankVoteProjection } = await this.aggregatedObjectRepo.loadByObjectIds(
+      [input.objectId],
+      { viewerAccount: input.viewerAccount },
+    );
     const agg = objects[0];
     if (!agg) {
       return null;
@@ -68,6 +69,7 @@ export class GetObjectByIdEndpoint {
         locale: input.locale,
         governanceObjectIdFromHeader: input.governanceObjectIdFromHeader,
         viewerAccount: input.viewerAccount,
+        rankVoteProjection,
       }),
       this.userObjectFollowsRepo.countByObjectId(objectId),
       this.objectUpdatesRepo.countByObjectId(objectId),

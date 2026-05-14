@@ -11,7 +11,7 @@ import { mapAccountToUserProfileView } from '../users/account-mapper';
 import type { UserProfileView } from '../users/user-profile.types';
 import { GovernanceResolverService } from '../governance';
 import { buildFeedObjectChips } from './feed-object-summaries';
-import { ObjectProjectionService } from '../object-projection';
+import { ObjectProjectionService, emptyRankVoteProjection } from '../object-projection';
 import { FEED_OBJECT_UPDATE_TYPES, FEED_TAGGED_OBJECT_DISPLAY_LIMIT } from './feed.constants';
 import type { FeedStoryItemDto } from './feed-story-dtos';
 import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
@@ -73,8 +73,11 @@ export async function buildFeedStoryItemsFromPostPage(
 
   let viewsByObjectId = new Map<string, ResolvedObjectView>();
   const weightByObjectId = new Map<string, number | null>();
+  let rankVoteProjection = emptyRankVoteProjection();
   if (objectIds.length > 0) {
-    const { objects, voterWaivPowers } = await aggregatedObjectRepo.loadByObjectIds(objectIds);
+    const { objects, voterWaivPowers, rankVoteProjection: rvp } =
+      await aggregatedObjectRepo.loadByObjectIds(objectIds, { viewerAccount });
+    rankVoteProjection = rvp;
     for (const o of objects) {
       weightByObjectId.set(o.core.object_id, o.core.weight);
     }
@@ -125,6 +128,7 @@ export async function buildFeedStoryItemsFromPostPage(
         locale,
         governanceObjectIdFromHeader,
         viewerAccount,
+        rankVoteProjection,
       },
       FEED_TAGGED_OBJECT_DISPLAY_LIMIT,
     );

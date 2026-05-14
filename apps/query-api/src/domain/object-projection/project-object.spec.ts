@@ -2,6 +2,7 @@ import { UPDATE_TYPES } from '@opden-data-layer/core';
 import type { ResolvedField, ResolvedObjectView, ResolvedUpdate } from '@opden-data-layer/objects-domain';
 
 import type { RefSummary } from './projected-object.types';
+import { emptyRankVoteProjection } from './projected-object.types';
 import { collectObjectRefIdsFromView, projectObjectCore } from './project-object';
 
 function baseView(fields: Record<string, ResolvedField>): ResolvedObjectView {
@@ -135,6 +136,7 @@ describe('projectObjectCore menuItem', () => {
       view,
       ipfsGatewayBaseUrl: 'https://ipfs.io',
       refSummariesById: refMap,
+      rankVoteProjection: emptyRankVoteProjection(),
     });
 
     const menu = core.fields.menuItem;

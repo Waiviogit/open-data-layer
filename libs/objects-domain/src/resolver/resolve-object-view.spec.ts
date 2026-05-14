@@ -1,4 +1,4 @@
-import type { ObjectsCore, ObjectUpdate, ValidityVote, ObjectAuthority } from '@opden-data-layer/core';
+import type { ObjectsCore, ObjectAuthority, ObjectUpdate, ValidityVote } from '@opden-data-layer/core';
 import type { AggregatedObject, VoterWaivPowerMap } from '../types/aggregated-object';
 import type { ResolveOptions } from '../types/resolve-options';
 import type { ResolvedUpdate } from '../types/resolved-view';
@@ -113,6 +113,30 @@ describe('resolveObjectViews', () => {
     const result = resolveObjectViews([obj], EMPTY_WAIV_POWERS, makeOptions(['name'], { governance }));
     const nameField = result[0].fields['name'];
     expect(nameField.values.every((v) => v.creator !== 'bad_actor')).toBe(true);
+  });
+
+  it('keeps REJECTED aggregateRating rows when rank_score is persisted (curator filter)', () => {
+    const governance = { ...DEFAULT_GOVERNANCE_SNAPSHOT, object_control: 'full' as const };
+    const authorities: ObjectAuthority[] = [
+      { object_id: 'obj1', account: 'owner1', authority_type: 'ownership' },
+    ];
+    const ratingUpdate: ObjectUpdate = {
+      ...makeUpdate('r1', 'obj1', 'aggregateRating', 'stranger', BigInt(1), 'en-US'),
+      value_text: 'Overall',
+      value_text_normalized: 'overall',
+      rank_score: 9000,
+    };
+    const obj = makeAggregated('obj1', [ratingUpdate], [], authorities, 'alice', null);
+    const result = resolveObjectViews(
+      [obj],
+      EMPTY_WAIV_POWERS,
+      makeOptions(['aggregateRating'], { governance }),
+    );
+    const field = result[0].fields['aggregateRating'];
+    expect(field.values).toHaveLength(1);
+    expect(field.values[0].validity_status).toBe('REJECTED');
+    expect(field.values[0].rank_score).toBe(9000);
+    expect(field.values[0].value_text).toBe('Overall');
   });
 
   it('by default omits REJECTED updates (include_rejected=false)', () => {

@@ -46,7 +46,8 @@ export interface ResolvedField {
   /**
    * For single-cardinality: at most one entry (the winning VALID update).
    * For multi-cardinality: all VALID entries ordered by ranking.
-   * REJECTED entries are included only when include_rejected = true.
+   * REJECTED entries are included when `include_rejected = true`, or for
+   * `aggregateRating` when a rejected row still has a persisted `rank_score` (legacy/migrated).
    */
   values: ResolvedUpdate[];
 }

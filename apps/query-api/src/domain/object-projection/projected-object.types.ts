@@ -18,12 +18,30 @@ export interface ProjectedObjectSeo {
   json_ld: Record<string, unknown>;
 }
 
-/** `aggregateRating` field: community average plus the current viewer's vote (if any). */
-export interface ProjectedAggregateRating {
-  /** Rounded mean of `rank_score` across valid rating rows (0–10000 scale); null if none. */
+/**
+ * Rows from `rank_votes`: vote counts per `update_id`, and viewer’s latest rank per aspect (`update_id`)
+ * keyed for `aggregateRating` projection.
+ */
+export interface RankVoteProjection {
+  readonly countByUpdateId: ReadonlyMap<string, number>;
+  readonly viewerRankByUpdateId: ReadonlyMap<string, number>;
+}
+
+export function emptyRankVoteProjection(): RankVoteProjection {
+  return {
+    countByUpdateId: new Map(),
+    viewerRankByUpdateId: new Map(),
+  };
+}
+
+/** One `aggregateRating` aspect; `fields.aggregateRating` is an array of these (0-length if none). */
+export interface ProjectedAggregateRatingRow {
+  dimension: string;
   averageRating: number | null;
-  /** `value_text` for the row whose `creator` matches the viewer; null if anonymous or no vote. */
-  userRating: string | null;
+  /** Viewer’s ODL rank (0–10000) when `rank_votes` has a vote for `(update_id, viewer)` with latest `event_seq`. */
+  userRating: number | null;
+  /** `COUNT(rank_votes)` for this `update_id`. */
+  totalVoters: number;
 }
 
 export interface ProjectedObject {
@@ -46,4 +64,6 @@ export interface ProjectObjectInput {
   refSummariesById: Map<string, RefSummary>;
   /** Hive account from `X-Viewer` (or similar); used for aggregate rating and authority flags. */
   viewerAccount?: string | null;
+  /** From {@link AggregatedObjectRepository.loadByObjectIds}; use {@link emptyRankVoteProjection} when absent. */
+  rankVoteProjection: RankVoteProjection;
 }

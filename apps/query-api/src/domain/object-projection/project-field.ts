@@ -2,7 +2,8 @@ import type { JsonValue } from '@opden-data-layer/core';
 import { UPDATE_REGISTRY, UPDATE_TYPES } from '@opden-data-layer/core';
 import type { ResolvedField } from '@opden-data-layer/objects-domain';
 import { ipfsGatewayUrlForCid, pickSingleImageDisplayUrlFromResolvedUpdate } from './image-display-url';
-import type { ProjectedAggregateRating } from './projected-object.types';
+import type { ProjectedAggregateRatingRow, RankVoteProjection } from './projected-object.types';
+import { emptyRankVoteProjection } from './projected-object.types';
 
 /** PostGIS EWKB flag: next uint32 is SRID. @see https://postgis.net/docs/using_postgis_dbmanagement.html#EWKB_EWKT */
 const POSTGIS_WKB_SRID_FLAG = 0x20000000;
@@ -141,22 +142,53 @@ function projectImageGalleryItemJson(value: JsonValue | null, ipfsGatewayBaseUrl
   return { ...o, url };
 }
 
+function coerceRankScore(raw: unknown): number | null {
+  if (raw == null) {
+    return null;
+  }
+  if (typeof raw === 'number' && Number.isFinite(raw)) {
+    return raw;
+  }
+  if (typeof raw === 'bigint') {
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : null;
+  }
+  if (typeof raw === 'string' && raw.trim().length > 0) {
+    const n = Number(raw.trim());
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
 function projectAggregateRatingField(
   field: ResolvedField,
   viewerAccount: string | null | undefined,
-): ProjectedAggregateRating {
-  const valid = field.values.filter((u) => u.validity_status === 'VALID');
-  const scores = valid
-    .map((u) => u.rank_score)
-    .filter((s): s is number => s !== null && typeof s === 'number' && Number.isFinite(s));
-  const averageRating =
-    scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
-  const viewer = viewerAccount?.trim();
-  let userRating: string | null = null;
-  if (viewer) {
-    userRating = valid.find((u) => u.creator === viewer)?.value_text ?? null;
-  }
-  return { averageRating, userRating };
+  rankVoteProjection: RankVoteProjection,
+): ProjectedAggregateRatingRow[] {
+  const displayable = field.values.filter((u) => {
+    if (u.validity_status === 'VALID') {
+      return true;
+    }
+    return u.validity_status === 'REJECTED' && coerceRankScore(u.rank_score) !== null;
+  });
+  return displayable.map((u): ProjectedAggregateRatingRow => {
+    const avg = coerceRankScore(u.rank_score);
+    const totalVoters = rankVoteProjection.countByUpdateId.get(u.update_id) ?? 0;
+    const viewerRankRaw =
+      viewerAccount?.trim()
+        ? rankVoteProjection.viewerRankByUpdateId.get(u.update_id)
+        : undefined;
+    const userRating =
+      viewerRankRaw != null && typeof viewerRankRaw === 'number' && Number.isFinite(viewerRankRaw)
+        ? viewerRankRaw
+        : null;
+    return {
+      dimension: typeof u.value_text === 'string' && u.value_text.length > 0 ? u.value_text : '',
+      averageRating: avg,
+      userRating,
+      totalVoters,
+    };
+  });
 }
 
 /**
@@ -167,6 +199,7 @@ export function projectFieldValue(
   updateType: string,
   ipfsGatewayBaseUrl: string,
   viewerAccount?: string | null,
+  rankVoteProjection: RankVoteProjection = emptyRankVoteProjection(),
 ): unknown {
   const def = UPDATE_REGISTRY[updateType];
   if (!def || def.value_kind === 'object_ref') {
@@ -174,7 +207,7 @@ export function projectFieldValue(
   }
 
   if (updateType === UPDATE_TYPES.AGGREGATE_RATING) {
-    return projectAggregateRatingField(field, viewerAccount);
+    return projectAggregateRatingField(field, viewerAccount, rankVoteProjection);
   }
 
   const valid = field.values.filter((u) => u.validity_status === 'VALID');

@@ -55,9 +55,12 @@ export type ObjectLeftRailBlock =
   | {
       kind: 'rating';
       headingLabel: string;
-      rating01To5: number;
-      /** Not projected yet — reserved for parity with legacy "(n)". */
-      reviewCount?: number;
+      aspects: {
+        dimension: string;
+        averageRating01To5: number | null;
+        totalVoters: number;
+        viewerRating01To5: number | null;
+      }[];
     }
   | {
       kind: 'tags';

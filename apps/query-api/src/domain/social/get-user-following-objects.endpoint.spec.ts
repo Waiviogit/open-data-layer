@@ -8,6 +8,7 @@ import {
 } from '../../repositories';
 import type { ProjectedObject } from '../object-projection';
 import { ObjectProjectionService } from '../object-projection';
+import { emptyRankVoteProjection } from '../object-projection/projected-object.types';
 import type { UserFollowingObjectsQuery } from './user-social-list.schema';
 import { GetUserFollowingObjectsEndpoint } from './get-user-following-objects.endpoint';
 
@@ -66,6 +67,7 @@ describe('GetUserFollowingObjectsEndpoint', () => {
       loadByObjectIds: jest.fn().mockResolvedValue({
         objects: [{ core, updates: [], validity_votes: [], authorities: [] }],
         voterWaivPowers: new Map(),
+        rankVoteProjection: emptyRankVoteProjection(),
       }),
     } as unknown as AggregatedObjectRepository;
 

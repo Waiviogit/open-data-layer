@@ -8,7 +8,7 @@ import { expandObjectRefs } from './object-ref-expansion';
 import { normalizeProjectedObjectForJson } from './normalize-projected-object-for-json';
 import { collectObjectRefIdsFromView, projectObjectCore } from './project-object';
 import { ObjectSeoService } from './object-seo.service';
-import type { ProjectedObject } from './projected-object.types';
+import type { ProjectedObject, RankVoteProjection } from './projected-object.types';
 
 export interface ProjectOptions {
   locale: string;
@@ -18,9 +18,13 @@ export interface ProjectOptions {
   governanceObjectIdFromHeader?: string;
   /**
    * Current viewer (e.g. from `X-Viewer`). Used for `hasAdministrativeAuthority`, `hasOwnershipAuthority`,
-   * and `aggregateRating.userRating`.
+   * and `aggregateRating` per-aspect `userRating`.
    */
   viewerAccount?: string;
+  /**
+   * Vote counts / viewer ranks for `aggregateRating` from {@link AggregatedObjectRepository.loadByObjectIds}.
+   */
+  rankVoteProjection: RankVoteProjection;
 }
 
 export interface BatchProjectOptions {
@@ -29,6 +33,8 @@ export interface BatchProjectOptions {
   includeSeo?: boolean;
   governanceObjectIdFromHeader?: string;
   viewerAccount?: string;
+  /** Same batch as the views (from one `loadByObjectIds`). */
+  rankVoteProjection: RankVoteProjection;
 }
 
 @Injectable()
@@ -75,6 +81,7 @@ export class ObjectProjectionService {
       ipfsGatewayBaseUrl,
       refSummariesById,
       viewerAccount,
+      rankVoteProjection: options.rankVoteProjection,
     });
 
     const projected: ProjectedObject = {
@@ -120,6 +127,7 @@ export class ObjectProjectionService {
       ownershipSet = new Set(ownershipIds);
     }
 
+    const rankVp = options.rankVoteProjection;
     const results: ProjectedObject[] = [];
     for (const view of views) {
       const refIds = collectObjectRefIdsFromView(view);
@@ -137,6 +145,7 @@ export class ObjectProjectionService {
         ipfsGatewayBaseUrl,
         refSummariesById,
         viewerAccount,
+        rankVoteProjection: rankVp,
       });
 
       let projected: ProjectedObject = {

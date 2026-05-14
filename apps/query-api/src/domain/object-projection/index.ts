@@ -14,9 +14,12 @@ export {
 export { SEMANTIC_TYPE_BY_OBJECT_TYPE } from './semantic-types';
 export { normalizeProjectedObjectForJson } from './normalize-projected-object-for-json';
 export type {
-  ProjectedAggregateRating,
+  ProjectedAggregateRatingRow,
   ProjectedObject,
   ProjectedObjectSeo,
   ProjectObjectInput,
+  RankVoteProjection,
   RefSummary,
 } from './projected-object.types';
+
+export { emptyRankVoteProjection } from './projected-object.types';

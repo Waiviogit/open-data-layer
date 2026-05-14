@@ -6,10 +6,7 @@ import {
   AggregatedObjectRepository,
   UserObjectFollowsRepository,
 } from '../../repositories';
-import {
-  ObjectProjectionService,
-  type ProjectedObject,
-} from '../object-projection';
+import { ObjectProjectionService, type ProjectedObject } from '../object-projection';
 import { FOLLOWING_OBJECTS_CARD_UPDATE_TYPES } from './social.constants';
 import type { UserFollowingObjectsQuery } from './user-social-list.schema';
 import type { PaginatedProjectedObjects } from './paginated-objects.types';
@@ -60,7 +57,10 @@ export class GetUserFollowingObjectsEndpoint {
       return { items: [], total, hasMore: false };
     }
 
-    const { objects, voterWaivPowers } = await this.aggregatedObjectRepo.loadByObjectIds(objectIds);
+    const { objects, voterWaivPowers, rankVoteProjection } =
+      await this.aggregatedObjectRepo.loadByObjectIds(objectIds, {
+        viewerAccount,
+      });
     const ordered = orderAggregatedByIds(objects, objectIds);
 
     const views = this.objectViewService.resolve(ordered, voterWaivPowers, {
@@ -74,6 +74,7 @@ export class GetUserFollowingObjectsEndpoint {
       includeSeo: false,
       governanceObjectIdFromHeader,
       viewerAccount,
+      rankVoteProjection,
     });
 
     projectedList = projectedList.map((p) => ({

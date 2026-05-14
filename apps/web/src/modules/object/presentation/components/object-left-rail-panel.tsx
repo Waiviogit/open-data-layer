@@ -183,25 +183,66 @@ export function ObjectLeftRailPanel({ blocks }: ObjectLeftRailPanelProps) {
             );
           }
           case 'rating': {
-            const displayRating = Math.min(5, Math.max(0, block.rating01To5));
             return (
               <aside key={`rating-${index}`} className={cardClass}>
                 <p className="font-medium text-fg">{block.headingLabel}</p>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <span
-                    className="inline-flex items-center gap-0.5"
-                    role="img"
-                    aria-label={`${t('object_detail_rating')}: ${displayRating.toFixed(1)}`}
-                  >
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <IconStar key={i} filled={i < Math.round(displayRating)} />
-                    ))}
-                  </span>
-                  <span className="tabular-nums">{displayRating.toFixed(1)}</span>
-                  {typeof block.reviewCount === 'number' ? (
-                    <span className="text-muted">({block.reviewCount})</span>
-                  ) : null}
-                </div>
+                <ul className="mt-3 list-none space-y-4 p-0">
+                  {block.aspects.map((aspect, aspectIndex) => {
+                    const avg = aspect.averageRating01To5;
+                    const roundedAvgStars =
+                      avg != null ? Math.min(5, Math.max(0, Math.round(avg))) : null;
+                    const viewer = aspect.viewerRating01To5;
+                    const roundedViewerStars =
+                      viewer != null
+                        ? Math.min(5, Math.max(0, Math.round(viewer)))
+                        : null;
+                    const avgLabel =
+                      avg != null ? `${aspect.dimension}: ${avg.toFixed(1)}` : `${aspect.dimension}: —`;
+                    return (
+                      <li key={`${aspect.dimension}-${aspectIndex}`} className="min-w-0">
+                        <p
+                          className="truncate font-medium leading-snug text-fg"
+                          title={aspect.dimension}
+                        >
+                          {aspect.dimension}
+                        </p>
+                        <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                          <span className="inline-flex items-center gap-0.5" role="img" aria-label={avgLabel}>
+                            {Array.from({ length: 5 }, (_, i) => (
+                              <IconStar
+                                key={i}
+                                filled={roundedAvgStars !== null ? i < roundedAvgStars : false}
+                              />
+                            ))}
+                          </span>
+                          {avg != null ? (
+                            <span className="tabular-nums">{avg.toFixed(1)}</span>
+                          ) : null}
+                          <span className="tabular-nums text-muted">
+                            ({aspect.totalVoters})
+                          </span>
+                        </div>
+                        {viewer != null ? (
+                          <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-border/60 pt-2">
+                            <span
+                              className="inline-flex items-center gap-0.5 opacity-95"
+                              role="img"
+                              aria-label={`Your rating (${aspect.dimension}): ${viewer.toFixed(1)}`}
+                            >
+                              {Array.from({ length: 5 }, (_, i) => (
+                                <IconStar
+                                  key={i}
+                                  filled={roundedViewerStars !== null ? i < roundedViewerStars : false}
+                                />
+                              ))}
+                            </span>
+                            <span className="tabular-nums text-caption text-muted">{viewer.toFixed(1)}</span>
+                          </div>
+                        ) : null}
+                      </li>
+                    );
+                  })}
+                </ul>
               </aside>
             );
           }

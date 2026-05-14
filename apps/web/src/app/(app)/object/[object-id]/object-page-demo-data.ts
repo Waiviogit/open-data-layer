@@ -53,7 +53,20 @@ const DEMO_SHOP_API: ProjectedObjectWithCountsView = {
     title: 'Phone accessories · repairs · same-day service',
     description:
       'Tolon Accesorios C.A. offers phone cases, chargers, and repairs with same-day service for common models. Mock description for layout parity.',
-    aggregateRating: { averageRating: 8000, userRating: null },
+    aggregateRating: [
+      {
+        dimension: 'Overall',
+        averageRating: 8000,
+        userRating: 6000,
+        totalVoters: 42,
+      },
+      {
+        dimension: 'Value',
+        averageRating: 7100,
+        userRating: null,
+        totalVoters: 12,
+      },
+    ],
     parent: {
       object_id: 'demo-parent-brand',
       object_type: 'business',

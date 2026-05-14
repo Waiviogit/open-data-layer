@@ -1,9 +1,10 @@
-import { UPDATE_REGISTRY } from '@opden-data-layer/core';
+import { UPDATE_REGISTRY, UPDATE_TYPES } from '@opden-data-layer/core';
 import type { AggregatedObject, VoterWaivPowerMap } from '../types/aggregated-object';
 import type { ResolveOptions } from '../types/resolve-options';
 import type { ResolvedField, ResolvedObjectView, ResolvedUpdate } from '../types/resolved-view';
 import { computeCuratorSet, resolveUpdateValidity } from './resolve-validity';
 import { resolveSingleCardinality, resolveMultiCardinality } from './resolve-cardinality';
+import { compareResolvedUpdatesByRanking } from './resolve-ranking';
 
 /**
  * Prefer VALID updates in the requested locale. For multi-cardinality, locale-neutral
@@ -128,6 +129,31 @@ function resolveObject(
       resolved = resolveSingleCardinality(localeScoped);
     } else {
       resolved = resolveMultiCardinality(localeScoped);
+    }
+
+    /**
+     * Curator filter can mark community-submitted `aggregateRating` rows REJECTED even though
+     * `rank_score` was persisted (indexer/migration). Those rows must still appear for read APIs.
+     */
+    if (
+      updateType === UPDATE_TYPES.AGGREGATE_RATING &&
+      cardinality === 'multi' &&
+      options.include_rejected !== true
+    ) {
+      const rejectedRated = resolvedUpdates.filter(
+        (u) =>
+          u.validity_status === 'REJECTED' &&
+          u.rank_score !== null &&
+          typeof u.rank_score === 'number' &&
+          Number.isFinite(u.rank_score),
+      );
+      const rejectedLocale =
+        definition?.localizable === true
+          ? filterByLocalePreference(rejectedRated, options.locale, 'multi')
+          : rejectedRated;
+      const seen = new Set(resolved.map((r) => r.update_id));
+      const extra = rejectedLocale.filter((u) => !seen.has(u.update_id));
+      resolved = [...resolved, ...extra].sort(compareResolvedUpdatesByRanking);
     }
 
     if (options.include_rejected) {

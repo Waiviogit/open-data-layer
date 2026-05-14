@@ -110,7 +110,10 @@ export class GetUserShopSectionsEndpoint {
     }
     const uniqueIds = [...new Set(allIdsOrdered)];
 
-    const { objects, voterWaivPowers } = await this.aggregatedObjectRepo.loadByObjectIds(uniqueIds);
+    const { objects, voterWaivPowers, rankVoteProjection } =
+      await this.aggregatedObjectRepo.loadByObjectIds(uniqueIds, {
+        viewerAccount,
+      });
     const orderedObjs = orderAggregatedByIds(objects, uniqueIds);
     const views = this.objectViewService.resolve(orderedObjs, voterWaivPowers, {
       update_types: [...SHOP_CARD_UPDATE_TYPES],
@@ -122,6 +125,7 @@ export class GetUserShopSectionsEndpoint {
       includeSeo: false,
       governanceObjectIdFromHeader,
       viewerAccount,
+      rankVoteProjection,
     });
     const projectedById = new Map(projectedList.map((p) => [p.object_id, p]));
 

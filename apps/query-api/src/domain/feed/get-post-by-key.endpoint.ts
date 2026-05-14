@@ -15,7 +15,7 @@ import { parsePostingMetadata } from '../users/parse-posting-metadata';
 import { GovernanceResolverService } from '../governance';
 import { buildLinkedObjectSummaries } from './feed-object-summaries';
 import { mapHiveContentToSinglePostView } from './map-hive-content-to-single-post.dto';
-import { ObjectProjectionService } from '../object-projection';
+import { ObjectProjectionService, emptyRankVoteProjection } from '../object-projection';
 import type { SinglePostViewDto } from './feed-story-dtos';
 import { stripHtmlForExcerpt, truncateExcerpt } from './post-excerpt';
 import { extractThumbnailUrl } from './post-thumbnail';
@@ -153,8 +153,13 @@ export class GetPostByKeyEndpoint {
 
     let viewsByObjectId = new Map<string, ResolvedObjectView>();
     const weightByObjectId = new Map<string, number | null>();
+    let rankVoteProjection = emptyRankVoteProjection();
     if (objectIds.length > 0) {
-      const { objects, voterWaivPowers } = await this.aggregatedObjectRepo.loadByObjectIds(objectIds);
+      const { objects, voterWaivPowers, rankVoteProjection: rvp } =
+        await this.aggregatedObjectRepo.loadByObjectIds(objectIds, {
+          viewerAccount,
+        });
+      rankVoteProjection = rvp;
       for (const o of objects) {
         weightByObjectId.set(o.core.object_id, o.core.weight);
       }
@@ -176,6 +181,7 @@ export class GetPostByKeyEndpoint {
         locale,
         governanceObjectIdFromHeader,
         viewerAccount,
+        rankVoteProjection,
       },
     );
 

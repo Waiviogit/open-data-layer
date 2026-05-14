@@ -7,6 +7,7 @@ import { AccountsCurrentRepository } from '../../repositories/accounts-current.r
 import { PostsRepository } from '../../repositories/posts.repository';
 import { GovernanceResolverService } from '../governance';
 import type { ObjectProjectionService } from '../object-projection/object-projection.service';
+import { emptyRankVoteProjection } from '../object-projection/projected-object.types';
 import { GetPostByKeyEndpoint } from './get-post-by-key.endpoint';
 
 function postRow(overrides: Partial<Post> = {}): Post {
@@ -282,6 +283,7 @@ describe('GetPostByKeyEndpoint', () => {
         },
       ],
       voterWaivPowers: new Map(),
+      rankVoteProjection: emptyRankVoteProjection(),
     });
     objectViewService.resolve.mockReturnValue([
       {
@@ -295,7 +297,7 @@ describe('GetPostByKeyEndpoint', () => {
 
     expect(objectProjection.batchProject).toHaveBeenCalledWith(
       expect.any(Array),
-      expect.objectContaining({ viewerAccount: undefined }),
+      expect.objectContaining({ viewerAccount: undefined, rankVoteProjection: expect.any(Object) }),
     );
   });
 
@@ -335,6 +337,7 @@ describe('GetPostByKeyEndpoint', () => {
         },
       ],
       voterWaivPowers: new Map(),
+      rankVoteProjection: emptyRankVoteProjection(),
     });
     objectViewService.resolve.mockReturnValue([
       {
@@ -348,7 +351,7 @@ describe('GetPostByKeyEndpoint', () => {
 
     expect(objectProjection.batchProject).toHaveBeenCalledWith(
       expect.any(Array),
-      expect.objectContaining({ viewerAccount: 'bob' }),
+      expect.objectContaining({ viewerAccount: 'bob', rankVoteProjection: expect.any(Object) }),
     );
     expect(r?.objects).toHaveLength(1);
     expect(r?.objects[0].hasAdministrativeAuthority).toBe(true);

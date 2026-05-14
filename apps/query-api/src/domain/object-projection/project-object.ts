@@ -129,7 +129,7 @@ function projectObjectRefField(
  * Builds the core projection (fields, ids, semantic type). Authority flags are added in {@link ObjectProjectionService}.
  */
 export function projectObjectCore(input: ProjectObjectInput): ProjectedObjectCore {
-  const { view, ipfsGatewayBaseUrl, refSummariesById, viewerAccount } = input;
+  const { view, ipfsGatewayBaseUrl, refSummariesById, viewerAccount, rankVoteProjection } = input;
   const fields: Record<string, unknown> = {};
 
   for (const [updateType, field] of Object.entries(view.fields)) {
@@ -143,7 +143,13 @@ export function projectObjectCore(input: ProjectObjectInput): ProjectedObjectCor
     const key = updateType;
 
     if (updateType === UPDATE_TYPES.MENU_ITEM) {
-      const projected = projectFieldValue(field, updateType, ipfsGatewayBaseUrl, viewerAccount);
+      const projected = projectFieldValue(
+        field,
+        updateType,
+        ipfsGatewayBaseUrl,
+        viewerAccount,
+        rankVoteProjection,
+      );
       fields[key] = enrichMenuItemRowsWithRefs(projected, refSummariesById);
       continue;
     }
@@ -151,7 +157,13 @@ export function projectObjectCore(input: ProjectObjectInput): ProjectedObjectCor
     if (def.value_kind === 'object_ref') {
       fields[key] = projectObjectRefField(field, def, refSummariesById);
     } else {
-      fields[key] = projectFieldValue(field, updateType, ipfsGatewayBaseUrl, viewerAccount);
+      fields[key] = projectFieldValue(
+        field,
+        updateType,
+        ipfsGatewayBaseUrl,
+        viewerAccount,
+        rankVoteProjection,
+      );
     }
   }
 

@@ -5,7 +5,7 @@ import type { ObjectUpdatesRepository } from '../../repositories/object-updates.
 import type { UserObjectFollowsRepository } from '../../repositories/user-object-follows.repository';
 import { GovernanceResolverService } from '../governance';
 import { ObjectProjectionService } from '../object-projection/object-projection.service';
-import type { ProjectedObject } from '../object-projection/projected-object.types';
+import { emptyRankVoteProjection, type ProjectedObject } from '../object-projection/projected-object.types';
 import { GetObjectByIdEndpoint } from './get-object-by-id.endpoint';
 
 function createEndpointDeps(overrides?: {
@@ -37,6 +37,7 @@ describe('GetObjectByIdEndpoint', () => {
       loadByObjectIds: jest.fn().mockResolvedValue({
         objects: [],
         voterWaivPowers: new Map(),
+        rankVoteProjection: emptyRankVoteProjection(),
       }),
     } as unknown as AggregatedObjectRepository;
     const viewService = {
@@ -94,6 +95,7 @@ describe('GetObjectByIdEndpoint', () => {
           },
         ],
         voterWaivPowers: new Map(),
+        rankVoteProjection: emptyRankVoteProjection(),
       }),
     } as unknown as AggregatedObjectRepository;
     const viewService = {
@@ -143,11 +145,15 @@ describe('GetObjectByIdEndpoint', () => {
         governance: DEFAULT_GOVERNANCE_SNAPSHOT,
       }),
     );
-    expect(projectionService.project).toHaveBeenCalledWith(mockView, {
-      locale: 'en-US',
-      governanceObjectIdFromHeader: undefined,
-      viewerAccount: 'alice',
-    });
+    expect(projectionService.project).toHaveBeenCalledWith(
+      mockView,
+      expect.objectContaining({
+        locale: 'en-US',
+        governanceObjectIdFromHeader: undefined,
+        viewerAccount: 'alice',
+        rankVoteProjection: expect.any(Object),
+      }),
+    );
     expect(followsRepo.countByObjectId).toHaveBeenCalledWith('o1');
     expect(updatesRepo.countByObjectId).toHaveBeenCalledWith('o1');
   });
@@ -196,6 +202,7 @@ describe('GetObjectByIdEndpoint', () => {
           },
         ],
         voterWaivPowers: new Map(),
+        rankVoteProjection: emptyRankVoteProjection(),
       }),
     } as unknown as AggregatedObjectRepository;
     const viewService = {
@@ -263,6 +270,7 @@ describe('GetObjectByIdEndpoint', () => {
           },
         ],
         voterWaivPowers: new Map(),
+        rankVoteProjection: emptyRankVoteProjection(),
       }),
     } as unknown as AggregatedObjectRepository;
     const viewService = {
@@ -326,6 +334,7 @@ describe('GetObjectByIdEndpoint', () => {
           },
         ],
         voterWaivPowers: new Map(),
+        rankVoteProjection: emptyRankVoteProjection(),
       }),
     } as unknown as AggregatedObjectRepository;
     const viewService = {
@@ -362,6 +371,7 @@ describe('GetObjectByIdEndpoint', () => {
       mockView,
       expect.objectContaining({
         governanceObjectIdFromHeader: 'hdr-gov',
+        rankVoteProjection: expect.any(Object),
       }),
     );
   });
@@ -378,6 +388,7 @@ describe('GetObjectByIdEndpoint', () => {
           },
         ],
         voterWaivPowers: new Map(),
+        rankVoteProjection: emptyRankVoteProjection(),
       }),
     } as unknown as AggregatedObjectRepository;
     const viewService = {

@@ -29,7 +29,7 @@ registry.registerPath({
   path: '/query/v1/objects/resolve',
   summary: 'Resolve projected object by id',
   description:
-    'Loads aggregated DB rows for `object_id`, resolves fields via `ObjectViewService`, projects to `ProjectedObject` JSON (IPFS URLs, ref summaries, authority flags). When `update_types` is omitted or empty, every update type present on the object is resolved. Only `objects_core` rows with `status = active` are loaded. Includes `followers_count` from `user_object_follows` and `updates_count` as total rows in `object_updates` for this object. Returns 404 when the object does not exist.',
+    'Loads aggregated DB rows for `object_id`, resolves fields via `ObjectViewService`, projects to `ProjectedObject` JSON (IPFS URLs, ref summaries, authority flags). When `update_types` is omitted or empty, every update type present on the object is resolved. Only `objects_core` rows with `status = active` are loaded. Includes `followers_count` from `user_object_follows` and `updates_count` as total rows in `object_updates` for this object. The `fields.aggregateRating` value (when requested) is an array of aspect rows: `{ dimension, averageRating (0–10000 or null), userRating (viewer’s vote when `X-Viewer` is set, 0–10000 or null), totalVoters }` from `rank_votes` aggregates. Returns 404 when the object does not exist.',
   request: {
     headers: z.object({
       'accept-language': z.string().optional().openapi({
@@ -45,7 +45,7 @@ registry.registerPath({
       }),
       'x-viewer': z.string().optional().openapi({
         description:
-          'Optional Hive account viewing the object; used for `hasAdministrativeAuthority`, `hasOwnershipAuthority`, and aggregate rating viewer vote.',
+          'Optional Hive account viewing the object; used for `hasAdministrativeAuthority`, `hasOwnershipAuthority`, and each `fields.aggregateRating[]` row\'s `userRating` (resolved from `rank_votes` for that viewer, latest `event_seq` per aspect `update_id`).',
       }),
     }),
     body: {

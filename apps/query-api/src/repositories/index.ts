@@ -20,6 +20,7 @@ export type {
   ObjectFollowJoinedRow,
 } from './user-object-follows.repository';
 export { AggregatedObjectRepository } from './aggregated-object.repository';
+export type { LoadAggregatedObjectsOptions } from './aggregated-object.repository';
 export { PostsRepository } from './posts.repository';
 export type { FeedBranchRow, PostVoteSummary } from './posts.repository';
 export { UserPostDraftsRepository } from './user-post-drafts.repository';

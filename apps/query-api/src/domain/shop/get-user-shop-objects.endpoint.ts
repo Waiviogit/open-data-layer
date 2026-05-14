@@ -69,9 +69,10 @@ export class GetUserShopObjectsEndpoint {
       return { items: [], cursor: null, hasMore: false };
     }
 
-    const { objects, voterWaivPowers } = await this.aggregatedObjectRepo.loadByObjectIds(
-      page.objectIds,
-    );
+    const { objects, voterWaivPowers, rankVoteProjection } =
+      await this.aggregatedObjectRepo.loadByObjectIds(page.objectIds, {
+        viewerAccount,
+      });
     const ordered = orderAggregatedByIds(objects, page.objectIds);
     const views = this.objectViewService.resolve(ordered, voterWaivPowers, {
       update_types: [...SHOP_CARD_UPDATE_TYPES],
@@ -84,6 +85,7 @@ export class GetUserShopObjectsEndpoint {
       includeSeo: false,
       governanceObjectIdFromHeader,
       viewerAccount,
+      rankVoteProjection,
     });
 
     return {

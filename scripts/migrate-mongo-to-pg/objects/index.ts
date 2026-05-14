@@ -59,6 +59,8 @@ type InsertUpdateRow = Omit<
   value_text: string | null;
   value_json: unknown | null;
   value_geo: ReturnType<typeof sql> | null;
+  /** Mirrors indexer: mean ODL rank (0–10000) across rank_votes for `aggregateRating` with `rank_aggregation: average`. */
+  rank_score?: number | null;
 };
 
 interface MigrationStats {
@@ -194,6 +196,23 @@ function mongoRankToOdlRank(mongoRank: number): number | null {
     return null;
   }
   return mongoRank * 1000;
+}
+
+/** Waivio Mongo uses **`rate`** for the tier; some exports use **`rank`** (same 0–10 scale). */
+function mongoTierScoreFromRatingVote(rv: MongoRatingVote): number | null {
+  const candidates: unknown[] = [rv.rank, rv.rate];
+  for (const raw of candidates) {
+    if (typeof raw === 'number' && Number.isFinite(raw)) {
+      return raw;
+    }
+    if (typeof raw === 'string' && raw.trim().length > 0) {
+      const n = Number(raw.trim());
+      if (Number.isFinite(n)) {
+        return n;
+      }
+    }
+  }
+  return null;
 }
 
 class MongoToPgMigrator {
@@ -381,6 +400,27 @@ class MongoToPgMigrator {
   private pushRankVote(row: NewRankVote): void {
     this.rankBuffer.push(row);
     this.stats.rankRowsBuffered += 1;
+  }
+
+  /**
+   * Resolver / projection read `rank_score` from `object_updates` (weighted average at indexer wire time).
+   * Legacy Mongo only has plain `rating_votes[]`; replicate `rank_aggregation: average` here with equal WAIV fallback.
+   */
+  private applyPersistedMeanRankScoreToBufferedAggregateRating(
+    updateId: string,
+    meanOdlRank: number,
+  ): void {
+    for (let i = this.updateBuffer.length - 1; i >= 0; i--) {
+      const row = this.updateBuffer[i];
+      if (
+        row &&
+        row.update_id === updateId &&
+        row.update_type === 'aggregateRating'
+      ) {
+        row.rank_score = meanOdlRank;
+        return;
+      }
+    }
   }
 
   processWObject(doc: MongoWObject): void {
@@ -640,22 +680,25 @@ class MongoToPgMigrator {
     if (entries.length === 0) {
       return;
     }
+    const odlRankValues: number[] = [];
     for (const rv of entries) {
       const voter = rv.voter?.trim();
       if (!voter) {
         this.stats.rankVotesSkippedNoVoter += 1;
         continue;
       }
-      const mongoRank = rv.rank;
-      if (mongoRank === undefined || mongoRank === null) {
+      const mongoTierRaw = mongoTierScoreFromRatingVote(rv);
+      if (mongoTierRaw === null) {
         this.stats.rankVotesSkippedOutOfRange += 1;
         continue;
       }
-      const odlRank = mongoRankToOdlRank(mongoRank);
+      const mongoTierRounded = Math.round(mongoTierRaw);
+      const odlRank = mongoRankToOdlRank(mongoTierRounded);
       if (odlRank === null) {
         this.stats.rankVotesSkippedOutOfRange += 1;
         continue;
       }
+      odlRankValues.push(odlRank);
       this.pushRankVote({
         update_id: updateId,
         object_id: objectId,
@@ -669,6 +712,12 @@ class MongoToPgMigrator {
           voter,
         ),
       });
+    }
+    if (odlRankValues.length > 0) {
+      const mean = Math.round(
+        odlRankValues.reduce((a, b) => a + b, 0) / odlRankValues.length,
+      );
+      this.applyPersistedMeanRankScoreToBufferedAggregateRating(updateId, mean);
     }
   }
 }

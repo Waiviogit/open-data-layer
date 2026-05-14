@@ -164,14 +164,26 @@ function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock
         break;
       }
       case 'rating': {
-        const rating01To5 = objectFields.ratingStars01To5(viewLike);
-        if (rating01To5 != null) {
-          blocks.push({
-            kind: 'rating',
-            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.rating,
-            rating01To5,
-          });
+        const aspects = objectFields.aggregateRatingAspects(viewLike);
+        if (aspects.length === 0) {
+          break;
         }
+        blocks.push({
+          kind: 'rating',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.rating,
+          aspects: aspects.map((a) => ({
+            dimension: a.dimension,
+            averageRating01To5:
+              a.averageRating != null && Number.isFinite(a.averageRating)
+                ? Math.min(5, Math.max(0, a.averageRating / 2000))
+                : null,
+            totalVoters: a.totalVoters,
+            viewerRating01To5:
+              a.userRating != null && Number.isFinite(a.userRating)
+                ? Math.min(5, Math.max(0, a.userRating / 2000))
+                : null,
+          })),
+        });
         break;
       }
       case 'tags': {
