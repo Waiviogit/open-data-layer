@@ -35,12 +35,12 @@ describe('object-projected-fields', () => {
     const menu = [
       { title: 'A', style: 'default', link_to_web: 'https://a.example' },
       { title: 'B', style: 'default', link_to_web: 'https://b.example' },
-      { title: 'C', style: 'highlight', link_to_object: 'ref-c' },
+      { title: 'C', style: 'highlight', link_to_object: 'ref-c', object_type: 'list' },
     ];
     const sort = { include: ['B', 'ref-c'], exclude: [] };
     const v = viewWithMenu(menu, sort);
     const items = applySortCustomToMenuItems(projectedMenuItems(v), projectedSortCustom(v));
-    expect(items.map((i) => i.title)).toEqual(['B', 'C', 'A']);
+    expect(items.map((i) => i.displayTitle)).toEqual(['B', 'C', 'A']);
   });
 
   it('excludes menu rows matched by sortCustom.exclude', () => {
@@ -51,7 +51,27 @@ describe('object-projected-fields', () => {
     const sort = { include: [], exclude: ['https://b.example'] };
     const v = viewWithMenu(menu, sort);
     const items = applySortCustomToMenuItems(projectedMenuItems(v), projectedSortCustom(v));
-    expect(items.map((i) => i.title)).toEqual(['A']);
+    expect(items.map((i) => i.displayTitle)).toEqual(['A']);
+  });
+
+  it('uses embedded object name as displayTitle when title is missing', () => {
+    const menu = [
+      {
+        style: 'standard',
+        object_type: 'page',
+        link_to_object: 'wsa-test-page',
+        object: {
+          object_id: 'wsa-test-page',
+          object_type: 'page',
+          fields: { name: 'Resolved page name', image: 'https://x/img' },
+        },
+      },
+    ];
+    const v = viewWithMenu(menu, null);
+    const items = projectedMenuItems(v);
+    expect(items).toHaveLength(1);
+    expect(items[0]?.title).toBeUndefined();
+    expect(items[0]?.displayTitle).toBe('Resolved page name');
   });
 
   it('parses geo latitude/longitude from numeric strings', () => {

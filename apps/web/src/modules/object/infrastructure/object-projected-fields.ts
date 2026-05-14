@@ -1,6 +1,6 @@
 import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
 
-import type { ProjectedMenuItem } from '../domain/projected-menu-item.types';
+import type { ProjectedMenuItem, ProjectedMenuItemObject } from '../domain/projected-menu-item.types';
 
 export type { ProjectedMenuItem } from '../domain/projected-menu-item.types';
 
@@ -26,6 +26,44 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 
 function readString(v: unknown): string | undefined {
   return typeof v === 'string' && v.trim().length > 0 ? v.trim() : undefined;
+}
+
+function trimString(v: unknown): string {
+  return typeof v === 'string' ? v.trim() : '';
+}
+
+function nameFromMenuItemEmbeddedObject(row: Record<string, unknown>): string | undefined {
+  const embedded = row['object'];
+  if (!isRecord(embedded)) {
+    return undefined;
+  }
+  const fields = embedded['fields'];
+  if (!isRecord(fields)) {
+    return undefined;
+  }
+  return readString(fields['name']);
+}
+
+function embeddedMenuTarget(row: Record<string, unknown>): ProjectedMenuItemObject | undefined {
+  const embedded = row['object'];
+  if (!isRecord(embedded)) {
+    return undefined;
+  }
+  const object_id = embedded['object_id'];
+  const object_type = embedded['object_type'];
+  const fieldsRaw = embedded['fields'];
+  if (typeof object_id !== 'string' || object_id.trim().length === 0) {
+    return undefined;
+  }
+  if (typeof object_type !== 'string' || object_type.trim().length === 0) {
+    return undefined;
+  }
+  const fields = isRecord(fieldsRaw) ? fieldsRaw : {};
+  return {
+    object_id: object_id.trim(),
+    object_type: object_type.trim(),
+    fields,
+  };
 }
 
 function toFiniteNumber(v: unknown): number | null {
@@ -172,25 +210,43 @@ export function projectedMenuItems(o: ProjectedObjectView): ProjectedMenuItem[] 
     if (!isRecord(row)) {
       continue;
     }
-    const title = readString(row.title);
     const style = readString(row.style);
-    if (!title || !style) {
+    if (!style) {
       continue;
     }
+
     const link_to_object = readString(row.link_to_object);
     const link_to_web = readString(row.link_to_web);
-    const object_type = readString(row.object_type);
-    const image = readString(row.image);
     if (!link_to_object && !link_to_web) {
       continue;
     }
+
+    const titleTrimmed = trimString(row.title);
+    if (link_to_web && !link_to_object && titleTrimmed.length === 0) {
+      continue;
+    }
+
+    const nameFromObject = nameFromMenuItemEmbeddedObject(row);
+    const displayTitleRaw =
+      titleTrimmed || nameFromObject || link_to_object || link_to_web || '';
+    const displayTitle = displayTitleRaw.trim();
+    if (displayTitle.length === 0) {
+      continue;
+    }
+
+    const image = readString(row.image);
+    const object_type = readString(row.object_type);
+    const embedded = embeddedMenuTarget(row);
+
     out.push({
-      title,
+      displayTitle,
       style,
+      ...(titleTrimmed.length > 0 ? { title: titleTrimmed } : {}),
       ...(image ? { image } : {}),
       ...(link_to_object ? { link_to_object } : {}),
       ...(link_to_web ? { link_to_web } : {}),
       ...(object_type ? { object_type } : {}),
+      ...(embedded ? { object: embedded } : {}),
     });
   }
   return out;
@@ -214,6 +270,9 @@ export function projectedSortCustom(o: ProjectedObjectView): ProjectedSortCustom
 
 function menuItemMatchesKey(item: ProjectedMenuItem, key: string): boolean {
   if (item.title === key) {
+    return true;
+  }
+  if (item.displayTitle === key) {
     return true;
   }
   if (item.link_to_object === key || item.link_to_web === key) {

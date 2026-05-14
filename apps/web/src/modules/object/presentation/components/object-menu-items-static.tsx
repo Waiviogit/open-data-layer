@@ -11,7 +11,7 @@ export type ObjectMenuItemsStaticProps = {
 };
 
 function itemKey(item: ProjectedMenuItem, index: number): string {
-  return `${item.title}-${item.link_to_object ?? ''}-${item.link_to_web ?? ''}-${index}`;
+  return `${item.displayTitle}-${item.link_to_object ?? ''}-${item.link_to_web ?? ''}-${index}`;
 }
 
 /**
@@ -47,7 +47,7 @@ function MenuItemVisual({ item }: { item: ProjectedMenuItem }) {
           className="h-auto max-h-28 w-full object-cover"
           unoptimized={shouldUnoptimizeRemoteImage(item.image)}
         />
-        <span className="sr-only">{item.title}</span>
+        <span className="sr-only">{item.displayTitle}</span>
       </button>
     );
   }
@@ -66,7 +66,7 @@ function MenuItemVisual({ item }: { item: ProjectedMenuItem }) {
           className="size-7 shrink-0 object-contain"
           unoptimized={shouldUnoptimizeRemoteImage(item.image)}
         />
-        <span className="truncate">{item.title}</span>
+        <span className="truncate">{item.displayTitle}</span>
       </button>
     );
   }
@@ -80,7 +80,7 @@ function MenuItemVisual({ item }: { item: ProjectedMenuItem }) {
           : 'border-border bg-surface text-fg hover:bg-surface-alt'
       }`}
     >
-      {item.title}
+      {item.displayTitle}
     </button>
   );
 }

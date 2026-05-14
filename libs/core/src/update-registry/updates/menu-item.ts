@@ -2,6 +2,44 @@ import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
 import { UPDATE_TYPES } from '../update-types';
 
+/**
+ * Menu row JSON. Rules:
+ * - At least one of `link_to_object` or `link_to_web`.
+ * - If `link_to_object` is set: `object_type` is required; `title` optional.
+ * - If `link_to_web` is set: `title` required (non-empty after trim).
+ * - If both links are set, both rule sets apply.
+ */
+export const UPDATE_MENU_ITEM_SCHEMA = z
+  .object({
+    title: z.string().optional(),
+    style: z.string().min(1),
+    image: z.string().optional(),
+    link_to_object: z.string().min(3).max(256).optional(),
+    object_type: z.string().optional(),
+    link_to_web: z.url().optional(),
+  })
+  .refine((v) => v.link_to_object !== undefined || v.link_to_web !== undefined, {
+    message: 'Either link_to_object or link_to_web is required',
+  })
+  .refine(
+    (v) => {
+      if (v.link_to_object !== undefined && v.link_to_object.trim().length >= 3) {
+        return (v.object_type?.trim() ?? '').length > 0;
+      }
+      return true;
+    },
+    { message: 'object_type is required when link_to_object is set', path: ['object_type'] },
+  )
+  .refine(
+    (v) => {
+      if (v.link_to_web !== undefined) {
+        return (v.title?.trim() ?? '').length > 0;
+      }
+      return true;
+    },
+    { message: 'title is required when link_to_web is set', path: ['title'] },
+  );
+
 export const UPDATE_MENU_ITEM: UpdateDefinition = {
   update_type: UPDATE_TYPES.MENU_ITEM,
   description: 'Menu item or dish entry.',
@@ -9,17 +47,5 @@ export const UPDATE_MENU_ITEM: UpdateDefinition = {
   cardinality: 'multi',
   namespace: 'odl',
   localizable: true,
-  /** Either link_to_object or link_to_web must be provided. */
-  schema: z
-    .object({
-      title: z.string().min(1),
-      style: z.string().min(1),
-      image: z.string().optional(),
-      link_to_object: z.string().min(3).max(256).optional(),
-      object_type: z.string().optional(),
-      link_to_web: z.url().optional(),
-    })
-    .refine((v) => v.link_to_object !== undefined || v.link_to_web !== undefined, {
-      message: 'Either link_to_object or link_to_web is required',
-    }),
+  schema: UPDATE_MENU_ITEM_SCHEMA,
 };
