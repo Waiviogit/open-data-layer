@@ -42,6 +42,7 @@ import {
   transformJsonBody,
   transformJsonBodyMulti,
   transformPromotionSaleFromField,
+  transformTagCategoryItemFromField,
 } from './value-strategies';
 
 const BATCH_SIZE = 5000;
@@ -95,9 +96,26 @@ function geoJsonPointText(lon: number, lat: number): { geoJsonText: string } {
   };
 }
 
+/** JSON number or string (e.g. Mongo stores `"53.4"`); rejects NaN / non-finite. */
+function parseGeoCoordinate(raw: unknown): number | null {
+  if (typeof raw === 'number') {
+    return Number.isFinite(raw) ? raw : null;
+  }
+  if (typeof raw === 'string') {
+    const t = raw.trim();
+    if (!t.length) {
+      return null;
+    }
+    const n = Number(t);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
 /**
  * Accepts GeoJSON Point in `body` or legacy Waivio-style
  * `{"latitude": number, "longitude": number}` (order → [lon, lat] for PostGIS).
+ * Coordinates may be strings after JSON.parse (same as Mongo exports).
  */
 function parseGeoPointFromBody(body: string | undefined): {
   geoJsonText: string;
@@ -118,16 +136,18 @@ function parseGeoPointFromBody(body: string | undefined): {
   const o = parsed as Record<string, unknown>;
 
   if (o.type === 'Point' && Array.isArray(o.coordinates)) {
-    const [lon, lat] = o.coordinates;
-    if (typeof lon !== 'number' || typeof lat !== 'number') {
+    const [lonRaw, latRaw] = o.coordinates;
+    const lon = parseGeoCoordinate(lonRaw);
+    const lat = parseGeoCoordinate(latRaw);
+    if (lon === null || lat === null) {
       return null;
     }
     return geoJsonPointText(lon, lat);
   }
 
-  const lat = o.latitude;
-  const lon = o.longitude;
-  if (typeof lat !== 'number' || typeof lon !== 'number') {
+  const lat = parseGeoCoordinate(o.latitude);
+  const lon = parseGeoCoordinate(o.longitude);
+  if (lat === null || lon === null) {
     return null;
   }
   return geoJsonPointText(lon, lat);
@@ -468,12 +488,19 @@ class MongoToPgMigrator {
       value_geo = sql`ST_GeomFromGeoJSON(${parsed.geoJsonText}::text)::geography`;
     } else {
       const promoSale = transformPromotionSaleFromField(updateType, field);
+      const tagCategoryItem = transformTagCategoryItemFromField(updateType, field);
       if (promoSale !== null) {
         if (!promoSale.ok) {
           this.stats.fieldsSkippedBadPayload += 1;
           return;
         }
         value_json = promoSale.value;
+      } else if (tagCategoryItem !== null) {
+        if (!tagCategoryItem.ok) {
+          this.stats.fieldsSkippedBadPayload += 1;
+          return;
+        }
+        value_json = tagCategoryItem.value;
       } else {
         const multi = transformJsonBodyMulti(
           legacyName,

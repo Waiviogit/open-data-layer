@@ -495,6 +495,29 @@ function normalizeLegacyEpoch(n: number): number {
 }
 
 /**
+ * Legacy `categoryItem`: `body` holds the tag value, `tagCategory` holds the category name.
+ * Produces ODL `tagCategoryItem` JSON `{ value, category }`.
+ */
+export function transformTagCategoryItemFromField(
+  updateType: string,
+  field: MongoWObjectField,
+): JsonTransformResult | null {
+  if (updateType !== 'tagCategoryItem') {
+    return null;
+  }
+  const value = typeof field.body === 'string' ? field.body.trim() : '';
+  const category =
+    typeof field.tagCategory === 'string' ? field.tagCategory.trim() : '';
+  if (!value.length || !category.length) {
+    return {
+      ok: false,
+      reason: 'tagCategoryItem: missing or empty body (value) or tagCategory',
+    };
+  }
+  return { ok: true, value: { value, category } as JsonValue };
+}
+
+/**
  * Legacy `promotion` / `sale`: `value` from `field.body`, dates from `field.startDate` / `field.endDate`.
  * Returns `null` for other update types (caller uses {@link transformJsonBody}).
  */

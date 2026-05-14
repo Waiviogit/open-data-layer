@@ -24,8 +24,7 @@ import {
   projectedMenuItems,
   projectedPrice,
   projectedSortCustom,
-  projectedTagCategoryItemValues,
-  projectedTagCategoryNames,
+  projectedTagCategorySections,
   projectedTelephones,
   projectedWebsiteEntries,
   projectedWorkHours,
@@ -119,10 +118,6 @@ function workHoursLines(raw: string): string[] {
   return split.length > 0 ? split : [raw.trim()];
 }
 
-function mergeUniqueStrings(a: string[], b: string[]): string[] {
-  return [...new Set([...a, ...b])];
-}
-
 function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock[] {
   const blocks: ObjectLeftRailBlock[] = [];
 
@@ -163,15 +158,12 @@ function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock
         break;
       }
       case 'tags': {
-        const labels = mergeUniqueStrings(
-          projectedTagCategoryNames(viewLike),
-          projectedTagCategoryItemValues(viewLike),
-        );
-        if (labels.length > 0) {
+        const sections = projectedTagCategorySections(viewLike);
+        if (sections.length > 0) {
           blocks.push({
             kind: 'tags',
             headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.tags,
-            labels,
+            sections,
           });
         }
         break;

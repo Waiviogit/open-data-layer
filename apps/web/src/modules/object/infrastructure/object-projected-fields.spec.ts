@@ -1,10 +1,11 @@
 import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
 
 import {
-  applySortCustomToMenuItems,
   projectedGeoLatLon,
+  projectedTagCategorySections,
   projectedMenuItems,
   projectedSortCustom,
+  applySortCustomToMenuItems,
 } from './object-projected-fields';
 
 function viewWithMenu(
@@ -72,5 +73,28 @@ describe('object-projected-fields', () => {
       hasOwnershipAuthority: false,
     };
     expect(projectedGeoLatLon(v)).toEqual({ latitude: 10.5, longitude: -66.89 });
+  });
+
+  it('groups tag categories and hides empty ones (tagCategory order)', () => {
+    const v: ProjectedObjectView = {
+      object_id: 'x',
+      object_type: 'business',
+      semantic_type: null,
+      weight: null,
+      fields: {
+        tagCategory: ['Pros', 'Cons', 'Test', 'test kate'],
+        tagCategoryItem: [
+          { value: 'testingdi', category: 'Test' },
+          { value: 'automation', category: 'Pros' },
+          { value: 'development', category: 'Pros' },
+        ],
+      },
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+    };
+    const sections = projectedTagCategorySections(v);
+    expect(sections.map((s) => s.categoryTitle)).toEqual(['Pros', 'Test']);
+    expect(sections[0].values).toEqual(['automation', 'development']);
+    expect(sections[1].values).toEqual(['testingdi']);
   });
 });

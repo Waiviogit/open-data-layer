@@ -55,6 +55,7 @@ const DEMO_SHOP_API: ProjectedObjectWithCountsView = {
       'Tolon Accesorios C.A. offers phone cases, chargers, and repairs with same-day service for common models. Mock description for layout parity.',
     aggregateRating: { averageRating: 8000, userRating: null },
     tagCategoryItem: [{ value: 'hbd', category: 'topics' }],
+    tagCategory: ['topics'],
     workHours: [
       'Monday — 9:00 AM–7:00 PM',
       'Tuesday — 9:00 AM–7:00 PM',

@@ -55,7 +55,8 @@ export type ObjectLeftRailBlock =
   | {
       kind: 'tags';
       headingLabel: string;
-      labels: string[];
+      /** Grouped by `tagCategory` × `tagCategoryItem.category`; empty categories omitted. */
+      sections: { categoryTitle: string; values: string[] }[];
     }
   | {
       kind: 'gallery';

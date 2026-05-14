@@ -116,14 +116,23 @@ export function ObjectLeftRailPanel({ blocks }: ObjectLeftRailPanelProps) {
             return (
               <aside key={`tags-${index}`} className={cardClass}>
                 <p className="font-medium text-fg">{block.headingLabel}</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {block.labels.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-btn bg-surface px-2 py-1 text-caption text-fg"
-                    >
-                      {tag}
-                    </span>
+                <div className="mt-3 space-y-4">
+                  {block.sections.map((section) => (
+                    <div key={section.categoryTitle}>
+                      <p className="text-fg text-sm font-normal">
+                        {section.categoryTitle}:
+                      </p>
+                      <div className="mt-1.5 flex flex-wrap gap-2">
+                        {section.values.map((tag) => (
+                          <span
+                            key={`${section.categoryTitle}-${tag}`}
+                            className="rounded-btn bg-surface px-2 py-1 text-caption text-fg"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               </aside>

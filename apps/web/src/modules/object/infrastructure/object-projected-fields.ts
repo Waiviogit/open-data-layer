@@ -258,6 +258,85 @@ export function projectedEmail(o: ProjectedObjectView): string | null {
   return typeof raw === 'string' && raw.includes('@') ? raw.trim() : null;
 }
 
+/** One row of `tagCategoryItem` after projection. */
+export type ProjectedTagCategoryItemRow = {
+  value: string;
+  category: string;
+};
+
+export type TagCategorySectionView = {
+  /** Display label from `tagCategory` / item `category`. */
+  categoryTitle: string;
+  values: string[];
+};
+
+export function parseTagCategoryItemRows(o: ProjectedObjectView): ProjectedTagCategoryItemRow[] {
+  const raw = o.fields.tagCategoryItem;
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  const rows: ProjectedTagCategoryItemRow[] = [];
+  for (const item of raw) {
+    if (!isRecord(item)) {
+      continue;
+    }
+    const value = readString(item.value);
+    const category = readString(item.category);
+    if (value && category) {
+      rows.push({ value, category });
+    }
+  }
+  return rows;
+}
+
+/**
+ * View mode: sections follow `tagCategory` order; omit categories with no matching items.
+ * If `tagCategory` is empty but items exist, sections follow first-seen category order in items.
+ */
+export function projectedTagCategorySections(o: ProjectedObjectView): TagCategorySectionView[] {
+  const rows = parseTagCategoryItemRows(o);
+  if (rows.length === 0) {
+    return [];
+  }
+
+  const valuesByCategory = new Map<string, string[]>();
+  for (const { category, value } of rows) {
+    const existing = valuesByCategory.get(category);
+    if (!existing) {
+      valuesByCategory.set(category, [value]);
+    } else if (!existing.includes(value)) {
+      existing.push(value);
+    }
+  }
+
+  const orderedNames = projectedTagCategoryNames(o);
+  const categorySequence =
+    orderedNames.length > 0
+      ? orderedNames
+      : distinctCategoryOrderFromRows(rows);
+
+  const sections: TagCategorySectionView[] = [];
+  for (const name of categorySequence) {
+    const values = valuesByCategory.get(name);
+    if (values && values.length > 0) {
+      sections.push({ categoryTitle: name, values });
+    }
+  }
+  return sections;
+}
+
+function distinctCategoryOrderFromRows(rows: ProjectedTagCategoryItemRow[]): string[] {
+  const seen = new Set<string>();
+  const order: string[] = [];
+  for (const { category } of rows) {
+    if (!seen.has(category)) {
+      seen.add(category);
+      order.push(category);
+    }
+  }
+  return order;
+}
+
 /** Tag category names (`tagCategory` multi text). */
 export function projectedTagCategoryNames(o: ProjectedObjectView): string[] {
   const raw = o.fields.tagCategory;
@@ -269,23 +348,9 @@ export function projectedTagCategoryNames(o: ProjectedObjectView): string[] {
     .map((x) => x.trim());
 }
 
-/** All `tagCategoryItem` value labels for chips. */
+/** Collects `tagCategoryItem.value` in API order (legacy helpers / tagline). */
 export function projectedTagCategoryItemValues(o: ProjectedObjectView): string[] {
-  const raw = o.fields.tagCategoryItem;
-  if (!Array.isArray(raw)) {
-    return [];
-  }
-  const labels: string[] = [];
-  for (const item of raw) {
-    if (!isRecord(item)) {
-      continue;
-    }
-    const v = item.value;
-    if (typeof v === 'string' && v.trim().length > 0) {
-      labels.push(v.trim());
-    }
-  }
-  return labels;
+  return parseTagCategoryItemRows(o).map((r) => r.value);
 }
 
 /** HTTPS URLs from projected gallery items (resolved `url` when present). */
