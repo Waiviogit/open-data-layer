@@ -54,6 +54,14 @@ const DEMO_SHOP_API: ProjectedObjectWithCountsView = {
     description:
       'Tolon Accesorios C.A. offers phone cases, chargers, and repairs with same-day service for common models. Mock description for layout parity.',
     aggregateRating: { averageRating: 8000, userRating: null },
+    parent: {
+      object_id: 'demo-parent-brand',
+      object_type: 'business',
+      fields: {
+        image: '/images/logo.png',
+        name: 'Demo brand parent',
+      },
+    },
     tagCategoryItem: [{ value: 'hbd', category: 'topics' }],
     tagCategory: ['topics'],
     workHours: [
@@ -97,8 +105,18 @@ const DEMO_SHOP_API: ProjectedObjectWithCountsView = {
       state: 'Miranda',
     },
     website: { title: 'Official site', link: 'https://example.com' },
+    link: [
+      { type: 'facebook', value: '@tolon' },
+      { type: 'twitter', value: '@tolon_shop' },
+      { type: 'hive', value: 'tolon' },
+    ],
     telephone: '+58 212-555-0100',
     email: 'hello@example.com',
+    walletAddress: [
+      { symbol: 'Bitcoin (BTC)', address: 'bc1qexample0123456789' },
+      { title: 'You can support us with btc!', symbol: 'Bitcoin (BTC)', address: 'bc1qexample0123456789' },
+      { symbol: 'HIVE', address: 'demo-hive-account' },
+    ],
     price: '29.99',
   },
   followers_count: 0,

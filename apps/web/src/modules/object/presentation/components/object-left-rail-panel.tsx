@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import type { ObjectLeftRailBlock } from '../../domain/object-page.types';
@@ -65,6 +66,38 @@ export function ObjectLeftRailPanel({ blocks }: ObjectLeftRailPanelProps) {
                 <div className="mt-3">
                   <ObjectMenuItemsStatic items={block.items} />
                 </div>
+              </aside>
+            );
+          case 'parent':
+            return (
+              <aside key={`parent-${index}`} className={cardClass}>
+                <p className="font-medium text-fg">{block.headingLabel}</p>
+                <Link
+                  href={`/object/${encodeURIComponent(block.objectId)}`}
+                  prefetch={false}
+                  className="mt-3 -mx-1 -my-1 flex min-w-0 items-center gap-2.5 rounded-btn p-1 transition-colors hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                >
+                  <div className="relative size-10 shrink-0 overflow-hidden rounded-btn border border-border bg-surface">
+                    {block.imageUrl ? (
+                      <Image
+                        src={block.imageUrl}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        sizes="40px"
+                        unoptimized={shouldUnoptimizeRemoteImage(block.imageUrl)}
+                      />
+                    ) : (
+                      <div
+                        className="flex size-full items-center justify-center bg-surface-alt text-micro text-muted"
+                        aria-hidden
+                      >
+                        —
+                      </div>
+                    )}
+                  </div>
+                  <span className="min-w-0 break-words text-accent">{block.name}</span>
+                </Link>
               </aside>
             );
           case 'description': {
@@ -239,6 +272,58 @@ export function ObjectLeftRailPanel({ blocks }: ObjectLeftRailPanelProps) {
               <aside key={`email-${index}`} className={cardClass}>
                 <p className="font-medium text-fg">{block.headingLabel}</p>
                 <p className="mt-2 break-all">{block.address}</p>
+              </aside>
+            );
+          case 'walletAddress':
+            return (
+              <aside key={`wallet-${index}`} className={cardClass}>
+                <p className="font-medium text-fg">{block.headingLabel}</p>
+                <ul className="mt-3 list-none space-y-2 p-0">
+                  {block.items.map((row, rowIndex) => (
+                    <li key={`${row.lineText}-${rowIndex}`} className="flex gap-2">
+                      <div
+                        className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-btn border border-border/80 bg-external-brand-well backdrop-blur-sm shadow-inset"
+                        aria-hidden
+                      >
+                        <img
+                          src={row.iconSrc}
+                          alt=""
+                          width={22}
+                          height={22}
+                          className="size-[22px] object-contain"
+                        />
+                      </div>
+                      <span className="min-w-0 flex-1 break-words leading-snug text-accent">
+                        {row.lineText}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </aside>
+            );
+          case 'link':
+            return (
+              <aside key={`link-${index}`} className={cardClass}>
+                <p className="font-medium text-fg">{block.headingLabel}</p>
+                <ul className="mt-3 list-none space-y-2 p-0">
+                  {block.items.map((row, rowIndex) => (
+                    <li key={`${row.label}-${rowIndex}`} className="flex items-center gap-2">
+                      <div
+                        className="flex size-9 shrink-0 items-center justify-center rounded-btn border border-border/80 bg-external-brand-well backdrop-blur-sm shadow-inset"
+                        aria-hidden
+                      >
+                        <img
+                          src={row.iconSrc}
+                          alt=""
+                          width={22}
+                          height={22}
+                          className="size-[22px] object-contain"
+                        />
+                      </div>
+                      <span className="text-accent">{row.label}</span>
+                    </li>
+                  ))}
+                </ul>
               </aside>
             );
           default: {

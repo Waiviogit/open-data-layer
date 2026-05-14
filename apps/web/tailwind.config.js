@@ -60,6 +60,8 @@ module.exports = {
         'surface-control': 'var(--color-surface-control)',
         'accent-alt': 'var(--color-accent-alt)',
         'accent-hover': 'var(--color-accent-hover)',
+        /** Tile behind PNG/SVG social & wallet marks for contrast across themes */
+        'external-brand-well': 'var(--color-external-brand-well)',
       },
       fontFamily: {
         display: ['var(--font-display)'],

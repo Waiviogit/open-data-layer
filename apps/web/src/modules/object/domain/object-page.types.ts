@@ -41,6 +41,13 @@ export type ObjectLeftRailBlock =
       items: ProjectedMenuItem[];
     }
   | {
+      kind: 'parent';
+      headingLabel: string;
+      objectId: string;
+      name: string;
+      imageUrl: string | null;
+    }
+  | {
       kind: 'description';
       headingLabel: string;
       text: string;
@@ -90,6 +97,12 @@ export type ObjectLeftRailBlock =
       entries: { title: string; link: string }[];
     }
   | {
+      kind: 'link';
+      headingLabel: string;
+      /** Icon + visible platform label (inactive; URLs not shown until actions land). */
+      items: { iconSrc: string; label: string }[];
+    }
+  | {
       kind: 'phones';
       headingLabel: string;
       numbers: string[];
@@ -98,6 +111,11 @@ export type ObjectLeftRailBlock =
       kind: 'email';
       headingLabel: string;
       address: string;
+    }
+  | {
+      kind: 'walletAddress';
+      headingLabel: string;
+      items: { iconSrc: string; lineText: string }[];
     };
 
 export type ObjectPageViewModel = {

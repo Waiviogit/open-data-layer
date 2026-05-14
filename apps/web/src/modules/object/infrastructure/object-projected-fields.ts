@@ -116,6 +116,52 @@ export function projectedAddressDisplayLine(o: ProjectedObjectView): string | nu
   return s ? formatProjectedAddress(s) : null;
 }
 
+/**
+ * Parent chain link from projected {@link libs/core/src/update-registry/updates/parent.ts}
+ * (`object_ref`), or same payload hoisted to the resolved object root.
+ */
+export type ProjectedParentRow = {
+  objectId: string;
+  name: string;
+  imageUrl: string | null;
+};
+
+function parentPayloadRecord(o: ProjectedObjectView): Record<string, unknown> | null {
+  const elevated = (o as unknown as Record<string, unknown>)['parent'];
+  if (isRecord(elevated)) {
+    return elevated;
+  }
+  const f = o.fields['parent'];
+  return isRecord(f) ? f : null;
+}
+
+export function projectedParentRow(o: ProjectedObjectView): ProjectedParentRow | null {
+  const raw = parentPayloadRecord(o);
+  if (!raw) {
+    return null;
+  }
+  const objectIdRaw = typeof raw.object_id === 'string' ? raw.object_id.trim() : '';
+  if (!objectIdRaw.length) {
+    return null;
+  }
+  let imageUrl: string | null = null;
+  let nameFromFields = '';
+  const nested = raw.fields;
+  if (isRecord(nested)) {
+    nameFromFields = readString(nested.name) ?? '';
+    const img = nested.image;
+    if (typeof img === 'string' && img.trim().length > 0) {
+      imageUrl = img.trim();
+    }
+  }
+  const name = nameFromFields.length > 0 ? nameFromFields : objectIdRaw;
+  return {
+    objectId: objectIdRaw,
+    name,
+    imageUrl,
+  };
+}
+
 export function projectedMenuItems(o: ProjectedObjectView): ProjectedMenuItem[] {
   const raw = o.fields.menuItem;
   if (!Array.isArray(raw)) {
@@ -258,6 +304,151 @@ export function projectedEmail(o: ProjectedObjectView): string | null {
   return typeof raw === 'string' && raw.includes('@') ? raw.trim() : null;
 }
 
+/**
+ * Canonical `link.type` strings — mirror {@link libs/core/src/update-registry/updates/link.ts}
+ * (do not import `@opden-data-layer/core` in this Next-facing module).
+ */
+const OBJECT_LINK_KINDS = [
+  'facebook',
+  'twitter',
+  'youtube',
+  'tiktok',
+  'reddit',
+  'linkedin',
+  'telegram',
+  'whatsapp',
+  'pinterest',
+  'twitch',
+  'snapchat',
+  'instagram',
+  'github',
+  'hive',
+] as const;
+
+export type ProjectedObjectLinkKind = (typeof OBJECT_LINK_KINDS)[number];
+
+function isProjectedLinkKind(type: string): type is ProjectedObjectLinkKind {
+  return (OBJECT_LINK_KINDS as readonly string[]).includes(type);
+}
+
+/** Public asset for social/channel icon (Waivio-style filenames under `/images/icons/`). */
+export function linkKindPublicIconSrc(kind: ProjectedObjectLinkKind): string {
+  switch (kind) {
+    case 'facebook':
+      return '/images/icons/facebook-logo.png';
+    case 'twitter':
+      return '/images/icons/twitter-x.svg';
+    case 'youtube':
+      return '/images/icons/social/youtube.svg';
+    case 'tiktok':
+      return '/images/icons/tiktok.svg';
+    case 'reddit':
+      return '/images/icons/reddit.png';
+    case 'linkedin':
+      return '/images/icons/social/linkedin.svg';
+    case 'telegram':
+      return '/images/icons/telegram.png';
+    case 'whatsapp':
+      return '/images/icons/whatsapp.png';
+    case 'pinterest':
+      return '/images/icons/pinterest.png';
+    case 'twitch':
+      return '/images/icons/twitch.png';
+    case 'snapchat':
+      return '/images/icons/snapchat.svg';
+    case 'instagram':
+      return '/images/icons/social/instagram.svg';
+    case 'github':
+      return '/images/icons/social/github.svg';
+    case 'hive':
+      return '/images/icons/cryptocurrencies/hive.png';
+    default: {
+      const _e: never = kind;
+      return _e;
+    }
+  }
+}
+
+/** Platform caption as in legacy sidebar (inactive text). */
+export function linkKindDisplayLabel(kind: ProjectedObjectLinkKind | string): string {
+  switch (kind) {
+    case 'facebook':
+      return 'Facebook';
+    case 'twitter':
+      return 'X';
+    case 'youtube':
+      return 'YouTube';
+    case 'tiktok':
+      return 'TikTok';
+    case 'reddit':
+      return 'Reddit';
+    case 'linkedin':
+      return 'LinkedIn';
+    case 'telegram':
+      return 'Telegram';
+    case 'whatsapp':
+      return 'WhatsApp';
+    case 'pinterest':
+      return 'Pinterest';
+    case 'twitch':
+      return 'Twitch';
+    case 'snapchat':
+      return 'Snapchat';
+    case 'instagram':
+      return 'Instagram';
+    case 'github':
+      return 'GitHub';
+    case 'hive':
+      return 'Hive';
+    default:
+      if (kind.length === 0) {
+        return kind;
+      }
+      return `${kind.slice(0, 1).toUpperCase()}${kind.slice(1)}`;
+  }
+}
+
+export type ProjectedObjectLinkRow = {
+  iconSrc: string;
+  label: string;
+};
+
+/**
+ * Rows from projected `fields.link` (multi JSON `LINK` update).
+ * @see libs/core/src/update-registry/updates/link.ts
+ * Preserves API order; shows icon + channel label only (URLs deferred until actions exist).
+ */
+export function projectedObjectLinkRows(o: ProjectedObjectView): ProjectedObjectLinkRow[] {
+  const raw = o.fields.link;
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  const rows: ProjectedObjectLinkRow[] = [];
+  for (const item of raw) {
+    if (!isRecord(item)) {
+      continue;
+    }
+    const typeRaw = readString(item.type);
+    const valueRaw = typeof item.value === 'string' ? item.value.trim() : '';
+    if (!typeRaw || valueRaw.length === 0) {
+      continue;
+    }
+    const typeNorm = typeRaw.trim().toLowerCase();
+    if (!isProjectedLinkKind(typeNorm)) {
+      rows.push({
+        iconSrc: '/images/icons/link-icon.svg',
+        label: linkKindDisplayLabel(typeNorm),
+      });
+      continue;
+    }
+    rows.push({
+      iconSrc: linkKindPublicIconSrc(typeNorm),
+      label: linkKindDisplayLabel(typeNorm),
+    });
+  }
+  return rows;
+}
+
 /** One row of `tagCategoryItem` after projection. */
 export type ProjectedTagCategoryItemRow = {
   value: string;
@@ -351,6 +542,97 @@ export function projectedTagCategoryNames(o: ProjectedObjectView): string[] {
 /** Collects `tagCategoryItem.value` in API order (legacy helpers / tagline). */
 export function projectedTagCategoryItemValues(o: ProjectedObjectView): string[] {
   return parseTagCategoryItemRows(o).map((r) => r.value);
+}
+
+const CRYPTOCURRENCY_ICON_DIR = '/images/icons/cryptocurrencies';
+
+/** One row for left-rail wallet display (non-interactive until copy/deeplinks exist). */
+export type ProjectedWalletAddressRow = {
+  iconSrc: string;
+  lineText: string;
+};
+
+const WALLET_NAME_IN_PARENS = /^(.+?)\s*\([^)]+\)\s*$/;
+
+/** Short display name for legacy `symbol`, e.g. `Bitcoin (BTC)` → `Bitcoin`, `LBTC` → `Lightning Bitcoin`. */
+export function walletSymbolDisplayName(symbol: string): string {
+  const t = symbol.trim();
+  if (!t) {
+    return t;
+  }
+  const upper = t.toUpperCase();
+  if (upper === 'LBTC') {
+    return 'Lightning Bitcoin';
+  }
+  if (upper === 'BTC') {
+    return 'Bitcoin';
+  }
+  if (upper === 'LTC') {
+    return 'Litecoin';
+  }
+  if (upper === 'ETH') {
+    return 'Ethereum';
+  }
+  const m = t.match(WALLET_NAME_IN_PARENS);
+  if (m) {
+    return m[1].trim();
+  }
+  return t;
+}
+
+/** Resolves public icon path under {@link CRYPTOCURRENCY_ICON_DIR} (Waivio parity filenames). */
+export function walletSymbolIconSrc(symbol: string): string {
+  const compact = symbol.trim().toUpperCase().replace(/\s+/g, '');
+  if (compact.includes('LIGHTNING') || compact === 'LBTC') {
+    return `${CRYPTOCURRENCY_ICON_DIR}/lightning_bitcoin.png`;
+  }
+  if (compact.includes('LITECOIN') || compact.endsWith('LTC')) {
+    return `${CRYPTOCURRENCY_ICON_DIR}/litecoin.png`;
+  }
+  if (compact.includes('ETHEREUM') || compact.endsWith('ETH')) {
+    return `${CRYPTOCURRENCY_ICON_DIR}/ethereum.png`;
+  }
+  if (compact === 'HBD' || compact.endsWith('HBD')) {
+    return `${CRYPTOCURRENCY_ICON_DIR}/hbd.png`;
+  }
+  if (compact === 'HIVE' || compact.endsWith('HIVE')) {
+    return `${CRYPTOCURRENCY_ICON_DIR}/hive.png`;
+  }
+  if (compact === 'WAIV' || compact.endsWith('WAIV')) {
+    return `${CRYPTOCURRENCY_ICON_DIR}/waiv.png`;
+  }
+  if (compact.includes('BITCOIN') || compact.endsWith('BTC')) {
+    return `${CRYPTOCURRENCY_ICON_DIR}/bitcoin.png`;
+  }
+  return `${CRYPTOCURRENCY_ICON_DIR}/bitcoin.png`;
+}
+
+/**
+ * Wallet list for view mode: preserves API order; icon + line per legacy rules
+ * (title-only when `title` set, else `Name: address`).
+ */
+export function projectedWalletAddressRows(o: ProjectedObjectView): ProjectedWalletAddressRow[] {
+  const raw = o.fields.walletAddress;
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  const rows: ProjectedWalletAddressRow[] = [];
+  for (const item of raw) {
+    if (!isRecord(item)) {
+      continue;
+    }
+    const symbol = readString(item.symbol);
+    const address = readString(item.address);
+    const title = item.title != null ? readString(item.title) : undefined;
+    if (!symbol || !address) {
+      continue;
+    }
+    const iconSrc = walletSymbolIconSrc(symbol);
+    const lineText =
+      title && title.length > 0 ? title : `${walletSymbolDisplayName(symbol)}: ${address}`;
+    rows.push({ iconSrc, lineText });
+  }
+  return rows;
 }
 
 /** HTTPS URLs from projected gallery items (resolved `url` when present). */

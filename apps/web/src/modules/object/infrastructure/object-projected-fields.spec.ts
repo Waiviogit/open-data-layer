@@ -1,11 +1,18 @@
 import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
 
 import {
+  applySortCustomToMenuItems,
   projectedGeoLatLon,
-  projectedTagCategorySections,
   projectedMenuItems,
   projectedSortCustom,
-  applySortCustomToMenuItems,
+  projectedTagCategorySections,
+  projectedWalletAddressRows,
+  projectedObjectLinkRows,
+  projectedParentRow,
+  linkKindPublicIconSrc,
+  linkKindDisplayLabel,
+  walletSymbolDisplayName,
+  walletSymbolIconSrc,
 } from './object-projected-fields';
 
 function viewWithMenu(
@@ -96,5 +103,122 @@ describe('object-projected-fields', () => {
     expect(sections.map((s) => s.categoryTitle)).toEqual(['Pros', 'Test']);
     expect(sections[0].values).toEqual(['automation', 'development']);
     expect(sections[1].values).toEqual(['testingdi']);
+  });
+
+  it('formats wallet rows: optional title hides address line', () => {
+    const v: ProjectedObjectView = {
+      object_id: 'x',
+      object_type: 'business',
+      semantic_type: null,
+      weight: null,
+      fields: {
+        walletAddress: [
+          { symbol: 'Bitcoin (BTC)', address: 'bc1qaaa' },
+          { title: 'You can support us with btc!', symbol: 'Bitcoin (BTC)', address: 'bc1qaaa' },
+          { symbol: 'LBTC', address: 'test' },
+        ],
+      },
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+    };
+    const rows = projectedWalletAddressRows(v);
+    expect(rows.map((r) => r.lineText)).toEqual([
+      'Bitcoin: bc1qaaa',
+      'You can support us with btc!',
+      'Lightning Bitcoin: test',
+    ]);
+    expect(rows[0].iconSrc).toContain('/images/icons/cryptocurrencies/bitcoin.png');
+    expect(rows[2].iconSrc).toContain('/images/icons/cryptocurrencies/lightning_bitcoin.png');
+  });
+
+  it('walletSymbolDisplayName shortens legacy symbol strings', () => {
+    expect(walletSymbolDisplayName('Bitcoin (BTC)')).toBe('Bitcoin');
+    expect(walletSymbolDisplayName('LBTC')).toBe('Lightning Bitcoin');
+    expect(walletSymbolDisplayName('HIVE')).toBe('HIVE');
+  });
+
+  it('walletSymbolIconSrc maps known symbols to public cryptocurrency icons', () => {
+    expect(walletSymbolIconSrc('Ethereum (ETH)')).toContain('ethereum.png');
+    expect(walletSymbolIconSrc('HBD')).toContain('hbd.png');
+    expect(walletSymbolIconSrc('WAIV')).toContain('waiv.png');
+  });
+
+  it('maps link rows to Waivio-style icons and labels', () => {
+    const v: ProjectedObjectView = {
+      object_id: 'x',
+      object_type: 'business',
+      semantic_type: null,
+      weight: null,
+      fields: {
+        link: [
+          { type: 'twitter', value: 'x' },
+          { type: 'youtube', value: 'ch' },
+          { type: 'hive', value: 'acc' },
+        ],
+      },
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+    };
+    expect(projectedObjectLinkRows(v)).toEqual([
+      { iconSrc: '/images/icons/twitter-x.svg', label: 'X' },
+      { iconSrc: '/images/icons/social/youtube.svg', label: 'YouTube' },
+      { iconSrc: '/images/icons/cryptocurrencies/hive.png', label: 'Hive' },
+    ]);
+    expect(linkKindDisplayLabel('linkedin')).toBe('LinkedIn');
+    expect(linkKindPublicIconSrc('linkedin')).toContain('social/linkedin.svg');
+  });
+
+  it('reads parent from fields.parent projected RefSummary', () => {
+    const v: ProjectedObjectView = {
+      object_id: 'child',
+      object_type: 'shop',
+      semantic_type: null,
+      weight: null,
+      fields: {
+        parent: {
+          object_id: 'fcs-test-brand-02021105',
+          object_type: 'business',
+          fields: {
+            image: 'https://waivio.example/image.png',
+            name: 'test brand 02021105',
+          },
+        },
+      },
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+    };
+    expect(projectedParentRow(v)).toEqual({
+      objectId: 'fcs-test-brand-02021105',
+      name: 'test brand 02021105',
+      imageUrl: 'https://waivio.example/image.png',
+    });
+  });
+
+  it('reads parent hoisted on resolve payload when preferred over nested location', () => {
+    const v = {
+      object_id: 'child',
+      object_type: 'shop',
+      semantic_type: null,
+      weight: null,
+      fields: {
+        parent: {
+          object_id: 'nested',
+          object_type: 'business',
+          fields: { name: 'Nested' },
+        },
+      },
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+      parent: {
+        object_id: 'root-pref',
+        object_type: 'business',
+        fields: { name: 'Root wins', image: 'https://a' },
+      },
+    };
+    expect(projectedParentRow(v as unknown as ProjectedObjectView)).toEqual({
+      objectId: 'root-pref',
+      name: 'Root wins',
+      imageUrl: 'https://a',
+    });
   });
 });

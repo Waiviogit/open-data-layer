@@ -8,6 +8,7 @@
 
 /** Main about stack for non-special object types (subset implemented in ODL UI). */
 export const ABOUT_SECTION_BLOCK_ORDER = [
+  'parent',
   'description',
   'rating',
   'tags',
@@ -17,8 +18,10 @@ export const ABOUT_SECTION_BLOCK_ORDER = [
   'address',
   'geo',
   'websites',
+  'link',
   'phones',
   'email',
+  'walletAddress',
 ] as const;
 
 export type AboutSectionBlockId = (typeof ABOUT_SECTION_BLOCK_ORDER)[number];

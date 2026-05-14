@@ -22,11 +22,14 @@ import {
   projectedGalleryImageUrls,
   projectedGeoLatLon,
   projectedMenuItems,
+  projectedObjectLinkRows,
+  projectedParentRow,
   projectedPrice,
   projectedSortCustom,
   projectedTagCategorySections,
   projectedTelephones,
   projectedWebsiteEntries,
+  projectedWalletAddressRows,
   projectedWorkHours,
 } from './object-projected-fields';
 
@@ -135,6 +138,19 @@ function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock
 
   for (const step of ABOUT_SECTION_BLOCK_ORDER) {
     switch (step) {
+      case 'parent': {
+        const row = projectedParentRow(viewLike);
+        if (row) {
+          blocks.push({
+            kind: 'parent',
+            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.parent,
+            objectId: row.objectId,
+            name: row.name,
+            imageUrl: row.imageUrl,
+          });
+        }
+        break;
+      }
       case 'description': {
         const text = objectFields.description(viewLike)?.trim();
         if (text && text.length > 0) {
@@ -235,6 +251,17 @@ function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock
         }
         break;
       }
+      case 'link': {
+        const social = projectedObjectLinkRows(viewLike);
+        if (social.length > 0) {
+          blocks.push({
+            kind: 'link',
+            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.link,
+            items: social,
+          });
+        }
+        break;
+      }
       case 'phones': {
         const numbers = projectedTelephones(viewLike);
         if (numbers.length > 0) {
@@ -257,6 +284,17 @@ function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock
         }
         break;
       }
+      case 'walletAddress': {
+        const wallets = projectedWalletAddressRows(viewLike);
+        if (wallets.length > 0) {
+          blocks.push({
+            kind: 'walletAddress',
+            headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.walletAddress,
+            items: wallets,
+          });
+        }
+        break;
+      }
       default: {
         const _exhaustive: never = step;
         return _exhaustive;
@@ -271,6 +309,15 @@ export function projectedObjectWithCountsToPageModel(
   api: ProjectedObjectWithCountsView,
 ): ObjectPageViewModel {
   const fields = api.fields ?? {};
+
+  const rootParent = (api as Record<string, unknown>)['parent'];
+  const parentHoist =
+    rootParent !== null &&
+    typeof rootParent === 'object' &&
+    !Array.isArray(rootParent)
+      ? { parent: rootParent }
+      : {};
+
   const viewLike = {
     object_id: api.object_id,
     object_type: api.object_type,
@@ -279,7 +326,8 @@ export function projectedObjectWithCountsToPageModel(
     fields,
     hasAdministrativeAuthority: api.hasAdministrativeAuthority ?? false,
     hasOwnershipAuthority: api.hasOwnershipAuthority ?? false,
-  };
+    ...parentHoist,
+  } as ProjectedObjectView;
 
   const title = objectFields.name(viewLike)?.trim() || api.object_id;
   const subtitleTitleRaw = objectFields.titleUpdate(viewLike)?.trim();

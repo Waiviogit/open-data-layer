@@ -18,8 +18,11 @@ const UPDATE_TYPE_TO_LABEL: Record<string, string> = {
   address: 'Address',
   geo: 'Map',
   website: 'Website',
+  parent: 'Parent',
+  link: 'Links',
   telephone: 'Phone',
   email: 'Email',
+  walletAddress: 'Wallet',
   menuItem: 'Menu',
   sortCustom: 'Sort',
 };
@@ -36,8 +39,11 @@ export const OBJECT_LEFT_RAIL_BLOCK_LABEL: Record<string, string> = {
   address: 'Address',
   geo: 'Map',
   websites: 'Website',
+  parent: 'Parent',
+  link: 'Links',
   phones: 'Phone',
   email: 'Email',
+  walletAddress: 'Wallet',
 };
 
 export function labelForUpdateType(updateType: string): string {
