@@ -10,6 +10,7 @@ Next.js App Router frontend.
 | [Architecture](spec/architecture.md) | Layers, modules, ports/adapters |
 | [Web conventions](spec/web-conventions.md) | Development rules for `apps/web` |
 | [i18n spec](spec/i18n.md) | Locale resolution, messages, cookies, SSR, RTL |
+| [Maps spec](spec/maps.md) | `AppMap` / provider port, Leaflet, SSR notes |
 | [Getting started](../../getting-started.md) | Local setup |
 | [Specification index](../../spec/README.md) | Domain specs |
 

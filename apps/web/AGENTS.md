@@ -107,3 +107,10 @@ index.ts         public barrel — other features import only from here
 - Handle invalid, pending, error, and success states explicitly.
 - Normalize input consistently before broadcast.
 - Do not add form libraries unless complexity clearly requires them.
+
+## Maps (`src/modules/map/`)
+
+- **Public API:** `AppMap`, `AppMarker`, `AppPopup`, `MapProvider`, and types from `@/modules/map` — do **not** import `react-leaflet`, `leaflet`, or MapLibre directly in feature UIs.
+- **SSR:** maps are **client-only**; `AppMap` is dynamically loaded. Never instantiate Leaflet in Server Components or root layouts.
+- **Engine swap:** implement `MapProviderPort` and pass `<MapProvider impl={…} />`. Default is Leaflet (`leafletMapProvider`).
+- **Spec:** [`docs/apps/web/spec/maps.md`](../../docs/apps/web/spec/maps.md).

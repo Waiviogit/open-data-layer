@@ -25,6 +25,7 @@ The **web** application is the Next.js **App Router** frontend for the Open Data
 | [theme.md](theme.md) | Theme preference, `data-theme`, CSS variables, SSR script, Tailwind |
 | [layout-system.md](layout-system.md) | Route-group shells, layout primitives, content arrangements, `LayoutProvider` |
 | [shell-mode.md](shell-mode.md) | Shell mode preference, `data-shell-mode`, structural token overrides |
+| [maps.md](maps.md) | Provider-agnostic maps (`AppMap` / Leaflet; MapLibre port stub) |
 | [images.md](images.md) | `next/image` usage, `remotePatterns`, `sizes`, `priority`, UGC |
 | [components/story-container.md](components/story-container.md) | Feed row (`StoryContainer` / `Story`), DTO, demo mocks |
 | [feed.md](feed.md) | Feed story list, Lexical comment under story when logged in |
