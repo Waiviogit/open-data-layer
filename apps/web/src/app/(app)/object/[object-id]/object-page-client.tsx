@@ -15,13 +15,24 @@ import {
 } from '@/modules/object';
 import type { ObjectEmbeddedUpdatesFeedModel } from '@/modules/object-updates/embedded-updates-feed.model';
 import { ObjectUpdatesFeed } from '@/modules/object-updates/presentation/components/object-updates-feed';
+import type {
+  PaginatedUserFollowListView,
+  UserSubscriptionSort,
+} from '@/modules/user-social/application/dto/user-social.dto';
+import { UserSocialAccountList } from '@/modules/user-social/presentation/components/user-social-account-list';
 
+import { loadMoreObjectFollowersAction } from './followers/object-followers.actions';
 import { OBJECT_PAGE_PRIMARY_TAB_PARAM } from './object-page-search';
 import { loadMoreObjectUpdatesFeedAction } from './updates/updates-feed.actions';
 
 export type ObjectPageClientProps = {
   model: ObjectPageViewModel;
   embeddedUpdatesFeed: ObjectEmbeddedUpdatesFeedModel;
+  /** Preloaded followers list when `?tab=followers` (see {@link getObjectFollowersPageQuery}). Null on other tabs. */
+  embeddedFollowersPage: PaginatedUserFollowListView | null;
+  /** Subscription list sort from `?sort=` (validated on the server for the initial followers payload). */
+  followersSort: UserSubscriptionSort;
+  viewerUsername: string | null;
   /** Primary tab from `?tab=` (server-validated). */
   initialPrimarySegment: string;
   /** First tab in the nav — URL omits `?tab` when this segment is active. */
@@ -31,6 +42,9 @@ export type ObjectPageClientProps = {
 export function ObjectPageClient({
   model,
   embeddedUpdatesFeed,
+  embeddedFollowersPage,
+  followersSort,
+  viewerUsername,
   initialPrimarySegment,
   defaultPrimarySegment,
 }: ObjectPageClientProps) {
@@ -67,6 +81,15 @@ export function ObjectPageClient({
         u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
         const qs = u.toString();
         router.replace(qs ? `${base}/updates?${qs}` : `${base}/updates`, {
+          scroll: false,
+        });
+        return;
+      }
+
+      if (segment === 'followers') {
+        u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
+        const qs = u.toString();
+        router.replace(qs ? `${base}/followers?${qs}` : `${base}/followers`, {
           scroll: false,
         });
         return;
@@ -123,6 +146,23 @@ export function ObjectPageClient({
     [embeddedUpdatesFeed, model.objectId, updatesFeedKey],
   );
 
+  const objectFollowersFeed = useMemo(() => {
+    if (embeddedFollowersPage == null) {
+      return null;
+    }
+    return (
+      <UserSocialAccountList
+        key={`${model.objectId}-${followersSort}`}
+        profileAccountName={model.objectId}
+        listKind="followers"
+        initialPage={embeddedFollowersPage}
+        sort={followersSort}
+        currentUsername={viewerUsername}
+        loadMoreAction={loadMoreObjectFollowersAction}
+      />
+    );
+  }, [embeddedFollowersPage, followersSort, model.objectId, viewerUsername]);
+
   const leftRail = (
     <LeftObjectProfileSidebar>
       <ObjectLeftRailPanel blocks={model.leftRailBlocks} />
@@ -160,6 +200,7 @@ export function ObjectPageClient({
           objectType={model.objectType}
           onFeedSubSelect={setActiveFeedSubSegment}
           objectUpdatesFeed={objectUpdatesFeed}
+          objectFollowersFeed={objectFollowersFeed}
         />
       }
       rightRail={

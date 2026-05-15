@@ -58,7 +58,11 @@ const paginatedProjectedObjectsSchema = registry.register(
   }),
 );
 
-const subscriptionSortEnum = ['rank', 'followers', 'a-z', 'recency'] as const;
+/** Shared with `objects.openapi` (object follower accounts). */
+export const subscriptionSortEnum = ['rank', 'followers', 'a-z', 'recency'] as const;
+
+/** Shared response schema for user-profile and object follower lists. */
+export const paginatedUserFollowListOpenApiSchema = paginatedUserFollowListSchema;
 
 registry.registerPath({
   method: 'get',

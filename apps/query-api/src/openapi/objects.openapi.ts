@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import { resolveObjectBodySchema } from '../domain/objects/schemas/resolve-object.schema';
 import { projectedObjectOpenApiSchema } from './projected-object.schema';
+import {
+  paginatedUserFollowListOpenApiSchema,
+  subscriptionSortEnum,
+} from './users-social.openapi';
 import { registry } from './registry';
 
 const projectedObjectWithCountsSchema = registry.register(
@@ -76,6 +80,55 @@ registry.registerPath({
     },
     404: {
       description: 'No `objects_core` row for `object_id`, non-active `status`, or object not returned by resolution.',
+      content: {
+        'application/json': {
+          schema: notFoundSchema,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/objects/{objectId}/followers',
+  summary: 'List accounts that follow the object',
+  description:
+    'Joins `user_object_follows` (where `object_id` matches an active object) with `accounts_current`. Sort options match user-profile followers (`rank`, `followers`, `a-z`, `recency` on follow edge or account fields). Optional `X-Viewer` populates `isCurrentFollowing` via `user_subscriptions`.',
+  request: {
+    params: z.object({
+      objectId: z
+        .string()
+        .min(1)
+        .openapi({ param: { name: 'objectId', in: 'path', required: true } }),
+    }),
+    query: z.object({
+      sort: z.enum(subscriptionSortEnum).optional().openapi({
+        description:
+          '`rank` = wobjects_weight desc; `followers` = users_following_count desc; `a-z` = name asc; `recency` = object follow created_at desc.',
+      }),
+      skip: z.coerce.number().int().min(0).optional().openapi({ description: 'Pagination offset.' }),
+      limit: z.coerce.number().int().min(0).max(50).optional().openapi({
+        description: 'Page size; use `0` for total/hasMore only (no rows).',
+      }),
+    }),
+    headers: z.object({
+      'x-viewer': z.string().optional().openapi({
+        description: 'Optional viewer account; populates `isCurrentFollowing` per row.',
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Paginated follower accounts.',
+      content: {
+        'application/json': {
+          schema: paginatedUserFollowListOpenApiSchema,
+        },
+      },
+    },
+    404: {
+      description: 'Object not found or not active.',
       content: {
         'application/json': {
           schema: notFoundSchema,

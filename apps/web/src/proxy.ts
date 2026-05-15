@@ -28,6 +28,15 @@ export function proxy(request: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
+  const objectFollowersMatch = pathname.match(/^\/object\/([^/]+)\/followers\/?$/);
+  if (objectFollowersMatch) {
+    const id = objectFollowersMatch[1];
+    const url = request.nextUrl.clone();
+    url.pathname = `/object/${id}`;
+    url.searchParams.set('tab', 'followers');
+    return NextResponse.rewrite(url);
+  }
+
   if (!pathname.startsWith('/@')) {
     return NextResponse.next();
   }

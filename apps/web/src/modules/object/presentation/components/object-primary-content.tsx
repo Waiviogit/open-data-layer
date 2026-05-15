@@ -71,6 +71,8 @@ export type ObjectPrimaryContentProps = {
   onFeedSubSelect: (segment: string) => void;
   /** Injected feed (client) when the Updates tab is active. */
   objectUpdatesFeed?: ReactNode;
+  /** Injected feed (client) when the Followers tab is active. */
+  objectFollowersFeed?: ReactNode | null;
 };
 
 export function ObjectPrimaryContent({
@@ -82,8 +84,28 @@ export function ObjectPrimaryContent({
   objectType,
   onFeedSubSelect,
   objectUpdatesFeed,
+  objectFollowersFeed,
 }: ObjectPrimaryContentProps) {
   if (activePrimarySegment !== REVIEWS_SEGMENT) {
+    if (activePrimarySegment === 'followers' && objectFollowersFeed != null) {
+      return (
+        <FeedColumn>
+          {objectFollowersFeed}
+        </FeedColumn>
+      );
+    }
+
+    if (activePrimarySegment === 'followers') {
+      return (
+        <FeedColumn>
+          <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
+            <p className="font-medium text-fg">{stubPrimaryCopy(activePrimarySegment)}</p>
+            <p className="mt-2 text-muted">{MOCK_STUB_HINT}</p>
+          </div>
+        </FeedColumn>
+      );
+    }
+
     if (activePrimarySegment === 'updates' && objectUpdatesFeed != null) {
       return (
         <FeedColumn>

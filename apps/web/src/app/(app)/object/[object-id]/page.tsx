@@ -13,6 +13,12 @@ import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
 import { loadMessages } from '@/i18n/runtime/load-messages';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 
+import { getObjectFollowersPageQuery } from '@/modules/object/application/queries/get-object-followers-page.query';
+import {
+  parseSubscriptionSortParam,
+  USER_SOCIAL_PAGE_SIZE,
+} from '@/modules/user-social';
+
 import { loadObjectPageModel } from './object-page-model.server';
 import {
   firstSearchParam,
@@ -45,6 +51,12 @@ export async function generateMetadata({
         ? messages.object_updates_title
         : 'Updates';
     return { title: `${title} · ${updatesLabel}` };
+  }
+
+  if (tab === 'followers') {
+    const followersLabel =
+      typeof messages.followers === 'string' ? messages.followers : 'Followers';
+    return { title: `${title} · ${followersLabel}` };
   }
 
   return {
@@ -103,10 +115,23 @@ export default async function ObjectDetailPage({
     localizableTypes,
   };
 
+  const followersSort = parseSubscriptionSortParam(sp.sort);
+  const embeddedFollowersPage =
+    initialPrimarySegment === 'followers'
+      ? await getObjectFollowersPageQuery(
+          objectId,
+          { sort: followersSort, skip: 0, limit: USER_SOCIAL_PAGE_SIZE },
+          user?.username ?? null,
+        )
+      : null;
+
   return (
     <ObjectPageClient
       model={model}
       embeddedUpdatesFeed={embeddedUpdatesFeed}
+      embeddedFollowersPage={embeddedFollowersPage}
+      followersSort={followersSort}
+      viewerUsername={user?.username ?? null}
       initialPrimarySegment={initialPrimarySegment}
       defaultPrimarySegment={defaultSeg}
     />
