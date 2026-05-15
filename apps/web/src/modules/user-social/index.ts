@@ -21,3 +21,6 @@ export { getUserFollowingObjectsPageQuery } from './application/queries/get-user
 
 export { UserSocialAccountList } from './presentation/components/user-social-account-list';
 export { UserSocialObjectsList } from './presentation/components/user-social-objects-list';
+
+export { SortDropdown } from './presentation/components/sort-dropdown';
+export type { SortOption, SortDropdownProps } from './presentation/components/sort-dropdown';

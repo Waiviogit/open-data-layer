@@ -143,6 +143,8 @@ export type ObjectPageViewModel = {
   tagline: string | null;
   /** Legacy-style numeric badge label next to type (e.g. weight score). */
   displayWeightLabel: string | null;
+  /** Raw `object_type` from query-api / registry key (e.g. `shop`, `place`). */
+  objectTypeKey: string;
   objectType: ObjectSwitcherKind;
   rating01To5: number | null;
   primaryTabs: ObjectPrimaryTabView[];

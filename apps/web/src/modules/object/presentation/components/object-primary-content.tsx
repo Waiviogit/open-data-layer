@@ -1,5 +1,7 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 import { FeedColumn } from '@/shared/presentation/layout';
 
 import type {
@@ -60,23 +62,47 @@ const MOCK_FEED_POSTS_HINT =
   'Posts list placeholder — replace with Story feed when data is available.';
 
 export type ObjectPrimaryContentProps = {
+  objectId: string;
   activePrimarySegment: string;
   activeFeedSubSegment: string;
   feedSubTabs: ObjectFeedSubTabView[];
   title: string;
   objectType: ObjectSwitcherKind;
   onFeedSubSelect: (segment: string) => void;
+  /** Injected feed (client) when the Updates tab is active. */
+  objectUpdatesFeed?: ReactNode;
 };
 
 export function ObjectPrimaryContent({
+  objectId,
   activePrimarySegment,
   activeFeedSubSegment,
   feedSubTabs,
   title,
   objectType,
   onFeedSubSelect,
+  objectUpdatesFeed,
 }: ObjectPrimaryContentProps) {
   if (activePrimarySegment !== REVIEWS_SEGMENT) {
+    if (activePrimarySegment === 'updates' && objectUpdatesFeed != null) {
+      return (
+        <FeedColumn>
+          {objectUpdatesFeed}
+        </FeedColumn>
+      );
+    }
+
+    if (activePrimarySegment === 'updates') {
+      return (
+        <FeedColumn>
+          <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
+            <p className="font-medium text-fg">{stubPrimaryCopy(activePrimarySegment)}</p>
+            <p className="mt-2 text-muted">{MOCK_STUB_HINT}</p>
+          </div>
+        </FeedColumn>
+      );
+    }
+
     return (
       <FeedColumn>
         <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">

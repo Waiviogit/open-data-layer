@@ -16,6 +16,7 @@ import { UserMetadataRepository } from './user-metadata.repository';
 import { UserShopDeselectRepository } from './user-shop-deselect.repository';
 import { UserSubscriptionsRepository } from './user-subscriptions.repository';
 import { UserObjectFollowsRepository } from './user-object-follows.repository';
+import { UpdatesFeedRepository } from './updates-feed.repository';
 
 @Module({
   providers: [
@@ -36,6 +37,7 @@ import { UserObjectFollowsRepository } from './user-object-follows.repository';
     UserShopDeselectRepository,
     UserSubscriptionsRepository,
     UserObjectFollowsRepository,
+    UpdatesFeedRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -55,6 +57,7 @@ import { UserObjectFollowsRepository } from './user-object-follows.repository';
     UserShopDeselectRepository,
     UserSubscriptionsRepository,
     UserObjectFollowsRepository,
+    UpdatesFeedRepository,
   ],
 })
 export class RepositoriesModule {}

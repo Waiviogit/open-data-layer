@@ -14,6 +14,20 @@ import { isUserProfileReservedFirstSegment } from '@/modules/user-profile/presen
  */
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  /**
+   * Public `/object/:id/updates` stays in the address bar; App Router serves
+   * `object/[object-id]/page.tsx` with `?tab=updates` injected (plus any existing query).
+   */
+  const objectUpdatesMatch = pathname.match(/^\/object\/([^/]+)\/updates\/?$/);
+  if (objectUpdatesMatch) {
+    const id = objectUpdatesMatch[1];
+    const url = request.nextUrl.clone();
+    url.pathname = `/object/${id}`;
+    url.searchParams.set('tab', 'updates');
+    return NextResponse.rewrite(url);
+  }
+
   if (!pathname.startsWith('/@')) {
     return NextResponse.next();
   }

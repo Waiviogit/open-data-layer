@@ -381,6 +381,7 @@ export function projectedObjectWithCountsToPageModel(
       api.weight != null && Number.isFinite(api.weight)
         ? formatObjectWeightForDisplay(api.weight)
         : null,
+    objectTypeKey: objectTypeRaw,
     objectType: switcher,
     rating01To5: objectFields.ratingStars01To5(viewLike),
     primaryTabs: primaryTabs(api.updates_count, api.followers_count),

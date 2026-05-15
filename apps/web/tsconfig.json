@@ -5,6 +5,15 @@
     "paths": {
       "@/*": ["./src/*"],
       "@opden-data-layer/core": ["../../libs/core/src/index.ts"],
+      "@opden-data-layer/core/object-type-registry": [
+        "../../libs/core/src/object-type-registry/index.ts"
+      ],
+      "@opden-data-layer/core/update-registry": [
+        "../../libs/core/src/update-registry/index.ts"
+      ],
+      "@opden-data-layer/core/update-types": [
+        "../../libs/core/src/update-registry/update-types.ts"
+      ],
       "@opden-data-layer/migrations": ["../../libs/migrations/src/index.ts"],
       "@opden-data-layer/clients": ["../../libs/clients/src/index.ts"],
       "@opden-data-layer/objects-domain": ["../../libs/objects-domain/src/index.ts"],

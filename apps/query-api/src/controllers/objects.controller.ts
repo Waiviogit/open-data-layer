@@ -1,8 +1,11 @@
 import {
   Body,
   Controller,
+  Get,
   NotFoundException,
   Post,
+  Query,
+  Param,
 } from '@nestjs/common';
 import { ReqLocale } from '@opden-data-layer/core';
 import {
@@ -11,13 +14,42 @@ import {
   type ProjectedObjectWithCounts,
   type ResolveObjectBody,
 } from '../domain/objects';
+import {
+  GetObjectUpdatesFeedEndpoint,
+  objectUpdatesFeedQuerySchema,
+  type ObjectUpdatesFeedQuery,
+  type ObjectUpdatesFeedResponseDto,
+} from '../domain/object-updates';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
-import { ZodBodyPipe } from '../pipes';
+import { ZodBodyPipe, ZodQueryPipe } from '../pipes';
 
 @Controller({ path: 'objects', version: ['1', '2'] })
 export class ObjectsController {
-  constructor(private readonly getObjectById: GetObjectByIdEndpoint) {}
+  constructor(
+    private readonly getObjectById: GetObjectByIdEndpoint,
+    private readonly getObjectUpdatesFeed: GetObjectUpdatesFeedEndpoint,
+  ) {}
+
+  @Get(':objectId/updates')
+  async getUpdatesFeed(
+    @Param('objectId') objectId: string,
+    @Query(new ZodQueryPipe(objectUpdatesFeedQuerySchema)) query: ObjectUpdatesFeedQuery,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<ObjectUpdatesFeedResponseDto> {
+    const decodedId = decodeURIComponent(objectId);
+    const result = await this.getObjectUpdatesFeed.execute({
+      objectId: decodedId,
+      query,
+      governanceObjectIdFromHeader,
+      viewerAccount: viewer,
+    });
+    if (!result) {
+      throw new NotFoundException(`Object not found: ${decodedId}`);
+    }
+    return result;
+  }
 
   @Post('resolve')
   async resolve(
