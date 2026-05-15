@@ -91,7 +91,7 @@ function resolveObject(
       if (!update) return [];
       const updateVotes = obj.validity_votes;
 
-      const { status, field_weight } = resolveUpdateValidity(
+      const { status, field_weight, approve_percent } = resolveUpdateValidity(
         update,
         updateVotes,
         curatorSet,
@@ -111,6 +111,7 @@ function resolveObject(
         value_geo: update.value_geo ?? null,
         value_json: update.value_json ?? null,
         validity_status: status,
+        approve_percent,
         field_weight,
         rank_score: update.rank_score ?? null,
         rank_context: update.rank_context ?? null,

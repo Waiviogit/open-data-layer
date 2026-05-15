@@ -8,7 +8,7 @@ Given raw DB rows for a batch of objects (core, updates, votes, authorities) and
 
 1. Filters banned creators
 2. Computes the curator set `C` per object
-3. Resolves validity for each update using the tiered hierarchy (curator filter → admin LWAW → trusted LWTW → **waiv_power** community weight → baseline VALID). See [waiv-power.md](waiv-power.md).
+3. Resolves validity for each update using the tiered hierarchy (curator filter → admin LWAW → trusted LWTW → **waiv_power** community weight → baseline VALID). Community rows are shown only when `approve_percent > MIN_PERCENT_TO_SHOW_UPDATE` (70), except after a decisive admin/trusted vote. See [waiv-power.md](waiv-power.md) and [Approval percentage](#approval-percentage) below.
 4. Applies **locale preference** on VALID rows per `update_type` (see [Locale filtering](#locale-filtering))
 5. Applies single/multi cardinality rules; **multi** ordering uses persisted `rank_score` / `rank_decisive_event_seq` on `object_updates`
 6. Returns a typed `ResolvedObjectView[]` ready for API serialization
@@ -89,7 +89,32 @@ Each `ResolvedUpdate` echoes `locale` from the winning row for clients.
 
 Pure helper: `filterByLocalePreference` is exported from `@opden-data-layer/objects-domain` for tests and advanced use.
 
-## Output shape
+## Approval percentage
+
+`MIN_PERCENT_TO_SHOW_UPDATE` is **70** (`@opden-data-layer/objects-domain`). A community-evaluated update is **VALID** (eligible to win) only when `approve_percent` is **strictly greater than** 70 — not equal.
+
+**`computeApprovePercent(update, validityVotes, governance, voterWaivPowers, objectAuthorities)`** returns the display/consensus percentage (0–100, up to three decimal places) for one update. It mirrors the empty-curator vote hierarchy for the *numeric* outcome:
+
+| Condition | `approve_percent` |
+|---|---|
+| Latest admin vote **for** / **against** | 100 / 0 |
+| Latest trusted vote **for** / **against** (voter has object authority) | 100 / 0 |
+| No privileged vote, **no community votes** | **100** (open baseline) |
+| Community: net weight ≤ 0 | 0 |
+| Community: only **for** votes (no **against**) | 100 |
+| Community: mixed **for** and **against** | `round(for_weight / (for_weight + against_weight) × 100, 3)` with WAIV weights |
+
+`ResolvedUpdate.approve_percent` is the same value returned by `computeApprovePercent` for that row. On the **curator-filter** path, validity still follows curator membership / curator **for** votes; `approve_percent` is still filled for API/UI (e.g. update lists) but does not gate validity for that path.
+
+Import reusable pieces:
+
+```typescript
+import {
+  computeApprovePercent,
+  MIN_PERCENT_TO_SHOW_UPDATE,
+  resolveObjectViews,
+} from '@opden-data-layer/objects-domain';
+```
 
 ```typescript
 interface ResolvedObjectView {
@@ -116,7 +141,8 @@ interface ResolvedUpdate {
   value_text: string | null;
   value_json: JsonValue | null;
   validity_status: 'VALID' | 'REJECTED';
-  field_weight: number | null;   // community vote weight; null if admin/trusted decided
+  approve_percent: number;    // 0–100; see Approval percentage
+  field_weight: number | null;   // signed community Σ(weight × sign); null if admin/trusted decided
   rank_score: number | null;     // 0..10000 from object_updates; indexer-maintained for multi
   rank_context: string | null;
   rank_decisive_event_seq: bigint | null;
@@ -162,6 +188,7 @@ The NestJS service is a thin wrapper. The underlying pure functions can be used 
 import {
   resolveObjectViews,
   computeCuratorSet,
+  computeApprovePercent,
   resolveUpdateValidity,
 } from '@opden-data-layer/objects-domain';
 ```

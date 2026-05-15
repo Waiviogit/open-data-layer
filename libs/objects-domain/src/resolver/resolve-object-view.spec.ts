@@ -215,6 +215,7 @@ describe('resolveObjectViews', () => {
     expect(view.canonical).toBe('https://a.example/');
     expect(view.fields['name'].cardinality).toBe('single');
     expect(view.fields['name'].values[0].update_id).toBe('u1');
+    expect(view.fields['name'].values[0].approve_percent).toBe(100);
   });
 
   describe('locale filtering', () => {
@@ -322,6 +323,7 @@ describe('filterByLocalePreference', () => {
       value_geo: null,
       value_json: null,
       validity_status: 'VALID',
+      approve_percent: 100,
       field_weight: null,
       rank_score: null,
       rank_context: null,

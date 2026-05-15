@@ -19,6 +19,15 @@ export interface ResolvedUpdate {
   value_json: JsonValue | null;
   validity_status: ValidityStatus;
   /**
+   * Weighted approval percentage (0–100, up to 3 decimal places).
+   * 100 = admin/trusted approved or no community-path votes (open baseline).
+   * 0 = admin/trusted rejected or net community weight ≤ 0.
+   * Mixed community: for_weight / (for_weight + against_weight) × 100.
+   * On curator-filter path this reflects vote data but does not determine validity.
+   * @see computeApprovePercent
+   */
+  approve_percent: number;
+  /**
    * Signed community vote weight. Null when a decisive admin/trusted vote
    * determined validity (community tier was not evaluated).
    */

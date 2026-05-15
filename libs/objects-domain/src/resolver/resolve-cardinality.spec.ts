@@ -19,6 +19,7 @@ function makeResolved(
     value_geo: null,
     value_json: null,
     validity_status: status,
+    approve_percent: 100,
     field_weight: null,
     rank_score: rankScore,
     rank_context: null,

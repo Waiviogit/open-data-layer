@@ -1,4 +1,5 @@
 import type { ObjectUpdate, ValidityVote, ObjectAuthority } from '@opden-data-layer/core';
+import { MIN_PERCENT_TO_SHOW_UPDATE } from '../constants';
 import type { GovernanceSnapshot } from '../types/governance-snapshot';
 import type { ValidityStatus, VoterWaivPowerMap } from '../types';
 import { waivVoteWeight } from './resolve-ranking';
@@ -43,16 +44,78 @@ export function computeCuratorSet(
 }
 
 /**
+ * Display / consensus approval percentage for one update (0–100, up to 3 decimals).
+ * Reusable for list UI and for validity resolution.
+ *
+ * Mirrors the empty-curator hierarchy for percent only: admin LWAW → trusted LWTW →
+ * community weights. When no decisive privileged vote applies and there are no
+ * community votes, returns 100 (open baseline).
+ */
+export function computeApprovePercent(
+  update: ObjectUpdate,
+  validityVotes: ValidityVote[],
+  governance: GovernanceSnapshot,
+  voterWaivPowers: VoterWaivPowerMap,
+  objectAuthorities: ObjectAuthority[],
+): number {
+  const updateVotes = validityVotes.filter((v) => v.update_id === update.update_id);
+
+  const adminVotes = updateVotes.filter((v) => governance.admins.includes(v.voter));
+  if (adminVotes.length > 0) {
+    const latest = latestByEventSeq(adminVotes);
+    return latest.vote === 'for' ? 100 : 0;
+  }
+
+  const accountsWithAuthority = new Set(objectAuthorities.map((a) => a.account));
+  const trustedWithAuthority = governance.trusted.filter((t) => accountsWithAuthority.has(t));
+  const trustedVotes = updateVotes.filter((v) => trustedWithAuthority.includes(v.voter));
+  if (trustedVotes.length > 0) {
+    const latest = latestByEventSeq(trustedVotes);
+    return latest.vote === 'for' ? 100 : 0;
+  }
+
+  const adminSet = new Set(governance.admins);
+  const trustedSet = new Set(governance.trusted);
+  const communityVotes = updateVotes.filter(
+    (v) => !adminSet.has(v.voter) && !trustedSet.has(v.voter),
+  );
+  if (communityVotes.length === 0) {
+    return 100;
+  }
+
+  let for_weight = 0;
+  let against_weight = 0;
+  for (const vote of communityVotes) {
+    const w = waivVoteWeight(voterWaivPowers.get(vote.voter) ?? 0);
+    if (vote.vote === 'for') {
+      for_weight += w;
+    } else {
+      against_weight += w;
+    }
+  }
+
+  const net = for_weight - against_weight;
+  if (net <= 0) {
+    return 0;
+  }
+  if (against_weight === 0) {
+    return 100;
+  }
+  return Math.round((for_weight / (for_weight + against_weight)) * 100 * 1000) / 1000;
+}
+
+/**
  * Resolve the validity status of a single update using the tiered hierarchy.
  *
  * Hierarchy (with non-empty curator set):
  *   Curator filter — valid only if creator ∈ C OR any C member voted 'for'.
+ *   `approve_percent` is computed for display and matches {@link computeApprovePercent}.
  *
  * Hierarchy (empty curator set):
  *   1. Admin decisive vote (LWAW)
  *   2. Trusted decisive vote on objects they have authority over (LWTW)
- *   3. Community vote weight: field_weight = Σ(weight × sign) where weight = waiv_vote_weight(waiv_power)
- *   4. No votes → baseline VALID
+ *   3. Community vote weight: field_weight = Σ(weight × sign); show iff approve_percent > MIN_PERCENT_TO_SHOW_UPDATE
+ *   4. No community votes → baseline VALID (approve_percent 100 from {@link computeApprovePercent})
  *
  * @see docs/spec/data-model/flow.md §Step 4
  * @see docs/spec/vote-semantics.md §A and §C
@@ -64,11 +127,29 @@ export function resolveUpdateValidity(
   governance: GovernanceSnapshot,
   voterWaivPowers: VoterWaivPowerMap,
   objectAuthorities: ObjectAuthority[],
-): { status: ValidityStatus; field_weight: number | null } {
+): { status: ValidityStatus; field_weight: number | null; approve_percent: number } {
+  const approve_percent = computeApprovePercent(
+    update,
+    validityVotes,
+    governance,
+    voterWaivPowers,
+    objectAuthorities,
+  );
+
   if (curatorSet.size > 0) {
-    return resolveCuratorFilter(update, validityVotes, curatorSet);
+    const { status, field_weight } = resolveCuratorFilter(update, validityVotes, curatorSet);
+    return { status, field_weight, approve_percent };
   }
-  return resolveHierarchy(update, validityVotes, governance, voterWaivPowers, objectAuthorities);
+
+  const { status, field_weight } = resolveHierarchy(
+    update,
+    validityVotes,
+    governance,
+    voterWaivPowers,
+    objectAuthorities,
+    approve_percent,
+  );
+  return { status, field_weight, approve_percent };
 }
 
 function resolveCuratorFilter(
@@ -91,6 +172,7 @@ function resolveHierarchy(
   governance: GovernanceSnapshot,
   voterWaivPowers: VoterWaivPowerMap,
   objectAuthorities: ObjectAuthority[],
+  approve_percent: number,
 ): { status: ValidityStatus; field_weight: number | null } {
   const updateVotes = validityVotes.filter((v) => v.update_id === update.update_id);
 
@@ -124,7 +206,7 @@ function resolveHierarchy(
     field_weight += weight * sign;
   }
   return {
-    status: field_weight >= 0 ? 'VALID' : 'REJECTED',
+    status: approve_percent > MIN_PERCENT_TO_SHOW_UPDATE ? 'VALID' : 'REJECTED',
     field_weight,
   };
 }
