@@ -98,6 +98,7 @@ function primaryTabs(
     { segment: 'reviews', label: 'Reviews' },
     { segment: 'gallery', label: 'Gallery' },
     { segment: 'updates', label: 'Updates', count: updatesCount },
+    { segment: 'authority', label: 'Authority' },
     { segment: 'followers', label: 'Followers', count: followersCount },
     { segment: 'experts', label: 'Experts' },
   ];
@@ -386,6 +387,8 @@ export function projectedObjectWithCountsToPageModel(
     rating01To5: objectFields.ratingStars01To5(viewLike),
     primaryTabs: primaryTabs(api.updates_count, api.followers_count),
     feedSubTabs: FEED_SUB_TABS,
+    administrativeAuthorityCount: api.administrative_count ?? 0,
+    ownershipAuthorityCount: api.ownership_count ?? 0,
     leftRailBlocks,
     rightFeatured: [miniCard('ex-f1', 'Experts')],
     rightRelated: [miniCard('nr-f1', 'Nearby')],

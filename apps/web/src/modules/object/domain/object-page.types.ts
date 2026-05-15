@@ -26,6 +26,10 @@ export type ObjectPrimaryTabView = {
   count?: number;
 };
 
+/** Administrative vs ownership under object Authority tab (`?sub=`). */
+export const AUTHORITY_SUB_VALUES = ['administrative', 'ownership'] as const;
+export type AuthoritySubType = (typeof AUTHORITY_SUB_VALUES)[number];
+
 /** Posts / Threads row under Reviews (mock-only). */
 export type ObjectFeedSubTabView = {
   segment: string;
@@ -154,4 +158,7 @@ export type ObjectPageViewModel = {
   rightFeatured: ObjectSidebarMiniCardView[];
   rightRelated: ObjectSidebarMiniCardView[];
   rightSimilar: ObjectSidebarMiniCardView[];
+  /** For Authority tab sub-nav badges (`object_authority` counts from resolve). */
+  administrativeAuthorityCount: number;
+  ownershipAuthorityCount: number;
 };

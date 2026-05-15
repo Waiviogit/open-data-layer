@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import {
   AggregatedObjectRepository,
+  ObjectAuthorityRepository,
   ObjectUpdatesRepository,
   UserObjectFollowsRepository,
 } from '../../repositories';
@@ -29,6 +30,7 @@ export class GetObjectByIdEndpoint {
     private readonly objectProjectionService: ObjectProjectionService,
     private readonly userObjectFollowsRepo: UserObjectFollowsRepository,
     private readonly objectUpdatesRepo: ObjectUpdatesRepository,
+    private readonly objectAuthorityRepo: ObjectAuthorityRepository,
   ) {}
 
   async execute(input: GetObjectByIdInput): Promise<ProjectedObjectWithCounts | null> {
@@ -64,21 +66,26 @@ export class GetObjectByIdEndpoint {
 
     const objectId = view.object_id;
 
-    const [projected, followers_count, updates_count] = await Promise.all([
-      this.objectProjectionService.project(view, {
-        locale: input.locale,
-        governanceObjectIdFromHeader: input.governanceObjectIdFromHeader,
-        viewerAccount: input.viewerAccount,
-        rankVoteProjection,
-      }),
-      this.userObjectFollowsRepo.countByObjectId(objectId),
-      this.objectUpdatesRepo.countByObjectId(objectId),
-    ]);
+    const [projected, followers_count, updates_count, administrative_count, ownership_count] =
+      await Promise.all([
+        this.objectProjectionService.project(view, {
+          locale: input.locale,
+          governanceObjectIdFromHeader: input.governanceObjectIdFromHeader,
+          viewerAccount: input.viewerAccount,
+          rankVoteProjection,
+        }),
+        this.userObjectFollowsRepo.countByObjectId(objectId),
+        this.objectUpdatesRepo.countByObjectId(objectId),
+        this.objectAuthorityRepo.countByObjectIdAndType(objectId, 'administrative'),
+        this.objectAuthorityRepo.countByObjectIdAndType(objectId, 'ownership'),
+      ]);
 
     return {
       ...projected,
       followers_count,
       updates_count,
+      administrative_count,
+      ownership_count,
     };
   }
 }

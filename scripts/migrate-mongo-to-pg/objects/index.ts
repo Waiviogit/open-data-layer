@@ -625,10 +625,14 @@ class MongoToPgMigrator {
       this.stats.fieldsSkippedAuthorityInvalid += 1;
       return;
     }
+    const idHex = mongoIdToString(field._id);
+    const createdAtSec = idHex ? createdAtUnixFromObjectId(idHex) : 0;
+    const createdAt = new Date(createdAtSec * 1000);
     this.pushAuthority({
       object_id: objectId,
       account,
       authority_type: body as 'ownership' | 'administrative',
+      created_at: createdAt,
     });
   }
 

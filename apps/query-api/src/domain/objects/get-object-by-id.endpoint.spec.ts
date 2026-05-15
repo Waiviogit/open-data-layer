@@ -2,6 +2,7 @@ import type { GovernanceSnapshot, ResolvedObjectView } from '@opden-data-layer/o
 import { DEFAULT_GOVERNANCE_SNAPSHOT, ObjectViewService } from '@opden-data-layer/objects-domain';
 import { AggregatedObjectRepository } from '../../repositories';
 import type { ObjectUpdatesRepository } from '../../repositories/object-updates.repository';
+import type { ObjectAuthorityRepository } from '../../repositories/object-authority.repository';
 import type { UserObjectFollowsRepository } from '../../repositories/user-object-follows.repository';
 import { GovernanceResolverService } from '../governance';
 import { ObjectProjectionService } from '../object-projection/object-projection.service';
@@ -52,6 +53,9 @@ describe('GetObjectByIdEndpoint', () => {
     const updatesRepo = {
       countByObjectId: jest.fn(),
     } as unknown as ObjectUpdatesRepository;
+    const authorityRepo = {
+      countByObjectIdAndType: jest.fn(),
+    } as unknown as ObjectAuthorityRepository;
     const { governanceResolver } = createEndpointDeps();
 
     const endpoint = new GetObjectByIdEndpoint(
@@ -61,6 +65,7 @@ describe('GetObjectByIdEndpoint', () => {
       projectionService,
       followsRepo,
       updatesRepo,
+      authorityRepo,
     );
     const result = await endpoint.execute({
       objectId: 'missing',
@@ -111,6 +116,14 @@ describe('GetObjectByIdEndpoint', () => {
     const updatesRepo = {
       countByObjectId: jest.fn().mockResolvedValue(25),
     } as unknown as ObjectUpdatesRepository;
+    const authorityRepo = {
+      countByObjectIdAndType: jest
+        .fn()
+        .mockImplementation(
+          (_id: string, authorityType: 'administrative' | 'ownership') =>
+            Promise.resolve(authorityType === 'administrative' ? 2 : 3),
+        ),
+    } as unknown as ObjectAuthorityRepository;
     const { governanceResolver } = createEndpointDeps();
 
     const endpoint = new GetObjectByIdEndpoint(
@@ -120,6 +133,7 @@ describe('GetObjectByIdEndpoint', () => {
       projectionService,
       followsRepo,
       updatesRepo,
+      authorityRepo,
     );
     const result = await endpoint.execute({
       objectId: 'o1',
@@ -133,6 +147,8 @@ describe('GetObjectByIdEndpoint', () => {
       ...projected,
       followers_count: 7,
       updates_count: 25,
+      administrative_count: 2,
+      ownership_count: 3,
     });
     expect(governanceResolver.resolveMergedForObjectView).toHaveBeenCalledWith(undefined);
     expect(viewService.resolve).toHaveBeenCalledWith(
@@ -156,6 +172,8 @@ describe('GetObjectByIdEndpoint', () => {
     );
     expect(followsRepo.countByObjectId).toHaveBeenCalledWith('o1');
     expect(updatesRepo.countByObjectId).toHaveBeenCalledWith('o1');
+    expect(authorityRepo.countByObjectIdAndType).toHaveBeenCalledWith('o1', 'administrative');
+    expect(authorityRepo.countByObjectIdAndType).toHaveBeenCalledWith('o1', 'ownership');
   });
 
   it('when updateTypes is empty, resolves all distinct update types from aggregated updates', async () => {
@@ -217,6 +235,9 @@ describe('GetObjectByIdEndpoint', () => {
     const updatesRepo = {
       countByObjectId: jest.fn().mockResolvedValue(0),
     } as unknown as ObjectUpdatesRepository;
+    const authorityRepo = {
+      countByObjectIdAndType: jest.fn().mockResolvedValue(0),
+    } as unknown as ObjectAuthorityRepository;
     const { governanceResolver } = createEndpointDeps();
 
     const endpoint = new GetObjectByIdEndpoint(
@@ -226,6 +247,7 @@ describe('GetObjectByIdEndpoint', () => {
       projectionService,
       followsRepo,
       updatesRepo,
+      authorityRepo,
     );
     await endpoint.execute({
       objectId: 'o1',
@@ -285,6 +307,9 @@ describe('GetObjectByIdEndpoint', () => {
     const updatesRepo = {
       countByObjectId: jest.fn().mockResolvedValue(0),
     } as unknown as ObjectUpdatesRepository;
+    const authorityRepo = {
+      countByObjectIdAndType: jest.fn().mockResolvedValue(0),
+    } as unknown as ObjectAuthorityRepository;
     const { governanceResolver } = createEndpointDeps({
       resolveMerged: customGovernance,
     });
@@ -296,6 +321,7 @@ describe('GetObjectByIdEndpoint', () => {
       projectionService,
       followsRepo,
       updatesRepo,
+      authorityRepo,
     );
     await endpoint.execute({
       objectId: 'o1',
@@ -349,6 +375,9 @@ describe('GetObjectByIdEndpoint', () => {
     const updatesRepo = {
       countByObjectId: jest.fn().mockResolvedValue(0),
     } as unknown as ObjectUpdatesRepository;
+    const authorityRepo = {
+      countByObjectIdAndType: jest.fn().mockResolvedValue(0),
+    } as unknown as ObjectAuthorityRepository;
     const { governanceResolver } = createEndpointDeps();
 
     const endpoint = new GetObjectByIdEndpoint(
@@ -358,6 +387,7 @@ describe('GetObjectByIdEndpoint', () => {
       projectionService,
       followsRepo,
       updatesRepo,
+      authorityRepo,
     );
     await endpoint.execute({
       objectId: 'o1',
@@ -403,6 +433,9 @@ describe('GetObjectByIdEndpoint', () => {
     const updatesRepo = {
       countByObjectId: jest.fn(),
     } as unknown as ObjectUpdatesRepository;
+    const authorityRepo = {
+      countByObjectIdAndType: jest.fn(),
+    } as unknown as ObjectAuthorityRepository;
     const { governanceResolver } = createEndpointDeps();
 
     const endpoint = new GetObjectByIdEndpoint(
@@ -412,6 +445,7 @@ describe('GetObjectByIdEndpoint', () => {
       projectionService,
       followsRepo,
       updatesRepo,
+      authorityRepo,
     );
     const result = await endpoint.execute({
       objectId: 'o1',
@@ -422,5 +456,6 @@ describe('GetObjectByIdEndpoint', () => {
     expect(result).toBeNull();
     expect(projectionService.project).not.toHaveBeenCalled();
     expect(followsRepo.countByObjectId).not.toHaveBeenCalled();
+    expect(authorityRepo.countByObjectIdAndType).not.toHaveBeenCalled();
   });
 });

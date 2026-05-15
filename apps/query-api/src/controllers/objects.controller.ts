@@ -11,14 +11,17 @@ import { ReqLocale } from '@opden-data-layer/core';
 import {
   GetObjectByIdEndpoint,
   GetObjectFollowersEndpoint,
+  GetObjectAuthorityEndpoint,
   resolveObjectBodySchema,
   type ProjectedObjectWithCounts,
   type ResolveObjectBody,
 } from '../domain/objects';
 import {
   userSocialListQuerySchema,
+  objectAuthorityQuerySchema,
   type PaginatedUserFollowList,
   type UserSocialListQuery,
+  type ObjectAuthorityQuery,
 } from '../domain/social';
 import {
   GetObjectUpdatesFeedEndpoint,
@@ -36,7 +39,22 @@ export class ObjectsController {
     private readonly getObjectById: GetObjectByIdEndpoint,
     private readonly getObjectUpdatesFeed: GetObjectUpdatesFeedEndpoint,
     private readonly getObjectFollowersEndpoint: GetObjectFollowersEndpoint,
+    private readonly getObjectAuthorityEndpoint: GetObjectAuthorityEndpoint,
   ) {}
+
+  @Get(':objectId/authority')
+  async getObjectAuthorityList(
+    @Param('objectId') objectId: string,
+    @Query(new ZodQueryPipe(objectAuthorityQuerySchema)) query: ObjectAuthorityQuery,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<PaginatedUserFollowList> {
+    const decodedId = decodeURIComponent(objectId);
+    const result = await this.getObjectAuthorityEndpoint.execute(decodedId, query, viewer);
+    if (!result) {
+      throw new NotFoundException(`Object not found: ${decodedId}`);
+    }
+    return result;
+  }
 
   @Get(':objectId/followers')
   async getObjectFollowersList(

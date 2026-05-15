@@ -18,6 +18,13 @@ export const userSocialListQuerySchema = z.object({
 
 export type UserSocialListQuery = z.infer<typeof userSocialListQuerySchema>;
 
+/** Query for GET object authority accounts list. */
+export const objectAuthorityQuerySchema = userSocialListQuerySchema.extend({
+  authority_type: z.enum(['administrative', 'ownership']),
+});
+
+export type ObjectAuthorityQuery = z.infer<typeof objectAuthorityQuerySchema>;
+
 /** Query for GET following-objects list. */
 export const userFollowingObjectsQuerySchema = z.object({
   sort: z.enum(['weight', 'recency']).optional().default('weight'),

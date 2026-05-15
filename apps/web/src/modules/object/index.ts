@@ -1,4 +1,5 @@
 export type {
+  AuthoritySubType,
   ObjectFeedSubTabView,
   ObjectLeftRailBlock,
   ObjectPageViewModel,
@@ -6,6 +7,7 @@ export type {
   ObjectSidebarMiniCardView,
   ObjectSwitcherKind,
 } from './domain/object-page.types';
+export { AUTHORITY_SUB_VALUES } from './domain/object-page.types';
 export type { ProjectedObjectWithCountsView } from './infrastructure/object-resolve.types';
 export type { ProjectedMenuItem } from './domain/projected-menu-item.types';
 
@@ -18,6 +20,7 @@ export {
   ObjectHero,
   ObjectPrimaryContent,
   ObjectPrimaryNav,
+  ObjectAuthoritySubNav,
   ObjectRightSidebar,
   ObjectSidebarMiniCard,
   ObjectViewShell,
@@ -31,6 +34,7 @@ export type {
   ObjectHeroProps,
   ObjectPrimaryContentProps,
   ObjectPrimaryNavProps,
+  ObjectAuthoritySubNavProps,
   ObjectRightSidebarProps,
   ObjectSidebarMiniCardProps,
   ObjectViewShellProps,

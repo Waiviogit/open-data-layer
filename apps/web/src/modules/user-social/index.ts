@@ -20,6 +20,10 @@ export { getUserFollowingPageQuery } from './application/queries/get-user-follow
 export { getUserFollowingObjectsPageQuery } from './application/queries/get-user-following-objects-page.query';
 
 export { UserSocialAccountList } from './presentation/components/user-social-account-list';
+export type {
+  UserSocialAccountListKind,
+  UserSocialAccountListProps,
+} from './presentation/components/user-social-account-list';
 export { UserSocialObjectsList } from './presentation/components/user-social-objects-list';
 
 export { SortDropdown } from './presentation/components/sort-dropdown';

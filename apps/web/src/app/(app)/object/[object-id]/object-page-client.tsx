@@ -3,13 +3,14 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import type { ObjectPageViewModel } from '@/modules/object';
+import type { ObjectPageViewModel, AuthoritySubType } from '@/modules/object';
 import {
   LeftObjectProfileSidebar,
   ObjectHero,
   ObjectLeftRailPanel,
   ObjectPrimaryContent,
   ObjectPrimaryNav,
+  ObjectAuthoritySubNav,
   ObjectRightSidebar,
   ObjectViewShell,
 } from '@/modules/object';
@@ -21,8 +22,12 @@ import type {
 } from '@/modules/user-social/application/dto/user-social.dto';
 import { UserSocialAccountList } from '@/modules/user-social/presentation/components/user-social-account-list';
 
+import { loadMoreObjectAuthorityAction } from './authority/object-authority.actions';
 import { loadMoreObjectFollowersAction } from './followers/object-followers.actions';
-import { OBJECT_PAGE_PRIMARY_TAB_PARAM } from './object-page-search';
+import {
+  OBJECT_PAGE_AUTHORITY_SUB_PARAM,
+  OBJECT_PAGE_PRIMARY_TAB_PARAM,
+} from './object-page-search';
 import { loadMoreObjectUpdatesFeedAction } from './updates/updates-feed.actions';
 
 export type ObjectPageClientProps = {
@@ -32,6 +37,11 @@ export type ObjectPageClientProps = {
   embeddedFollowersPage: PaginatedUserFollowListView | null;
   /** Subscription list sort from `?sort=` (validated on the server for the initial followers payload). */
   followersSort: UserSubscriptionSort;
+  /** Preloaded authority accounts when `?tab=authority` (see {@link getObjectAuthorityPageQuery}). */
+  embeddedAuthorityPage: PaginatedUserFollowListView | null;
+  /** `?sub=administrative|ownership` — validated on the server for the initial authority payload. */
+  authoritySubType: AuthoritySubType;
+  authoritySort: UserSubscriptionSort;
   viewerUsername: string | null;
   /** Primary tab from `?tab=` (server-validated). */
   initialPrimarySegment: string;
@@ -44,6 +54,9 @@ export function ObjectPageClient({
   embeddedUpdatesFeed,
   embeddedFollowersPage,
   followersSort,
+  embeddedAuthorityPage,
+  authoritySubType,
+  authoritySort,
   viewerUsername,
   initialPrimarySegment,
   defaultPrimarySegment,
@@ -79,6 +92,7 @@ export function ObjectPageClient({
 
       if (segment === 'updates') {
         u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
+        u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
         const qs = u.toString();
         router.replace(qs ? `${base}/updates?${qs}` : `${base}/updates`, {
           scroll: false,
@@ -88,6 +102,7 @@ export function ObjectPageClient({
 
       if (segment === 'followers') {
         u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
+        u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
         const qs = u.toString();
         router.replace(qs ? `${base}/followers?${qs}` : `${base}/followers`, {
           scroll: false,
@@ -95,7 +110,17 @@ export function ObjectPageClient({
         return;
       }
 
+      if (segment === 'authority') {
+        u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
+        const qs = u.toString();
+        router.replace(qs ? `${base}/authority?${qs}` : `${base}/authority`, {
+          scroll: false,
+        });
+        return;
+      }
+
       u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
+      u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
       u.delete('sort');
       u.delete('update_type');
       u.delete('locale');
@@ -163,6 +188,68 @@ export function ObjectPageClient({
     );
   }, [embeddedFollowersPage, followersSort, model.objectId, viewerUsername]);
 
+  const onAuthoritySubSelect = useCallback(
+    (sub: AuthoritySubType) => {
+      const id = encodeURIComponent(model.objectId);
+      const base = `/object/${id}`;
+      const u = new URLSearchParams(searchParams.toString());
+      u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
+      u.set(OBJECT_PAGE_AUTHORITY_SUB_PARAM, sub);
+      const qs = u.toString();
+      router.replace(qs ? `${base}/authority?${qs}` : `${base}/authority`, {
+        scroll: false,
+      });
+    },
+    [model.objectId, router, searchParams],
+  );
+
+  const loadMoreObjectAuthority = useMemo(
+    () => (profileAccountName: string, sort: UserSubscriptionSort, skip: number) =>
+      loadMoreObjectAuthorityAction(profileAccountName, authoritySubType, sort, skip),
+    [authoritySubType],
+  );
+
+  const objectAuthorityFeed = useMemo(() => {
+    if (embeddedAuthorityPage == null) {
+      return null;
+    }
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="rounded-card border border-border bg-bg px-card-padding pt-2">
+          <ObjectAuthoritySubNav
+            administrativeCount={model.administrativeAuthorityCount}
+            ownershipCount={model.ownershipAuthorityCount}
+            activeSub={authoritySubType}
+            onSelect={onAuthoritySubSelect}
+          />
+        </div>
+        <UserSocialAccountList
+          key={`${model.objectId}-${authoritySubType}-${authoritySort}`}
+          profileAccountName={model.objectId}
+          listKind={
+            authoritySubType === 'administrative'
+              ? 'authority_administrative'
+              : 'authority_ownership'
+          }
+          initialPage={embeddedAuthorityPage}
+          sort={authoritySort}
+          currentUsername={viewerUsername}
+          loadMoreAction={loadMoreObjectAuthority}
+        />
+      </div>
+    );
+  }, [
+    embeddedAuthorityPage,
+    authoritySubType,
+    authoritySort,
+    model.administrativeAuthorityCount,
+    model.objectId,
+    model.ownershipAuthorityCount,
+    onAuthoritySubSelect,
+    viewerUsername,
+    loadMoreObjectAuthority,
+  ]);
+
   const leftRail = (
     <LeftObjectProfileSidebar>
       <ObjectLeftRailPanel blocks={model.leftRailBlocks} />
@@ -201,6 +288,7 @@ export function ObjectPageClient({
           onFeedSubSelect={setActiveFeedSubSegment}
           objectUpdatesFeed={objectUpdatesFeed}
           objectFollowersFeed={objectFollowersFeed}
+          objectAuthorityFeed={objectAuthorityFeed}
         />
       }
       rightRail={

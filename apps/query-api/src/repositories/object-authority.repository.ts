@@ -1,14 +1,18 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import type { Kysely } from 'kysely';
+import { sql } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
 import type {
   ObjectAuthority,
   NewObjectAuthority,
 } from '@opden-data-layer/core';
+import type { UserSubscriptionSort, SubscriptionJoinedAccountRow } from './user-subscriptions.repository';
 
 @Injectable()
 export class ObjectAuthorityRepository {
+  private readonly logger = new Logger(ObjectAuthorityRepository.name);
+
   constructor(@Inject(KYSELY) private readonly db: Kysely<Database>) {}
 
   async findByObjectId(objectId: string) {
@@ -85,5 +89,64 @@ export class ObjectAuthorityRepository {
       .select('object_id')
       .execute();
     return rows.map((r) => r.object_id);
+  }
+
+  async countByObjectIdAndType(
+    objectId: string,
+    authorityType: ObjectAuthority['authority_type'],
+  ): Promise<number> {
+    try {
+      const row = await this.db
+        .selectFrom('object_authority')
+        .where('object_id', '=', objectId)
+        .where('authority_type', '=', authorityType)
+        .select(sql<number>`count(*)::int`.as('c'))
+        .executeTakeFirst();
+      return Number(row?.c ?? 0);
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return 0;
+    }
+  }
+
+  /**
+   * Accounts with authority on `object_id`, joined to `accounts_current`, subscription-list sorts + pagination.
+   */
+  async findAccountsByObjectIdAndType(
+    objectId: string,
+    authorityType: ObjectAuthority['authority_type'],
+    sort: UserSubscriptionSort,
+    skip: number,
+    limit: number,
+  ): Promise<SubscriptionJoinedAccountRow[]> {
+    try {
+      const qb = this.db
+        .selectFrom('object_authority as oa')
+        .innerJoin('accounts_current as ac', (join) =>
+          join.onRef('oa.account', '=', 'ac.name'),
+        )
+        .where('oa.object_id', '=', objectId)
+        .where('oa.authority_type', '=', authorityType)
+        .select([
+          sql<string>`ac.name`.as('name'),
+          sql<string | null>`ac.profile_image`.as('profile_image'),
+          sql<number>`ac.wobjects_weight`.as('wobjects_weight'),
+          sql<number>`ac.users_following_count`.as('users_following_count'),
+        ]);
+
+      const ordered =
+        sort === 'followers'
+          ? qb.orderBy(sql`ac.users_following_count`, 'desc').orderBy(sql`ac.name`, 'asc')
+          : sort === 'a-z'
+            ? qb.orderBy(sql`ac.name`, 'asc')
+            : sort === 'recency'
+              ? qb.orderBy(sql`oa.created_at`, 'desc').orderBy(sql`ac.name`, 'asc')
+              : qb.orderBy(sql`ac.wobjects_weight desc nulls last`).orderBy(sql`ac.name`, 'asc');
+
+      return await ordered.offset(skip).limit(limit).execute();
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return [];
+    }
   }
 }

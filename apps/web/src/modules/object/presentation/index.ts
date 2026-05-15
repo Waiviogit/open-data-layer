@@ -16,6 +16,8 @@ export { ObjectPrimaryContent } from './components/object-primary-content';
 export type { ObjectPrimaryContentProps } from './components/object-primary-content';
 export { ObjectFeedSubNav } from './components/object-feed-sub-nav';
 export type { ObjectFeedSubNavProps } from './components/object-feed-sub-nav';
+export { ObjectAuthoritySubNav } from './components/object-authority-sub-nav';
+export type { ObjectAuthoritySubNavProps } from './components/object-authority-sub-nav';
 export { ObjectWriteReviewPrompt } from './components/object-write-review-prompt';
 export type { ObjectWriteReviewPromptProps } from './components/object-write-review-prompt';
 export { ObjectRightSidebar } from './components/object-right-sidebar';

@@ -9,6 +9,7 @@ import * as m00008 from './00008_object_updates_rank_score';
 import * as m00009 from './00009_subscription_follow_timestamps';
 import * as m00010 from './00010_currency_tables';
 import * as m00011 from './00011_object_status';
+import * as m00012 from './00012_object_authority_created_at';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/core OdlDatabase and docs/spec/data-model/schema.sql */
@@ -24,4 +25,5 @@ export const MIGRATIONS: Record<string, Migration> = {
   '00009_subscription_follow_timestamps': { up: m00009.up, down: m00009.down },
   '00010_currency_tables': { up: m00010.up, down: m00010.down },
   '00011_object_status': { up: m00011.up, down: m00011.down },
+  '00012_object_authority_created_at': { up: m00012.up, down: m00012.down },
 };

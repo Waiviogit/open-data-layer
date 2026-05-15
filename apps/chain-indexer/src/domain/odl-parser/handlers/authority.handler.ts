@@ -49,6 +49,7 @@ export class AuthorityHandler implements OdlActionHandler {
         object_id,
         account: ctx.creator,
         authority_type,
+        created_at: new Date(ctx.timestamp),
       });
       if (authority_type === 'administrative') {
         this.eventEmitter.emit(

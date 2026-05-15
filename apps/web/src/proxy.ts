@@ -37,6 +37,15 @@ export function proxy(request: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
+  const objectAuthorityMatch = pathname.match(/^\/object\/([^/]+)\/authority\/?$/);
+  if (objectAuthorityMatch) {
+    const id = objectAuthorityMatch[1];
+    const url = request.nextUrl.clone();
+    url.pathname = `/object/${id}`;
+    url.searchParams.set('tab', 'authority');
+    return NextResponse.rewrite(url);
+  }
+
   if (!pathname.startsWith('/@')) {
     return NextResponse.next();
   }

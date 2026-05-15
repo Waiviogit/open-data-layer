@@ -20,6 +20,8 @@ function stubPrimaryCopy(primarySegment: string): string {
       return 'Gallery';
     case 'updates':
       return 'Updates';
+    case 'authority':
+      return 'Authority';
     case 'followers':
       return 'Followers';
     case 'experts':
@@ -73,6 +75,8 @@ export type ObjectPrimaryContentProps = {
   objectUpdatesFeed?: ReactNode;
   /** Injected feed (client) when the Followers tab is active. */
   objectFollowersFeed?: ReactNode | null;
+  /** Injected feed (client) when the Authority tab is active. */
+  objectAuthorityFeed?: ReactNode | null;
 };
 
 export function ObjectPrimaryContent({
@@ -85,8 +89,28 @@ export function ObjectPrimaryContent({
   onFeedSubSelect,
   objectUpdatesFeed,
   objectFollowersFeed,
+  objectAuthorityFeed,
 }: ObjectPrimaryContentProps) {
   if (activePrimarySegment !== REVIEWS_SEGMENT) {
+    if (activePrimarySegment === 'authority' && objectAuthorityFeed != null) {
+      return (
+        <FeedColumn>
+          {objectAuthorityFeed}
+        </FeedColumn>
+      );
+    }
+
+    if (activePrimarySegment === 'authority') {
+      return (
+        <FeedColumn>
+          <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
+            <p className="font-medium text-fg">{stubPrimaryCopy(activePrimarySegment)}</p>
+            <p className="mt-2 text-muted">{MOCK_STUB_HINT}</p>
+          </div>
+        </FeedColumn>
+      );
+    }
+
     if (activePrimarySegment === 'followers' && objectFollowersFeed != null) {
       return (
         <FeedColumn>

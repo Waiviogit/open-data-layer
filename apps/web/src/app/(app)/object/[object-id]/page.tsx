@@ -13,6 +13,7 @@ import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
 import { loadMessages } from '@/i18n/runtime/load-messages';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 
+import { getObjectAuthorityPageQuery } from '@/modules/object/application/queries/get-object-authority-page.query';
 import { getObjectFollowersPageQuery } from '@/modules/object/application/queries/get-object-followers-page.query';
 import {
   parseSubscriptionSortParam,
@@ -23,6 +24,7 @@ import { loadObjectPageModel } from './object-page-model.server';
 import {
   firstSearchParam,
   OBJECT_PAGE_PRIMARY_TAB_PARAM,
+  parseAuthoritySubTypeParam,
 } from './object-page-search';
 import { ObjectPageClient } from './object-page-client';
 
@@ -57,6 +59,12 @@ export async function generateMetadata({
     const followersLabel =
       typeof messages.followers === 'string' ? messages.followers : 'Followers';
     return { title: `${title} · ${followersLabel}` };
+  }
+
+  if (tab === 'authority') {
+    const authorityLabel =
+      typeof messages.authority === 'string' ? messages.authority : 'Authority';
+    return { title: `${title} · ${authorityLabel}` };
   }
 
   return {
@@ -116,11 +124,28 @@ export default async function ObjectDetailPage({
   };
 
   const followersSort = parseSubscriptionSortParam(sp.sort);
+  const authoritySubType = parseAuthoritySubTypeParam(sp);
+  const authoritySort = parseSubscriptionSortParam(sp.sort);
+
   const embeddedFollowersPage =
     initialPrimarySegment === 'followers'
       ? await getObjectFollowersPageQuery(
           objectId,
           { sort: followersSort, skip: 0, limit: USER_SOCIAL_PAGE_SIZE },
+          user?.username ?? null,
+        )
+      : null;
+
+  const embeddedAuthorityPage =
+    initialPrimarySegment === 'authority'
+      ? await getObjectAuthorityPageQuery(
+          objectId,
+          {
+            authorityType: authoritySubType,
+            sort: authoritySort,
+            skip: 0,
+            limit: USER_SOCIAL_PAGE_SIZE,
+          },
           user?.username ?? null,
         )
       : null;
@@ -131,6 +156,9 @@ export default async function ObjectDetailPage({
       embeddedUpdatesFeed={embeddedUpdatesFeed}
       embeddedFollowersPage={embeddedFollowersPage}
       followersSort={followersSort}
+      embeddedAuthorityPage={embeddedAuthorityPage}
+      authoritySubType={authoritySubType}
+      authoritySort={authoritySort}
       viewerUsername={user?.username ?? null}
       initialPrimarySegment={initialPrimarySegment}
       defaultPrimarySegment={defaultSeg}

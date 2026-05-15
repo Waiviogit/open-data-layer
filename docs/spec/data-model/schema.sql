@@ -115,11 +115,13 @@ CREATE TABLE object_authority (
   object_id       TEXT NOT NULL REFERENCES objects_core (object_id) ON DELETE CASCADE,
   account         TEXT NOT NULL,
   authority_type  TEXT NOT NULL CHECK (authority_type IN ('ownership', 'administrative')),
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (object_id, account, authority_type)
 );
 
 CREATE INDEX idx_object_authority_object_id_authority_type ON object_authority (object_id, authority_type);
 CREATE INDEX idx_object_authority_account ON object_authority (account);
+CREATE INDEX idx_object_authority_object_id_type_created_at ON object_authority (object_id, authority_type, created_at DESC);
 
 -- ---------------------------------------------------------------------------
 -- user_object_powers

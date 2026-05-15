@@ -5,6 +5,7 @@ import { ObjectProjectionModule } from '../object-projection/object-projection.m
 import { RepositoriesModule } from '../../repositories';
 import { GetObjectByIdEndpoint } from './get-object-by-id.endpoint';
 import { GetObjectFollowersEndpoint } from './get-object-followers.endpoint';
+import { GetObjectAuthorityEndpoint } from './get-object-authority.endpoint';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { GetObjectFollowersEndpoint } from './get-object-followers.endpoint';
     GovernanceModule,
     ObjectProjectionModule,
   ],
-  providers: [GetObjectByIdEndpoint, GetObjectFollowersEndpoint],
-  exports: [GetObjectByIdEndpoint, GetObjectFollowersEndpoint],
+  providers: [GetObjectByIdEndpoint, GetObjectFollowersEndpoint, GetObjectAuthorityEndpoint],
+  exports: [GetObjectByIdEndpoint, GetObjectFollowersEndpoint, GetObjectAuthorityEndpoint],
 })
 export class ObjectsModule {}

@@ -13,6 +13,7 @@ const MOCK_PRIMARY_TABS: ObjectPrimaryTabView[] = [
   { segment: 'reviews', label: 'Reviews' },
   { segment: 'gallery', label: 'Gallery' },
   { segment: 'updates', label: 'Updates', count: 25 },
+  { segment: 'authority', label: 'Authority' },
   { segment: 'followers', label: 'Followers', count: 0 },
   { segment: 'experts', label: 'Experts' },
 ];
@@ -135,6 +136,8 @@ const DEMO_SHOP_API: ProjectedObjectWithCountsView = {
   },
   followers_count: 0,
   updates_count: 25,
+  administrative_count: 1,
+  ownership_count: 0,
 };
 
 const DEMO_NEWSFEED_API: ProjectedObjectWithCountsView = {
@@ -151,6 +154,8 @@ const DEMO_NEWSFEED_API: ProjectedObjectWithCountsView = {
   },
   followers_count: 0,
   updates_count: 25,
+  administrative_count: 0,
+  ownership_count: 0,
 };
 
 const DEMO_BY_ID: Record<string, ProjectedObjectWithCountsView> = {

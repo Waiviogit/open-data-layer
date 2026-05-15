@@ -186,6 +186,8 @@ export interface ObjectAuthorityTable {
   object_id: string;
   account: string;
   authority_type: 'ownership' | 'administrative';
+  /** When authority was recorded (chain event time, migration backfill, etc.). */
+  created_at: ColumnType<Date, Date | string | undefined, Date | string>;
 }
 
 export type ObjectAuthority = Selectable<ObjectAuthorityTable>;

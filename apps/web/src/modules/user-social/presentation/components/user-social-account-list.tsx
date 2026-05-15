@@ -13,9 +13,15 @@ import type {
 import { UserSocialAccountRow } from './user-social-account-row';
 import { UserSocialSubscriptionSort } from './user-social-subscription-sort';
 
+export type UserSocialAccountListKind =
+  | 'followers'
+  | 'following'
+  | 'authority_administrative'
+  | 'authority_ownership';
+
 export type UserSocialAccountListProps = {
   profileAccountName: string;
-  listKind: 'followers' | 'following';
+  listKind: UserSocialAccountListKind;
   initialPage: PaginatedUserFollowListView;
   sort: UserSubscriptionSort;
   currentUsername: string | null;
@@ -36,7 +42,22 @@ export function UserSocialAccountList({
   const [pending, startTransition] = useTransition();
 
   const emptyKey =
-    listKind === 'followers' ? 'social_list_empty_followers' : 'social_list_empty_following';
+    listKind === 'followers'
+      ? 'social_list_empty_followers'
+      : listKind === 'following'
+        ? 'social_list_empty_following'
+        : listKind === 'authority_administrative'
+          ? 'social_list_empty_authority_administrative'
+          : 'social_list_empty_authority_ownership';
+
+  const headingKey =
+    listKind === 'followers'
+      ? 'followers'
+      : listKind === 'following'
+        ? 'following'
+        : listKind === 'authority_administrative'
+          ? 'object_authority_sub_administrative'
+          : 'object_authority_sub_ownership';
 
   return (
     <section
@@ -45,7 +66,7 @@ export function UserSocialAccountList({
     >
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
         <h2 id={`social-list-${listKind}-${profileAccountName}`} className="sr-only">
-          {listKind === 'followers' ? t('followers') : t('following')}
+          {t(headingKey)}
         </h2>
         <UserSocialSubscriptionSort />
       </div>
