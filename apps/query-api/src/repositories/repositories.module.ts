@@ -17,6 +17,7 @@ import { UserShopDeselectRepository } from './user-shop-deselect.repository';
 import { UserSubscriptionsRepository } from './user-subscriptions.repository';
 import { UserObjectFollowsRepository } from './user-object-follows.repository';
 import { UpdatesFeedRepository } from './updates-feed.repository';
+import { SearchRepository } from './search.repository';
 
 @Module({
   providers: [
@@ -38,6 +39,7 @@ import { UpdatesFeedRepository } from './updates-feed.repository';
     UserSubscriptionsRepository,
     UserObjectFollowsRepository,
     UpdatesFeedRepository,
+    SearchRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -58,6 +60,7 @@ import { UpdatesFeedRepository } from './updates-feed.repository';
     UserSubscriptionsRepository,
     UserObjectFollowsRepository,
     UpdatesFeedRepository,
+    SearchRepository,
   ],
 })
 export class RepositoriesModule {}

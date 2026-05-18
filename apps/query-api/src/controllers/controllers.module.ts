@@ -14,6 +14,8 @@ import { UserPostDraftsController } from './user-post-drafts.controller';
 import { PostsController } from './posts.controller';
 import { UsersController } from './users.controller';
 import { UserThreadsController } from './user-threads.controller';
+import { SearchController } from './search.controller';
+import { SearchModule } from '../domain/search';
 
 @Module({
   imports: [
@@ -26,6 +28,7 @@ import { UserThreadsController } from './user-threads.controller';
     CategoriesModule,
     ShopModule,
     SocialModule,
+    SearchModule,
   ],
   controllers: [
     ObjectsController,
@@ -34,6 +37,7 @@ import { UserThreadsController } from './user-threads.controller';
     PostsController,
     UserPostDraftsController,
     CurrencyController,
+    SearchController,
   ],
 })
 export class ControllersModule {}

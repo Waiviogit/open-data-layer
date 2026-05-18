@@ -22,6 +22,8 @@ export type {
 export { AggregatedObjectRepository } from './aggregated-object.repository';
 export type { LoadAggregatedObjectsOptions } from './aggregated-object.repository';
 export { UpdatesFeedRepository } from './updates-feed.repository';
+export { SearchRepository } from './search.repository';
+export type { SearchObjectCandidateRow, SearchUserRow } from './search.repository';
 export { PostsRepository } from './posts.repository';
 export type { FeedBranchRow, PostVoteSummary } from './posts.repository';
 export { UserPostDraftsRepository } from './user-post-drafts.repository';

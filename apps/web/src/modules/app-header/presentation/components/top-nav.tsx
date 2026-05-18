@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   useCallback,
   useEffect,
   useId,
+  useMemo,
   useRef,
   useState,
   type KeyboardEvent,
@@ -14,7 +15,12 @@ import {
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import type { AppHeaderUser } from '../../domain/app-header-user';
+import { buildSearchFlatList } from '../../domain/search-nav-list';
+import type { SearchFilterTab } from '../../domain/search-nav-list';
+import { fetchSearchResults } from '../../infrastructure/search.client';
+import type { SearchResponse } from '../../domain/search-response.schema';
 import { HeaderActions } from './header-actions';
+import { SearchDropdown } from './search-dropdown';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -62,18 +68,25 @@ function CloseIcon({ className }: { className?: string }) {
   );
 }
 
-export function TopNav({ user }: TopNavProps) {
+export function TopNav({ user: _user }: TopNavProps) {
   const { t } = useI18n();
+  const router = useRouter();
   const pathname = usePathname();
   const listId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
+  const searchShellRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fetchAbortRef = useRef<AbortController | null>(null);
 
   const [searchBarActive, setSearchBarActive] = useState(false);
   const [searchBarValue, setSearchBarValue] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [debouncePending, setDebouncePending] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchResponse | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [filterTab, setFilterTab] = useState<SearchFilterTab>('all');
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const clearDebounce = useCallback(() => {
     if (debounceRef.current) {
@@ -85,6 +98,7 @@ export function TopNav({ user }: TopNavProps) {
   useEffect(() => {
     return () => {
       clearDebounce();
+      fetchAbortRef.current?.abort();
     };
   }, [clearDebounce]);
 
@@ -94,6 +108,10 @@ export function TopNav({ user }: TopNavProps) {
     setDropdownOpen(false);
     setSearchBarActive(false);
     setDebouncePending(false);
+    setSearchResults(null);
+    setSearchLoading(false);
+    setFilterTab('all');
+    setActiveIndex(0);
   }, [pathname]);
 
   useEffect(() => {
@@ -118,12 +136,95 @@ export function TopNav({ user }: TopNavProps) {
     }, SEARCH_DEBOUNCE_MS);
   }, [searchBarValue, clearDebounce]);
 
+  useEffect(() => {
+    const q = debouncedQuery.trim();
+    if (!q) {
+      setSearchResults(null);
+      setSearchLoading(false);
+      return;
+    }
+
+    fetchAbortRef.current?.abort();
+    const ac = new AbortController();
+    fetchAbortRef.current = ac;
+
+    setSearchLoading(true);
+
+    void (async () => {
+      try {
+        const data = await fetchSearchResults(q, { signal: ac.signal });
+        if (ac.signal.aborted) {
+          return;
+        }
+        setSearchResults(data);
+        setFilterTab('all');
+        setActiveIndex(0);
+      } catch {
+        if (!ac.signal.aborted) {
+          setSearchResults(null);
+        }
+      } finally {
+        if (!ac.signal.aborted) {
+          setSearchLoading(false);
+        }
+      }
+    })();
+  }, [debouncedQuery]);
+
+  useEffect(() => {
+    if (!dropdownOpen) {
+      return;
+    }
+    const onDocMouseDown = (e: MouseEvent) => {
+      const el = searchShellRef.current;
+      if (el && !el.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onDocMouseDown);
+    return () => document.removeEventListener('mousedown', onDocMouseDown);
+  }, [dropdownOpen]);
+
+  const flatList = useMemo(
+    () => (searchResults ? buildSearchFlatList(searchResults, filterTab) : []),
+    [searchResults, filterTab],
+  );
+
+  useEffect(() => {
+    if (flatList.length === 0) {
+      setActiveIndex(0);
+      return;
+    }
+    setActiveIndex((i) => Math.min(i, flatList.length - 1));
+  }, [flatList.length, filterTab, searchResults]);
+
   const showDropdown =
-    dropdownOpen && (Boolean(debouncedQuery) || debouncePending);
+    dropdownOpen && (Boolean(debouncedQuery.trim()) || debouncePending);
 
   function onInputChange(v: string) {
     setSearchBarValue(v);
     setDropdownOpen(true);
+    if (!v.trim()) {
+      setSearchResults(null);
+      setSearchLoading(false);
+    }
+  }
+
+  function closeDropdown() {
+    setDropdownOpen(false);
+  }
+
+  function activateHighlighted() {
+    const entry = flatList[activeIndex];
+    if (!entry) {
+      return;
+    }
+    closeDropdown();
+    if (entry.kind === 'object') {
+      router.push(`/object/${encodeURIComponent(entry.item.object_id)}`);
+    } else {
+      router.push(`/@${encodeURIComponent(entry.item.name)}`);
+    }
   }
 
   function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
@@ -132,6 +233,34 @@ export function TopNav({ user }: TopNavProps) {
       if (searchBarActive) {
         setSearchBarActive(false);
       }
+      return;
+    }
+
+    if (!showDropdown || debouncePending || searchLoading || !searchResults) {
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (flatList.length === 0) {
+        return;
+      }
+      setActiveIndex((i) => (i + 1) % flatList.length);
+      return;
+    }
+
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (flatList.length === 0) {
+        return;
+      }
+      setActiveIndex((i) => (i - 1 + flatList.length) % flatList.length);
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      activateHighlighted();
     }
   }
 
@@ -170,6 +299,7 @@ export function TopNav({ user }: TopNavProps) {
       </div>
 
       <div
+        ref={searchShellRef}
         className={[
           'relative min-w-0 flex-1',
           !searchBarActive ? 'hidden lg:block' : 'block',
@@ -186,9 +316,6 @@ export function TopNav({ user }: TopNavProps) {
             onChange={(e) => onInputChange(e.target.value)}
             onFocus={() => setDropdownOpen(true)}
             onKeyDown={onKeyDown}
-            onBlur={() => {
-              window.setTimeout(() => setDropdownOpen(false), 120);
-            }}
             aria-expanded={showDropdown}
             aria-controls={showDropdown ? `${listId}-panel` : undefined}
             aria-autocomplete="list"
@@ -203,6 +330,7 @@ export function TopNav({ user }: TopNavProps) {
               onClick={() => {
                 setSearchBarValue('');
                 setDebouncedQuery('');
+                setSearchResults(null);
                 setDropdownOpen(false);
               }}
             >
@@ -213,13 +341,35 @@ export function TopNav({ user }: TopNavProps) {
         {showDropdown ? (
           <div
             id={`${listId}-panel`}
-            role="listbox"
-            className="absolute start-0 top-full z-50 mt-1 w-full rounded-card border border-border bg-surface p-3 shadow-card"
+            role="presentation"
+            className="absolute start-0 top-full z-50 mt-1 w-full rounded-card border border-border bg-surface p-0 shadow-card"
           >
-            {debouncePending ? (
-              <p className="text-body-sm text-fg-secondary">{t('app_header_search_loading')}</p>
-            ) : debouncedQuery ? (
-              <p className="text-body-sm text-fg-secondary">{t('app_header_search_mvp_hint')}</p>
+            {debouncePending || searchLoading ? (
+              <p className="p-3 text-body-sm text-fg-secondary">{t('app_header_search_loading')}</p>
+            ) : debouncedQuery.trim() && searchResults ? (
+              <SearchDropdown
+                results={searchResults}
+                filterTab={filterTab}
+                onFilterTabChange={(tab) => {
+                  setFilterTab(tab);
+                  setActiveIndex(0);
+                }}
+                activeIndex={activeIndex}
+                flatList={flatList}
+                onHighlightIndex={setActiveIndex}
+                listId={listId}
+                onClose={closeDropdown}
+                messages={{
+                  sectionObjects: t('search_section_objects'),
+                  sectionUsers: t('search_section_users'),
+                  empty: t('search_empty_state'),
+                  tabAll: t('search_tab_all'),
+                  tabUsers: t('search_tab_users'),
+                  following: t('search_user_following'),
+                }}
+              />
+            ) : debouncedQuery.trim() && !searchLoading ? (
+              <p className="p-3 text-body-sm text-fg-secondary">{t('search_empty_state')}</p>
             ) : null}
           </div>
         ) : null}
@@ -240,11 +390,11 @@ export function TopNav({ user }: TopNavProps) {
           {searchBarActive ? <CloseIcon /> : <SearchIcon />}
         </button>
         {!hideActionsWhileMobileSearch ? (
-          <HeaderActions user={user} />
+          <HeaderActions user={_user} />
         ) : null}
         {hideActionsWhileMobileSearch ? (
           <div className="hidden items-center gap-2 lg:flex">
-            <HeaderActions user={user} />
+            <HeaderActions user={_user} />
           </div>
         ) : null}
       </div>
