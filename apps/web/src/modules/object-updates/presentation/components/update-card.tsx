@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
@@ -62,17 +63,30 @@ export function UpdateCard({ item, showLocaleBadge }: UpdateCardProps) {
     String(OBJECT_UPDATES_MIN_APPROVAL_PERCENT),
   );
 
+  const creatorProfileHref = `/@${encodeURIComponent(item.creator)}`;
+
   return (
     <article className="rounded-card border border-border bg-surface/80 p-card-padding">
       <header className="flex flex-wrap items-center gap-2">
-        <UserAvatar
-          username={item.creator}
-          avatarUrl={hiveAvatarUrl(item.creator)}
-          size={40}
-          displayName={`@${item.creator}`}
-        />
+        <Link
+          href={creatorProfileHref}
+          className="inline-flex shrink-0 self-start rounded-circle focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          aria-label={`View profile: ${item.creator}`}
+        >
+          <UserAvatar
+            username={item.creator}
+            avatarUrl={hiveAvatarUrl(item.creator)}
+            size={40}
+            displayName={item.creator}
+          />
+        </Link>
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-          <span className="truncate font-medium text-fg-secondary">@{item.creator}</span>
+          <Link
+            href={creatorProfileHref}
+            className="truncate font-medium text-fg-secondary hover:underline focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            {item.creator}
+          </Link>
           {weightLabel ? (
             <span className="rounded bg-surface-control px-1.5 py-0.5 text-caption font-medium text-fg-secondary tabular-nums">
               {weightLabel}
