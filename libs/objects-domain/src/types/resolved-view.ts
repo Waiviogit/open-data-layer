@@ -3,6 +3,12 @@ import type { JsonValue } from '@opden-data-layer/core';
 export type ValidityStatus = 'VALID' | 'REJECTED';
 
 /**
+ * Which tier determined validity for this update (non-curator path).
+ * Null when {@link curatorSet} filtering applies instead of the LWAW/LWTW/community hierarchy.
+ */
+export type ValidityTier = 'admin' | 'trusted' | 'community' | 'baseline';
+
+/**
  * A single resolved update value, post-validity and post-ranking resolution.
  */
 export interface ResolvedUpdate {
@@ -18,6 +24,16 @@ export interface ResolvedUpdate {
   value_geo: unknown | null;
   value_json: JsonValue | null;
   validity_status: ValidityStatus;
+  /**
+   * Validity tier from the hierarchy (null on curator-filter path).
+   * Used when resolving single-cardinality field winners across competing VALID rows.
+   */
+  validity_tier: ValidityTier | null;
+  /**
+   * For admin/trusted decisive paths: `event_seq` of the winning validity vote (LWAW/LWTW).
+   * Null for community, baseline, and curator paths.
+   */
+  decisive_vote_event_seq: bigint | null;
   /**
    * Weighted approval percentage (0–100, up to 3 decimal places).
    * 100 = admin/trusted approved or no community-path votes (open baseline).

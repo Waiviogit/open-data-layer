@@ -118,7 +118,7 @@ describe('resolveObjectViews', () => {
   it('keeps REJECTED aggregateRating rows when rank_score is persisted (curator filter)', () => {
     const governance = { ...DEFAULT_GOVERNANCE_SNAPSHOT, object_control: 'full' as const };
     const authorities: ObjectAuthority[] = [
-      { object_id: 'obj1', account: 'owner1', authority_type: 'ownership' },
+      { object_id: 'obj1', account: 'owner1', authority_type: 'ownership', created_at: new Date() },
     ];
     const ratingUpdate: ObjectUpdate = {
       ...makeUpdate('r1', 'obj1', 'aggregateRating', 'stranger', BigInt(1), 'en-US'),
@@ -265,7 +265,7 @@ describe('resolveObjectViews', () => {
       expect(result[0].fields['name'].values[0].update_id).toBe('u1');
     });
 
-    it('with only null locales, highest event_seq wins (backward compatible)', () => {
+    it('with only null locales, highest update event_seq wins among baseline tier', () => {
       const updates = [
         makeUpdate('u1', 'obj1', 'name', 'alice', BigInt(5), null),
         makeUpdate('u2', 'obj1', 'name', 'alice', BigInt(10), null),
@@ -323,6 +323,8 @@ describe('filterByLocalePreference', () => {
       value_geo: null,
       value_json: null,
       validity_status: 'VALID',
+      validity_tier: 'baseline',
+      decisive_vote_event_seq: null,
       approve_percent: 100,
       field_weight: null,
       rank_score: null,

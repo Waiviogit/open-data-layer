@@ -60,7 +60,7 @@ function makeAuthority(
   account: string,
   type: 'ownership' | 'administrative',
 ): ObjectAuthority {
-  return { object_id: 'obj1', account, authority_type: type };
+  return { object_id: 'obj1', account, authority_type: type, created_at: new Date() };
 }
 
 describe('computeCuratorSet', () => {
@@ -111,6 +111,8 @@ describe('resolveUpdateValidity — curator filter', () => {
     expect(result.status).toBe('VALID');
     expect(result.field_weight).toBeNull();
     expect(result.approve_percent).toBe(100);
+    expect(result.validity_tier).toBeNull();
+    expect(result.decisive_vote_event_seq).toBeNull();
   });
 
   it('is VALID when a curator member voted for', () => {
@@ -118,12 +120,16 @@ describe('resolveUpdateValidity — curator filter', () => {
     const result = resolveUpdateValidity(BASE_UPDATE, votes, curatorSet, governance, voterReputations, authorities);
     expect(result.status).toBe('VALID');
     expect(result.approve_percent).toBe(100);
+    expect(result.validity_tier).toBeNull();
+    expect(result.decisive_vote_event_seq).toBeNull();
   });
 
   it('is REJECTED when creator not in C and no curator voted for', () => {
     const result = resolveUpdateValidity(BASE_UPDATE, [], curatorSet, governance, voterReputations, authorities);
     expect(result.status).toBe('REJECTED');
     expect(result.approve_percent).toBe(100);
+    expect(result.validity_tier).toBeNull();
+    expect(result.decisive_vote_event_seq).toBeNull();
   });
 });
 
@@ -139,6 +145,8 @@ describe('resolveUpdateValidity — admin decisive (LWAW)', () => {
     expect(result.status).toBe('VALID');
     expect(result.field_weight).toBeNull();
     expect(result.approve_percent).toBe(100);
+    expect(result.validity_tier).toBe('admin');
+    expect(result.decisive_vote_event_seq).toBe(BigInt(10));
   });
 
   it('REJECTED when admin voted against', () => {
@@ -146,6 +154,8 @@ describe('resolveUpdateValidity — admin decisive (LWAW)', () => {
     const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, voterReputations, authorities);
     expect(result.status).toBe('REJECTED');
     expect(result.approve_percent).toBe(0);
+    expect(result.validity_tier).toBe('admin');
+    expect(result.decisive_vote_event_seq).toBe(BigInt(10));
   });
 
   it('latest admin vote wins (LWAW)', () => {
@@ -156,6 +166,8 @@ describe('resolveUpdateValidity — admin decisive (LWAW)', () => {
     const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, voterReputations, authorities);
     expect(result.status).toBe('REJECTED');
     expect(result.approve_percent).toBe(0);
+    expect(result.validity_tier).toBe('admin');
+    expect(result.decisive_vote_event_seq).toBe(BigInt(10));
   });
 });
 
@@ -170,6 +182,8 @@ describe('resolveUpdateValidity — trusted decisive (LWTW)', () => {
     const result = resolveUpdateValidity(BASE_UPDATE, votes, emptySet, governance, voterReputations, authorities);
     expect(result.status).toBe('VALID');
     expect(result.approve_percent).toBe(100);
+    expect(result.validity_tier).toBe('trusted');
+    expect(result.decisive_vote_event_seq).toBe(BigInt(10));
   });
 
   it('falls through to community when trusted has no authority on object', () => {
@@ -179,6 +193,8 @@ describe('resolveUpdateValidity — trusted decisive (LWTW)', () => {
     // No authority on object → trusted vote is not decisive → no community votes → VALID baseline
     expect(result.status).toBe('VALID');
     expect(result.approve_percent).toBe(100);
+    expect(result.validity_tier).toBe('baseline');
+    expect(result.decisive_vote_event_seq).toBeNull();
   });
 });
 
@@ -192,6 +208,8 @@ describe('resolveUpdateValidity — community vote weight', () => {
     expect(result.status).toBe('VALID');
     expect(result.field_weight).toBeNull();
     expect(result.approve_percent).toBe(100);
+    expect(result.validity_tier).toBe('baseline');
+    expect(result.decisive_vote_event_seq).toBeNull();
   });
 
   it('VALID when only community for votes (approve_percent 100)', () => {
@@ -201,6 +219,8 @@ describe('resolveUpdateValidity — community vote weight', () => {
     expect(result.status).toBe('VALID');
     expect(result.field_weight).toBeGreaterThanOrEqual(0);
     expect(result.approve_percent).toBe(100);
+    expect(result.validity_tier).toBe('community');
+    expect(result.decisive_vote_event_seq).toBeNull();
   });
 
   it('REJECTED when only community against votes', () => {
@@ -210,6 +230,8 @@ describe('resolveUpdateValidity — community vote weight', () => {
     expect(result.status).toBe('REJECTED');
     expect(result.field_weight).toBeLessThan(0);
     expect(result.approve_percent).toBe(0);
+    expect(result.validity_tier).toBe('community');
+    expect(result.decisive_vote_event_seq).toBeNull();
   });
 
   it('REJECTED when equal for and against weight (net 0)', () => {
@@ -219,6 +241,8 @@ describe('resolveUpdateValidity — community vote weight', () => {
     expect(result.field_weight).toBe(0);
     expect(result.approve_percent).toBe(0);
     expect(result.status).toBe('REJECTED');
+    expect(result.validity_tier).toBe('community');
+    expect(result.decisive_vote_event_seq).toBeNull();
   });
 
   it('REJECTED when mixed community approve_percent is exactly MIN (strict >)', () => {
@@ -231,6 +255,8 @@ describe('resolveUpdateValidity — community vote weight', () => {
     expect(result.approve_percent).toBe(70);
     expect(result.approve_percent > MIN_PERCENT_TO_SHOW_UPDATE).toBe(false);
     expect(result.status).toBe('REJECTED');
+    expect(result.validity_tier).toBe('community');
+    expect(result.decisive_vote_event_seq).toBeNull();
   });
 
   it('VALID when mixed community approve_percent exceeds MIN', () => {
@@ -243,6 +269,8 @@ describe('resolveUpdateValidity — community vote weight', () => {
     expect(result.approve_percent).toBe(75);
     expect(result.status).toBe('VALID');
     expect(result.field_weight).toBe(2);
+    expect(result.validity_tier).toBe('community');
+    expect(result.decisive_vote_event_seq).toBeNull();
   });
 });
 

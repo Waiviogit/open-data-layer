@@ -13,6 +13,8 @@ function ru(partial: Partial<ResolvedUpdate>): ResolvedUpdate {
     value_geo: null,
     value_json: null,
     validity_status: 'VALID',
+    validity_tier: 'baseline',
+    decisive_vote_event_seq: null,
     approve_percent: 100,
     field_weight: null,
     rank_score: null,

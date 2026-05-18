@@ -3,10 +3,16 @@ export {
   computeApprovePercent,
   computeCuratorSet,
   resolveUpdateValidity,
+  type ResolveUpdateValidityResult,
 } from './resolve-validity';
 export {
   compareResolvedUpdatesByRanking,
   computeUpdateRankPersistence,
   waivVoteWeight,
 } from './resolve-ranking';
-export { resolveSingleCardinality, resolveMultiCardinality } from './resolve-cardinality';
+export {
+  compareResolvedSingleCardinality,
+  resolveSingleCardinality,
+  resolveMultiCardinality,
+  type SingleCardinalityResolutionTrace,
+} from './resolve-cardinality';

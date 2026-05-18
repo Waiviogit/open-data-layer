@@ -113,7 +113,19 @@ Raw `rank_votes` rows are not loaded for resolution; they remain the audit trail
 
 ### Tie-break for single-cardinality field winner
 
-For update types with `cardinality: single`, when multiple **VALID** candidates share the same maximal `event_seq`, the winning update is the one with **lexicographically smallest** `update_id` (`update_id ASC`). This keeps the resolved winner deterministic (used e.g. for the `en-US` description that drives site canonical in [site-canonical](site-canonical.md)).
+When multiple **VALID** candidates remain for an `update_type` with `cardinality: single` (after locale preference where applicable), the Query layer picks one winner. Ordering is **not** “highest `object_updates.event_seq` first” globally; that column is used in a **late** deterministic tie-break (see step 4 below).
+
+Order (first difference wins):
+
+1. **Validity tier** from per-update resolution (§A / §C): `admin` > `trusted` > `community` > `baseline`. Rows resolved only via the **curator filter** carry no `validity_tier` in code (`null`) and rank like `baseline` for this step.
+
+2. **Admin or trusted tier:** larger **`event_seq` of the decisive validity vote** for that `update_id` (same LWAW / LWTW rule as §A — latest admin vote, or latest trusted vote with authority). Among competing updates **both** in the admin tier, the one whose **decisive admin validity vote** has the **later** `event_seq` wins the field.
+
+3. **Community tier:** larger signed **`field_weight`**, then larger **`approve_percent`**.
+
+4. Otherwise (baseline tier, curator `null` tier, or ties above): larger **`object_updates.event_seq`**, then larger **`created_at_unix`**, then **`update_id` ASC** (lexicographically smallest).
+
+Reference implementation: `compareResolvedSingleCardinality` in `@opden-data-layer/objects-domain`.
 
 ## C) Community vote weight
 
@@ -166,8 +178,11 @@ For update types targeting a single-value field:
 - Key scope: `(object_id, field_key, creator)`.
 - Newer `update_create` from same creator for same field replaces previous current update in that scope.
 
+Cross-creator “which update wins” for the public resolved field is defined in **§B — Tie-break for single-cardinality field winner**, not by §D alone.
+
 ## Determinism
 
 - Same event stream must produce identical stored raw vote state.
 - Same governance context/snapshot must produce identical `final_status` and ranking output.
 - Same `user_object_powers` values and same raw vote set must produce identical `field_weight` and community-tier validity, and identical persisted `rank_score` for a given `rank_vote` stream.
+- Same resolved `validity_tier` / vote metadata on `ResolvedUpdate` rows must produce identical single-cardinality field winners.

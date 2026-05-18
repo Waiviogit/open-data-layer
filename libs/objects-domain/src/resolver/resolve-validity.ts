@@ -1,8 +1,17 @@
 import type { ObjectUpdate, ValidityVote, ObjectAuthority } from '@opden-data-layer/core';
 import { MIN_PERCENT_TO_SHOW_UPDATE } from '../constants';
 import type { GovernanceSnapshot } from '../types/governance-snapshot';
-import type { ValidityStatus, VoterWaivPowerMap } from '../types';
+import type { ValidityStatus, ValidityTier, VoterWaivPowerMap } from '../types';
 import { waivVoteWeight } from './resolve-ranking';
+
+/** Result of {@link resolveUpdateValidity} including tier metadata for single-cardinality ordering. */
+export type ResolveUpdateValidityResult = {
+  status: ValidityStatus;
+  field_weight: number | null;
+  approve_percent: number;
+  validity_tier: ValidityTier | null;
+  decisive_vote_event_seq: bigint | null;
+};
 
 /**
  * Compute the curator set C for an object.
@@ -127,7 +136,7 @@ export function resolveUpdateValidity(
   governance: GovernanceSnapshot,
   voterWaivPowers: VoterWaivPowerMap,
   objectAuthorities: ObjectAuthority[],
-): { status: ValidityStatus; field_weight: number | null; approve_percent: number } {
+): ResolveUpdateValidityResult {
   const approve_percent = computeApprovePercent(
     update,
     validityVotes,
@@ -138,10 +147,16 @@ export function resolveUpdateValidity(
 
   if (curatorSet.size > 0) {
     const { status, field_weight } = resolveCuratorFilter(update, validityVotes, curatorSet);
-    return { status, field_weight, approve_percent };
+    return {
+      status,
+      field_weight,
+      approve_percent,
+      validity_tier: null,
+      decisive_vote_event_seq: null,
+    };
   }
 
-  const { status, field_weight } = resolveHierarchy(
+  return resolveHierarchy(
     update,
     validityVotes,
     governance,
@@ -149,7 +164,6 @@ export function resolveUpdateValidity(
     objectAuthorities,
     approve_percent,
   );
-  return { status, field_weight, approve_percent };
 }
 
 function resolveCuratorFilter(
@@ -173,13 +187,19 @@ function resolveHierarchy(
   voterWaivPowers: VoterWaivPowerMap,
   objectAuthorities: ObjectAuthority[],
   approve_percent: number,
-): { status: ValidityStatus; field_weight: number | null } {
+): ResolveUpdateValidityResult {
   const updateVotes = validityVotes.filter((v) => v.update_id === update.update_id);
 
   const adminVotes = updateVotes.filter((v) => governance.admins.includes(v.voter));
   if (adminVotes.length > 0) {
     const latest = latestByEventSeq(adminVotes);
-    return { status: latest.vote === 'for' ? 'VALID' : 'REJECTED', field_weight: null };
+    return {
+      status: latest.vote === 'for' ? 'VALID' : 'REJECTED',
+      field_weight: null,
+      approve_percent,
+      validity_tier: 'admin',
+      decisive_vote_event_seq: latest.event_seq,
+    };
   }
 
   const accountsWithAuthority = new Set(objectAuthorities.map((a) => a.account));
@@ -187,7 +207,13 @@ function resolveHierarchy(
   const trustedVotes = updateVotes.filter((v) => trustedWithAuthority.includes(v.voter));
   if (trustedVotes.length > 0) {
     const latest = latestByEventSeq(trustedVotes);
-    return { status: latest.vote === 'for' ? 'VALID' : 'REJECTED', field_weight: null };
+    return {
+      status: latest.vote === 'for' ? 'VALID' : 'REJECTED',
+      field_weight: null,
+      approve_percent,
+      validity_tier: 'trusted',
+      decisive_vote_event_seq: latest.event_seq,
+    };
   }
 
   const adminSet = new Set(governance.admins);
@@ -196,7 +222,13 @@ function resolveHierarchy(
     (v) => !adminSet.has(v.voter) && !trustedSet.has(v.voter),
   );
   if (communityVotes.length === 0) {
-    return { status: 'VALID', field_weight: null };
+    return {
+      status: 'VALID',
+      field_weight: null,
+      approve_percent,
+      validity_tier: 'baseline',
+      decisive_vote_event_seq: null,
+    };
   }
 
   let field_weight = 0;
@@ -208,6 +240,9 @@ function resolveHierarchy(
   return {
     status: approve_percent > MIN_PERCENT_TO_SHOW_UPDATE ? 'VALID' : 'REJECTED',
     field_weight,
+    approve_percent,
+    validity_tier: 'community',
+    decisive_vote_event_seq: null,
   };
 }
 

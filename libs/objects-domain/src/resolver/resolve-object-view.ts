@@ -6,6 +6,30 @@ import { computeCuratorSet, resolveUpdateValidity } from './resolve-validity';
 import { resolveSingleCardinality, resolveMultiCardinality } from './resolve-cardinality';
 import { compareResolvedUpdatesByRanking } from './resolve-ranking';
 
+function shouldTraceField(
+  trace: ResolveOptions['trace'],
+  updateType: string,
+): trace is NonNullable<ResolveOptions['trace']> {
+  return trace !== undefined && trace.update_types.includes(updateType);
+}
+
+/** Bigints and fields useful when comparing two competing image (etc.) updates. */
+function traceResolvedUpdateRow(u: ResolvedUpdate): Record<string, unknown> {
+  return {
+    update_id: u.update_id,
+    creator: u.creator,
+    locale: u.locale,
+    validity_status: u.validity_status,
+    validity_tier: u.validity_tier,
+    decisive_vote_event_seq:
+      u.decisive_vote_event_seq === null ? null : u.decisive_vote_event_seq.toString(),
+    event_seq: u.event_seq.toString(),
+    created_at_unix: u.created_at_unix,
+    approve_percent: u.approve_percent,
+    field_weight: u.field_weight,
+  };
+}
+
 /**
  * Prefer VALID updates in the requested locale. For multi-cardinality, locale-neutral
  * (null locale) updates are included in the preferred set with matched locales.
@@ -91,14 +115,15 @@ function resolveObject(
       if (!update) return [];
       const updateVotes = obj.validity_votes;
 
-      const { status, field_weight, approve_percent } = resolveUpdateValidity(
-        update,
-        updateVotes,
-        curatorSet,
-        options.governance,
-        voterWaivPowers,
-        obj.authorities,
-      );
+      const { status, field_weight, approve_percent, validity_tier, decisive_vote_event_seq } =
+        resolveUpdateValidity(
+          update,
+          updateVotes,
+          curatorSet,
+          options.governance,
+          voterWaivPowers,
+          obj.authorities,
+        );
 
       return {
         update_id: update.update_id,
@@ -111,6 +136,8 @@ function resolveObject(
         value_geo: update.value_geo ?? null,
         value_json: update.value_json ?? null,
         validity_status: status,
+        validity_tier,
+        decisive_vote_event_seq,
         approve_percent,
         field_weight,
         rank_score: update.rank_score ?? null,
@@ -120,14 +147,66 @@ function resolveObject(
     });
 
     const validResolved = resolvedUpdates.filter((u) => u.validity_status === 'VALID');
+
+    if (shouldTraceField(options.trace, updateType)) {
+      options.trace.log('objects-domain.resolve.field.validity_resolution', {
+        object_id: obj.core.object_id,
+        update_type: updateType,
+        cardinality,
+        localizable: definition?.localizable === true,
+        rows: resolvedUpdates.map(traceResolvedUpdateRow),
+      });
+    }
+
+    if (shouldTraceField(options.trace, updateType)) {
+      options.trace.log('objects-domain.resolve.field.valid_only', {
+        object_id: obj.core.object_id,
+        update_type: updateType,
+        rows: validResolved.map(traceResolvedUpdateRow),
+      });
+    }
+
     const localeScoped =
       definition?.localizable === true
         ? filterByLocalePreference(validResolved, options.locale, cardinality)
         : validResolved;
 
+    if (shouldTraceField(options.trace, updateType) && definition?.localizable === true) {
+      const matchedLocale = validResolved.filter((u) => u.locale === options.locale);
+      const neutralLocale =
+        cardinality === 'multi' ? validResolved.filter((u) => u.locale === null) : [];
+      options.trace.log('objects-domain.resolve.field.locale_filter', {
+        object_id: obj.core.object_id,
+        update_type: updateType,
+        requested_locale: options.locale,
+        cardinality,
+        single_matched_locale_count: matchedLocale.length,
+        multi_neutral_locale_count: neutralLocale.length,
+        used_fallback_all_valid_locale_rows:
+          cardinality === 'single'
+            ? matchedLocale.length === 0
+            : matchedLocale.length === 0 && neutralLocale.length === 0,
+        rows_after_locale: localeScoped.map(traceResolvedUpdateRow),
+      });
+    }
+
     let resolved: ResolvedUpdate[];
     if (cardinality === 'single') {
-      resolved = resolveSingleCardinality(localeScoped);
+      const fieldTrace = options.trace;
+      if (shouldTraceField(fieldTrace, updateType)) {
+        resolved = resolveSingleCardinality(localeScoped, (singleTrace) => {
+          fieldTrace.log('objects-domain.resolve.field.single_cardinality', {
+            object_id: obj.core.object_id,
+            update_type: updateType,
+            requested_locale: options.locale,
+            rule:
+              'tier: admin > trusted > community > baseline | curator=null; LWAW/LWTW by decisive_vote_event_seq; community by field_weight, approve_percent; then update event_seq, created_at_unix, update_id',
+            ...singleTrace,
+          });
+        });
+      } else {
+        resolved = resolveSingleCardinality(localeScoped);
+      }
     } else {
       resolved = resolveMultiCardinality(localeScoped);
     }

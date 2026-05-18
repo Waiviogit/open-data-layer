@@ -7,5 +7,15 @@ export type {
 } from './governance-snapshot';
 export { DEFAULT_GOVERNANCE_SNAPSHOT } from './governance-snapshot';
 export type { AggregatedObject, VoterWaivPowerMap } from './aggregated-object';
-export type { ValidityStatus, ResolvedUpdate, ResolvedField, ResolvedObjectView } from './resolved-view';
-export type { ResolveOptions } from './resolve-options';
+export type {
+  ValidityStatus,
+  ValidityTier,
+  ResolvedUpdate,
+  ResolvedField,
+  ResolvedObjectView,
+} from './resolved-view';
+export type {
+  ResolveOptions,
+  ResolveOptionsTrace,
+  ResolveOptionsTraceFn,
+} from './resolve-options';
