@@ -82,12 +82,14 @@ function IconHeartAdministrative({ active }: { active: boolean }) {
 
 export type ObjectCardProps = {
   object: ProjectedObjectView;
+  /** When navigating from an intercepted-route modal (`@modal`), replaces the post URL so the modal slot resets. */
+  linkReplace?: boolean;
 };
 
 /**
  * Shop / feed card: rectangular thumbnail, title, type · categories, rating, excerpt, admin heart.
  */
-export function ObjectCard({ object: o }: ObjectCardProps) {
+export function ObjectCard({ object: o, linkReplace = false }: ObjectCardProps) {
   const { t } = useI18n();
   const typeLabel = formatLinkedObjectTypeLabel(o.object_type);
   const categoryLabels = objectFields.tagCategoryLabels(o);
@@ -114,6 +116,7 @@ export function ObjectCard({ object: o }: ObjectCardProps) {
         <div className="shrink-0">
           <Link
             href={href}
+            replace={linkReplace}
             prefetch={false}
             className="inline-flex rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             aria-label={`View object: ${titleLabel}`}
@@ -145,6 +148,7 @@ export function ObjectCard({ object: o }: ObjectCardProps) {
         <div className="min-w-0 flex-1">
           <Link
             href={href}
+            replace={linkReplace}
             prefetch={false}
             className="inline-block max-w-full rounded-sm font-weight-label text-body text-heading underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           >

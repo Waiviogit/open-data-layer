@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, type ReactNode } from 'react';
 
+import { useDismissPostInterceptForObjectSurface } from '@/shared/presentation/hooks/use-dismiss-post-intercept-for-object-surface';
+
 type PostInterceptModalShellProps = {
   children: ReactNode;
 };
@@ -71,12 +73,14 @@ function ActionPill({
  */
 export function PostInterceptModalShell({ children }: PostInterceptModalShellProps) {
   const router = useRouter();
+  const hideForObjectSurface = useDismissPostInterceptForObjectSurface();
 
   const onClose = useCallback(() => {
     router.back();
   }, [router]);
 
   useEffect(() => {
+    if (hideForObjectSurface) return;
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         onClose();
@@ -84,16 +88,21 @@ export function PostInterceptModalShell({ children }: PostInterceptModalShellPro
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
+  }, [hideForObjectSurface, onClose]);
 
   // Lock body scroll while modal is open
   useEffect(() => {
+    if (hideForObjectSurface) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = prev;
     };
-  }, []);
+  }, [hideForObjectSurface]);
+
+  if (hideForObjectSurface) {
+    return null;
+  }
 
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
   const shareX = `https://x.com/intent/tweet?url=${encodeURIComponent(shareUrl)}`;

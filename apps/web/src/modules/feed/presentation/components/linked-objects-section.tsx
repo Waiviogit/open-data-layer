@@ -25,7 +25,14 @@ function SummaryChevron() {
   );
 }
 
-export function LinkedObjectsSection({ objects }: { objects: NonNullable<FeedStoryView['objects']> }) {
+export function LinkedObjectsSection({
+  objects,
+  objectLinkReplace = false,
+}: {
+  objects: NonNullable<FeedStoryView['objects']>;
+  /** Set when this block is inside a post intercept modal so object links dismiss the overlay. */
+  objectLinkReplace?: boolean;
+}) {
   const { t } = useI18n();
   if (objects.length === 0) {
     return null;
@@ -55,7 +62,7 @@ export function LinkedObjectsSection({ objects }: { objects: NonNullable<FeedSto
             aria-labelledby="post-linked-objects-heading"
           >
             {linkedObjects.map((o) => (
-              <ObjectCard key={o.object_id} object={o} />
+              <ObjectCard key={o.object_id} object={o} linkReplace={objectLinkReplace} />
             ))}
           </ul>
         </details>
@@ -80,7 +87,7 @@ export function LinkedObjectsSection({ objects }: { objects: NonNullable<FeedSto
             aria-labelledby="post-linked-hashtags-heading"
           >
             {hashtagObjects.map((o) => (
-              <ObjectCard key={o.object_id} object={o} />
+              <ObjectCard key={o.object_id} object={o} linkReplace={objectLinkReplace} />
             ))}
           </ul>
         </details>

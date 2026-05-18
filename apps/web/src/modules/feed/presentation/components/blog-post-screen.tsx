@@ -232,7 +232,7 @@ export function BlogPostScreen({
           dangerouslySetInnerHTML={{ __html: bodyHtmlSafe }}
         />
 
-        <LinkedObjectsSection objects={taggedObjects} />
+        <LinkedObjectsSection objects={taggedObjects} objectLinkReplace={isModal} />
 
         {story.isNsfw ? (
           <p className="mt-2 text-caption text-muted" role="status">

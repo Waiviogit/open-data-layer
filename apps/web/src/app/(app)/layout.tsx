@@ -1,3 +1,5 @@
+import { ParallelModalSlot } from './parallel-modal-slot';
+
 import { LoginModalProvider } from '@/modules/auth';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 import {
@@ -28,7 +30,7 @@ export default async function AppRouteGroupLayout({
         >
           {children}
         </AppShell>
-        {modal}
+        <ParallelModalSlot>{modal}</ParallelModalSlot>
       </LoginModalProvider>
     </LayoutProvider>
   );
