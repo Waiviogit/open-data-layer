@@ -63,7 +63,10 @@ export class GetSearchEndpoint {
 
   async execute(input: GetSearchInput): Promise<SearchResponseDto> {
     const objectLimit = input.limit;
-    const candidates = await this.searchRepo.searchObjects(input.q, objectLimit);
+    const [candidates, userRows] = await Promise.all([
+      this.searchRepo.searchObjects(input.q, objectLimit),
+      this.searchRepo.searchUsers(input.q, USER_SEARCH_LIMIT, input.viewerAccount),
+    ]);
 
     const objectIds = candidates.map((c) => c.object_id);
 
@@ -106,8 +109,6 @@ export class GetSearchEndpoint {
         typeCounts[t] = (typeCounts[t] ?? 0) + 1;
       }
     }
-
-    const userRows = await this.searchRepo.searchUsers(input.q, USER_SEARCH_LIMIT, input.viewerAccount);
 
     const users: SearchUserResult[] = userRows.map(
       (r): SearchUserResult => ({

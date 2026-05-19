@@ -4,6 +4,7 @@ import { sql } from 'kysely';
 import { UPDATE_TYPES } from '@opden-data-layer/core';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
+import { prefixUpperBound, shouldSearchObjectIdSubstring } from './search-prefix.utils';
 
 export interface SearchObjectCandidateRow {
   object_id: string;
@@ -39,7 +40,7 @@ export class SearchRepository {
 
   /**
    * Object hits: (1) FTS on `name` / `title` / `description` updates (`search_vector`),
-   * or (2) substring match on `objects_core.object_id`.
+   * or (2) when `q` is id-shaped, substring match on `objects_core.object_id`.
    * Active objects only, one row per `meta_group_id` (or per `object_id`) — highest `weight` wins.
    */
   async searchObjects(queryText: string, limit: number): Promise<SearchObjectCandidateRow[]> {
@@ -48,30 +49,58 @@ export class SearchRepository {
       return [];
     }
 
+    const includeIdSubstring = shouldSearchObjectIdSubstring(trimmed);
     const idSubstringPattern = `%${escapeIlikePattern(trimmed)}%`;
 
     try {
-      const result = await sql<SearchObjectCandidateRow>`
-        SELECT DISTINCT ON (COALESCE(oc.meta_group_id, oc.object_id))
-          oc.object_id AS object_id,
-          oc.object_type AS object_type,
-          oc.meta_group_id AS meta_group_id,
-          oc.weight AS weight
-        FROM objects_core oc
-        WHERE oc.status = 'active'
-          AND (
-            EXISTS (
-              SELECT 1
+      const result = includeIdSubstring
+        ? await sql<SearchObjectCandidateRow>`
+            WITH fts_ids AS (
+              SELECT DISTINCT ou.object_id
               FROM object_updates ou
-              WHERE ou.object_id = oc.object_id
-                AND ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
+              WHERE ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
+                AND ou.search_vector @@ plainto_tsquery('english', ${trimmed})
+            ),
+            id_hits AS (
+              SELECT object_id
+              FROM objects_core
+              WHERE status = 'active'
+                AND object_id ILIKE ${idSubstringPattern} ESCAPE '\\'
+            ),
+            candidate_ids AS (
+              SELECT object_id FROM fts_ids
+              UNION
+              SELECT object_id FROM id_hits
+            )
+            SELECT DISTINCT ON (COALESCE(oc.meta_group_id, oc.object_id))
+              oc.object_id AS object_id,
+              oc.object_type AS object_type,
+              oc.meta_group_id AS meta_group_id,
+              oc.weight AS weight
+            FROM objects_core oc
+            INNER JOIN candidate_ids c ON c.object_id = oc.object_id
+            WHERE oc.status = 'active'
+            ORDER BY COALESCE(oc.meta_group_id, oc.object_id), oc.weight DESC NULLS LAST
+            LIMIT ${limit}
+          `.execute(this.db)
+        : await sql<SearchObjectCandidateRow>`
+            WITH fts_ids AS (
+              SELECT DISTINCT ou.object_id
+              FROM object_updates ou
+              WHERE ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
                 AND ou.search_vector @@ plainto_tsquery('english', ${trimmed})
             )
-            OR oc.object_id ILIKE ${idSubstringPattern} ESCAPE '\\'
-          )
-        ORDER BY COALESCE(oc.meta_group_id, oc.object_id), oc.weight DESC NULLS LAST
-        LIMIT ${limit}
-      `.execute(this.db);
+            SELECT DISTINCT ON (COALESCE(oc.meta_group_id, oc.object_id))
+              oc.object_id AS object_id,
+              oc.object_type AS object_type,
+              oc.meta_group_id AS meta_group_id,
+              oc.weight AS weight
+            FROM objects_core oc
+            INNER JOIN fts_ids c ON c.object_id = oc.object_id
+            WHERE oc.status = 'active'
+            ORDER BY COALESCE(oc.meta_group_id, oc.object_id), oc.weight DESC NULLS LAST
+            LIMIT ${limit}
+          `.execute(this.db);
 
       return (result.rows as SearchObjectCandidateRow[]) ?? [];
     } catch (error) {
@@ -83,7 +112,7 @@ export class SearchRepository {
   }
 
   /**
-   * Prefix match on `accounts_current.name`, ordered by Waiv object weight then followers.
+   * Prefix match on `accounts_current.name` (btree range on PK), ordered by Waiv object weight then followers.
    */
   async searchUsers(queryText: string, limit: number, viewer?: string | null): Promise<SearchUserRow[]> {
     const trimmed = queryText.trim();
@@ -91,7 +120,8 @@ export class SearchRepository {
       return [];
     }
 
-    const pattern = `${escapeIlikePattern(trimmed)}%`;
+    const prefix = escapeIlikePattern(trimmed).toLowerCase();
+    const upper = prefixUpperBound(prefix);
     const viewerTrimmed = viewer?.trim() || '';
 
     try {
@@ -110,7 +140,8 @@ export class SearchRepository {
                 AND us.following = accounts_current.name
             )`.as('is_following'),
         ])
-        .where(sql<boolean>`accounts_current.name ILIKE ${pattern} ESCAPE '\\'`)
+        .where('name', '>=', prefix)
+        .where('name', '<', upper)
         .orderBy(sql`wobjects_weight desc nulls last`)
         .orderBy('followers_count', 'desc')
         .limit(limit)

@@ -34,19 +34,20 @@ Predictive search for the web shell header: ranked **objects** (full-text on `na
 
 ## Query plan — objects
 
-1. From `objects_core` (`status = 'active'`).
-2. Keep rows where **either**:
-   - **FTS:** exists a row in `object_updates` for the same `object_id` with `update_type` in (`name`, `title`, `description`) and `search_vector @@ plainto_tsquery('english', :q)` (GIN on `search_vector`), **or**
-   - **`object_id`:** `objects_core.object_id ILIKE '%' || escape(:q) || '%' ESCAPE '\'` (substring match).
-3. **`DISTINCT ON (COALESCE(meta_group_id, object_id))`** with `ORDER BY` that expression, then `objects_core.weight DESC NULLS LAST` so one representative per product group — highest weight wins (see `apps/query-api/AGENTS.md` — Search deduplication by product group).
-4. Limit to `limit` rows.
-5. Load full aggregates via `AggregatedObjectRepository.loadByObjectIds` (five-query pipeline).
-6. Resolve with `ObjectViewService` for update types: `name`, `image`, `parent`.
-7. Project with `ObjectProjectionService.batchProject` so URLs and parent refs match public object pages.
+1. **FTS-first:** `object_updates` rows with `update_type` in (`name`, `title`, `description`) and `search_vector @@ plainto_tsquery('english', :q)` (GIN on `search_vector`) → distinct `object_id` candidates.
+2. **Optional id substring** (only when `trim(q)` has length ≥ 8 and contains `-`): `objects_core` with `status = 'active'` and `object_id ILIKE '%' || escape(:q) || '%' ESCAPE '\'`. Omitted for short text queries (e.g. `grampo`) to avoid a full-table scan.
+3. Union FTS (and optional id) candidate ids; **join** `objects_core` on PK (`status = 'active'`).
+4. **`DISTINCT ON (COALESCE(meta_group_id, object_id))`** with `ORDER BY` that expression, then `objects_core.weight DESC NULLS LAST` so one representative per product group — highest weight wins (see `apps/query-api/AGENTS.md` — Search deduplication by product group).
+5. Limit to `limit` rows.
+6. Load full aggregates via `AggregatedObjectRepository.loadByObjectIds` (five-query pipeline).
+7. Resolve with `ObjectViewService` for update types: `name`, `image`, `parent`.
+8. Project with `ObjectProjectionService.batchProject` so URLs and parent refs match public object pages.
+
+Object SQL and user SQL (steps 1–5 above vs users below) run **in parallel** in `GetSearchEndpoint` before aggregation.
 
 ## Query plan — users
 
-1. `accounts_current` where `name ILIKE :prefix ESCAPE '\'` (prefix = escaped `q` + `%`).
+1. `accounts_current` where `name >= lower(escape(:q))` and `name < upperBound(prefix)` (btree range on PK; Hive names are stored lowercase).
 2. Order by `wobjects_weight DESC NULLS LAST`, `followers_count DESC`.
 3. Cap at **5** rows.
 4. If `X-Viewer` is set, `is_following` = existence of `user_subscriptions (follower, following)`.
