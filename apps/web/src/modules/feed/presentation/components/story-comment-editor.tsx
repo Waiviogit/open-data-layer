@@ -1,10 +1,12 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 
 import { getHiveJsonMetadataDefaults } from '@/config/hive-json-metadata-public';
 import { LexicalPostEditor } from '@/modules/editor';
 import { buildCommentOp, getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
+import { awaitTrxConfirmation } from '@/modules/notifications';
 import { buildHiveJsonMetadataString, createCommentPermlink } from '@/shared';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
@@ -36,8 +38,10 @@ function IconSendChevron({ className }: { className?: string }) {
 
 export function StoryCommentEditor({ story, currentUsername }: StoryCommentEditorProps) {
   useHydrateWalletProvider();
+  const router = useRouter();
   const [bodyPlain, setBodyPlain] = useState('');
   const [pending, setPending] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editorKey, setEditorKey] = useState(0);
 
@@ -63,15 +67,22 @@ export function StoryCommentEditor({ story, currentUsername }: StoryCommentEdito
         body,
         json_metadata,
       });
-      await getWalletFacade().broadcast({ operations: [op] });
+      const { transactionId } = await getWalletFacade().broadcast({
+        operations: [op],
+      });
       setBodyPlain('');
       setEditorKey((k) => k + 1);
+      setPending(false);
+      setConfirming(true);
+      void awaitTrxConfirmation(transactionId).finally(() => {
+        router.refresh();
+        setConfirming(false);
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Comment failed');
-    } finally {
       setPending(false);
     }
-  }, [bodyPlain, currentUsername, pending, story.authorName, story.permlink]);
+  }, [bodyPlain, currentUsername, pending, router, story.authorName, story.permlink]);
 
   const canSubmit = bodyPlain.trim().length > 0 && !pending;
 
@@ -103,6 +114,15 @@ export function StoryCommentEditor({ story, currentUsername }: StoryCommentEdito
           </button>
         </div>
       </div>
+      {confirming ? (
+        <p className="mt-2 flex items-center gap-2 text-body-sm text-fg-secondary">
+          <span
+            className="inline-block h-3 w-3 animate-spin rounded-circle border-2 border-current border-t-transparent"
+            aria-hidden
+          />
+          Waiting for confirmation…
+        </p>
+      ) : null}
       {error ? (
         <p className="mt-2 text-body-sm text-error" role="alert">
           {error}

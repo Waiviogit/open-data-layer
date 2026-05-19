@@ -1,13 +1,15 @@
 import { Module } from '@nestjs/common';
+import { DomainModule } from '../domain/domain.module';
 import { ConsumerBootstrapService } from './consumer-bootstrap.service';
-import { NoOpNotificationConsumer } from './no-op.consumer';
 import { NOTIFICATION_CONSUMER } from './notification-consumer.interface';
+import { RedisStreamNotificationConsumer } from './redis-stream.consumer';
 
 @Module({
+  imports: [DomainModule],
   providers: [
     {
       provide: NOTIFICATION_CONSUMER,
-      useClass: NoOpNotificationConsumer,
+      useClass: RedisStreamNotificationConsumer,
     },
     ConsumerBootstrapService,
   ],

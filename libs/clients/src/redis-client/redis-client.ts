@@ -4,6 +4,7 @@ import {
   RedisClientInterface,
   RedisClientFactoryInterface,
   RedisPipelineInterface,
+  RedisStreamEntry,
 } from './interface';
 import { REDIS_MODULE_OPTIONS } from './redis-client.options';
 import type { RedisModuleOptions } from './redis-client.options';
@@ -25,6 +26,16 @@ class RedisPipelineWrapper implements RedisPipelineInterface {
 
   expire(key: string, ttlSeconds: number): this {
     this.pipeline.expire(key, ttlSeconds);
+    return this;
+  }
+
+  lPush(key: string, ...values: string[]): this {
+    this.pipeline.lpush(key, ...values);
+    return this;
+  }
+
+  lTrim(key: string, start: number, stop: number): this {
+    this.pipeline.ltrim(key, start, stop);
     return this;
   }
 
@@ -131,6 +142,83 @@ class RedisClientWrapper implements RedisClientInterface {
 
   async publish(channel: string, message: string): Promise<void> {
     await this.client.publish(channel, message);
+  }
+
+  async xAdd(stream: string, fields: Record<string, string>): Promise<string> {
+    const flat: string[] = [];
+    for (const [k, v] of Object.entries(fields)) {
+      flat.push(k, v);
+    }
+    return this.client.xadd(stream, '*', ...flat);
+  }
+
+  async xGroupCreate(
+    stream: string,
+    group: string,
+    id: string,
+    mkstream = false,
+  ): Promise<void> {
+    try {
+      if (mkstream) {
+        await this.client.xgroup('CREATE', stream, group, id, 'MKSTREAM');
+      } else {
+        await this.client.xgroup('CREATE', stream, group, id);
+      }
+    } catch (err) {
+      const msg = (err as Error).message ?? '';
+      if (!msg.includes('BUSYGROUP')) {
+        throw err;
+      }
+    }
+  }
+
+  async xReadGroup(
+    group: string,
+    consumer: string,
+    streams: { key: string; id: string }[],
+    options?: { count?: number; blockMs?: number },
+  ): Promise<RedisStreamEntry[]> {
+    const keys = streams.map((s) => s.key);
+    const ids = streams.map((s) => s.id);
+    const args: (string | number)[] = ['GROUP', group, consumer];
+    if (options?.count !== undefined) {
+      args.push('COUNT', options.count);
+    }
+    if (options?.blockMs !== undefined) {
+      args.push('BLOCK', options.blockMs);
+    }
+    args.push('STREAMS', ...keys, ...ids);
+
+    const raw = (await this.client.call('XREADGROUP', ...args)) as
+      | null
+      | [string, [string, string[]][]][];
+
+    if (!raw) {
+      return [];
+    }
+
+    const out: RedisStreamEntry[] = [];
+    for (const [, entries] of raw) {
+      for (const [id, fieldList] of entries) {
+        const fields: Record<string, string> = {};
+        for (let i = 0; i < fieldList.length; i += 2) {
+          fields[fieldList[i]] = fieldList[i + 1];
+        }
+        out.push({ id, fields });
+      }
+    }
+    return out;
+  }
+
+  async xAck(stream: string, group: string, ...ids: string[]): Promise<number> {
+    if (ids.length === 0) {
+      return 0;
+    }
+    return this.client.xack(stream, group, ...ids);
+  }
+
+  async lRange(key: string, start: number, stop: number): Promise<string[]> {
+    return this.client.lrange(key, start, stop);
   }
 }
 

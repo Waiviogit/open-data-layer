@@ -120,6 +120,7 @@
     "jest": "^30.0.2",
     "jest-environment-node": "^30.0.2",
     "jest-util": "^30.0.2",
+    "jsonc-eslint-parser": "^2.1.0",
     "nx": "22.5.4",
     "postcss": "8.4.38",
     "prettier": "~3.6.2",

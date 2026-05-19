@@ -1,8 +1,10 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
 import { buildVoteOp, getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
+import { awaitTrxConfirmation } from '@/modules/notifications';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 import {
@@ -63,16 +65,19 @@ export function StoryVoteButton({
   resolveVoteWeight = defaultResolveVoteWeight,
 }: StoryVoteButtonProps) {
   useHydrateWalletProvider();
+  const router = useRouter();
 
   const [optimisticVoted, setOptimisticVoted] = useState(votes?.voted ?? false);
   const [optimisticCount, setOptimisticCount] = useState(votes?.totalCount ?? 0);
   const [pending, setPending] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setOptimisticVoted(votes?.voted ?? false);
     setOptimisticCount(votes?.totalCount ?? 0);
     setError(null);
+    setConfirming(false);
   }, [authorName, permlink, votes?.voted, votes?.totalCount]);
 
   const previewVoters = votes?.previewVoters ?? [];
@@ -92,13 +97,20 @@ export function StoryVoteButton({
         permlink,
         weight,
       );
-      await getWalletFacade().broadcast({ operations: [op] });
+      const { transactionId } = await getWalletFacade().broadcast({
+        operations: [op],
+      });
       const wasVoted = optimisticVoted;
       setOptimisticVoted(!wasVoted);
       setOptimisticCount((c) => Math.max(0, wasVoted ? c - 1 : c + 1));
+      setPending(false);
+      setConfirming(true);
+      void awaitTrxConfirmation(transactionId).finally(() => {
+        router.refresh();
+        setConfirming(false);
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Vote failed');
-    } finally {
       setPending(false);
     }
   }, [
@@ -108,6 +120,7 @@ export function StoryVoteButton({
     pending,
     permlink,
     resolveVoteWeight,
+    router,
   ]);
 
   const iconActive = optimisticVoted;
@@ -135,7 +148,14 @@ export function StoryVoteButton({
         <span className={iconToneClass}>
           {optimisticVoted ? <IconThumbUpFilled /> : <IconThumbUp />}
         </span>
-        <span className={countClass}>{optimisticCount}</span>
+        {confirming ? (
+          <span
+            className="inline-block h-3 w-3 animate-spin rounded-circle border-2 border-current border-t-transparent"
+            aria-label="Confirming"
+          />
+        ) : (
+          <span className={countClass}>{optimisticCount}</span>
+        )}
       </button>
       {error ? (
         <span className="max-w-[12rem] text-nano text-error" role="alert">

@@ -1,0 +1,19 @@
+{
+  "name": "notifications-contract",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/notifications-contract/src",
+  "projectType": "library",
+  "tags": ["type:lib", "scope:shared"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/notifications-contract",
+        "main": "libs/notifications-contract/src/index.ts",
+        "tsConfig": "libs/notifications-contract/tsconfig.lib.json",
+        "assets": ["libs/notifications-contract/*.md"]
+      }
+    }
+  }
+}

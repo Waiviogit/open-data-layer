@@ -35,6 +35,12 @@ import {
   OBJECT_STATUS_CREATED_EVENT,
   ObjectStatusCreatedEvent,
 } from '../object-status-created.event';
+import {
+  OBJECT_CREATED_NOTIFICATION_EVENT,
+  ObjectCreatedNotificationPayload,
+  TRX_PROCESSED_NOTIFICATION_EVENT,
+  TrxProcessedNotificationPayload,
+} from '../../notification-adapter/events/notification-domain-events';
 
 @Injectable()
 export class UpdateCreateHandler implements OdlActionHandler {
@@ -218,6 +224,26 @@ export class UpdateCreateHandler implements OdlActionHandler {
     this.eventEmitter.emit(
       USER_OBJECT_POWERS_CREATE_EVENT,
       new UserObjectPowersCreateEvent(creator),
+    );
+    this.eventEmitter.emit(
+      OBJECT_CREATED_NOTIFICATION_EVENT,
+      new ObjectCreatedNotificationPayload(
+        object_id,
+        update_id,
+        update_type,
+        creator,
+        ctx.blockNum,
+        ctx.transactionId,
+        ctx.timestamp,
+      ),
+    );
+    this.eventEmitter.emit(
+      TRX_PROCESSED_NOTIFICATION_EVENT,
+      new TrxProcessedNotificationPayload(
+        ctx.transactionId,
+        ctx.blockNum,
+        ctx.timestamp,
+      ),
     );
   }
 }

@@ -18,7 +18,7 @@ src/
   constants/       app-scoped constants (hive-parser)
   database/        DatabaseModule, KYSELY token, Database type
   repositories/    RepositoriesModule + repository classes (Kysely only, no business logic)
-  domain/          feature areas: governance/, hive-parser/, hive-comment/, hive-social/, hive-vote/, odl-parser/
+  domain/          feature areas: governance/, hive-parser/, hive-comment/, hive-social/, hive-vote/, odl-parser/, notification-adapter/
 ```
 
 - Each `domain/<feature>/` has its own `*.module.ts`; use a barrel `index.ts` when the area exports a public surface.

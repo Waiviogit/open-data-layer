@@ -9,6 +9,7 @@ import {
   WebSocketGateway,
 } from '@nestjs/websockets';
 import WebSocket from 'ws';
+import { NotificationFeedService } from '../domain/notification-feed.service';
 import { ConnectionRegistryService } from './connection-registry.service';
 import { SubscriptionService } from './subscription.service';
 import { wsSendJson } from './ws-message';
@@ -54,6 +55,7 @@ export class NotificationsGateway
     private readonly jwtService: JwtService,
     private readonly registry: ConnectionRegistryService,
     private readonly subscriptions: SubscriptionService,
+    private readonly notificationFeed: NotificationFeedService,
   ) {}
 
   handleConnection(client: WebSocket, request: IncomingMessage): void {
@@ -113,7 +115,7 @@ export class NotificationsGateway
       });
       return;
     }
-    this.subscriptions.subscribe(parsed.trxId, client);
+    this.subscriptions.subscribe(parsed.trxId, client, parsed.correlationId);
     wsSendJson(client, 'subscribe_ack', {
       correlationId: parsed.correlationId,
       status: 'ok' as const,
@@ -138,6 +140,35 @@ export class NotificationsGateway
     wsSendJson(client, 'unsubscribe_ack', {
       correlationId: parsed.correlationId,
       status: 'ok' as const,
+    });
+  }
+
+  @SubscribeMessage('get_notifications')
+  async handleGetNotifications(
+    @ConnectedSocket() client: WebSocket,
+    @MessageBody() raw: unknown,
+  ): Promise<void> {
+    const correlationId =
+      raw !== null &&
+      typeof raw === 'object' &&
+      typeof (raw as Record<string, unknown>).correlationId === 'string'
+        ? String((raw as Record<string, unknown>).correlationId).trim()
+        : '';
+    const meta = this.registry.getMeta(client);
+    if (!meta) {
+      wsSendJson(client, 'get_notifications', {
+        correlationId,
+        status: 'error' as const,
+        reason: 'not_authenticated',
+        items: [],
+      });
+      return;
+    }
+    const items = await this.notificationFeed.getFeed(meta.userId);
+    wsSendJson(client, 'get_notifications', {
+      correlationId,
+      status: 'ok' as const,
+      items,
     });
   }
 }

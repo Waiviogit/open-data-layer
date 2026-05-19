@@ -17,6 +17,7 @@ import { GovernanceModule } from './domain/governance';
 import { SiteCanonicalModule } from './domain/site-canonical/site-canonical.module';
 import { UserObjectPowersModule } from './domain/user-object-powers/user-object-powers.module';
 import { HiveEngineParserModule } from './domain/hive-engine-parser/hive-engine-parser.module';
+import { NotificationAdapterModule } from './domain/notification-adapter/notification-adapter.module';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { HiveEngineParserModule } from './domain/hive-engine-parser/hive-engine-
     SiteCanonicalModule,
     UserObjectPowersModule,
     HiveEngineParserModule,
+    NotificationAdapterModule,
   ],
 })
 export class MainModule {}

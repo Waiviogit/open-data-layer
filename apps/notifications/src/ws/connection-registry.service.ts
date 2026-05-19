@@ -1,5 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import WebSocket from 'ws';
+
+const CLOSE_POLICY_VIOLATION = 1008;
 
 export interface ClientMeta {
   userId: string;
@@ -12,8 +15,18 @@ export interface ClientMeta {
  */
 @Injectable()
 export class ConnectionRegistryService {
+  private readonly logger = new Logger(ConnectionRegistryService.name);
   private readonly clientMeta = new WeakMap<WebSocket, ClientMeta>();
   private readonly userConnections = new Map<string, Set<WebSocket>>();
+
+  constructor(private readonly config: ConfigService) {}
+
+  private get maxConnectionsPerUser(): number {
+    return (
+      this.config.get<{ maxConnectionsPerUser: number }>('ws')
+        ?.maxConnectionsPerUser ?? 5
+    );
+  }
 
   register(client: WebSocket, userId: string): void {
     this.clientMeta.set(client, {
@@ -27,6 +40,17 @@ export class ConnectionRegistryService {
       this.userConnections.set(userId, sockets);
     }
     sockets.add(client);
+
+    if (sockets.size > this.maxConnectionsPerUser) {
+      const oldest = sockets.values().next().value;
+      if (oldest) {
+        sockets.delete(oldest);
+        oldest.close(CLOSE_POLICY_VIOLATION, 'connection_limit_exceeded');
+        this.logger.warn(
+          `WS connection limit (${this.maxConnectionsPerUser}) exceeded for user '${userId}'; closed oldest`,
+        );
+      }
+    }
   }
 
   remove(client: WebSocket): ClientMeta | undefined {

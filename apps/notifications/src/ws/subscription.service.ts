@@ -10,6 +10,11 @@ import { wsSendJson } from './ws-message';
 export class SubscriptionService {
   private readonly logger = new Logger(SubscriptionService.name);
   private readonly subscriptions = new Map<string, Set<WebSocket>>();
+  /** trxId → client → correlationId for request/response WS pattern */
+  private readonly correlationByTrxAndClient = new Map<
+    string,
+    Map<WebSocket, string>
+  >();
   private readonly timers = new Map<string, NodeJS.Timeout>();
   /** Fast cleanup on disconnect: socket → subscribed trx ids */
   private readonly clientTrxIds = new Map<WebSocket, Set<string>>();
@@ -22,7 +27,7 @@ export class SubscriptionService {
     return seconds * 1000;
   }
 
-  subscribe(trxId: string, client: WebSocket): void {
+  subscribe(trxId: string, client: WebSocket, correlationId: string): void {
     const normalized = trxId.trim();
     if (normalized.length === 0) {
       return;
@@ -34,6 +39,13 @@ export class SubscriptionService {
       this.subscriptions.set(normalized, subs);
     }
     subs.add(client);
+
+    let corrMap = this.correlationByTrxAndClient.get(normalized);
+    if (!corrMap) {
+      corrMap = new Map();
+      this.correlationByTrxAndClient.set(normalized, corrMap);
+    }
+    corrMap.set(client, correlationId);
 
     let trxForClient = this.clientTrxIds.get(client);
     if (!trxForClient) {
@@ -67,6 +79,7 @@ export class SubscriptionService {
       }
     }
     this.subscriptions.delete(trxId);
+    this.correlationByTrxAndClient.delete(trxId);
     this.logger.debug(`subscription TTL expired for trx '${trxId}'`);
   }
 
@@ -77,6 +90,7 @@ export class SubscriptionService {
     }
     const set = this.subscriptions.get(normalized);
     set?.delete(client);
+    this.correlationByTrxAndClient.get(normalized)?.delete(client);
     if (set && set.size === 0) {
       const t = this.timers.get(normalized);
       if (t) {
@@ -84,6 +98,7 @@ export class SubscriptionService {
         this.timers.delete(normalized);
       }
       this.subscriptions.delete(normalized);
+      this.correlationByTrxAndClient.delete(normalized);
     }
     this.clientTrxIds.get(client)?.delete(normalized);
     if (this.clientTrxIds.get(client)?.size === 0) {
@@ -104,8 +119,10 @@ export class SubscriptionService {
       return;
     }
 
-    const data = { ...payload, trxId: normalized };
+    const corrMap = this.correlationByTrxAndClient.get(normalized);
     for (const client of sockets) {
+      const correlationId = corrMap?.get(client) ?? '';
+      const data = { ...payload, trxId: normalized, correlationId };
       wsSendJson(client, 'trx_processed', data);
       this.clientTrxIds.get(client)?.delete(normalized);
       if (this.clientTrxIds.get(client)?.size === 0) {
@@ -119,6 +136,7 @@ export class SubscriptionService {
       this.timers.delete(normalized);
     }
     this.subscriptions.delete(normalized);
+    this.correlationByTrxAndClient.delete(normalized);
   }
 
   removeClient(client: WebSocket): void {
@@ -136,6 +154,7 @@ export class SubscriptionService {
           this.timers.delete(trxId);
         }
         this.subscriptions.delete(trxId);
+        this.correlationByTrxAndClient.delete(trxId);
       }
     }
     this.clientTrxIds.delete(client);

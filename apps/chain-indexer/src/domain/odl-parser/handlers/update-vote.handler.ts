@@ -30,6 +30,12 @@ import {
   CategoryMutatedEvent,
   CATEGORY_MUTATED_EVENT,
 } from '../category-mutated.event';
+import {
+  TRX_PROCESSED_NOTIFICATION_EVENT,
+  TrxProcessedNotificationPayload,
+  VOTE_CAST_NOTIFICATION_EVENT,
+  VoteCastNotificationPayload,
+} from '../../notification-adapter/events/notification-domain-events';
 
 @Injectable()
 export class UpdateVoteHandler implements OdlActionHandler {
@@ -109,6 +115,7 @@ export class UpdateVoteHandler implements OdlActionHandler {
         USER_OBJECT_POWERS_CREATE_EVENT,
         new UserObjectPowersCreateEvent(ctx.creator),
       );
+      this.emitTrxProcessed(ctx);
       return;
     }
 
@@ -141,6 +148,30 @@ export class UpdateVoteHandler implements OdlActionHandler {
     this.eventEmitter.emit(
       USER_OBJECT_POWERS_CREATE_EVENT,
       new UserObjectPowersCreateEvent(ctx.creator),
+    );
+    this.eventEmitter.emit(
+      VOTE_CAST_NOTIFICATION_EVENT,
+      new VoteCastNotificationPayload(
+        object_id,
+        update_id,
+        voter,
+        vote,
+        ctx.blockNum,
+        ctx.transactionId,
+        ctx.timestamp,
+      ),
+    );
+    this.emitTrxProcessed(ctx);
+  }
+
+  private emitTrxProcessed(ctx: OdlEventContext): void {
+    this.eventEmitter.emit(
+      TRX_PROCESSED_NOTIFICATION_EVENT,
+      new TrxProcessedNotificationPayload(
+        ctx.transactionId,
+        ctx.blockNum,
+        ctx.timestamp,
+      ),
     );
   }
 }

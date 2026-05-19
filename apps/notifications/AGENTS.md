@@ -4,14 +4,17 @@ Specialization for this app. **Shared policy** (monorepo, NestJS layering, testi
 
 ## Role
 
-WebSocket gateway (`@nestjs/platform-ws`, native `ws`): JWT auth on HTTP upgrade, connection registry, `subscribe` / `unsubscribe` with explicit `correlationId` acks, ping/pong keepalive. Future Redis Stream consumer will call `SubscriptionService.notifyTrxProcessed`.
+WebSocket gateway (`@nestjs/platform-ws`, native `ws`): JWT auth on HTTP upgrade, connection registry, `subscribe` / `unsubscribe` / `get_notifications` with explicit `correlationId` acks, ping/pong keepalive. Redis Stream consumer routes events via `NotificationRouterService` and writes per-user feeds in Redis.
 
 ## Layout
 
-- `config/` — Zod env validation + config factory
-- `domain/` — integration event types and inbound command shapes
+- `config/` — Zod env validation + config factory (`WS_MAX_CONNECTIONS_PER_USER`, default 5)
+- `constants/` — Redis stream + feed key helpers and TTL limits
+- `database/` — Kysely `DatabaseModule`
+- `repositories/` — recipient resolution queries
+- `domain/` — router, feed service, user notification item shape
 - `ws/` — gateway, registry, subscriptions, heartbeat
-- `consumers/` — `INotificationConsumer` + stub implementation
+- `consumers/` — `INotificationConsumer` + Redis Stream implementation
 
 ## Rules
 

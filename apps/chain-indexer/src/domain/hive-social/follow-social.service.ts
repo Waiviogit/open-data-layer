@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { CustomJsonOperation } from '@hiveio/dhive/lib/chain/operation';
 import { SocialGraphRepository } from '../../repositories/social-graph.repository';
 import type { HiveOperationHandlerContext } from '../hive-parser/hive-handler-context';
@@ -9,6 +10,12 @@ import {
   parseFollowCustomJsonArray,
 } from './follow-json.parse';
 import { ReblogSocialService } from './reblog-social.service';
+import {
+  FOLLOW_NOTIFICATION_EVENT,
+  FollowNotificationPayload,
+  TRX_PROCESSED_NOTIFICATION_EVENT,
+  TrxProcessedNotificationPayload,
+} from '../notification-adapter/events/notification-domain-events';
 
 @Injectable()
 export class FollowSocialService {
@@ -18,6 +25,7 @@ export class FollowSocialService {
     private readonly configService: ConfigService,
     private readonly socialGraph: SocialGraphRepository,
     private readonly reblogSocial: ReblogSocialService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   private isFollowHandlerEnabled(): boolean {
@@ -76,26 +84,32 @@ export class FollowSocialService {
     }
 
     if (w === 'blog') {
-      await this.applyFollowBlog(parsed.follower, parsed.following);
+      await this.applyFollowBlog(parsed.follower, parsed.following, context);
       return;
     }
     if (w === 'ignore') {
-      await this.applyIgnore(parsed.follower, parsed.following);
+      await this.applyIgnore(parsed.follower, parsed.following, context);
       return;
     }
     if (w === null) {
-      await this.applyUnfollowOrClearMute(parsed.follower, parsed.following);
+      await this.applyUnfollowOrClearMute(parsed.follower, parsed.following, context);
       return;
     }
     /* other what values: silent no-op per spec */
   }
 
-  private async applyFollowBlog(follower: string, following: string): Promise<void> {
+  private async applyFollowBlog(
+    follower: string,
+    following: string,
+    context: HiveOperationHandlerContext,
+  ): Promise<void> {
+    let created = false;
     await this.socialGraph.runInTransaction(async (trx) => {
       const exists = await this.socialGraph.subscriptionExists(follower, following, trx);
       if (exists) {
         return;
       }
+      created = true;
       await this.socialGraph.incrementFollowRelationshipCounts(follower, following, trx);
       const muted = await this.socialGraph.muteExists(follower, following, trx);
       if (muted) {
@@ -106,9 +120,17 @@ export class FollowSocialService {
         trx,
       );
     });
+    if (created) {
+      this.emitFollowNotification(follower, following, 'follow', context);
+    }
+    this.emitTrxProcessed(context);
   }
 
-  private async applyIgnore(follower: string, following: string): Promise<void> {
+  private async applyIgnore(
+    follower: string,
+    following: string,
+    context: HiveOperationHandlerContext,
+  ): Promise<void> {
     await this.socialGraph.runInTransaction(async (trx) => {
       await this.socialGraph.insertMute({ muter: follower, muted: following }, trx);
       const sub = await this.socialGraph.subscriptionExists(follower, following, trx);
@@ -117,19 +139,57 @@ export class FollowSocialService {
         await this.socialGraph.deleteSubscription(follower, following, trx);
       }
     });
+    this.emitTrxProcessed(context);
   }
 
   private async applyUnfollowOrClearMute(
     follower: string,
     following: string,
+    context: HiveOperationHandlerContext,
   ): Promise<void> {
+    let unfollowed = false;
     await this.socialGraph.runInTransaction(async (trx) => {
       await this.socialGraph.deleteMute(follower, following, trx);
       const sub = await this.socialGraph.subscriptionExists(follower, following, trx);
       if (sub) {
+        unfollowed = true;
         await this.socialGraph.decrementFollowRelationshipCounts(follower, following, trx);
         await this.socialGraph.deleteSubscription(follower, following, trx);
       }
     });
+    if (unfollowed) {
+      this.emitFollowNotification(follower, following, 'unfollow', context);
+    }
+    this.emitTrxProcessed(context);
+  }
+
+  private emitFollowNotification(
+    follower: string,
+    following: string,
+    action: 'follow' | 'unfollow',
+    context: HiveOperationHandlerContext,
+  ): void {
+    this.eventEmitter.emit(
+      FOLLOW_NOTIFICATION_EVENT,
+      new FollowNotificationPayload(
+        follower,
+        following,
+        action,
+        context.blockNum,
+        context.transaction.transaction_id,
+        context.timestamp,
+      ),
+    );
+  }
+
+  private emitTrxProcessed(context: HiveOperationHandlerContext): void {
+    this.eventEmitter.emit(
+      TRX_PROCESSED_NOTIFICATION_EVENT,
+      new TrxProcessedNotificationPayload(
+        context.transaction.transaction_id,
+        context.blockNum,
+        context.timestamp,
+      ),
+    );
   }
 }
