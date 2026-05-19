@@ -1,19 +1,8 @@
 import { NextResponse } from 'next/server';
 
 import { authApiUrl } from '@/shared/infrastructure/auth/bff-proxy';
-import {
-  AUTH_ACCESS_COOKIE,
-  AUTH_REFRESH_COOKIE,
-  DEFAULT_ACCESS_MAX_AGE_SEC,
-  DEFAULT_REFRESH_MAX_AGE_SEC,
-  getSessionCookieOptions,
-} from '@/shared/infrastructure/auth/session-cookie';
-
-type TokenResponse = {
-  accessToken?: string;
-  refreshToken?: string;
-  user?: { username: string };
-};
+import { setSessionCookiesFromAuthApiResponse } from '@/shared/infrastructure/auth/set-session-on-response';
+import type { AuthApiTokenResponse } from '@/shared/infrastructure/auth/session-tokens';
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -37,27 +26,14 @@ export async function GET(req: Request) {
     });
   }
 
-  let json: TokenResponse;
+  let json: AuthApiTokenResponse;
   try {
-    json = JSON.parse(text) as TokenResponse;
+    json = JSON.parse(text) as AuthApiTokenResponse;
   } catch {
     return NextResponse.redirect(new URL('/?auth=error', url.origin));
   }
 
   const redirect = NextResponse.redirect(new URL('/?auth=ok', url.origin));
-  if (json.accessToken) {
-    redirect.cookies.set(
-      AUTH_ACCESS_COOKIE,
-      json.accessToken,
-      getSessionCookieOptions(DEFAULT_ACCESS_MAX_AGE_SEC),
-    );
-  }
-  if (json.refreshToken) {
-    redirect.cookies.set(
-      AUTH_REFRESH_COOKIE,
-      json.refreshToken,
-      getSessionCookieOptions(DEFAULT_REFRESH_MAX_AGE_SEC),
-    );
-  }
+  setSessionCookiesFromAuthApiResponse(redirect, json);
   return redirect;
 }

@@ -1,19 +1,8 @@
 import { NextResponse } from 'next/server';
 
 import { authApiUrl } from '@/shared/infrastructure/auth/bff-proxy';
-import {
-  AUTH_ACCESS_COOKIE,
-  AUTH_REFRESH_COOKIE,
-  DEFAULT_ACCESS_MAX_AGE_SEC,
-  DEFAULT_REFRESH_MAX_AGE_SEC,
-  getSessionCookieOptions,
-} from '@/shared/infrastructure/auth/session-cookie';
-
-type TokenResponse = {
-  accessToken?: string;
-  refreshToken?: string;
-  user?: { username: string };
-};
+import { setSessionCookiesFromAuthApiResponse } from '@/shared/infrastructure/auth/set-session-on-response';
+import type { AuthApiTokenResponse } from '@/shared/infrastructure/auth/session-tokens';
 
 export async function POST(
   req: Request,
@@ -41,9 +30,9 @@ export async function POST(
     });
   }
 
-  let json: TokenResponse;
+  let json: AuthApiTokenResponse;
   try {
-    json = JSON.parse(text) as TokenResponse;
+    json = JSON.parse(text) as AuthApiTokenResponse;
   } catch {
     return new NextResponse(text, {
       status: res.status,
@@ -58,20 +47,7 @@ export async function POST(
     { status: 200 },
   );
 
-  if (json.accessToken) {
-    out.cookies.set(
-      AUTH_ACCESS_COOKIE,
-      json.accessToken,
-      getSessionCookieOptions(DEFAULT_ACCESS_MAX_AGE_SEC),
-    );
-  }
-  if (json.refreshToken) {
-    out.cookies.set(
-      AUTH_REFRESH_COOKIE,
-      json.refreshToken,
-      getSessionCookieOptions(DEFAULT_REFRESH_MAX_AGE_SEC),
-    );
-  }
+  setSessionCookiesFromAuthApiResponse(out, json);
 
   return out;
 }

@@ -2,6 +2,10 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { isUserProfileReservedFirstSegment } from '@/modules/user-profile/presentation/components/profile-path';
+import {
+  applyProxySessionRefreshToResponse,
+  refreshSessionCookiesIfNeeded,
+} from '@/shared/infrastructure/auth/refresh-session';
 
 /**
  * Public `/@account/...` → App Router paths under `/user-profile/...`.
@@ -12,8 +16,12 @@ import { isUserProfileReservedFirstSegment } from '@/modules/user-profile/presen
  *
  * @see https://nextjs.org/docs/app/api-reference/file-conventions/proxy
  */
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
+  const sessionRefresh = await refreshSessionCookiesIfNeeded(request);
   const { pathname } = request.nextUrl;
+
+  const finish = (response: NextResponse) =>
+    applyProxySessionRefreshToResponse(response, sessionRefresh);
 
   /**
    * Public `/object/:id/updates` stays in the address bar; App Router serves
@@ -25,7 +33,7 @@ export function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = `/object/${id}`;
     url.searchParams.set('tab', 'updates');
-    return NextResponse.rewrite(url);
+    return finish(NextResponse.rewrite(url));
   }
 
   const objectFollowersMatch = pathname.match(/^\/object\/([^/]+)\/followers\/?$/);
@@ -34,7 +42,7 @@ export function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = `/object/${id}`;
     url.searchParams.set('tab', 'followers');
-    return NextResponse.rewrite(url);
+    return finish(NextResponse.rewrite(url));
   }
 
   const objectAuthorityMatch = pathname.match(/^\/object\/([^/]+)\/authority\/?$/);
@@ -43,24 +51,24 @@ export function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = `/object/${id}`;
     url.searchParams.set('tab', 'authority');
-    return NextResponse.rewrite(url);
+    return finish(NextResponse.rewrite(url));
   }
 
   if (!pathname.startsWith('/@')) {
-    return NextResponse.next();
+    return finish(NextResponse.next());
   }
 
   const segments = pathname.slice(2).split('/').filter(Boolean);
   const url = request.nextUrl.clone();
 
   if (segments.length === 0) {
-    return NextResponse.next();
+    return finish(NextResponse.next());
   }
 
   const account = segments[0];
   if (segments.length === 1) {
     url.pathname = `/user-profile/${account}`;
-    return NextResponse.rewrite(url);
+    return finish(NextResponse.rewrite(url));
   }
 
   const tail = segments.slice(1);
@@ -68,11 +76,11 @@ export function proxy(request: NextRequest) {
 
   if (head !== '' && isUserProfileReservedFirstSegment(head)) {
     url.pathname = `/user-profile/${account}/${tail.join('/')}`;
-    return NextResponse.rewrite(url);
+    return finish(NextResponse.rewrite(url));
   }
 
   url.pathname = `/user-profile/${account}/post/${tail.join('/')}`;
-  return NextResponse.rewrite(url);
+  return finish(NextResponse.rewrite(url));
 }
 
 export const config = {

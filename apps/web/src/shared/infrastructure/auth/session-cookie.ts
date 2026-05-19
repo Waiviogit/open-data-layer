@@ -1,5 +1,3 @@
-import 'server-only';
-
 /** httpOnly access JWT (matches auth-api access token). */
 export const AUTH_ACCESS_COOKIE = 'odl_access';
 
