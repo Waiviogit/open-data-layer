@@ -26,7 +26,12 @@ export { UPDATE_IS_SIMILAR_TO } from './updates/is-similar-to';
 export { UPDATE_PIN } from './updates/pin';
 export { UPDATE_REMOVE } from './updates/remove';
 export { UPDATE_SHOP_FILTER } from './updates/shop-filter';
-export { UPDATE_MENU_ITEM } from './updates/menu-item';
+export {
+  MENU_ITEM_STYLES,
+  type MenuItemStyle,
+  UPDATE_MENU_ITEM,
+  UPDATE_MENU_ITEM_SCHEMA,
+} from './updates/menu-item';
 export { UPDATE_AFFILIATE_BUTTON } from './updates/affiliate-button';
 export { UPDATE_AFFILIATE_PRODUCT_ID_TYPES } from './updates/affiliate-product-id-types';
 export { UPDATE_AFFILIATE_GEO_AREA } from './updates/affiliate-geo-area';
@@ -39,7 +44,12 @@ export { UPDATE_MAP_MOBILE_VIEW } from './updates/map-mobile-view';
 export { UPDATE_MAP_DESKTOP_VIEW } from './updates/map-desktop-view';
 export { UPDATE_MAP_RECTANGLES } from './updates/map-rectangles';
 export { UPDATE_MAP_OBJECTS_LIST } from './updates/map-objects-list';
-export { UPDATE_WALLET_ADDRESS } from './updates/wallet-address';
+export {
+  UPDATE_WALLET_ADDRESS,
+  UPDATE_WALLET_ADDRESS_SCHEMA,
+  WALLET_SYMBOLS,
+  type WalletSymbol,
+} from './updates/wallet-address';
 export { UPDATE_DELEGATION } from './updates/delegation';
 export { UPDATE_URL } from './updates/url';
 export { UPDATE_CALORIES } from './updates/calories';

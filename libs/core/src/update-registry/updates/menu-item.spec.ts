@@ -66,6 +66,27 @@ describe('UPDATE_MENU_ITEM_SCHEMA', () => {
     ).toBe(false);
   });
 
+  it('rejects invalid style', () => {
+    const r = UPDATE_MENU_ITEM_SCHEMA.safeParse({
+      style: 'invalid',
+      link_to_object: 'obj-ref-abc',
+      object_type: 'page',
+    });
+    expect(r.success).toBe(false);
+  });
+
+  it('accepts all menu item styles', () => {
+    for (const style of ['standard', 'highlight', 'icon', 'image'] as const) {
+      expect(
+        UPDATE_MENU_ITEM_SCHEMA.safeParse({
+          style,
+          link_to_object: 'obj-ref-abc',
+          object_type: 'page',
+        }).success,
+      ).toBe(true);
+    }
+  });
+
   it('rejects neither link', () => {
     const r = UPDATE_MENU_ITEM_SCHEMA.safeParse({
       style: 'standard',

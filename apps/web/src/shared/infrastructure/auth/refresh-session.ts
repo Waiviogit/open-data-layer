@@ -31,33 +31,50 @@ export async function isAccessTokenValid(
   }
 }
 
+export type FetchSessionTokenPairResult =
+  | { status: 'ok'; tokens: SessionTokenPair }
+  /** Refresh rejected or invalid response — caller should clear session cookies. */
+  | { status: 'auth_failed' }
+  /** auth-api unreachable (not running, DNS, connection refused) — do not clear cookies. */
+  | { status: 'unavailable' };
+
 export async function fetchSessionTokenPairFromAuthApi(
   refreshToken: string,
   userAgent: string | null,
   env: NodeJS.ProcessEnv = process.env,
-): Promise<SessionTokenPair | null> {
-  const res = await fetch(buildAuthApiUrl('/refresh', env), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(userAgent ? { 'user-agent': userAgent } : {}),
-    },
-    body: JSON.stringify({ refreshToken }),
-    cache: 'no-store',
-  });
+): Promise<FetchSessionTokenPairResult> {
+  let res: Response;
+  try {
+    res = await fetch(buildAuthApiUrl('/refresh', env), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(userAgent ? { 'user-agent': userAgent } : {}),
+      },
+      body: JSON.stringify({ refreshToken }),
+      cache: 'no-store',
+    });
+  } catch {
+    return { status: 'unavailable' };
+  }
 
   if (!res.ok) {
-    return null;
+    return { status: 'auth_failed' };
   }
 
   let json: AuthApiTokenResponse;
   try {
     json = (await res.json()) as AuthApiTokenResponse;
   } catch {
-    return null;
+    return { status: 'auth_failed' };
   }
 
-  return parseAuthApiTokenResponse(json);
+  const tokens = parseAuthApiTokenResponse(json);
+  if (!tokens) {
+    return { status: 'auth_failed' };
+  }
+
+  return { status: 'ok', tokens };
 }
 
 export type ProxySessionRefreshResult =
@@ -83,12 +100,15 @@ export async function resolveProxySessionRefresh(
   }
 
   const ua = request.headers.get('user-agent');
-  const tokens = await fetchSessionTokenPairFromAuthApi(refresh, ua);
-  if (!tokens) {
+  const result = await fetchSessionTokenPairFromAuthApi(refresh, ua);
+  if (result.status === 'unavailable') {
+    return { kind: 'unchanged' };
+  }
+  if (result.status === 'auth_failed') {
     return { kind: 'cleared' };
   }
 
-  return { kind: 'refreshed', tokens };
+  return { kind: 'refreshed', tokens: result.tokens };
 }
 
 export function applySessionTokensToResponse(

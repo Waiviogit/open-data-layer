@@ -45,6 +45,16 @@ export type ObjectLeftRailBlock =
       items: ProjectedMenuItem[];
     }
   | {
+      kind: 'name';
+      headingLabel: string;
+      text: string;
+    }
+  | {
+      kind: 'title';
+      headingLabel: string;
+      text: string;
+    }
+  | {
       kind: 'parent';
       headingLabel: string;
       objectId: string;
@@ -95,8 +105,8 @@ export type ObjectLeftRailBlock =
   | {
       kind: 'geo';
       headingLabel: string;
-      latitude: number;
-      longitude: number;
+      latitude?: number;
+      longitude?: number;
     }
   | {
       kind: 'websites';
@@ -155,6 +165,8 @@ export type ObjectPageViewModel = {
   feedSubTabs: ObjectFeedSubTabView[];
   /** Legacy-order left column blocks derived from projected fields. */
   leftRailBlocks: ObjectLeftRailBlock[];
+  /** Existing `tagCategory` values on this object (for tag item edit picker). */
+  tagCategoryNames: string[];
   rightFeatured: ObjectSidebarMiniCardView[];
   rightRelated: ObjectSidebarMiniCardView[];
   rightSimilar: ObjectSidebarMiniCardView[];

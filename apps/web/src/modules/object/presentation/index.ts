@@ -7,7 +7,10 @@ export type { LeftObjectProfileSidebarProps } from './components/left-object-pro
 export { ObjectGeoPreview } from './components/object-geo-preview';
 export type { ObjectGeoPreviewProps } from './components/object-geo-preview';
 export { ObjectLeftRailPanel } from './components/object-left-rail-panel';
-export type { ObjectLeftRailPanelProps } from './components/object-left-rail-panel';
+export type {
+  ObjectLeftRailEditContext,
+  ObjectLeftRailPanelProps,
+} from './components/object-left-rail-panel';
 export { ObjectMenuItemsStatic } from './components/object-menu-items-static';
 export type { ObjectMenuItemsStaticProps } from './components/object-menu-items-static';
 export { ObjectPrimaryNav } from './components/object-primary-nav';

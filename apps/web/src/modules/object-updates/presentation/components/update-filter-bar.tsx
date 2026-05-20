@@ -18,6 +18,7 @@ export type ObjectUpdatesFilterBarProps = {
   showLocaleFilter: boolean;
   /** BCP 47-ish locale codes for interface-language filter. */
   localeOptions?: string[];
+  onAddUpdate?: () => void;
 } & (
   | { mode?: 'url' }
   | {
@@ -40,8 +41,12 @@ const DEFAULT_LOCALE_OPTIONS = [
 ];
 
 export function ObjectUpdatesFilterBar(props: ObjectUpdatesFilterBarProps) {
-  const { typeOptions, showLocaleFilter, localeOptions = DEFAULT_LOCALE_OPTIONS } =
-    props;
+  const {
+    typeOptions,
+    showLocaleFilter,
+    localeOptions = DEFAULT_LOCALE_OPTIONS,
+    onAddUpdate,
+  } = props;
   const { t } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
@@ -140,8 +145,8 @@ export function ObjectUpdatesFilterBar(props: ObjectUpdatesFilterBarProps) {
   );
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end">
         <label className="flex flex-col gap-1 text-caption text-muted sm:min-w-[10rem]">
           <span>{t('object_updates_filter_type')}</span>
           <select
@@ -175,7 +180,16 @@ export function ObjectUpdatesFilterBar(props: ObjectUpdatesFilterBarProps) {
           </label>
         ) : null}
       </div>
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+        {onAddUpdate ? (
+          <button
+            type="button"
+            onClick={onAddUpdate}
+            className="rounded-btn border border-border bg-accent px-4 py-2 text-body-sm font-medium text-accent-fg hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          >
+            {t('object_edit_add_update')}
+          </button>
+        ) : null}
         <SortDropdown value={filters.sort} options={sortOptions} onChange={onSortChange} />
       </div>
     </div>

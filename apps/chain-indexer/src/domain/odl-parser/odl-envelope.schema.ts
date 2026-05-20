@@ -23,14 +23,27 @@ export const updateCreatePayloadSchema = z.object({
 
 export type UpdateCreatePayload = z.infer<typeof updateCreatePayloadSchema>;
 
-/** update_id from payload references an existing update; object_id may be included as additional property. */
-export const updateVotePayloadSchema = z.object({
-  update_id: z.string().min(1).max(256),
-  object_id: z.string().min(1).max(256).optional(),
-  voter: z.string().min(1).max(32),
-  vote: z.enum(['for', 'against', 'remove']),
-  transaction_id: z.string().min(1).max(256),
-});
+/**
+ * Vote payload: either references an existing `update_id`, or targets the `update_create`
+ * event at `create_odl_event_index` in the same custom_json envelope (same Hive trx).
+ */
+export const updateVotePayloadSchema = z
+  .object({
+    update_id: z.string().min(1).max(256).optional(),
+    create_odl_event_index: z.number().int().min(0).max(32).optional(),
+    object_id: z.string().min(1).max(256).optional(),
+    voter: z.string().min(1).max(32),
+    vote: z.enum(['for', 'against', 'remove']),
+    transaction_id: z.string().min(1).max(256),
+  })
+  .superRefine((data, ctx) => {
+    if (data.update_id == null && data.create_odl_event_index == null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Either update_id or create_odl_event_index is required',
+      });
+    }
+  });
 
 export type UpdateVotePayload = z.infer<typeof updateVotePayloadSchema>;
 

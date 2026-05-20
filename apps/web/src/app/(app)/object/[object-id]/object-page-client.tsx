@@ -152,23 +152,22 @@ export function ObjectPageClient({
     embeddedUpdatesFeed.filters.locale ?? '',
   ].join('|');
 
-  const objectUpdatesFeed = useMemo(
-    () => (
-      <ObjectUpdatesFeed
-        key={updatesFeedKey}
-        objectId={model.objectId}
-        initialItems={embeddedUpdatesFeed.initialPage.items}
-        initialCursor={embeddedUpdatesFeed.initialPage.cursor}
-        initialHasMore={embeddedUpdatesFeed.initialPage.hasMore}
-        filters={embeddedUpdatesFeed.filters}
-        typeOptions={embeddedUpdatesFeed.typeOptions}
-        showLocaleFilter={embeddedUpdatesFeed.showLocaleFilter}
-        localizableTypes={embeddedUpdatesFeed.localizableTypes}
-        filterSync="url"
-        loadMoreAction={loadMoreObjectUpdatesFeedAction}
-      />
-    ),
-    [embeddedUpdatesFeed, model.objectId, updatesFeedKey],
+  const objectUpdatesFeed = (
+    <ObjectUpdatesFeed
+      key={updatesFeedKey}
+      objectId={model.objectId}
+      initialItems={embeddedUpdatesFeed.initialPage.items}
+      initialCursor={embeddedUpdatesFeed.initialPage.cursor}
+      initialHasMore={embeddedUpdatesFeed.initialPage.hasMore}
+      filters={embeddedUpdatesFeed.filters}
+      typeOptions={embeddedUpdatesFeed.typeOptions}
+      showLocaleFilter={embeddedUpdatesFeed.showLocaleFilter}
+      localizableTypes={embeddedUpdatesFeed.localizableTypes}
+      filterSync="url"
+      loadMoreAction={loadMoreObjectUpdatesFeedAction}
+      viewerUsername={viewerUsername}
+      tagCategoryNames={model.tagCategoryNames}
+    />
   );
 
   const objectFollowersFeed = useMemo(() => {
@@ -250,9 +249,27 @@ export function ObjectPageClient({
     loadMoreObjectAuthority,
   ]);
 
+  const supportedUpdateTypes = useMemo(
+    () => embeddedUpdatesFeed.typeOptions.map((o) => o.value),
+    [embeddedUpdatesFeed.typeOptions],
+  );
+
+  const leftRailEditContext =
+    isEditMode && viewerUsername
+      ? {
+          objectId: model.objectId,
+          viewerUsername,
+          supportedUpdateTypes,
+          tagCategoryNames: model.tagCategoryNames,
+        }
+      : undefined;
+
   const leftRail = (
     <LeftObjectProfileSidebar>
-      <ObjectLeftRailPanel blocks={model.leftRailBlocks} />
+      <ObjectLeftRailPanel
+        blocks={model.leftRailBlocks}
+        editContext={leftRailEditContext}
+      />
     </LeftObjectProfileSidebar>
   );
 

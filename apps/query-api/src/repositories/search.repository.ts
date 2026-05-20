@@ -4,6 +4,7 @@ import { sql } from 'kysely';
 import { UPDATE_TYPES } from '@opden-data-layer/core';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
+import { buildAutocompleteTsQuery } from './search-fts.utils';
 import { prefixUpperBound, shouldSearchObjectIdSubstring } from './search-prefix.utils';
 
 export interface SearchObjectCandidateRow {
@@ -49,6 +50,11 @@ export class SearchRepository {
       return [];
     }
 
+    const tsQuery = buildAutocompleteTsQuery(trimmed);
+    if (tsQuery === null) {
+      return [];
+    }
+
     const includeIdSubstring = shouldSearchObjectIdSubstring(trimmed);
     const idSubstringPattern = `%${escapeIlikePattern(trimmed)}%`;
 
@@ -59,7 +65,7 @@ export class SearchRepository {
               SELECT DISTINCT ou.object_id
               FROM object_updates ou
               WHERE ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
-                AND ou.search_vector @@ plainto_tsquery('english', ${trimmed})
+                AND ou.search_vector @@ to_tsquery('english', ${tsQuery})
             ),
             id_hits AS (
               SELECT object_id
@@ -88,7 +94,7 @@ export class SearchRepository {
               SELECT DISTINCT ou.object_id
               FROM object_updates ou
               WHERE ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
-                AND ou.search_vector @@ plainto_tsquery('english', ${trimmed})
+                AND ou.search_vector @@ to_tsquery('english', ${tsQuery})
             )
             SELECT DISTINCT ON (COALESCE(oc.meta_group_id, oc.object_id))
               oc.object_id AS object_id,

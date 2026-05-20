@@ -2,6 +2,13 @@ import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
 import { UPDATE_TYPES } from '../update-types';
 
+/** Button/menu row visual style (legacy Waivio: Standard, Highlight, Icon, Image). */
+export const MENU_ITEM_STYLES = ['standard', 'highlight', 'icon', 'image'] as const;
+
+export type MenuItemStyle = (typeof MENU_ITEM_STYLES)[number];
+
+const menuItemStyleSchema = z.enum(MENU_ITEM_STYLES);
+
 /**
  * Menu row JSON. Rules:
  * - At least one of `link_to_object` or `link_to_web`.
@@ -12,7 +19,7 @@ import { UPDATE_TYPES } from '../update-types';
 export const UPDATE_MENU_ITEM_SCHEMA = z
   .object({
     title: z.string().optional(),
-    style: z.string().min(1),
+    style: menuItemStyleSchema,
     image: z.string().optional(),
     link_to_object: z.string().min(3).max(256).optional(),
     object_type: z.string().optional(),

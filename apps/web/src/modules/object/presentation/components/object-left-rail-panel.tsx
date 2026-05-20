@@ -1,19 +1,36 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import type { ObjectLeftRailBlock } from '../../domain/object-page.types';
+import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
+import {
+  getUpdateTypesForBlockKind,
+  primaryUpdateTypeForBlockKind,
+  type ObjectLeftRailBlockKind,
+} from '@/modules/object-updates/domain/block-update-type-map';
+import { mergeLeftRailBlocksForEditMode } from '@/modules/object-updates/domain/left-rail-edit-blocks';
 import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
+
+import type { ObjectLeftRailBlock } from '../../domain/object-page.types';
 
 import { ObjectGeoPreview } from './object-geo-preview';
 import { ObjectMenuItemsStatic } from './object-menu-items-static';
 
+export type ObjectLeftRailEditContext = {
+  objectId: string;
+  viewerUsername: string;
+  supportedUpdateTypes: readonly string[];
+  /** Existing `tagCategory` names on the object (for `tagCategoryItem` picker). */
+  tagCategoryNames: readonly string[];
+};
+
 export type ObjectLeftRailPanelProps = {
   blocks: ObjectLeftRailBlock[];
+  editContext?: ObjectLeftRailEditContext;
 };
 
 /** Max characters for description preview card (matches legacy sidebar truncation). */
@@ -71,30 +88,100 @@ function ChevronAccordion({ expanded }: { expanded: boolean }) {
   );
 }
 
+function IconAddUpdate({ className }: { className?: string }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 14 14"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className={className}
+    >
+      <path
+        d="M7 2.5v9M2.5 7h9"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function LeftRailAddUpdateButton({
+  onClick,
+  addLabel,
+}: {
+  onClick: () => void;
+  addLabel: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex size-8 shrink-0 items-center justify-center rounded-full border border-accent bg-accent/10 text-accent hover:bg-accent/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      aria-label={addLabel}
+      title={addLabel}
+    >
+      <IconAddUpdate className="block shrink-0" />
+    </button>
+  );
+}
+
+function LeftRailBlockHeading({
+  label,
+  onAdd,
+  addLabel,
+}: {
+  label: string;
+  onAdd?: () => void;
+  addLabel: string;
+}) {
+  if (!onAdd) {
+    return <p className="font-medium text-fg">{label}</p>;
+  }
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <p className="min-w-0 font-medium text-fg">{label}</p>
+      <LeftRailAddUpdateButton onClick={onAdd} addLabel={addLabel} />
+    </div>
+  );
+}
+
 function LeftRailIdentifierSection({
   cardClass,
   headingLabel,
   rows,
+  onAdd,
+  addLabel,
 }: {
   cardClass: string;
   headingLabel: string;
   rows: { type: string; value: string }[];
+  onAdd?: () => void;
+  addLabel: string;
 }) {
   const [open, setOpen] = useState(false);
   const contentId = useId();
 
   return (
     <aside className={cardClass}>
-      <button
-        type="button"
-        className="flex w-full min-w-0 items-center justify-between gap-2 text-left text-sm font-medium text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus rounded-sm"
-        aria-expanded={open}
-        aria-controls={contentId}
-        onClick={() => setOpen((v) => !v)}
-      >
-        <span>{headingLabel}</span>
-        <ChevronAccordion expanded={open} />
-      </button>
+      <div className="flex w-full min-w-0 items-center justify-between gap-2">
+        <button
+          type="button"
+          className="flex min-w-0 flex-1 items-center justify-between gap-2 text-left text-sm font-medium text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus rounded-sm"
+          aria-expanded={open}
+          aria-controls={contentId}
+          onClick={() => setOpen((v) => !v)}
+        >
+          <span className="min-w-0 truncate">{headingLabel}</span>
+          <ChevronAccordion expanded={open} />
+        </button>
+        {onAdd ? (
+          <LeftRailAddUpdateButton onClick={onAdd} addLabel={addLabel} />
+        ) : null}
+      </div>
       {open ? (
         <div id={contentId} className="mt-3 space-y-4">
           {rows.map((row, i) => (
@@ -109,12 +196,64 @@ function LeftRailIdentifierSection({
   );
 }
 
-export function ObjectLeftRailPanel({ blocks }: ObjectLeftRailPanelProps) {
+type AddUpdateModalState = {
+  candidateUpdateTypes: string[];
+  initialUpdateType?: string;
+};
+
+export function ObjectLeftRailPanel({ blocks, editContext }: ObjectLeftRailPanelProps) {
   const { t } = useI18n();
+  const [addModal, setAddModal] = useState<AddUpdateModalState | null>(null);
+
+  const displayBlocks = useMemo(() => {
+    if (!editContext) {
+      return blocks.filter((b) => b.kind !== 'name' && b.kind !== 'title');
+    }
+    return mergeLeftRailBlocksForEditMode(blocks, editContext.supportedUpdateTypes);
+  }, [blocks, editContext]);
+
+  const addLabel = t('object_edit_add_update');
+
+  function openAddModal(kind: ObjectLeftRailBlockKind) {
+    if (!editContext) {
+      return;
+    }
+    const candidateUpdateTypes = getUpdateTypesForBlockKind(
+      kind,
+      editContext.supportedUpdateTypes,
+    );
+    if (candidateUpdateTypes.length === 0) {
+      return;
+    }
+    const initialUpdateType = primaryUpdateTypeForBlockKind(
+      kind,
+      editContext.supportedUpdateTypes,
+    );
+    setAddModal({ candidateUpdateTypes, initialUpdateType });
+  }
+
+  function makeOnAdd(kind: ObjectLeftRailBlockKind) {
+    if (!editContext) {
+      return undefined;
+    }
+    return () => openAddModal(kind);
+  }
 
   return (
     <div className="flex min-w-0 flex-col gap-card-padding">
-      {blocks.map((block, index) => {
+      {editContext && addModal ? (
+        <AddUpdateModal
+          open
+          mode="leftRail"
+          onClose={() => setAddModal(null)}
+          objectId={editContext.objectId}
+          viewerUsername={editContext.viewerUsername}
+          candidateUpdateTypes={addModal.candidateUpdateTypes}
+          initialUpdateType={addModal.initialUpdateType}
+          tagCategoryNames={editContext.tagCategoryNames}
+        />
+      ) : null}
+      {displayBlocks.map((block, index) => {
         const cardClass =
           'rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted';
 
@@ -122,49 +261,89 @@ export function ObjectLeftRailPanel({ blocks }: ObjectLeftRailPanelProps) {
           case 'menuItems':
             return (
               <aside key={`menu-${index}`} className={cardClass}>
-                <p className="font-medium text-fg">{block.headingLabel}</p>
+                <LeftRailBlockHeading
+                  label={block.headingLabel}
+                  onAdd={makeOnAdd('menuItems')}
+                  addLabel={addLabel}
+                />
                 <div className="mt-3">
                   <ObjectMenuItemsStatic items={block.items} />
                 </div>
               </aside>
             );
+          case 'name':
+            return (
+              <aside key={`name-${index}`} className={cardClass}>
+                <LeftRailBlockHeading
+                  label={block.headingLabel}
+                  onAdd={makeOnAdd('name')}
+                  addLabel={addLabel}
+                />
+                {block.text.trim() ? (
+                  <p className="mt-2 font-medium text-fg">{block.text}</p>
+                ) : null}
+              </aside>
+            );
+          case 'title':
+            return (
+              <aside key={`title-${index}`} className={cardClass}>
+                <LeftRailBlockHeading
+                  label={block.headingLabel}
+                  onAdd={makeOnAdd('title')}
+                  addLabel={addLabel}
+                />
+                {block.text.trim() ? (
+                  <p className="mt-2 text-fg">{block.text}</p>
+                ) : null}
+              </aside>
+            );
           case 'parent':
             return (
               <aside key={`parent-${index}`} className={cardClass}>
-                <p className="font-medium text-fg">{block.headingLabel}</p>
-                <Link
-                  href={`/object/${encodeURIComponent(block.objectId)}`}
-                  prefetch={false}
-                  className="mt-3 -mx-1 -my-1 flex min-w-0 items-center gap-2.5 rounded-btn p-1 transition-colors hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                >
-                  <div className="relative size-10 shrink-0 overflow-hidden rounded-btn border border-border bg-surface">
-                    {block.imageUrl ? (
-                      <Image
-                        src={block.imageUrl}
-                        alt=""
-                        fill
-                        className="object-cover"
-                        sizes="40px"
-                        unoptimized={shouldUnoptimizeRemoteImage(block.imageUrl)}
-                      />
-                    ) : (
-                      <div
-                        className="flex size-full items-center justify-center bg-surface-alt text-micro text-muted"
-                        aria-hidden
-                      >
-                        —
-                      </div>
-                    )}
-                  </div>
-                  <span className="min-w-0 break-words text-accent">{block.name}</span>
-                </Link>
+                <LeftRailBlockHeading
+                  label={block.headingLabel}
+                  onAdd={makeOnAdd('parent')}
+                  addLabel={addLabel}
+                />
+                {block.objectId.trim() ? (
+                  <Link
+                    href={`/object/${encodeURIComponent(block.objectId)}`}
+                    prefetch={false}
+                    className="mt-3 -mx-1 -my-1 flex min-w-0 items-center gap-2.5 rounded-btn p-1 transition-colors hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  >
+                    <div className="relative size-10 shrink-0 overflow-hidden rounded-btn border border-border bg-surface">
+                      {block.imageUrl ? (
+                        <Image
+                          src={block.imageUrl}
+                          alt=""
+                          fill
+                          className="object-cover"
+                          sizes="40px"
+                          unoptimized={shouldUnoptimizeRemoteImage(block.imageUrl)}
+                        />
+                      ) : (
+                        <div
+                          className="flex size-full items-center justify-center bg-surface-alt text-micro text-muted"
+                          aria-hidden
+                        >
+                          —
+                        </div>
+                      )}
+                    </div>
+                    <span className="min-w-0 break-words text-accent">{block.name}</span>
+                  </Link>
+                ) : null}
               </aside>
             );
           case 'description': {
             const intro = truncateIntroForPreview(block.text);
             return (
               <aside key={`desc-${index}`} className={cardClass}>
-                <p className="font-medium text-fg">{block.headingLabel}</p>
+                <LeftRailBlockHeading
+                  label={block.headingLabel}
+                  onAdd={makeOnAdd('description')}
+                  addLabel={addLabel}
+                />
                 {intro.display ? (
                   <p
                     className="mt-2 leading-relaxed"
@@ -173,12 +352,14 @@ export function ObjectLeftRailPanel({ blocks }: ObjectLeftRailPanelProps) {
                     {intro.display}
                   </p>
                 ) : null}
-                <button
-                  type="button"
-                  className="mt-3 rounded-btn border border-border px-3 py-2 text-sm font-medium text-fg hover:bg-surface"
-                >
-                  {t('object_detail_description_button')}
-                </button>
+                {intro.display ? (
+                  <button
+                    type="button"
+                    className="mt-3 rounded-btn border border-border px-3 py-2 text-sm font-medium text-fg hover:bg-surface"
+                  >
+                    {t('object_detail_description_button')}
+                  </button>
+                ) : null}
               </aside>
             );
           }
@@ -249,7 +430,11 @@ export function ObjectLeftRailPanel({ blocks }: ObjectLeftRailPanelProps) {
           case 'tags':
             return (
               <aside key={`tags-${index}`} className={cardClass}>
-                <p className="font-medium text-fg">{block.headingLabel}</p>
+                <LeftRailBlockHeading
+                  label={block.headingLabel}
+                  onAdd={makeOnAdd('tags')}
+                  addLabel={addLabel}
+                />
                 <div className="mt-3 space-y-4">
                   {block.sections.map((section) => (
                     <div key={section.categoryTitle}>
@@ -274,7 +459,11 @@ export function ObjectLeftRailPanel({ blocks }: ObjectLeftRailPanelProps) {
           case 'gallery':
             return (
               <aside key={`gallery-${index}`} className={cardClass}>
-                <p className="font-medium text-fg">{block.headingLabel}</p>
+                <LeftRailBlockHeading
+                  label={block.headingLabel}
+                  onAdd={makeOnAdd('gallery')}
+                  addLabel={addLabel}
+                />
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   {block.urls.slice(0, 4).map((src, i) => (
                     <div
@@ -297,7 +486,11 @@ export function ObjectLeftRailPanel({ blocks }: ObjectLeftRailPanelProps) {
           case 'price':
             return (
               <aside key={`price-${index}`} className={cardClass}>
-                <p className="font-medium text-fg">{block.headingLabel}</p>
+                <LeftRailBlockHeading
+                  label={block.headingLabel}
+                  onAdd={makeOnAdd('price')}
+                  addLabel={addLabel}
+                />
                 <div className="mt-2 flex items-center gap-1">
                   <span className="text-muted" aria-hidden>
                     $
@@ -309,7 +502,11 @@ export function ObjectLeftRailPanel({ blocks }: ObjectLeftRailPanelProps) {
           case 'workHours':
             return (
               <aside key={`hours-${index}`} className={cardClass}>
-                <p className="font-medium text-fg">{block.headingLabel}</p>
+                <LeftRailBlockHeading
+                  label={block.headingLabel}
+                  onAdd={makeOnAdd('workHours')}
+                  addLabel={addLabel}
+                />
                 <ul className="mt-2 space-y-1">
                   {block.lines.map((line) => (
                     <li key={line}>{line}</li>
@@ -320,27 +517,47 @@ export function ObjectLeftRailPanel({ blocks }: ObjectLeftRailPanelProps) {
           case 'address':
             return (
               <aside key={`addr-${index}`} className={cardClass}>
-                <p className="font-medium text-fg">{block.headingLabel}</p>
+                <LeftRailBlockHeading
+                  label={block.headingLabel}
+                  onAdd={makeOnAdd('address')}
+                  addLabel={addLabel}
+                />
                 <p className="mt-2 whitespace-pre-line leading-relaxed">{block.text}</p>
               </aside>
             );
-          case 'geo':
+          case 'geo': {
+            const hasCoords =
+              block.latitude != null &&
+              block.longitude != null &&
+              Number.isFinite(block.latitude) &&
+              Number.isFinite(block.longitude);
             return (
               <aside key={`geo-${index}`} className={cardClass}>
-                <p className="font-medium text-fg">{block.headingLabel}</p>
-                <div className="mt-3 overflow-hidden rounded-btn">
-                  <ObjectGeoPreview
-                    latitude={block.latitude}
-                    longitude={block.longitude}
-                    label={block.headingLabel}
-                  />
-                </div>
+                <LeftRailBlockHeading
+                  label={block.headingLabel}
+                  onAdd={makeOnAdd('geo')}
+                  addLabel={addLabel}
+                />
+                {hasCoords ? (
+                  <div className="mt-3 overflow-hidden rounded-btn">
+                    <ObjectGeoPreview
+                      latitude={block.latitude!}
+                      longitude={block.longitude!}
+                      label={block.headingLabel}
+                    />
+                  </div>
+                ) : null}
               </aside>
             );
+          }
           case 'websites':
             return (
               <aside key={`web-${index}`} className={cardClass}>
-                <p className="font-medium text-fg">{block.headingLabel}</p>
+                <LeftRailBlockHeading
+                  label={block.headingLabel}
+                  onAdd={makeOnAdd('websites')}
+                  addLabel={addLabel}
+                />
                 <ul className="mt-2 space-y-2">
                   {block.entries.map((entry) => (
                     <li key={`${entry.link}-${entry.title}`} className="flex items-start gap-2">
@@ -360,7 +577,11 @@ export function ObjectLeftRailPanel({ blocks }: ObjectLeftRailPanelProps) {
           case 'phones':
             return (
               <aside key={`phones-${index}`} className={cardClass}>
-                <p className="font-medium text-fg">{block.headingLabel}</p>
+                <LeftRailBlockHeading
+                  label={block.headingLabel}
+                  onAdd={makeOnAdd('phones')}
+                  addLabel={addLabel}
+                />
                 <ul className="mt-2 space-y-1 tabular-nums">
                   {block.numbers.map((n) => (
                     <li key={n}>{n}</li>
@@ -371,14 +592,22 @@ export function ObjectLeftRailPanel({ blocks }: ObjectLeftRailPanelProps) {
           case 'email':
             return (
               <aside key={`email-${index}`} className={cardClass}>
-                <p className="font-medium text-fg">{block.headingLabel}</p>
+                <LeftRailBlockHeading
+                  label={block.headingLabel}
+                  onAdd={makeOnAdd('email')}
+                  addLabel={addLabel}
+                />
                 <p className="mt-2 break-all">{block.address}</p>
               </aside>
             );
           case 'walletAddress':
             return (
               <aside key={`wallet-${index}`} className={cardClass}>
-                <p className="font-medium text-fg">{block.headingLabel}</p>
+                <LeftRailBlockHeading
+                  label={block.headingLabel}
+                  onAdd={makeOnAdd('walletAddress')}
+                  addLabel={addLabel}
+                />
                 <ul className="mt-3 list-none space-y-2 p-0">
                   {block.items.map((row, rowIndex) => (
                     <li key={`${row.lineText}-${rowIndex}`} className="flex gap-2">
@@ -409,12 +638,18 @@ export function ObjectLeftRailPanel({ blocks }: ObjectLeftRailPanelProps) {
                 cardClass={cardClass}
                 headingLabel={block.headingLabel}
                 rows={block.rows}
+                onAdd={makeOnAdd('identifier')}
+                addLabel={addLabel}
               />
             );
           case 'link':
             return (
               <aside key={`link-${index}`} className={cardClass}>
-                <p className="font-medium text-fg">{block.headingLabel}</p>
+                <LeftRailBlockHeading
+                  label={block.headingLabel}
+                  onAdd={makeOnAdd('link')}
+                  addLabel={addLabel}
+                />
                 <ul className="mt-3 list-none space-y-2 p-0">
                   {block.items.map((row, rowIndex) => (
                     <li key={`${row.label}-${rowIndex}`} className="flex items-center gap-2">

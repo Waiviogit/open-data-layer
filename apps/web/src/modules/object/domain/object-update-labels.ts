@@ -8,10 +8,12 @@
 
 /** Labels keyed by `update_type` string for blocks tied to registry entries. */
 const UPDATE_TYPE_TO_LABEL: Record<string, string> = {
+  name: 'Name',
+  title: 'Title',
   description: 'Description',
   aggregateRating: 'Rating',
-  tagCategory: 'Categories',
-  tagCategoryItem: 'Tags',
+  tagCategory: 'Tag Category',
+  tagCategoryItem: 'Tag',
   imageGalleryItem: 'Gallery',
   price: 'Price',
   workHours: 'Hours',
@@ -30,6 +32,8 @@ const UPDATE_TYPE_TO_LABEL: Record<string, string> = {
 
 /** Labels for blocks keyed by internal rail kind (not always 1:1 with update_type). */
 export const OBJECT_LEFT_RAIL_BLOCK_LABEL: Record<string, string> = {
+  name: 'Name',
+  title: 'Title',
   menuItems: 'Menu',
   description: 'Description',
   rating: 'Rating',

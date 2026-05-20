@@ -10,6 +10,8 @@ import { MapContainer, TileLayer, ZoomControl } from 'react-leaflet';
 import '../../map-leaflet-zoom-ui.css';
 
 import type { AppMapProps } from '../../types';
+import { LeafletMapCenterSync } from './leaflet-map-center-sync';
+import { LeafletMapClickHandler } from './leaflet-map-click-handler';
 
 function assetSrc(mod: string | { src: string }): string {
   return typeof mod === 'string' ? mod : mod.src;
@@ -43,6 +45,7 @@ export function LeafletAppMap({
   minZoom = DEFAULT_MAP_MIN_ZOOM,
   maxZoom = DEFAULT_MAP_MAX_ZOOM,
   tileNoWrap = true,
+  onMapClick,
 }: AppMapProps) {
   const attributionForLayer =
     showBuiltInAttribution === false ? '' : tileAttribution;
@@ -53,6 +56,7 @@ export function LeafletAppMap({
   const mapClassNames = [
     className ?? '',
     customZoom && zoomUi.compact ? 'map-zoom-ui-compact' : '',
+    onMapClick ? 'cursor-crosshair' : '',
   ]
     .filter(Boolean)
     .join(' ')
@@ -78,6 +82,8 @@ export function LeafletAppMap({
         noWrap={tileNoWrap}
       />
       {customZoom ? <ZoomControl position={zoomUi.position} /> : null}
+      <LeafletMapCenterSync center={center} />
+      {onMapClick ? <LeafletMapClickHandler onMapClick={onMapClick} /> : null}
       {children}
     </MapContainer>
   );

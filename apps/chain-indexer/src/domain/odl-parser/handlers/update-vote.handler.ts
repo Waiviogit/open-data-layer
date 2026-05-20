@@ -57,7 +57,11 @@ export class UpdateVoteHandler implements OdlActionHandler {
       return;
     }
 
-    const { update_id, voter, vote, transaction_id } = result.data;
+    const { voter, vote, transaction_id } = result.data;
+    const update_id =
+      result.data.create_odl_event_index !== undefined
+        ? `${ctx.transactionId}-${ctx.transactionIndex}-${ctx.operationIndex}-${result.data.create_odl_event_index}`
+        : result.data.update_id!;
 
     const votedUpdate = await this.objectUpdatesRepository.findByUpdateId(update_id);
     if (!votedUpdate) {

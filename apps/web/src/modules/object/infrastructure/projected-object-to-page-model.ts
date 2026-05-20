@@ -3,7 +3,11 @@ import {
   type ProjectedObjectView,
 } from '@/modules/feed/application/dto/object-fields';
 
-import { ABOUT_SECTION_BLOCK_ORDER, MENU_BLOCK_ID } from '../domain/object-left-rail-order';
+import {
+  ABOUT_SECTION_BLOCK_ORDER,
+  HEADER_BLOCK_ORDER,
+  MENU_BLOCK_ID,
+} from '../domain/object-left-rail-order';
 import type {
   ObjectFeedSubTabView,
   ObjectLeftRailBlock,
@@ -27,6 +31,7 @@ import {
   projectedParentRow,
   projectedPrice,
   projectedSortCustom,
+  projectedTagCategoryNames,
   projectedTagCategorySections,
   projectedTelephones,
   projectedWebsiteEntries,
@@ -136,6 +141,30 @@ function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock
       headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.menuItems,
       items: menuOrdered,
     });
+  }
+
+  for (const step of HEADER_BLOCK_ORDER) {
+    if (step === 'name') {
+      const text = objectFields.name(viewLike)?.trim();
+      if (text && text.length > 0) {
+        blocks.push({
+          kind: 'name',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.name,
+          text,
+        });
+      }
+      continue;
+    }
+    if (step === 'title') {
+      const text = objectFields.titleUpdate(viewLike)?.trim();
+      if (text && text.length > 0) {
+        blocks.push({
+          kind: 'title',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.title,
+          text,
+        });
+      }
+    }
   }
 
   for (const step of ABOUT_SECTION_BLOCK_ORDER) {
@@ -369,6 +398,7 @@ export function projectedObjectWithCountsToPageModel(
     tagLabels.length > 0 ? tagLabels.slice(-2).join(' · ') : null;
 
   const leftRailBlocks = buildLeftRailBlocks(viewLike);
+  const tagCategoryNames = projectedTagCategoryNames(viewLike);
 
   return {
     objectId: api.object_id,
@@ -390,6 +420,7 @@ export function projectedObjectWithCountsToPageModel(
     administrativeAuthorityCount: api.administrative_count ?? 0,
     ownershipAuthorityCount: api.ownership_count ?? 0,
     leftRailBlocks,
+    tagCategoryNames,
     rightFeatured: [miniCard('ex-f1', 'Experts')],
     rightRelated: [miniCard('nr-f1', 'Nearby')],
     rightSimilar: [miniCard('sm-f1', 'Similar')],

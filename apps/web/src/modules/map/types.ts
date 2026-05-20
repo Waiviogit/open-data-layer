@@ -41,6 +41,11 @@ export interface AppMapProps {
    * @default true
    */
   tileNoWrap?: boolean;
+  /**
+   * Called when the user clicks the map (Leaflet). Use for coordinate pickers.
+   * Position is `[latitude, longitude]`.
+   */
+  onMapClick?: (position: MapPosition) => void;
 }
 
 export interface AppMarkerProps {

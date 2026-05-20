@@ -49,6 +49,8 @@ export function DemoMap() {
 
 Coordinate type is **`MapPosition`**: `readonly [latitude, longitude]`.
 
+Optional **`onMapClick`** on **`AppMap`** (Leaflet): fires with `[latitude, longitude]` when the user clicks the map — used by the object-edit geo picker.
+
 ### Tile layer (Leaflet)
 
 Optional props on **`AppMap`**:

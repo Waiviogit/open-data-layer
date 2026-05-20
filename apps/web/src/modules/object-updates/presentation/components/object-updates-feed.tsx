@@ -3,10 +3,13 @@
 import { useState, useTransition } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { useLoginModal } from '@/modules/auth';
 
 import type { ObjectUpdateFeedItemView } from '../../application/dto/object-updates-feed.dto';
 import type { ObjectUpdatesUrlFilters } from '../../application/parse-object-updates-search-params';
+import { useEffectiveViewerUsername } from '../../application/use-effective-viewer-username';
 
+import { AddUpdateModal } from './add-update-modal';
 import { ObjectUpdatesFilterBar, type UpdateTypeOption } from './update-filter-bar';
 import { UpdateCard } from './update-card';
 
@@ -47,6 +50,8 @@ export type ObjectUpdatesFeedProps = {
   loadMoreAction: LoadMoreObjectUpdatesFn;
   /** `'url'` = filter bar reads/writes search params (standalone `/updates` page). `'local'` = filters in memory so the object profile tab does not navigate or lose active tab. */
   filterSync?: 'url' | 'local';
+  viewerUsername?: string | null;
+  tagCategoryNames?: readonly string[];
 };
 
 export function ObjectUpdatesFeed({
@@ -60,8 +65,13 @@ export function ObjectUpdatesFeed({
   localizableTypes,
   loadMoreAction,
   filterSync = 'url',
+  viewerUsername,
+  tagCategoryNames = [],
 }: ObjectUpdatesFeedProps) {
   const { t } = useI18n();
+  const { openLogin } = useLoginModal();
+  const effectiveViewerUsername = useEffectiveViewerUsername(viewerUsername);
+  const [addModalOpen, setAddModalOpen] = useState(false);
   const [localFilters, setLocalFilters] = useState<ObjectUpdatesUrlFilters>(filtersProp);
   const filters = filterSync === 'local' ? localFilters : filtersProp;
 
@@ -87,15 +97,42 @@ export function ObjectUpdatesFeed({
       ? { mode: 'controlled' as const, filters, onFiltersChange }
       : {};
 
+  const supportedUpdateTypes = typeOptions.map((o) => o.value);
+  const canAddUpdate = supportedUpdateTypes.length > 0;
+
   return (
     <section className="rounded-card border border-border bg-surface/80 p-card-padding">
       <div className="mb-4">
         <ObjectUpdatesFilterBar
+          {...filterBarExtra}
           typeOptions={typeOptions}
           showLocaleFilter={showLocaleFilter}
-          {...filterBarExtra}
+          onAddUpdate={
+            canAddUpdate
+              ? () => {
+                  if (!effectiveViewerUsername) {
+                    openLogin();
+                    return;
+                  }
+                  setAddModalOpen(true);
+                }
+              : undefined
+          }
         />
       </div>
+      {effectiveViewerUsername && addModalOpen ? (
+        <AddUpdateModal
+          open
+          mode="feedAdd"
+          onClose={() => setAddModalOpen(false)}
+          objectId={objectId}
+          viewerUsername={effectiveViewerUsername}
+          tagCategoryNames={tagCategoryNames}
+          candidateUpdateTypes={supportedUpdateTypes}
+          initialUpdateType={filters.update_type}
+          initialLocale={filters.locale}
+        />
+      ) : null}
       {items.length === 0 ? (
         <p className="text-body-sm text-muted">{t('object_updates_empty')}</p>
       ) : (
