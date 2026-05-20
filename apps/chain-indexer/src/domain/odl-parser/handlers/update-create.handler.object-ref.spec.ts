@@ -44,6 +44,7 @@ describe('UpdateCreateHandler object_ref', () => {
     transactionId: 'tx1',
     timestamp: new Date().toISOString(),
     eventSeq: BigInt(1),
+    eventIdIndexMap: new Map(),
   };
 
   const governanceCore: ObjectsCore = {
@@ -101,7 +102,6 @@ describe('UpdateCreateHandler object_ref', () => {
         object_id: 'gov1',
         update_type: 'test_object_ref',
         creator: 'owner',
-        transaction_id: 'tx1',
         value_text: 'missing-ref',
       },
       baseCtx,
@@ -144,7 +144,6 @@ describe('UpdateCreateHandler object_ref', () => {
         object_id: 'gov1',
         update_type: 'test_object_ref',
         creator: 'owner',
-        transaction_id: 'tx1',
         value_text: 'ref-wrong',
       },
       baseCtx,
@@ -187,7 +186,6 @@ describe('UpdateCreateHandler object_ref', () => {
         object_id: 'gov1',
         update_type: 'test_object_ref',
         creator: 'owner',
-        transaction_id: 'tx1',
         value_text: 'ref-target',
       },
       baseCtx,

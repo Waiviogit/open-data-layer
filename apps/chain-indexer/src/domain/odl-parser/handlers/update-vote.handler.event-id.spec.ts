@@ -4,8 +4,11 @@ import type { OdlEventContext } from '../odl-action-handler';
 import { WriteGuardRunner } from '../guards';
 import { UpdateVoteHandler } from './update-vote.handler';
 
-describe('UpdateVoteHandler create_odl_event_index', () => {
+describe('UpdateVoteHandler create_event_id', () => {
   const hiveTrxId = 'hive-trx-abc';
+  const createEventId = '6d6c23b3-1ac4-4cbc-8ab0-9ba65d8c648d';
+
+  const eventIdIndexMap = new Map<string, number>([[createEventId, 0]]);
 
   const createCtx: OdlEventContext = {
     action: 'update_create',
@@ -17,6 +20,7 @@ describe('UpdateVoteHandler create_odl_event_index', () => {
     transactionId: hiveTrxId,
     timestamp: '2026-01-01T00:00:00.000Z',
     eventSeq: BigInt(1),
+    eventIdIndexMap,
   };
 
   const voteCtx: OdlEventContext = {
@@ -41,7 +45,7 @@ describe('UpdateVoteHandler create_odl_event_index', () => {
     creator: 'owner',
   };
 
-  it('resolves update_id from create_odl_event_index and records a for vote', async () => {
+  it('resolves update_id from create_event_id and records a for vote', async () => {
     const create = jest.fn().mockResolvedValue(undefined);
     const findByUpdateId = jest.fn().mockResolvedValue(votedUpdate);
     const handler = new UpdateVoteHandler(
@@ -56,11 +60,10 @@ describe('UpdateVoteHandler create_odl_event_index', () => {
 
     await handler.handle(
       {
-        create_odl_event_index: createCtx.odlEventIndex,
+        create_event_id: createEventId,
         object_id: 'obj-1',
         voter: 'alice',
         vote: 'for',
-        transaction_id: 'vote-client-id',
       },
       voteCtx,
     );
@@ -71,6 +74,7 @@ describe('UpdateVoteHandler create_odl_event_index', () => {
         update_id: expectedUpdateId,
         voter: 'alice',
         vote: 'for',
+        transaction_id: hiveTrxId,
       }),
     );
   });

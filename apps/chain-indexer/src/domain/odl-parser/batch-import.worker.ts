@@ -109,6 +109,7 @@ export class BatchImportWorker {
 
     let chainPromise = Promise.resolve();
     let childIndex = 0;
+    const eventIdIndexMap = new Map<string, number>();
 
     await new Promise<void>((resolve, reject) => {
       pipeline.on('data', (item: { key: number; value: unknown }) => {
@@ -138,6 +139,10 @@ export class BatchImportWorker {
             return;
           }
 
+          if (event.event_id) {
+            eventIdIndexMap.set(event.event_id, childIndex);
+          }
+
           const ctx: OdlEventContext = {
             action: event.action,
             creator: parentCtx.creator,
@@ -148,6 +153,7 @@ export class BatchImportWorker {
             transactionId: parentCtx.transactionId,
             timestamp: parentCtx.timestamp,
             eventSeq: parentCtx.eventSeq + BigInt(childIndex + 1),
+            eventIdIndexMap,
           };
 
           try {

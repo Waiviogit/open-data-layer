@@ -31,7 +31,6 @@ describe('OdlCustomJsonParser', () => {
           object_id: 'o1',
           object_type: 'post',
           creator: 'alice',
-          transaction_id: 't1',
         },
       },
     ],

@@ -44,6 +44,7 @@ describe('UpdateCreateHandler localizable', () => {
     transactionId: 'tx1',
     timestamp: new Date().toISOString(),
     eventSeq: BigInt(1),
+    eventIdIndexMap: new Map(),
   };
 
   const governanceCore: ObjectsCore = {
@@ -83,7 +84,6 @@ describe('UpdateCreateHandler localizable', () => {
         object_id: 'gov1',
         update_type: 'test_non_local',
         creator: 'owner',
-        transaction_id: 'tx1',
         locale: 'fr-FR',
         value_text: 'value',
       },

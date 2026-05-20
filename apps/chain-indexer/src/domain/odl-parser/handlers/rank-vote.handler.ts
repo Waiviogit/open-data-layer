@@ -41,7 +41,7 @@ export class RankVoteHandler implements OdlActionHandler {
       return;
     }
 
-    const { update_id, voter, rank, rank_context, transaction_id } = result.data;
+    const { update_id, voter, rank, rank_context } = result.data;
     let { object_id } = result.data;
 
     if (!object_id) {
@@ -92,7 +92,7 @@ export class RankVoteHandler implements OdlActionHandler {
       rank,
       rank_context,
       event_seq: ctx.eventSeq,
-      transaction_id,
+      transaction_id: ctx.transactionId,
     };
 
     await this.rankVotesRepository.create(row);

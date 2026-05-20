@@ -20,6 +20,7 @@ describe('UpdateCreateHandler write guard', () => {
     transactionId: 'tx1',
     timestamp: new Date().toISOString(),
     eventSeq: BigInt(1),
+    eventIdIndexMap: new Map(),
   };
 
   const governanceCore: ObjectsCore = {
@@ -70,7 +71,6 @@ describe('UpdateCreateHandler write guard', () => {
         object_id: 'gov1',
         update_type: 'name',
         creator: 'owner',
-        transaction_id: 'tx1',
         value_text: 'Title',
       },
       baseCtx,
@@ -105,7 +105,6 @@ describe('UpdateCreateHandler write guard', () => {
         object_id: 'gov1',
         update_type: 'name',
         creator: 'owner',
-        transaction_id: 'tx1',
         value_text: 'Title',
       },
       ctx,
@@ -149,7 +148,6 @@ describe('UpdateCreateHandler write guard', () => {
         object_id: 'gov1',
         update_type: 'name',
         creator: 'owner',
-        transaction_id: 'tx1',
         value_text: 'New title',
       },
       ctx,
@@ -186,7 +184,6 @@ describe('UpdateCreateHandler write guard', () => {
         object_id: 'gov1',
         update_type: 'name',
         creator: 'owner',
-        transaction_id: 'tx1',
         value_text: 'Taken title',
       },
       ctx,
@@ -225,7 +222,6 @@ describe('UpdateCreateHandler write guard', () => {
           object_id: 'place1',
           update_type: 'status',
           creator: 'alice',
-          transaction_id: 'tx1',
           value_json: { title: 'unavailable', link: 'https://example.com/s' },
         },
         ctx,

@@ -8,7 +8,6 @@ export const objectCreatePayloadSchema = z.object({
   object_id: z.string().min(1).max(256),
   object_type: z.string().min(1).max(64),
   creator: z.string().min(1).max(32),
-  transaction_id: z.string().min(1).max(256),
 });
 
 export type ObjectCreatePayload = z.infer<typeof objectCreatePayloadSchema>;
@@ -17,7 +16,6 @@ export const updateCreatePayloadSchema = z.object({
   object_id: z.string().min(1).max(256),
   update_type: z.string().min(1),
   creator: z.string().min(1).max(32),
-  transaction_id: z.string().min(1).max(256),
   locale: z.string().min(2).max(35).optional(),
 });
 
@@ -25,22 +23,21 @@ export type UpdateCreatePayload = z.infer<typeof updateCreatePayloadSchema>;
 
 /**
  * Vote payload: either references an existing `update_id`, or targets the `update_create`
- * event at `create_odl_event_index` in the same custom_json envelope (same Hive trx).
+ * event identified by `create_event_id` in the same custom_json envelope (same Hive trx).
  */
 export const updateVotePayloadSchema = z
   .object({
     update_id: z.string().min(1).max(256).optional(),
-    create_odl_event_index: z.number().int().min(0).max(32).optional(),
+    create_event_id: z.string().uuid().optional(),
     object_id: z.string().min(1).max(256).optional(),
     voter: z.string().min(1).max(32),
     vote: z.enum(['for', 'against', 'remove']),
-    transaction_id: z.string().min(1).max(256),
   })
   .superRefine((data, ctx) => {
-    if (data.update_id == null && data.create_odl_event_index == null) {
+    if (data.update_id == null && data.create_event_id == null) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: 'Either update_id or create_odl_event_index is required',
+        message: 'Either update_id or create_event_id is required',
       });
     }
   });
@@ -53,7 +50,6 @@ export const rankVotePayloadSchema = z.object({
   voter: z.string().min(1).max(32),
   rank: z.number().int().min(0).max(10000),
   rank_context: z.string().max(64).default('default'),
-  transaction_id: z.string().min(1).max(256),
 });
 
 export type RankVotePayload = z.infer<typeof rankVotePayloadSchema>;
@@ -131,6 +127,8 @@ const odlEventSchema = z.object({
     'batch_import',
   ]),
   v: z.number().int().min(1),
+  /** Client correlation id for same-envelope linkage (e.g. create + vote in one broadcast). */
+  event_id: z.string().uuid().optional(),
   payload: z.record(z.string(), z.unknown()),
 });
 

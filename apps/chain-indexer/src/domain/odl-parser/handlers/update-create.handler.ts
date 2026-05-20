@@ -61,8 +61,7 @@ export class UpdateCreateHandler implements OdlActionHandler {
       return;
     }
 
-    const { object_id, update_type, creator, transaction_id, locale: payloadLocale } =
-      result.data;
+    const { object_id, update_type, creator, locale: payloadLocale } = result.data;
 
     const object = await this.objectsCoreRepository.findByObjectId(object_id);
     if (!object) {
@@ -148,7 +147,7 @@ export class UpdateCreateHandler implements OdlActionHandler {
       locale: effectiveLocale,
       created_at_unix: Math.floor(new Date(ctx.timestamp).getTime() / 1000),
       event_seq: ctx.eventSeq,
-      transaction_id,
+      transaction_id: ctx.transactionId,
       value_text:
         definition.value_kind === 'text' || definition.value_kind === 'object_ref'
           ? String(valueResult.data)

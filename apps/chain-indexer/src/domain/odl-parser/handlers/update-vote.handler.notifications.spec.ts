@@ -22,6 +22,7 @@ describe('UpdateVoteHandler notifications', () => {
     transactionId: 'trx-vote',
     timestamp: '2026-01-01T00:00:00.000Z',
     eventSeq: BigInt(1),
+    eventIdIndexMap: new Map(),
   };
 
   const votedUpdate = {
@@ -63,7 +64,6 @@ describe('UpdateVoteHandler notifications', () => {
         update_id: 'upd-1',
         voter: 'voter',
         vote: 'for',
-        transaction_id: 'trx-vote',
       },
       ctx,
     );
@@ -88,7 +88,6 @@ describe('UpdateVoteHandler notifications', () => {
         update_id: 'upd-1',
         voter: 'voter',
         vote: 'remove',
-        transaction_id: 'trx-vote',
       },
       ctx,
     );

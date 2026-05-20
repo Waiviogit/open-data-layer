@@ -62,6 +62,14 @@ export class OdlCustomJsonParser {
 
     const { events } = envelopeResult.data;
 
+    const eventIdIndexMap = new Map<string, number>();
+    for (let i = 0; i < events.length; i++) {
+      const eid = events[i].event_id;
+      if (eid) {
+        eventIdIndexMap.set(eid, i);
+      }
+    }
+
     const gov = await this.governanceCache.resolvePlatform();
     if (gov.banned.includes(account)) {
       this.logger.log(`ODL: account '${account}' is banned; ignoring all events`);
@@ -92,6 +100,7 @@ export class OdlCustomJsonParser {
           opIndex: hiveCtx.operationIndex,
           odlEventIndex,
         }),
+        eventIdIndexMap,
       };
 
       try {

@@ -1,9 +1,4 @@
-import {
-  buildOdlUpdateCreateOp,
-  buildOdlUpdateCreateWithLikeOp,
-  deriveOdlUpdateId,
-  ODL_UPDATE_CREATE_EVENT_INDEX,
-} from './odl-operations';
+import { buildOdlUpdateCreateOp, buildOdlUpdateCreateWithLikeOp } from './odl-operations';
 
 describe('buildOdlUpdateCreateOp', () => {
   const base = {
@@ -12,7 +7,6 @@ describe('buildOdlUpdateCreateOp', () => {
     updateType: 'name',
     creator: 'alice',
     required_posting_auths: ['alice'] as const,
-    transactionId: '00000000-0000-4000-8000-000000000001',
   };
 
   it('builds custom_json op with correct id and posting auths', () => {
@@ -35,16 +29,22 @@ describe('buildOdlUpdateCreateOp', () => {
       locale: 'en-US',
     });
     const parsed = JSON.parse(op.json) as {
-      events: { action: string; v: number; payload: Record<string, unknown> }[];
+      events: {
+        action: string;
+        v: number;
+        event_id?: string;
+        payload: Record<string, unknown>;
+      }[];
     };
     expect(parsed.events).toHaveLength(1);
     expect(parsed.events[0]?.action).toBe('update_create');
     expect(parsed.events[0]?.v).toBe(1);
+    expect(parsed.events[0]?.event_id).toBeUndefined();
     const payload = parsed.events[0]?.payload;
     expect(payload?.['object_id']).toBe('obj-1');
     expect(payload?.['update_type']).toBe('name');
     expect(payload?.['creator']).toBe('alice');
-    expect(payload?.['transaction_id']).toBe(base.transactionId);
+    expect(payload?.['transaction_id']).toBeUndefined();
     expect(payload?.['value_text']).toBe('My Business');
     expect(payload?.['locale']).toBe('en-US');
     expect(payload?.['value_json']).toBeUndefined();
@@ -98,28 +98,6 @@ describe('buildOdlUpdateCreateOp', () => {
     const payload = JSON.parse(op.json).events[0].payload as Record<string, unknown>;
     expect(payload['locale']).toBeUndefined();
   });
-
-  it('generates transaction_id when omitted', () => {
-    const op = buildOdlUpdateCreateOp({
-      id: 'odl-mainnet',
-      objectId: 'o',
-      updateType: 'name',
-      creator: 'bob',
-      valueKind: 'text',
-      value: 'n',
-      required_posting_auths: ['bob'],
-    });
-    const payload = JSON.parse(op.json).events[0].payload as Record<string, unknown>;
-    expect(typeof payload['transaction_id']).toBe('string');
-    expect((payload['transaction_id'] as string).length).toBeGreaterThan(0);
-  });
-});
-
-describe('deriveOdlUpdateId', () => {
-  it('formats hive trx coordinates', () => {
-    expect(deriveOdlUpdateId('abc123', 0)).toBe('abc123-0-0-0');
-    expect(deriveOdlUpdateId('abc123', 1, 2, 3)).toBe('abc123-2-3-1');
-  });
 });
 
 describe('buildOdlUpdateCreateWithLikeOp', () => {
@@ -131,23 +109,30 @@ describe('buildOdlUpdateCreateWithLikeOp', () => {
     valueKind: 'text' as const,
     value: 'My Business',
     required_posting_auths: ['alice'] as const,
-    transactionId: '00000000-0000-4000-8000-000000000001',
   };
 
-  it('emits update_create then update_vote with create_odl_event_index', () => {
+  it('emits update_create with event_id then update_vote with create_event_id', () => {
     const op = buildOdlUpdateCreateWithLikeOp(base);
     const parsed = JSON.parse(op.json) as {
-      events: { action: string; payload: Record<string, unknown> }[];
+      events: {
+        action: string;
+        event_id?: string;
+        payload: Record<string, unknown>;
+      }[];
     };
     expect(parsed.events).toHaveLength(2);
     expect(parsed.events[0]?.action).toBe('update_create');
     expect(parsed.events[1]?.action).toBe('update_vote');
-    expect(parsed.events[1]?.payload['create_odl_event_index']).toBe(
-      ODL_UPDATE_CREATE_EVENT_INDEX,
+    const createEventId = parsed.events[0]?.event_id;
+    expect(createEventId).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
     );
+    expect(parsed.events[1]?.payload['create_event_id']).toBe(createEventId);
     expect(parsed.events[1]?.payload['vote']).toBe('for');
     expect(parsed.events[1]?.payload['voter']).toBe('alice');
     expect(parsed.events[1]?.payload['object_id']).toBe('obj-1');
     expect(parsed.events[1]?.payload['update_id']).toBeUndefined();
+    expect(parsed.events[1]?.payload['transaction_id']).toBeUndefined();
+    expect(parsed.events[0]?.payload['transaction_id']).toBeUndefined();
   });
 });

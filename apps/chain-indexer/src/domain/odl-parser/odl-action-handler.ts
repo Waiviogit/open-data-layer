@@ -13,6 +13,8 @@ export interface OdlEventContext {
   timestamp: string;
   /** Packed canonical order bigint for DB storage; computed via encodeEventSeq. */
   eventSeq: bigint;
+  /** Maps envelope `event_id` → zero-based index in `events[]` for same-broadcast linkage. */
+  eventIdIndexMap: ReadonlyMap<string, number>;
 }
 
 /** Common interface for all ODL action handlers. */

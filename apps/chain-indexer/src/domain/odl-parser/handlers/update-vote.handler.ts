@@ -57,11 +57,21 @@ export class UpdateVoteHandler implements OdlActionHandler {
       return;
     }
 
-    const { voter, vote, transaction_id } = result.data;
-    const update_id =
-      result.data.create_odl_event_index !== undefined
-        ? `${ctx.transactionId}-${ctx.transactionIndex}-${ctx.operationIndex}-${result.data.create_odl_event_index}`
-        : result.data.update_id!;
+    const { voter, vote } = result.data;
+
+    let update_id: string;
+    if (result.data.create_event_id !== undefined) {
+      const createIndex = ctx.eventIdIndexMap.get(result.data.create_event_id);
+      if (createIndex === undefined) {
+        this.logger.warn(
+          `update_vote: create_event_id '${result.data.create_event_id}' not found in envelope; skipping`,
+        );
+        return;
+      }
+      update_id = `${ctx.transactionId}-${ctx.transactionIndex}-${ctx.operationIndex}-${createIndex}`;
+    } else {
+      update_id = result.data.update_id!;
+    }
 
     const votedUpdate = await this.objectUpdatesRepository.findByUpdateId(update_id);
     if (!votedUpdate) {
@@ -129,7 +139,7 @@ export class UpdateVoteHandler implements OdlActionHandler {
       voter,
       vote,
       event_seq: ctx.eventSeq,
-      transaction_id,
+      transaction_id: ctx.transactionId,
     };
 
     await this.validityVotesRepository.create(row);

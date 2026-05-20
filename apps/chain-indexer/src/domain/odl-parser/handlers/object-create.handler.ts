@@ -19,14 +19,14 @@ export class ObjectCreateHandler implements OdlActionHandler {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  async handle(payload: Record<string, unknown>, _ctx: OdlEventContext): Promise<void> {
+  async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
     const result = objectCreatePayloadSchema.safeParse(payload);
     if (!result.success) {
       this.logger.warn(`Invalid object_create payload: ${result.error.message}`);
       return;
     }
 
-    const { object_id, object_type, creator, transaction_id } = result.data;
+    const { object_id, object_type, creator } = result.data;
 
     if (!OBJECT_TYPE_REGISTRY[object_type]) {
       this.logger.warn(`Unknown object_type '${object_type}' in object_create; skipping`);
@@ -37,7 +37,7 @@ export class ObjectCreateHandler implements OdlActionHandler {
       object_id,
       object_type,
       creator,
-      transaction_id,
+      transaction_id: ctx.transactionId,
     });
     this.eventEmitter.emit(
       USER_OBJECT_POWERS_CREATE_EVENT,
