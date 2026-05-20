@@ -39,7 +39,12 @@ Uses the shared [`NotificationsWsClient`](../../../apps/web/src/modules/notifica
 
 Timeout for `get_notifications`: `GET_NOTIFICATIONS_TIMEOUT_MS` (10s) — returns `[]` on failure.
 
-Env: `NEXT_PUBLIC_NOTIFICATIONS_WS_URL` (see [`apps/web/.env.example`](../../../apps/web/.env.example)).
+Env (pick one):
+
+- **Staging/production (runtime):** `NOTIFICATIONS_WS_PUBLIC_URL=wss://<DOMAIN>/notifications` in repo `.env` (compose passes to `web`; nginx proxies `/notifications` → `notifications:7200`). See root [`.env.example`](../../../../.env.example).
+- **Local dev (build-time):** `NEXT_PUBLIC_NOTIFICATIONS_WS_URL=ws://localhost:7200/notifications` in `apps/web/.env` (see [`apps/web/.env.example`](../../../apps/web/.env.example)).
+
+If both are empty, the client does not open a WebSocket (bell shows empty list, no WS in DevTools Network).
 
 ## Unread tracking
 

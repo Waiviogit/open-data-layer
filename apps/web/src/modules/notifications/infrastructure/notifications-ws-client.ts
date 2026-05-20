@@ -317,17 +317,32 @@ class NotificationsWsClientImpl implements NotificationsWsClient {
   }
 }
 
+let runtimeWsUrl: string | undefined;
 let singleton: NotificationsWsClient | null | undefined;
+let singletonForUrl: string | undefined;
+
+/** Called from `NotificationsWsConfigProvider` (server passes runtime compose URL). */
+export function configureNotificationsWsUrl(url: string): void {
+  const trimmed = url.trim();
+  runtimeWsUrl = trimmed.length > 0 ? trimmed : undefined;
+  singleton = undefined;
+  singletonForUrl = undefined;
+}
+
+function resolveNotificationsWsUrl(): string {
+  return (runtimeWsUrl ?? NOTIFICATIONS_WS_URL).trim();
+}
 
 export function getNotificationsWsClient(): NotificationsWsClient | null {
-  if (singleton !== undefined) {
-    return singleton;
-  }
-  if (!NOTIFICATIONS_WS_URL) {
-    singleton = null;
+  const url = resolveNotificationsWsUrl();
+  if (!url) {
     return null;
   }
-  singleton = new NotificationsWsClientImpl(NOTIFICATIONS_WS_URL);
+  if (singleton !== undefined && singletonForUrl === url) {
+    return singleton;
+  }
+  singletonForUrl = url;
+  singleton = new NotificationsWsClientImpl(url);
   return singleton;
 }
 

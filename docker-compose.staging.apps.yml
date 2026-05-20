@@ -99,6 +99,13 @@ services:
     environment:
       PORT: ${NOTIFICATIONS_PORT:-7200}
       JWT_SECRET: ${JWT_SECRET:-change-me-min-16-chars-for-dev}
+      REDIS_URI: ${REDIS_URI:-redis://redis:6379}
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_DATABASE: ${POSTGRES_DATABASE:-odl}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_POOL_MAX: ${POSTGRES_POOL_MAX:-10}
     networks:
       - opden-data-layer-net
     restart: unless-stopped
@@ -132,6 +139,7 @@ services:
       QUERY_API_URL: ${QUERY_API_URL:-http://query-api:7000}
       AUTH_API_BASE_URL: ${AUTH_API_BASE_URL:-http://auth-api:7100}
       AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-${JWT_SECRET:-change-me-min-16-chars-for-dev}}
+      NOTIFICATIONS_WS_PUBLIC_URL: ${NOTIFICATIONS_WS_PUBLIC_URL:-}
     networks:
       - opden-data-layer-net
     restart: unless-stopped

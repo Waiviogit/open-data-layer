@@ -102,6 +102,8 @@ if [[ ! -f .env ]]; then
   warn "  - Set a strong JWT_SECRET   (min 16 chars)"
   warn "  - Set POSTGRES_PASSWORD"
   warn "  - Set AUTH_JWT_SECRET       (same as JWT_SECRET or separate)"
+  warn "  - Set NOTIFICATIONS_WS_PUBLIC_URL  wss://<DOMAIN>/notifications"
+  warn "  - Set REDIS_URI=redis://redis:6379  (hostname, not a Docker IP)"
   warn "  - Set INSTALL_DIR if not using default: $INSTALL_DIR"
   warn ""
   warn "  chain-indexer start blocks (defaults used if not set):"
@@ -132,6 +134,15 @@ if [[ -z "$DOMAIN_VAL" ]]; then
 fi
 if [[ -z "$CERTBOT_EMAIL_VAL" ]]; then
   error "CERTBOT_EMAIL is not set in .env (required for Let's Encrypt). Edit $INSTALL_DIR/.env and re-run."
+fi
+
+if ! grep -qE '^NOTIFICATIONS_WS_PUBLIC_URL=' .env; then
+  echo "NOTIFICATIONS_WS_PUBLIC_URL=wss://${DOMAIN_VAL}/notifications" >> .env
+  info "Set NOTIFICATIONS_WS_PUBLIC_URL=wss://${DOMAIN_VAL}/notifications in .env"
+fi
+
+if grep -qE '^REDIS_URI=redis://[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' .env; then
+  warn "REDIS_URI uses a Docker IP — use redis://redis:6379 (hostname) so Redis restarts do not break apps."
 fi
 
 NGINX_TEMPLATE="nginx/conf.d/default.conf.template"

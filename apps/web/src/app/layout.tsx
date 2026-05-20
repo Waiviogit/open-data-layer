@@ -5,7 +5,9 @@ import { I18nProvider } from '../i18n/providers/i18n-provider';
 import { getRequestLocale } from '../i18n/runtime/get-request-locale';
 import { loadMessages } from '../i18n/runtime/load-messages';
 import { env } from '@/config/env';
+import { getNotificationsWsPublicUrl } from '@/config/get-notifications-ws-public-url';
 import { OdlNetworkProvider } from '@/config/odl-network-provider';
+import { NotificationsWsConfigProvider } from '@/modules/notifications/presentation/notifications-ws-config-provider';
 import { ShellModeProvider } from '@/shell-mode';
 import { getServerShellModeResolution } from '@/shell-mode/server';
 import { getServerThemeResolution } from '../theme/get-server-theme-resolution';
@@ -26,6 +28,7 @@ export default async function RootLayout({
   const dir = isRTL(locale) ? 'rtl' : 'ltr';
   const themeResolution = await getServerThemeResolution();
   const shellModeResolution = await getServerShellModeResolution();
+  const notificationsWsUrl = getNotificationsWsPublicUrl();
 
   return (
     <html
@@ -39,9 +42,11 @@ export default async function RootLayout({
         <ThemeProvider initialResolution={themeResolution}>
           <ShellModeProvider initialResolution={shellModeResolution}>
             <OdlNetworkProvider customJsonId={env.odlCustomJsonId}>
-              <I18nProvider locale={locale} messages={messages}>
-                {children}
-              </I18nProvider>
+              <NotificationsWsConfigProvider wsUrl={notificationsWsUrl}>
+                <I18nProvider locale={locale} messages={messages}>
+                  {children}
+                </I18nProvider>
+              </NotificationsWsConfigProvider>
             </OdlNetworkProvider>
           </ShellModeProvider>
         </ThemeProvider>
