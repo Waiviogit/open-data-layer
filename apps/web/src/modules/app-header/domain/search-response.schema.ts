@@ -19,10 +19,14 @@ export const searchUserResultSchema = z.object({
 export const searchResponseSchema = z.object({
   objects: z.array(searchObjectResultSchema),
   users: z.array(searchUserResultSchema),
+});
+
+export const searchCountsResponseSchema = z.object({
   type_counts: z.record(z.string(), z.number()),
   total_users: z.number(),
 });
 
 export type SearchResponse = z.infer<typeof searchResponseSchema>;
+export type SearchCountsResponse = z.infer<typeof searchCountsResponseSchema>;
 export type SearchObjectResult = z.infer<typeof searchObjectResultSchema>;
 export type SearchUserResult = z.infer<typeof searchUserResultSchema>;

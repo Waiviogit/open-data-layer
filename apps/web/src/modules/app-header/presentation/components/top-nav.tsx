@@ -17,10 +17,10 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import type { AppHeaderUser } from '../../domain/app-header-user';
 import { buildSearchFlatList } from '../../domain/search-nav-list';
 import type { SearchFilterTab } from '../../domain/search-nav-list';
-import { fetchSearchResults } from '../../infrastructure/search.client';
-import type { SearchResponse } from '../../domain/search-response.schema';
+import { fetchSearchCounts, fetchSearchResults } from '../../infrastructure/search.client';
+import type { SearchCountsResponse, SearchResponse } from '../../domain/search-response.schema';
 import { HeaderActions } from './header-actions';
-import { SearchDropdown } from './search-dropdown';
+import { EMPTY_RESULTS, SearchDropdown } from './search-dropdown';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -77,6 +77,7 @@ export function TopNav({ user: _user }: TopNavProps) {
   const searchShellRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fetchAbortRef = useRef<AbortController | null>(null);
+  const countsAbortRef = useRef<AbortController | null>(null);
 
   const [searchBarActive, setSearchBarActive] = useState(false);
   const [searchBarValue, setSearchBarValue] = useState('');
@@ -85,6 +86,8 @@ export function TopNav({ user: _user }: TopNavProps) {
   const [debouncePending, setDebouncePending] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResponse | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [searchCounts, setSearchCounts] = useState<SearchCountsResponse | null>(null);
+  const [searchCountsLoading, setSearchCountsLoading] = useState(false);
   const [filterTab, setFilterTab] = useState<SearchFilterTab>('all');
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -99,6 +102,7 @@ export function TopNav({ user: _user }: TopNavProps) {
     return () => {
       clearDebounce();
       fetchAbortRef.current?.abort();
+      countsAbortRef.current?.abort();
     };
   }, [clearDebounce]);
 
@@ -110,6 +114,8 @@ export function TopNav({ user: _user }: TopNavProps) {
     setDebouncePending(false);
     setSearchResults(null);
     setSearchLoading(false);
+    setSearchCounts(null);
+    setSearchCountsLoading(false);
     setFilterTab('all');
     setActiveIndex(0);
   }, [pathname]);
@@ -141,31 +147,61 @@ export function TopNav({ user: _user }: TopNavProps) {
     if (!q) {
       setSearchResults(null);
       setSearchLoading(false);
+      setSearchCounts(null);
+      setSearchCountsLoading(false);
       return;
     }
 
     fetchAbortRef.current?.abort();
-    const ac = new AbortController();
-    fetchAbortRef.current = ac;
+    countsAbortRef.current?.abort();
 
+    const mainAc = new AbortController();
+    const countsAc = new AbortController();
+    fetchAbortRef.current = mainAc;
+    countsAbortRef.current = countsAc;
+
+    setSearchResults(null);
     setSearchLoading(true);
+    setSearchCounts(null);
+    setSearchCountsLoading(false);
 
     void (async () => {
       try {
-        const data = await fetchSearchResults(q, { signal: ac.signal });
-        if (ac.signal.aborted) {
+        const data = await fetchSearchResults(q, { signal: mainAc.signal });
+        if (mainAc.signal.aborted) {
           return;
         }
         setSearchResults(data);
         setFilterTab('all');
         setActiveIndex(0);
       } catch {
-        if (!ac.signal.aborted) {
+        if (!mainAc.signal.aborted) {
           setSearchResults(null);
         }
       } finally {
-        if (!ac.signal.aborted) {
+        if (!mainAc.signal.aborted) {
           setSearchLoading(false);
+        }
+      }
+
+      if (mainAc.signal.aborted || countsAc.signal.aborted) {
+        return;
+      }
+
+      setSearchCountsLoading(true);
+      try {
+        const countData = await fetchSearchCounts(q, { signal: countsAc.signal });
+        if (countsAc.signal.aborted) {
+          return;
+        }
+        setSearchCounts(countData);
+      } catch {
+        if (!countsAc.signal.aborted) {
+          setSearchCounts(null);
+        }
+      } finally {
+        if (!countsAc.signal.aborted) {
+          setSearchCountsLoading(false);
         }
       }
     })();
@@ -198,8 +234,11 @@ export function TopNav({ user: _user }: TopNavProps) {
     setActiveIndex((i) => Math.min(i, flatList.length - 1));
   }, [flatList.length, filterTab, searchResults]);
 
-  const showDropdown =
-    dropdownOpen && (Boolean(debouncedQuery.trim()) || debouncePending);
+  const activeQuery = debouncedQuery.trim();
+  const showDropdown = dropdownOpen && (Boolean(activeQuery) || debouncePending);
+  const panelResultsLoading =
+    debouncePending || (searchLoading && searchResults === null);
+  const panelCountsLoading = searchCountsLoading;
 
   function onInputChange(v: string) {
     setSearchBarValue(v);
@@ -207,6 +246,8 @@ export function TopNav({ user: _user }: TopNavProps) {
     if (!v.trim()) {
       setSearchResults(null);
       setSearchLoading(false);
+      setSearchCounts(null);
+      setSearchCountsLoading(false);
     }
   }
 
@@ -236,7 +277,7 @@ export function TopNav({ user: _user }: TopNavProps) {
       return;
     }
 
-    if (!showDropdown || debouncePending || searchLoading || !searchResults) {
+    if (!showDropdown || panelResultsLoading || !searchResults) {
       return;
     }
 
@@ -331,6 +372,8 @@ export function TopNav({ user: _user }: TopNavProps) {
                 setSearchBarValue('');
                 setDebouncedQuery('');
                 setSearchResults(null);
+                setSearchCounts(null);
+                setSearchCountsLoading(false);
                 setDropdownOpen(false);
               }}
             >
@@ -344,11 +387,12 @@ export function TopNav({ user: _user }: TopNavProps) {
             role="presentation"
             className="absolute start-0 top-full z-50 mt-1 w-full rounded-card border border-border bg-surface p-0 shadow-card"
           >
-            {debouncePending || searchLoading ? (
-              <p className="p-3 text-body-sm text-fg-secondary">{t('app_header_search_loading')}</p>
-            ) : debouncedQuery.trim() && searchResults ? (
+            {activeQuery || debouncePending ? (
               <SearchDropdown
-                results={searchResults}
+                results={searchResults ?? EMPTY_RESULTS}
+                resultsLoading={panelResultsLoading}
+                counts={searchCounts}
+                countsLoading={panelCountsLoading}
                 filterTab={filterTab}
                 onFilterTabChange={(tab) => {
                   setFilterTab(tab);
@@ -363,13 +407,12 @@ export function TopNav({ user: _user }: TopNavProps) {
                   sectionObjects: t('search_section_objects'),
                   sectionUsers: t('search_section_users'),
                   empty: t('search_empty_state'),
+                  loading: t('app_header_search_loading'),
                   tabAll: t('search_tab_all'),
                   tabUsers: t('search_tab_users'),
                   following: t('search_user_following'),
                 }}
               />
-            ) : debouncedQuery.trim() && !searchLoading ? (
-              <p className="p-3 text-body-sm text-fg-secondary">{t('search_empty_state')}</p>
             ) : null}
           </div>
         ) : null}

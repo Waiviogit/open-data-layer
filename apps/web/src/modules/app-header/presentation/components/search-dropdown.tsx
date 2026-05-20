@@ -2,12 +2,19 @@
 
 import { useRouter } from 'next/navigation';
 
-import type { SearchResponse } from '../../domain/search-response.schema';
+import type { SearchCountsResponse, SearchResponse } from '../../domain/search-response.schema';
 import type { SearchFilterTab, SearchFlatEntry } from '../../domain/search-nav-list';
 import { formatObjectTypeLabel } from '../../domain/search-nav-list';
 
+const TAB_SKELETON_WIDTHS = [56, 72, 64] as const;
+
+const EMPTY_RESULTS: SearchResponse = { objects: [], users: [] };
+
 export type SearchDropdownProps = {
   results: SearchResponse;
+  resultsLoading: boolean;
+  counts: SearchCountsResponse | null;
+  countsLoading: boolean;
   filterTab: SearchFilterTab;
   onFilterTabChange: (tab: SearchFilterTab) => void;
   activeIndex: number;
@@ -18,6 +25,7 @@ export type SearchDropdownProps = {
     sectionObjects: string;
     sectionUsers: string;
     empty: string;
+    loading: string;
     tabAll: string;
     tabUsers: string;
     following: string;
@@ -37,8 +45,51 @@ function pickFlatIndexForRow(
   );
 }
 
+function totalObjectCountFromTypeCounts(typeCounts: Record<string, number>): number {
+  let sum = 0;
+  for (const n of Object.values(typeCounts)) {
+    sum += n;
+  }
+  return sum;
+}
+
+function tabPillClass(selected: boolean): string {
+  return [
+    'rounded-full border px-2.5 py-1 text-caption transition-colors',
+    selected
+      ? 'border-accent bg-accent/10 text-fg'
+      : 'border-transparent bg-surface-control text-fg-secondary hover:bg-ghost-surface',
+  ].join(' ');
+}
+
+function TabCountSuffix({ loading, value }: { loading: boolean; value: number }) {
+  if (loading) {
+    return (
+      <span
+        className="ms-0.5 inline-block h-3 w-7 align-middle rounded-sm bg-surface-control animate-pulse"
+        aria-hidden
+      />
+    );
+  }
+  return <span className="tabular-nums"> ({value})</span>;
+}
+
+function TypeTabSkeletons() {
+  return TAB_SKELETON_WIDTHS.map((w) => (
+    <span
+      key={w}
+      className="h-7 shrink-0 rounded-full bg-surface-control animate-pulse"
+      style={{ width: w }}
+      aria-hidden
+    />
+  ));
+}
+
 export function SearchDropdown({
   results,
+  resultsLoading,
+  counts,
+  countsLoading,
   filterTab,
   onFilterTabChange,
   activeIndex,
@@ -50,7 +101,18 @@ export function SearchDropdown({
 }: SearchDropdownProps) {
   const router = useRouter();
 
-  const objectTypes = Object.keys(results.type_counts).sort((a, b) => a.localeCompare(b));
+  const hasGlobalCounts = counts !== null;
+  const countsPending = countsLoading && !hasGlobalCounts;
+
+  const objectTypes = hasGlobalCounts
+    ? Object.keys(counts.type_counts).sort((a, b) => a.localeCompare(b))
+    : [];
+
+  const totalAll = hasGlobalCounts
+    ? totalObjectCountFromTypeCounts(counts.type_counts) + counts.total_users
+    : results.objects.length + results.users.length;
+
+  const usersTabCount = hasGlobalCounts ? counts.total_users : results.users.length;
 
   function navigateEntry(entry: SearchFlatEntry) {
     onClose();
@@ -61,9 +123,17 @@ export function SearchDropdown({
     }
   }
 
+  const hasResults =
+    results.objects.length > 0 || results.users.length > 0;
+  const showResultsBody = !resultsLoading || hasResults;
+
   const showObjectsSection =
-    filterTab === 'all' || (filterTab !== 'users' && results.objects.some((o) => o.object_type === filterTab));
-  const showUsersSection = filterTab === 'all' || filterTab === 'users';
+    showResultsBody &&
+    (filterTab === 'all' ||
+      (filterTab !== 'users' &&
+        results.objects.some((o) => o.object_type === filterTab)));
+  const showUsersSection =
+    showResultsBody && (filterTab === 'all' || filterTab === 'users');
 
   const visibleObjects =
     filterTab === 'all' || filterTab === 'users'
@@ -79,72 +149,74 @@ export function SearchDropdown({
         : results.users
       : [];
 
-  const totalAll = results.objects.length + results.total_users;
-
   const isEmpty =
-    (filterTab === 'all' && results.objects.length === 0 && results.users.length === 0) ||
-    (filterTab === 'users' && results.users.length === 0) ||
-    (filterTab !== 'all' && filterTab !== 'users' && visibleObjects.length === 0);
+    !resultsLoading &&
+    ((filterTab === 'all' && results.objects.length === 0 && results.users.length === 0) ||
+      (filterTab === 'users' && results.users.length === 0) ||
+      (filterTab !== 'all' && filterTab !== 'users' && visibleObjects.length === 0));
 
   return (
-    <div className="flex max-h-[min(70vh,28rem)] flex-col">
+    <div className="grid max-h-[min(70vh,28rem)] grid-rows-[auto_minmax(0,1fr)]">
       <div
-        className="flex flex-wrap gap-1.5 border-b border-border px-2 py-2"
+        className="shrink-0 border-b border-border bg-surface px-2 py-2"
         role="tablist"
         aria-label={messages.tabAll}
       >
+        <div className="flex flex-wrap items-center gap-1.5">
         <button
           type="button"
           role="tab"
           aria-selected={filterTab === 'all'}
-          className={[
-            'rounded-full border px-2.5 py-1 text-caption transition-colors',
-            filterTab === 'all'
-              ? 'border-accent bg-accent/10 text-fg'
-              : 'border-transparent bg-surface-control text-fg-secondary hover:bg-ghost-surface',
-          ].join(' ')}
+          className={tabPillClass(filterTab === 'all')}
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => onFilterTabChange('all')}
         >
-          {messages.tabAll} ({totalAll})
+          {messages.tabAll}
+          <TabCountSuffix loading={countsPending} value={totalAll} />
         </button>
-        {objectTypes.map((ot) => (
-          <button
-            key={ot}
-            type="button"
-            role="tab"
-            aria-selected={filterTab === ot}
-            className={[
-              'rounded-full border px-2.5 py-1 text-caption transition-colors',
-              filterTab === ot
-                ? 'border-accent bg-accent/10 text-fg'
-                : 'border-transparent bg-surface-control text-fg-secondary hover:bg-ghost-surface',
-            ].join(' ')}
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => onFilterTabChange(ot)}
-          >
-            {formatObjectTypeLabel(ot)} ({results.type_counts[ot] ?? 0})
-          </button>
-        ))}
+
+        {countsPending ? (
+          <TypeTabSkeletons />
+        ) : (
+          objectTypes.map((ot) => (
+            <button
+              key={ot}
+              type="button"
+              role="tab"
+              aria-selected={filterTab === ot}
+              className={tabPillClass(filterTab === ot)}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => onFilterTabChange(ot)}
+            >
+              {formatObjectTypeLabel(ot)}
+              <span className="tabular-nums">
+                {' '}
+                ({hasGlobalCounts ? (counts.type_counts[ot] ?? 0) : 0})
+              </span>
+            </button>
+          ))
+        )}
+
         <button
           type="button"
           role="tab"
           aria-selected={filterTab === 'users'}
-          className={[
-            'rounded-full border px-2.5 py-1 text-caption transition-colors',
-            filterTab === 'users'
-              ? 'border-accent bg-accent/10 text-fg'
-              : 'border-transparent bg-surface-control text-fg-secondary hover:bg-ghost-surface',
-          ].join(' ')}
+          className={tabPillClass(filterTab === 'users')}
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => onFilterTabChange('users')}
         >
-          {messages.tabUsers} ({results.total_users})
+          {messages.tabUsers}
+          <TabCountSuffix loading={countsPending} value={usersTabCount} />
         </button>
+        </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto py-1">
-        {isEmpty ? (
+      <div className="min-h-0 overflow-y-auto bg-surface py-1">
+        {resultsLoading && !hasResults ? (
+          <p className="px-3 py-4 text-body-sm text-fg-secondary">{messages.loading}</p>
+        ) : null}
+
+        {!resultsLoading && isEmpty ? (
           <p className="px-3 py-4 text-body-sm text-fg-secondary">{messages.empty}</p>
         ) : null}
 
@@ -286,3 +358,5 @@ export function SearchDropdown({
     </div>
   );
 }
+
+export { EMPTY_RESULTS };

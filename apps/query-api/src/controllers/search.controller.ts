@@ -1,8 +1,12 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ReqLocale } from '@opden-data-layer/core';
 import {
+  GetSearchCountsEndpoint,
   GetSearchEndpoint,
+  searchCountsQuerySchema,
   searchQuerySchema,
+  type SearchCountsQuery,
+  type SearchCountsResponseDto,
   type SearchQuery,
   type SearchResponseDto,
 } from '../domain/search';
@@ -12,7 +16,10 @@ import { ZodQueryPipe } from '../pipes';
 
 @Controller({ path: 'search', version: ['1', '2'] })
 export class SearchController {
-  constructor(private readonly getSearch: GetSearchEndpoint) {}
+  constructor(
+    private readonly getSearch: GetSearchEndpoint,
+    private readonly getSearchCounts: GetSearchCountsEndpoint,
+  ) {}
 
   @Get()
   async search(
@@ -28,5 +35,12 @@ export class SearchController {
       viewerAccount: viewer,
       governanceObjectIdFromHeader,
     });
+  }
+
+  @Get('counts')
+  async searchCounts(
+    @Query(new ZodQueryPipe(searchCountsQuerySchema)) query: SearchCountsQuery,
+  ): Promise<SearchCountsResponseDto> {
+    return this.getSearchCounts.execute({ q: query.q });
   }
 }

@@ -22,7 +22,4 @@ export interface SearchUserResult {
 export interface SearchResponseDto {
   objects: SearchObjectResult[];
   users: SearchUserResult[];
-  /** Count of returned objects grouped by `object_type`. */
-  type_counts: Record<string, number>;
-  total_users: number;
 }

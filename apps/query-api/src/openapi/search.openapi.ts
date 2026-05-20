@@ -28,10 +28,19 @@ const searchResponseDtoSchema = registry.register(
   z.object({
     objects: z.array(searchObjectResultSchema),
     users: z.array(searchUserResultSchema),
+  }),
+);
+
+const searchCountsResponseDtoSchema = registry.register(
+  'SearchCountsResponseDto',
+  z.object({
     type_counts: z.record(z.string(), z.number().int()).openapi({
-      description: 'Counts of returned objects keyed by `object_type` (e.g. product, business).',
+      description:
+        'Global count of unique active objects per `object_type` for query `q` (meta_group deduped).',
     }),
-    total_users: z.number().int(),
+    total_users: z.number().int().openapi({
+      description: 'Total users matching the name prefix for query `q` (not capped).',
+    }),
   }),
 );
 
@@ -40,7 +49,7 @@ registry.registerPath({
   path: '/query/v1/search',
   summary: 'Predictive search (objects + users)',
   description:
-    'Objects: full-text match on `name`, `title`, or `description` updates (`search_vector`), or substring `ILIKE` on `objects_core.object_id`; `status = active`; collapsed to one hit per `meta_group_id` (highest `weight`). Results are projected via `ObjectProjectionService` (`name`, `image`, `parent`). Users: prefix `ILIKE` on `accounts_current.name`, sorted by Waiv object weight and followers. Optional `X-Viewer` sets `is_following` via `user_subscriptions`. Respects `X-Governance-Object-Id` and locale like other read endpoints.',
+    'Objects: autocomplete FTS on `name`, `title`, or `description` updates (`search_vector`), or optional substring on `object_id` when id-shaped; `status = active`; collapsed to one hit per `meta_group_id` (highest `weight`). Results are projected via `ObjectProjectionService` (`name`, `image`, `parent`). Users: prefix btree range on `accounts_current.name`, sorted by Waiv object weight and followers (max 5). Optional `X-Viewer` sets `is_following` via `user_subscriptions`. Respects `X-Governance-Object-Id` and locale like other read endpoints. Tab counts: use `GET /search/counts`.',
   request: {
     query: z.object({
       q: z.string().min(1).max(100).openapi({ description: 'Search text.' }),
@@ -59,10 +68,33 @@ registry.registerPath({
   },
   responses: {
     200: {
-      description: 'Grouped object and user hits with per-type counts.',
+      description: 'Object and user hits for the current page (no global tab counts).',
       content: {
         'application/json': {
           schema: searchResponseDtoSchema,
+        },
+      },
+    },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/search/counts',
+  summary: 'Predictive search global counts',
+  description:
+    'Returns global `type_counts` (unique active objects per `object_type`, meta_group deduped) and `total_users` for query `q`. Same FTS / id-substring / name-prefix rules as `GET /search`. Intended for header tab badges loaded after the main search response.',
+  request: {
+    query: z.object({
+      q: z.string().min(1).max(100).openapi({ description: 'Search text.' }),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Global counts for tab badges.',
+      content: {
+        'application/json': {
+          schema: searchCountsResponseDtoSchema,
         },
       },
     },

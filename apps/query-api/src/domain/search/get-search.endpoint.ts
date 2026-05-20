@@ -71,7 +71,6 @@ export class GetSearchEndpoint {
     const objectIds = candidates.map((c) => c.object_id);
 
     const objectsOut: SearchObjectResult[] = [];
-    const typeCounts: Record<string, number> = {};
 
     if (objectIds.length > 0) {
       const { objects, voterWaivPowers, rankVoteProjection } =
@@ -103,10 +102,7 @@ export class GetSearchEndpoint {
       });
 
       for (const p of projected) {
-        const row = mapProjectedToSearchObject(p);
-        objectsOut.push(row);
-        const t = row.object_type;
-        typeCounts[t] = (typeCounts[t] ?? 0) + 1;
+        objectsOut.push(mapProjectedToSearchObject(p));
       }
     }
 
@@ -123,8 +119,6 @@ export class GetSearchEndpoint {
     return {
       objects: objectsOut,
       users,
-      type_counts: typeCounts,
-      total_users: users.length,
     };
   }
 }

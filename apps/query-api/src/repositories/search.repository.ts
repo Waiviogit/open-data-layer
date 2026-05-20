@@ -167,4 +167,109 @@ export class SearchRepository {
       return [];
     }
   }
+
+  /**
+   * Global object counts per `object_type` for query `q` (deduped by `meta_group_id`, active only).
+   */
+  async countObjectsByType(queryText: string): Promise<Record<string, number>> {
+    const trimmed = queryText.trim();
+    if (!trimmed) {
+      return {};
+    }
+
+    const tsQuery = buildAutocompleteTsQuery(trimmed);
+    if (tsQuery === null) {
+      return {};
+    }
+
+    const includeIdSubstring = shouldSearchObjectIdSubstring(trimmed);
+    const idSubstringPattern = `%${escapeIlikePattern(trimmed)}%`;
+
+    try {
+      const result = includeIdSubstring
+        ? await sql<{ object_type: string; cnt: number | string }>`
+            WITH fts_ids AS (
+              SELECT DISTINCT ou.object_id
+              FROM object_updates ou
+              WHERE ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
+                AND ou.search_vector @@ to_tsquery('english', ${tsQuery})
+            ),
+            id_hits AS (
+              SELECT object_id
+              FROM objects_core
+              WHERE status = 'active'
+                AND object_id ILIKE ${idSubstringPattern} ESCAPE '\\'
+            ),
+            candidate_ids AS (
+              SELECT object_id FROM fts_ids
+              UNION
+              SELECT object_id FROM id_hits
+            )
+            SELECT oc.object_type AS object_type,
+              COUNT(DISTINCT COALESCE(oc.meta_group_id, oc.object_id))::int AS cnt
+            FROM objects_core oc
+            INNER JOIN candidate_ids c ON c.object_id = oc.object_id
+            WHERE oc.status = 'active'
+            GROUP BY oc.object_type
+          `.execute(this.db)
+        : await sql<{ object_type: string; cnt: number | string }>`
+            WITH fts_ids AS (
+              SELECT DISTINCT ou.object_id
+              FROM object_updates ou
+              WHERE ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
+                AND ou.search_vector @@ to_tsquery('english', ${tsQuery})
+            )
+            SELECT oc.object_type AS object_type,
+              COUNT(DISTINCT COALESCE(oc.meta_group_id, oc.object_id))::int AS cnt
+            FROM objects_core oc
+            INNER JOIN fts_ids c ON c.object_id = oc.object_id
+            WHERE oc.status = 'active'
+            GROUP BY oc.object_type
+          `.execute(this.db);
+
+      const out: Record<string, number> = {};
+      for (const row of result.rows) {
+        const raw = row.cnt;
+        const n = typeof raw === 'number' ? raw : Number(raw);
+        if (Number.isFinite(n)) {
+          out[row.object_type] = Math.trunc(n);
+        }
+      }
+      return out;
+    } catch (error) {
+      this.logger.error(
+        `countObjectsByType failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return {};
+    }
+  }
+
+  /** Total users matching the name prefix for `q` (no row cap). */
+  async countUsers(queryText: string): Promise<number> {
+    const trimmed = queryText.trim();
+    if (!trimmed) {
+      return 0;
+    }
+
+    const prefix = escapeIlikePattern(trimmed).toLowerCase();
+    const upper = prefixUpperBound(prefix);
+
+    try {
+      const row = await this.db
+        .selectFrom('accounts_current')
+        .select((eb) => eb.fn.countAll<number>().as('n'))
+        .where('name', '>=', prefix)
+        .where('name', '<', upper)
+        .executeTakeFirst();
+
+      const raw = row?.n;
+      const n = typeof raw === 'number' ? raw : Number(raw ?? 0);
+      return Number.isFinite(n) ? Math.trunc(n) : 0;
+    } catch (error) {
+      this.logger.error(
+        `countUsers failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return 0;
+    }
+  }
 }
