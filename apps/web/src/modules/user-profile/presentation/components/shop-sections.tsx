@@ -7,6 +7,8 @@ import type { ShopSectionsPage } from '../../domain/types/shop-objects';
 import { ObjectCard } from '@/modules/feed/presentation';
 import { FeedColumn } from '@/shared/presentation/layout';
 
+import { useLoginModal } from '@/modules/auth';
+
 import { loadMoreShopSectionsAction } from '@/app/(app)/user-profile/[name]/shop-feed.actions';
 
 export type ShopSectionsProps = {
@@ -20,6 +22,7 @@ export type ShopSectionsProps = {
   navName?: string;
   /** Ancestors before `navName`. */
   navPath: string[];
+  viewerUsername?: string | null;
 };
 
 function sectionHref(basePath: string, lineageSegments: string[], categoryName: string): string {
@@ -35,7 +38,9 @@ export function ShopSections({
   lineageSegments,
   navName,
   navPath,
+  viewerUsername,
 }: ShopSectionsProps) {
+  const { openLogin } = useLoginModal();
   const [sections, setSections] = useState(initialSections.sections);
   const [cursor, setCursor] = useState(initialSections.cursor);
   const [hasMore, setHasMore] = useState(initialSections.hasMore);
@@ -82,7 +87,12 @@ export function ShopSections({
             ) : (
               <ul className="mt-4 flex flex-col gap-card-padding">
                 {sec.items.map((o) => (
-                  <ObjectCard key={`${sec.categoryName}-${o.object_id}`} object={o} />
+                  <ObjectCard
+                    key={`${sec.categoryName}-${o.object_id}`}
+                    object={o}
+                    viewerUsername={viewerUsername}
+                    onRequireLogin={openLogin}
+                  />
                 ))}
               </ul>
             )}

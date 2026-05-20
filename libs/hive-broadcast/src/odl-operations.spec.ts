@@ -1,4 +1,5 @@
 import {
+  buildOdlObjectAuthorityOp,
   buildOdlRankVoteOp,
   buildOdlUpdateCreateOp,
   buildOdlUpdateCreateWithLikeOp,
@@ -195,5 +196,37 @@ describe('buildOdlRankVoteOp', () => {
     expect(parsed.events[0]?.payload['voter']).toBe('alice');
     expect(parsed.events[0]?.payload['rank']).toBe(7000);
     expect(parsed.events[0]?.payload['rank_context']).toBe('default');
+  });
+});
+
+describe('buildOdlObjectAuthorityOp', () => {
+  it('emits object_authority with administrative add', () => {
+    const op = buildOdlObjectAuthorityOp({
+      id: 'odl-testnet',
+      objectId: 'obj-1',
+      authorityType: 'administrative',
+      method: 'add',
+      required_posting_auths: ['alice'],
+    });
+    const parsed = JSON.parse(op.json) as {
+      events: { action: string; payload: Record<string, unknown> }[];
+    };
+    expect(parsed.events).toHaveLength(1);
+    expect(parsed.events[0]?.action).toBe('object_authority');
+    expect(parsed.events[0]?.payload['object_id']).toBe('obj-1');
+    expect(parsed.events[0]?.payload['authority_type']).toBe('administrative');
+    expect(parsed.events[0]?.payload['method']).toBe('add');
+    expect(op.required_posting_auths).toEqual(['alice']);
+  });
+
+  it('emits remove for ownership', () => {
+    const op = buildOdlObjectAuthorityOp({
+      id: 'odl-mainnet',
+      objectId: 'o2',
+      authorityType: 'ownership',
+      method: 'remove',
+    });
+    expect(JSON.parse(op.json).events[0].payload['method']).toBe('remove');
+    expect(JSON.parse(op.json).events[0].payload['authority_type']).toBe('ownership');
   });
 });

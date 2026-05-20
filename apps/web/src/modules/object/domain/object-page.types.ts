@@ -171,6 +171,10 @@ export type ObjectPageViewModel = {
   rightFeatured: ObjectSidebarMiniCardView[];
   rightRelated: ObjectSidebarMiniCardView[];
   rightSimilar: ObjectSidebarMiniCardView[];
+  /** Viewer has administrative authority on this object (favorites heart). */
+  hasAdministrativeAuthority: boolean;
+  /** Viewer has ownership authority on this object. */
+  hasOwnershipAuthority: boolean;
   /** For Authority tab sub-nav badges (`object_authority` counts from resolve). */
   administrativeAuthorityCount: number;
   ownershipAuthorityCount: number;

@@ -12,6 +12,8 @@ import {
   formatRelativeFeedTime,
   formatReputation,
 } from './story-utils';
+import { useLoginModal } from '@/modules/auth';
+
 import { LinkedObjectsSection } from './linked-objects-section';
 import { StoryOverflowMenu } from './story-overflow-menu';
 import { StoryVoteButton } from './story-vote-button';
@@ -123,6 +125,7 @@ export function BlogPostScreen({
   const relativeLabel = formatRelativeFeedTime(displayTimeIso, locale);
   const repLabel = formatReputation(story.authorReputation, locale);
   const payoutLabel = formatPayoutDisplay(story.pendingPayout, story.totalPayout);
+  const { openLogin } = useLoginModal();
   const taggedObjects = story.objects ?? [];
   const isOwnPost = viewerIsAuthor(currentUsername, story.authorName);
   const editorSearch = new URLSearchParams({
@@ -232,7 +235,12 @@ export function BlogPostScreen({
           dangerouslySetInnerHTML={{ __html: bodyHtmlSafe }}
         />
 
-        <LinkedObjectsSection objects={taggedObjects} objectLinkReplace={isModal} />
+        <LinkedObjectsSection
+          objects={taggedObjects}
+          objectLinkReplace={isModal}
+          viewerUsername={currentUsername}
+          onRequireLogin={openLogin}
+        />
 
         {story.isNsfw ? (
           <p className="mt-2 text-caption text-muted" role="status">

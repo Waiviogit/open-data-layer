@@ -6,6 +6,8 @@ import type { ShopObjectsPage } from '../../domain/types/shop-objects';
 import { ObjectCard } from '@/modules/feed/presentation';
 import { FeedColumn } from '@/shared/presentation/layout';
 
+import { useLoginModal } from '@/modules/auth';
+
 import { loadMoreShopObjectsAction } from '@/app/(app)/user-profile/[name]/shop-feed.actions';
 
 export type ShopObjectListProps = {
@@ -14,6 +16,7 @@ export type ShopObjectListProps = {
   types: readonly string[];
   categoryPath: string[];
   uncategorizedOnly?: boolean;
+  viewerUsername?: string | null;
 };
 
 export function ShopObjectList({
@@ -22,7 +25,9 @@ export function ShopObjectList({
   types,
   categoryPath,
   uncategorizedOnly = false,
+  viewerUsername,
 }: ShopObjectListProps) {
+  const { openLogin } = useLoginModal();
   const [items, setItems] = useState(initialPage.items);
   const [cursor, setCursor] = useState(initialPage.cursor);
   const [hasMore, setHasMore] = useState(initialPage.hasMore);
@@ -46,7 +51,12 @@ export function ShopObjectList({
     <FeedColumn>
       <ul className="flex flex-col gap-card-padding">
         {items.map((o) => (
-          <ObjectCard key={o.object_id} object={o} />
+          <ObjectCard
+            key={o.object_id}
+            object={o}
+            viewerUsername={viewerUsername}
+            onRequireLogin={openLogin}
+          />
         ))}
       </ul>
       {hasMore ? (

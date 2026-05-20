@@ -6,9 +6,13 @@ export {
   buildOdlUpdateCreateWithLikeOp,
   buildOdlUpdateVoteOp,
   buildOdlRankVoteOp,
+  buildOdlObjectAuthorityOp,
   type BuildOdlUpdateCreateOpInput,
   type BuildOdlUpdateVoteOpInput,
   type BuildOdlRankVoteOpInput,
+  type BuildOdlObjectAuthorityOpInput,
   type OdlUpdateCreateValueKind,
   type OdlUpdateVoteValue,
+  type OdlAuthorityType,
+  type OdlAuthorityMethod,
 } from './odl-operations';

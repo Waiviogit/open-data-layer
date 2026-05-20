@@ -2,7 +2,14 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 
+import { buildOdlObjectAuthorityOp } from '@opden-data-layer/hive-broadcast';
+
+import { ODL_CUSTOM_JSON_ID } from '@/config/odl-network-public';
+import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
+import { awaitTrxConfirmation } from '@/modules/notifications';
 import type { ProjectedObjectView } from '../../application/dto/object-fields';
 import { objectFields } from '../../application/dto/object-fields';
 import { useI18n } from '@/i18n/providers/i18n-provider';
@@ -65,17 +72,108 @@ function IconHeartAdministrative({ active }: { active: boolean }) {
   );
 }
 
+function AdministrativeHeartButton({
+  objectId,
+  initialActive,
+  viewerUsername,
+  onRequireLogin,
+}: {
+  objectId: string;
+  initialActive: boolean;
+  viewerUsername?: string | null;
+  onRequireLogin?: () => void;
+}) {
+  useHydrateWalletProvider();
+  const router = useRouter();
+  const { t } = useI18n();
+  const [active, setActive] = useState(initialActive);
+  const [pending, setPending] = useState(false);
+
+  useEffect(() => {
+    setActive(initialActive);
+  }, [initialActive, objectId]);
+
+  const onToggle = useCallback(async () => {
+    const account = viewerUsername?.trim();
+    if (!account) {
+      onRequireLogin?.();
+      return;
+    }
+    if (pending) {
+      return;
+    }
+    const method = active ? 'remove' : 'add';
+    const previous = active;
+    setActive(!previous);
+    setPending(true);
+    try {
+      const op = buildOdlObjectAuthorityOp({
+        id: ODL_CUSTOM_JSON_ID,
+        objectId,
+        authorityType: 'administrative',
+        method,
+        required_posting_auths: [account],
+      });
+      const { transactionId } = await getWalletFacade().broadcast({
+        operations: [op],
+      });
+      void awaitTrxConfirmation(transactionId).finally(() => {
+        router.refresh();
+        setPending(false);
+      });
+    } catch {
+      setActive(previous);
+      setPending(false);
+    }
+  }, [active, objectId, onRequireLogin, pending, router, viewerUsername]);
+
+  const hint = active ? t('feed_linked_object_admin_hint') : t('object_detail_favorites_add');
+  const canInteract = viewerUsername != null && viewerUsername.trim().length > 0;
+
+  if (!canInteract) {
+    return (
+      <span
+        className="inline-flex"
+        title={initialActive ? t('feed_linked_object_admin_hint') : undefined}
+        aria-label={initialActive ? t('feed_linked_object_admin_hint') : undefined}
+      >
+        <IconHeartAdministrative active={initialActive} />
+      </span>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className="inline-flex rounded-sm p-0.5 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+      disabled={pending}
+      aria-pressed={active}
+      title={hint}
+      aria-label={hint}
+      onClick={() => void onToggle()}
+    >
+      <IconHeartAdministrative active={active} />
+    </button>
+  );
+}
+
 export type ObjectCardProps = {
   object: ProjectedObjectView;
   /** When navigating from an intercepted-route modal (`@modal`), replaces the post URL so the modal slot resets. */
   linkReplace?: boolean;
+  viewerUsername?: string | null;
+  onRequireLogin?: () => void;
 };
 
 /**
  * Shop / feed card: rectangular thumbnail, title, type · categories, rating, excerpt, admin heart.
  */
-export function ObjectCard({ object: o, linkReplace = false }: ObjectCardProps) {
-  const { t } = useI18n();
+export function ObjectCard({
+  object: o,
+  linkReplace = false,
+  viewerUsername,
+  onRequireLogin,
+}: ObjectCardProps) {
   const typeLabel = formatLinkedObjectTypeLabel(o.object_type);
   const categoryLabels = objectFields.tagCategoryLabels(o);
   const subtitleParts = [typeLabel, ...categoryLabels.filter(Boolean)].filter(Boolean);
@@ -89,13 +187,12 @@ export function ObjectCard({ object: o, linkReplace = false }: ObjectCardProps) 
   return (
     <li className="relative list-none rounded-card border border-border bg-surface-control/40 p-card-padding shadow-whisper">
       <div className="absolute end-3 top-3">
-        <span
-          className="inline-flex"
-          title={o.hasAdministrativeAuthority ? t('feed_linked_object_admin_hint') : undefined}
-          aria-label={o.hasAdministrativeAuthority ? t('feed_linked_object_admin_hint') : undefined}
-        >
-          <IconHeartAdministrative active={o.hasAdministrativeAuthority ?? false} />
-        </span>
+        <AdministrativeHeartButton
+          objectId={o.object_id}
+          initialActive={o.hasAdministrativeAuthority ?? false}
+          viewerUsername={viewerUsername}
+          onRequireLogin={onRequireLogin}
+        />
       </div>
       <div className="flex gap-3 pe-8">
         <div className="shrink-0">

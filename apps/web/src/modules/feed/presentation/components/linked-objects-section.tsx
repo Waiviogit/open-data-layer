@@ -28,10 +28,14 @@ function SummaryChevron() {
 export function LinkedObjectsSection({
   objects,
   objectLinkReplace = false,
+  viewerUsername,
+  onRequireLogin,
 }: {
   objects: NonNullable<FeedStoryView['objects']>;
   /** Set when this block is inside a post intercept modal so object links dismiss the overlay. */
   objectLinkReplace?: boolean;
+  viewerUsername?: string | null;
+  onRequireLogin?: () => void;
 }) {
   const { t } = useI18n();
   if (objects.length === 0) {
@@ -62,7 +66,13 @@ export function LinkedObjectsSection({
             aria-labelledby="post-linked-objects-heading"
           >
             {linkedObjects.map((o) => (
-              <ObjectCard key={o.object_id} object={o} linkReplace={objectLinkReplace} />
+              <ObjectCard
+                key={o.object_id}
+                object={o}
+                linkReplace={objectLinkReplace}
+                viewerUsername={viewerUsername}
+                onRequireLogin={onRequireLogin}
+              />
             ))}
           </ul>
         </details>
@@ -87,7 +97,13 @@ export function LinkedObjectsSection({
             aria-labelledby="post-linked-hashtags-heading"
           >
             {hashtagObjects.map((o) => (
-              <ObjectCard key={o.object_id} object={o} linkReplace={objectLinkReplace} />
+              <ObjectCard
+                key={o.object_id}
+                object={o}
+                linkReplace={objectLinkReplace}
+                viewerUsername={viewerUsername}
+                onRequireLogin={onRequireLogin}
+              />
             ))}
           </ul>
         </details>

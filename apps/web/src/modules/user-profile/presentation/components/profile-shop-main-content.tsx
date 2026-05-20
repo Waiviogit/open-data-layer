@@ -1,3 +1,5 @@
+import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
+
 import { getCategoryNav } from '../../infrastructure/clients/categories.client';
 import { getShopObjectsQuery } from '../../application/queries/get-shop-objects.query';
 import { getShopSectionsQuery } from '../../application/queries/get-shop-sections.query';
@@ -22,16 +24,24 @@ export async function ProfileShopMainContent({
   basePath,
   lineageSegments,
 }: ProfileShopMainContentProps) {
+  const auth = createCookieAuthContextProvider();
+  const user = await auth.getUser();
+  const viewerUsername = user?.username ?? null;
+
   if (
     lineageSegments.length === 1 &&
     lineageSegments[0] === UNCATEGORIZED_SHOP_PATH_SEGMENT
   ) {
-    const page = await getShopObjectsQuery(accountName, {
-      types,
-      categoryPath: [],
-      uncategorizedOnly: true,
-      limit: 20,
-    });
+    const page = await getShopObjectsQuery(
+      accountName,
+      {
+        types,
+        categoryPath: [],
+        uncategorizedOnly: true,
+        limit: 20,
+      },
+      viewerUsername,
+    );
     return (
       <ShopObjectList
         accountName={accountName}
@@ -39,6 +49,7 @@ export async function ProfileShopMainContent({
         types={types}
         categoryPath={[]}
         uncategorizedOnly
+        viewerUsername={viewerUsername}
       />
     );
   }
@@ -51,27 +62,36 @@ export async function ProfileShopMainContent({
   const isLeaf = nav === null || nav.items.length === 0;
 
   if (isLeaf) {
-    const page = await getShopObjectsQuery(accountName, {
-      types,
-      categoryPath: lineageSegments,
-      limit: 20,
-    });
+    const page = await getShopObjectsQuery(
+      accountName,
+      {
+        types,
+        categoryPath: lineageSegments,
+        limit: 20,
+      },
+      viewerUsername,
+    );
     return (
       <ShopObjectList
         accountName={accountName}
         initialPage={page}
         types={types}
         categoryPath={lineageSegments}
+        viewerUsername={viewerUsername}
       />
     );
   }
 
-  const sections = await getShopSectionsQuery(accountName, {
-    types,
-    name: parentName,
-    path,
-    sectionLimit: 3,
-  });
+  const sections = await getShopSectionsQuery(
+    accountName,
+    {
+      types,
+      name: parentName,
+      path,
+      sectionLimit: 3,
+    },
+    viewerUsername,
+  );
 
   return (
     <ShopSections
@@ -82,6 +102,7 @@ export async function ProfileShopMainContent({
       lineageSegments={lineageSegments}
       navName={parentName}
       navPath={path}
+      viewerUsername={viewerUsername}
     />
   );
 }

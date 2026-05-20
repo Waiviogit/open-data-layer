@@ -14,6 +14,7 @@ import {
   ObjectRightSidebar,
   ObjectViewShell,
 } from '@/modules/object';
+import { AuthorityActionButton } from '@/modules/object/presentation/components/authority-action-button';
 import type { ObjectEmbeddedUpdatesFeedModel } from '@/modules/object-updates/embedded-updates-feed.model';
 import { ObjectUpdatesFeed } from '@/modules/object-updates/presentation/components/object-updates-feed';
 import type {
@@ -21,7 +22,10 @@ import type {
   UserSubscriptionSort,
 } from '@/modules/user-social/application/dto/user-social.dto';
 import { UserSocialAccountList } from '@/modules/user-social/presentation/components/user-social-account-list';
-import { useLoginModal } from '@/modules/auth';
+import { getWalletFacade, useHydrateWalletProvider, useLoginModal } from '@/modules/auth';
+import { awaitTrxConfirmation } from '@/modules/notifications';
+import { buildOdlObjectAuthorityOp } from '@opden-data-layer/hive-broadcast';
+import { ODL_CUSTOM_JSON_ID } from '@/config/odl-network-public';
 
 import { loadMoreObjectAuthorityAction } from './authority/object-authority.actions';
 import { loadMoreObjectFollowersAction } from './followers/object-followers.actions';
@@ -67,10 +71,12 @@ export function ObjectPageClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { openLogin } = useLoginModal();
+  useHydrateWalletProvider();
 
   const [isEditMode, setEditMode] = useState(false);
   const [isFollowing, setFollowing] = useState(false);
-  const [isFavorite, setFavorite] = useState(false);
+  const [isFavorite, setFavorite] = useState(model.hasAdministrativeAuthority);
+  const [favoritePending, setFavoritePending] = useState(false);
   const [activePrimarySegment, setActivePrimarySegment] =
     useState(initialPrimarySegment);
   const [activeFeedSubSegment, setActiveFeedSubSegment] =
@@ -79,6 +85,10 @@ export function ObjectPageClient({
   useEffect(() => {
     setActivePrimarySegment(initialPrimarySegment);
   }, [initialPrimarySegment]);
+
+  useEffect(() => {
+    setFavorite(model.hasAdministrativeAuthority);
+  }, [model.hasAdministrativeAuthority, model.objectId]);
 
   const onPrimarySelect = useCallback(
     (segment: string) => {
@@ -144,9 +154,46 @@ export function ObjectPageClient({
     [model.primaryTabs, activePrimarySegment, onPrimarySelect],
   );
 
-  const onFavoriteToggle = useCallback(() => {
-    setFavorite((v) => !v);
-  }, []);
+  const onFavoriteToggle = useCallback(async () => {
+    const account = viewerUsername?.trim();
+    if (!account) {
+      openLogin();
+      return;
+    }
+    if (favoritePending) {
+      return;
+    }
+    const method = isFavorite ? 'remove' : 'add';
+    const previous = isFavorite;
+    setFavorite(!previous);
+    setFavoritePending(true);
+    try {
+      const op = buildOdlObjectAuthorityOp({
+        id: ODL_CUSTOM_JSON_ID,
+        objectId: model.objectId,
+        authorityType: 'administrative',
+        method,
+        required_posting_auths: [account],
+      });
+      const { transactionId } = await getWalletFacade().broadcast({
+        operations: [op],
+      });
+      void awaitTrxConfirmation(transactionId).finally(() => {
+        router.refresh();
+        setFavoritePending(false);
+      });
+    } catch {
+      setFavorite(previous);
+      setFavoritePending(false);
+    }
+  }, [
+    favoritePending,
+    isFavorite,
+    model.objectId,
+    openLogin,
+    router,
+    viewerUsername,
+  ]);
 
   const updatesFeedKey = [
     embeddedUpdatesFeed.filters.sort,
@@ -214,6 +261,10 @@ export function ObjectPageClient({
     if (embeddedAuthorityPage == null) {
       return null;
     }
+    const viewerHasThisAuthority =
+      authoritySubType === 'administrative'
+        ? model.hasAdministrativeAuthority
+        : model.hasOwnershipAuthority;
     return (
       <div className="flex flex-col gap-4">
         <div className="rounded-card border border-border bg-bg px-card-padding pt-2">
@@ -224,6 +275,13 @@ export function ObjectPageClient({
             onSelect={onAuthoritySubSelect}
           />
         </div>
+        <AuthorityActionButton
+          objectId={model.objectId}
+          authorityType={authoritySubType}
+          hasAuthority={viewerHasThisAuthority}
+          viewerUsername={viewerUsername}
+          onRequireLogin={openLogin}
+        />
         <UserSocialAccountList
           key={`${model.objectId}-${authoritySubType}-${authoritySort}`}
           profileAccountName={model.objectId}
@@ -244,9 +302,12 @@ export function ObjectPageClient({
     authoritySubType,
     authoritySort,
     model.administrativeAuthorityCount,
+    model.hasAdministrativeAuthority,
+    model.hasOwnershipAuthority,
     model.objectId,
     model.ownershipAuthorityCount,
     onAuthoritySubSelect,
+    openLogin,
     viewerUsername,
     loadMoreObjectAuthority,
   ]);

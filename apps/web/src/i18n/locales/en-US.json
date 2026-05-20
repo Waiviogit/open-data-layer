@@ -117,6 +117,8 @@
   "object_authority_sub_administrative": "Administrative",
   "object_authority_sub_ownership": "Ownership",
   "object_authority_sub_nav_aria": "Authority categories",
+  "object_authority_action_add": "Add authority",
+  "object_authority_action_remove": "Remove authority",
   "social_list_empty_objects": "No followed objects yet.",
   "social_follow_login_hint": "Sign in to follow accounts.",
   "gallery": "Gallery",

@@ -424,6 +424,8 @@ export function projectedObjectWithCountsToPageModel(
     rating01To5: objectFields.ratingStars01To5(viewLike),
     primaryTabs: primaryTabs(api.updates_count, api.followers_count),
     feedSubTabs: FEED_SUB_TABS,
+    hasAdministrativeAuthority: api.hasAdministrativeAuthority ?? false,
+    hasOwnershipAuthority: api.hasOwnershipAuthority ?? false,
     administrativeAuthorityCount: api.administrative_count ?? 0,
     ownershipAuthorityCount: api.ownership_count ?? 0,
     leftRailBlocks,

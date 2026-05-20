@@ -176,3 +176,41 @@ export function buildOdlRankVoteOp(input: BuildOdlRankVoteOpInput): CustomJsonOp
     json: JSON.stringify(envelope),
   });
 }
+
+export type OdlAuthorityType = 'administrative' | 'ownership';
+export type OdlAuthorityMethod = 'add' | 'remove';
+
+export type BuildOdlObjectAuthorityOpInput = {
+  readonly id: string;
+  readonly objectId: string;
+  readonly authorityType: OdlAuthorityType;
+  readonly method: OdlAuthorityMethod;
+  readonly required_auths?: readonly string[];
+  readonly required_posting_auths?: readonly string[];
+};
+
+/**
+ * Builds a Hive `custom_json` op with one `object_authority` event (grant or revoke).
+ */
+export function buildOdlObjectAuthorityOp(input: BuildOdlObjectAuthorityOpInput): CustomJsonOp {
+  const envelope = {
+    events: [
+      {
+        action: 'object_authority' as const,
+        v: 1,
+        payload: {
+          object_id: input.objectId,
+          authority_type: input.authorityType,
+          method: input.method,
+        },
+      },
+    ],
+  };
+
+  return buildCustomJsonOp({
+    required_auths: input.required_auths ?? [],
+    required_posting_auths: input.required_posting_auths ?? [],
+    id: input.id,
+    json: JSON.stringify(envelope),
+  });
+}
