@@ -163,7 +163,7 @@ export function TopNav({ user: _user }: TopNavProps) {
     setSearchResults(null);
     setSearchLoading(true);
     setSearchCounts(null);
-    setSearchCountsLoading(false);
+    setSearchCountsLoading(true);
 
     void (async () => {
       try {
@@ -183,12 +183,9 @@ export function TopNav({ user: _user }: TopNavProps) {
           setSearchLoading(false);
         }
       }
+    })();
 
-      if (mainAc.signal.aborted || countsAc.signal.aborted) {
-        return;
-      }
-
-      setSearchCountsLoading(true);
+    void (async () => {
       try {
         const countData = await fetchSearchCounts(q, { signal: countsAc.signal });
         if (countsAc.signal.aborted) {
