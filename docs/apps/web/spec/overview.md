@@ -39,6 +39,7 @@ The **web** application is the Next.js **App Router** frontend for the Open Data
 | [object-followers-feed.md](object-followers-feed.md) | Object detail: `/object/.../followers` list (reuses user social list UI, query-api) |
 | [object-authority-feed.md](object-authority-feed.md) | Object detail: `/object/.../authority` administrative & ownership lists |
 | [object-follow.md](object-follow.md) | Object detail: Follow/Unfollow + Bell button → ODL `object_follow` broadcast |
+| [user-follow.md](user-follow.md) | User profile: Hive follow/unfollow + ODL bell; social lists & following-objects unfollow |
 | [pages/user-profile/data-loading.md](pages/user-profile/data-loading.md) | Shell profile fetch (query-api, `QUERY_API_URL`) |
 | [auth.md](auth.md) | Auth BFF, httpOnly cookies, `modules/auth`, wallet facade |
 | [notifications.md](notifications.md) | Bell dropdown + `/notifications` page (WS feed, unread badge) |

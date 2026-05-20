@@ -9,4 +9,6 @@ export type UserProfileView = {
   followingCount: number;
   postingCount: number;
   reputation: number;
+  is_following: boolean;
+  viewer_bell: boolean;
 };

@@ -3,7 +3,33 @@ import {
   buildCommentOptionsBeneficiaryExtension,
   buildCommentOptionsOp,
   buildCommentOp,
+  buildHiveFollowOp,
+  buildHiveUnfollowOp,
 } from './operation-builders';
+
+describe('buildHiveFollowOp', () => {
+  it('uses id follow with blog what', () => {
+    const op = buildHiveFollowOp('flowmaster', 'serpent7776');
+    expect(op.type).toBe('custom_json');
+    expect(op.id).toBe('follow');
+    expect(op.required_posting_auths).toEqual(['flowmaster']);
+    const inner = JSON.parse(op.json) as [string, { follower: string; following: string; what: string[] }];
+    expect(inner[0]).toBe('follow');
+    expect(inner[1]).toEqual({
+      follower: 'flowmaster',
+      following: 'serpent7776',
+      what: ['blog'],
+    });
+  });
+});
+
+describe('buildHiveUnfollowOp', () => {
+  it('uses id follow with empty what', () => {
+    const op = buildHiveUnfollowOp('flowmaster', 'nostalgic1212');
+    const inner = JSON.parse(op.json) as [string, { follower: string; following: string; what: string[] }];
+    expect(inner[1].what).toEqual([]);
+  });
+});
 
 describe('buildCommentOptionsBeneficiaryExtension', () => {
   it('returns extension id 0 with beneficiaries', () => {

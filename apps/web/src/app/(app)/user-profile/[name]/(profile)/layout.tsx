@@ -25,7 +25,7 @@ export default async function ProfileGroupLayout({
   const locale = await getRequestLocale();
 
   const [profile, objectsHead] = await Promise.all([
-    getUserProfileQuery(decoded),
+    getUserProfileQuery(decoded, viewer),
     getUserFollowingObjectsPageQuery(
       decoded,
       { sort: 'weight', skip: 0, limit: 0 },
@@ -46,7 +46,11 @@ export default async function ProfileGroupLayout({
       }}
     >
       <Suspense fallback={null}>
-        <UserProfileHeroClient accountName={decoded} initialUser={profile} />
+        <UserProfileHeroClient
+          accountName={decoded}
+          initialUser={profile}
+          viewerUsername={viewer}
+        />
         {children}
       </Suspense>
     </UserProfileSocialCountsProvider>

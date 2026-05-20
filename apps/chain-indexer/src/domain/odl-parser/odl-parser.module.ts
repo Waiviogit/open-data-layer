@@ -12,6 +12,7 @@ import { UserMetadataHandler } from './handlers/user-metadata.handler';
 import { ShopDeselectHandler } from './handlers/shop-deselect.handler';
 import { BatchImportHandler } from './handlers/batch-import.handler';
 import { FollowObjectHandler } from './handlers/follow-object.handler';
+import { FollowUserBellHandler } from './handlers/follow-user-bell.handler';
 import { BatchImportWorker } from './batch-import.worker';
 import { OdlCustomJsonParser } from './odl-custom-json-parser';
 import { MetaGroupSyncHandler } from './handlers/meta-group-sync.handler';
@@ -42,6 +43,7 @@ import {
     RankVoteHandler,
     AuthorityHandler,
     FollowObjectHandler,
+    FollowUserBellHandler,
     UserMetadataHandler,
     ShopDeselectHandler,
     BatchImportHandler,

@@ -187,6 +187,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
       <header className="flex gap-3">
         <Link
           href={authorProfileHref}
+          suppressHydrationWarning
           className="inline-flex shrink-0 self-start rounded-circle focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           aria-label={`View profile: @${story.authorName}`}
         >
@@ -201,6 +202,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
             <Link
               href={authorProfileHref}
+              suppressHydrationWarning
               className="font-weight-label text-body-sm text-fg hover:underline focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             >
               {displayAuthor}
@@ -236,6 +238,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
                   <Link
                     href={objectPagePath(o.object_id)}
                     prefetch={false}
+                    suppressHydrationWarning
                     title={chipLabel}
                     aria-label={`View object: ${chipLabel}`}
                     className="inline-flex rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
@@ -390,6 +393,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
           ) : null}
 
           <div
+            suppressHydrationWarning
             className="feed-story-excerpt pointer-events-none min-h-[1.5em] text-body text-fg-secondary line-clamp-6 [&_a]:pointer-events-auto [&_a]:break-words [&_a]:text-accent [&_a]:underline [&_a]:underline-offset-2 [&_p]:m-0 [&_p+p]:mt-2"
             dangerouslySetInnerHTML={{ __html: feedExcerptToSafeHtml(story.excerpt) }}
           />

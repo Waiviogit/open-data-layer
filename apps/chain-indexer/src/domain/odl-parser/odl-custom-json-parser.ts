@@ -12,6 +12,7 @@ import { UserMetadataHandler } from './handlers/user-metadata.handler';
 import { ShopDeselectHandler } from './handlers/shop-deselect.handler';
 import { BatchImportHandler } from './handlers/batch-import.handler';
 import { FollowObjectHandler } from './handlers/follow-object.handler';
+import { FollowUserBellHandler } from './handlers/follow-user-bell.handler';
 import { GovernanceCacheService } from '../governance/governance-cache.service';
 
 @Injectable()
@@ -29,6 +30,7 @@ export class OdlCustomJsonParser {
     private readonly shopDeselectHandler: ShopDeselectHandler,
     private readonly batchImportHandler: BatchImportHandler,
     private readonly followObjectHandler: FollowObjectHandler,
+    private readonly followUserBellHandler: FollowUserBellHandler,
     private readonly governanceCache: GovernanceCacheService,
   ) {
     this.handlerMap = {
@@ -38,6 +40,7 @@ export class OdlCustomJsonParser {
       [this.rankVoteHandler.action]: this.rankVoteHandler,
       [this.authorityHandler.action]: this.authorityHandler,
       [this.followObjectHandler.action]: this.followObjectHandler,
+      [this.followUserBellHandler.action]: this.followUserBellHandler,
       [this.userMetadataHandler.action]: this.userMetadataHandler,
       [this.shopDeselectHandler.action]: this.shopDeselectHandler,
       [this.batchImportHandler.action]: this.batchImportHandler,

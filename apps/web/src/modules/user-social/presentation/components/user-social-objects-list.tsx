@@ -18,6 +18,7 @@ export type UserSocialObjectsListProps = {
   initialPage: PaginatedFollowingObjectsView;
   sort: UserObjectListSort;
   locale: string;
+  viewerUsername: string | null;
   loadMoreAction: LoadMoreUserSocialObjectsFn;
 };
 
@@ -26,6 +27,7 @@ export function UserSocialObjectsList({
   initialPage,
   sort,
   locale,
+  viewerUsername,
   loadMoreAction,
 }: UserSocialObjectsListProps) {
   const { t } = useI18n();
@@ -50,7 +52,14 @@ export function UserSocialObjectsList({
         <>
           <ul>
             {items.map((o) => (
-              <UserSocialObjectRow key={o.object_id} object={o} />
+              <UserSocialObjectRow
+                key={o.object_id}
+                object={o}
+                viewerUsername={viewerUsername}
+                onRemoved={(objectId) => {
+                  setItems((prev) => prev.filter((item) => item.object_id !== objectId));
+                }}
+              />
             ))}
           </ul>
           {hasMore ? (

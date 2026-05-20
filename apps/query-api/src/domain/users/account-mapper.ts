@@ -37,5 +37,7 @@ export function mapAccountToUserProfileView(row: AccountCurrent): UserProfileVie
     followingCount: row.users_following_count,
     postingCount: row.post_count,
     reputation: row.object_reputation,
+    is_following: false,
+    viewer_bell: false,
   };
 }

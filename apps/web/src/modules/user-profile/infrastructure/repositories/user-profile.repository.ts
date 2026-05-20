@@ -5,9 +5,14 @@ import { queryApiFetch } from '../clients/query-api.client';
 
 export function createHttpUserProfileRepository(): UserProfileRepository {
   return {
-    async findByName(name: string): Promise<UserProfileView | null> {
+    async findByName(name: string, viewer?: string | null): Promise<UserProfileView | null> {
       const path = `/query/v1/users/${encodeURIComponent(name)}/profile`;
-      const data = await queryApiFetch<unknown>(path);
+      const viewerTrimmed = viewer?.trim();
+      const headers: HeadersInit =
+        viewerTrimmed && viewerTrimmed.length > 0
+          ? { 'X-Viewer': viewerTrimmed }
+          : {};
+      const data = await queryApiFetch<unknown>(path, { headers });
       if (data === null) {
         return null;
       }

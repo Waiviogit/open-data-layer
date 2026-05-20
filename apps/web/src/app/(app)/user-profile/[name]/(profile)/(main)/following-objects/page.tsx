@@ -44,6 +44,7 @@ export default async function UserProfileFollowingObjectsPage({
           initialPage={initial}
           sort={sort}
           locale={locale}
+          viewerUsername={viewer}
           loadMoreAction={loadMoreUserFollowingObjectsAction}
         />
       </Suspense>

@@ -7,15 +7,37 @@ import { shouldUnoptimizeRemoteImage, UserAvatar } from '@/shared/presentation';
 
 import type { UserProfileShellUser } from './types';
 
+function IconBell({ filled }: { filled: boolean }) {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill={filled ? 'currentColor' : 'none'}
+      stroke="currentColor"
+      strokeWidth="2"
+      className={filled ? 'text-accent' : 'text-current'}
+      aria-hidden
+    >
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  );
+}
+
 export type UserHeaderProps = {
   user: UserProfileShellUser;
   username: string;
   isSameUser: boolean;
   isGuest: boolean;
+  isFollowing: boolean;
+  isBell: boolean;
   hasCover: boolean;
   coverImage: string | null;
   isHeroLoading: boolean;
   onFollowClick: () => void;
+  onBellToggle: () => void;
+  followPending?: boolean;
 };
 
 export function UserHeader({
@@ -23,10 +45,14 @@ export function UserHeader({
   username,
   isSameUser,
   isGuest,
+  isFollowing,
+  isBell,
   hasCover,
   coverImage,
   isHeroLoading,
   onFollowClick,
+  onBellToggle,
+  followPending = false,
 }: UserHeaderProps) {
   const { t } = useI18n();
   const hasCoverPhoto = Boolean(hasCover && coverImage);
@@ -112,15 +138,40 @@ export function UserHeader({
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2 sm:pb-1">
+        <div className="flex flex-wrap items-center gap-2 sm:pb-1">
           {!isHeroLoading && !isSameUser && !isGuest ? (
-            <button
-              type="button"
-              onClick={onFollowClick}
-              className="rounded-btn bg-accent px-4 py-2 text-sm font-medium text-accent-fg hover:opacity-90"
-            >
-              {t('follow')}
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={onFollowClick}
+                disabled={followPending}
+                className={[
+                  'group rounded-btn px-4 py-2 text-sm font-medium disabled:opacity-50',
+                  isFollowing
+                    ? 'border border-border bg-surface-control text-muted hover:border-red-400 hover:bg-red-500/10 hover:text-red-600'
+                    : 'bg-accent text-accent-fg hover:opacity-90',
+                ].join(' ')}
+              >
+                <span className={isFollowing ? 'group-hover:hidden' : ''}>
+                  {isFollowing ? t('following') : t('follow')}
+                </span>
+                {isFollowing ? (
+                  <span className="hidden group-hover:inline">{t('unfollow')}</span>
+                ) : null}
+              </button>
+              {isFollowing ? (
+                <button
+                  type="button"
+                  onClick={onBellToggle}
+                  className="rounded-btn border border-border bg-bg p-2 text-fg hover:bg-muted"
+                  aria-pressed={isBell}
+                  title={isBell ? t('user_hero_bell_on') : t('user_hero_bell_off')}
+                  aria-label={isBell ? t('user_hero_bell_on') : t('user_hero_bell_off')}
+                >
+                  <IconBell filled={isBell} />
+                </button>
+              ) : null}
+            </>
           ) : null}
           {!isHeroLoading && isSameUser ? (
             <button

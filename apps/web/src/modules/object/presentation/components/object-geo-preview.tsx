@@ -9,6 +9,7 @@ import {
   MapInvalidateSizeOnMount,
   MapProvider,
 } from '@/modules/map';
+import { HydrationSafeAnchor } from '@/shared/presentation';
 
 import {
   OBJECT_MAP_MODAL_MIN_HEIGHT_PX,
@@ -77,14 +78,14 @@ function OsmCreditLine(props: { className?: string }) {
   const { className } = props;
   return (
     <p className={className ?? 'mt-2 text-center text-caption text-muted'}>
-      <a
+      <HydrationSafeAnchor
         href={OSM_COPYRIGHT_URL}
         target="_blank"
         rel="noopener noreferrer"
         className="underline decoration-border underline-offset-2 hover:text-fg"
       >
         © OpenStreetMap contributors
-      </a>
+      </HydrationSafeAnchor>
     </p>
   );
 }

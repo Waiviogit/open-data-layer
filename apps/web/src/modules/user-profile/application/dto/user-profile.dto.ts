@@ -12,6 +12,8 @@ export const userProfileViewSchema: z.ZodType<UserProfileView> = z.object({
   followingCount: z.number().int(),
   postingCount: z.number().int(),
   reputation: z.number().int(),
+  is_following: z.boolean(),
+  viewer_bell: z.boolean(),
 });
 
 export type { UserProfileView } from '../../domain/types/user-profile-view';

@@ -154,8 +154,11 @@ export class UsersController {
   }
 
   @Get(':name/profile')
-  async getProfile(@Param('name') name: string): Promise<UserProfileView> {
-    const view = await this.getUserProfile.execute(name);
+  async getProfile(
+    @Param('name') name: string,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<UserProfileView> {
+    const view = await this.getUserProfile.execute(name, viewer);
     if (!view) {
       throw new NotFoundException(`User not found: ${name}`);
     }

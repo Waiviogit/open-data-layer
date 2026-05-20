@@ -60,6 +60,21 @@ export class SocialGraphRepository {
       .execute();
   }
 
+  async updateSubscriptionBell(
+    follower: string,
+    following: string,
+    bell: boolean,
+    trx?: DbExecutor,
+  ): Promise<void> {
+    const e = this.executor(trx);
+    await e
+      .updateTable('user_subscriptions')
+      .set({ bell })
+      .where('follower', '=', follower)
+      .where('following', '=', following)
+      .execute();
+  }
+
   async muteExists(muter: string, muted: string, trx?: DbExecutor): Promise<boolean> {
     const e = this.executor(trx);
     const row = await e

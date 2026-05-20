@@ -87,3 +87,43 @@ export function buildCustomJsonOp(input: {
 export function buildReblogOp(account: string, author: string, permlink: string): ReblogOp {
   return { type: 'reblog', account, author, permlink };
 }
+
+const HIVE_FOLLOW_CUSTOM_JSON_ID = 'follow';
+
+/**
+ * Standard Hive account follow (`custom_json` id `follow`, `what: ["blog"]`).
+ */
+export function buildHiveFollowOp(
+  follower: string,
+  following: string,
+): CustomJsonOp {
+  const json = JSON.stringify([
+    'follow',
+    { follower, following, what: ['blog'] as const },
+  ]);
+  return buildCustomJsonOp({
+    required_auths: [],
+    required_posting_auths: [follower],
+    id: HIVE_FOLLOW_CUSTOM_JSON_ID,
+    json,
+  });
+}
+
+/**
+ * Standard Hive account unfollow (`custom_json` id `follow`, `what: []`).
+ */
+export function buildHiveUnfollowOp(
+  follower: string,
+  following: string,
+): CustomJsonOp {
+  const json = JSON.stringify([
+    'follow',
+    { follower, following, what: [] as const },
+  ]);
+  return buildCustomJsonOp({
+    required_auths: [],
+    required_posting_auths: [follower],
+    id: HIVE_FOLLOW_CUSTOM_JSON_ID,
+    json,
+  });
+}

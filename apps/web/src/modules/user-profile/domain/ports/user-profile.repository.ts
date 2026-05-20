@@ -1,5 +1,5 @@
 import type { UserProfileView } from '../types/user-profile-view';
 
 export interface UserProfileRepository {
-  findByName(name: string): Promise<UserProfileView | null>;
+  findByName(name: string, viewer?: string | null): Promise<UserProfileView | null>;
 }

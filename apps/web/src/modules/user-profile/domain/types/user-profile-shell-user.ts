@@ -9,4 +9,6 @@ export type UserProfileShellUser = {
   postingCount: number;
   coverImageUrl: string | null;
   avatarUrl: string | null;
+  isFollowing: boolean;
+  viewerBell: boolean;
 };

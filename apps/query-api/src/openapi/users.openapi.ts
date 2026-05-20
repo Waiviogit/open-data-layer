@@ -26,6 +26,14 @@ const userProfileViewSchema = registry.register(
     followingCount: z.number().int().openapi({ description: '`users_following_count`.' }),
     postingCount: z.number().int().openapi({ description: '`post_count`.' }),
     reputation: z.number().int().openapi({ description: '`object_reputation`.' }),
+    is_following: z.boolean().openapi({
+      description:
+        'True when `X-Viewer` has a `user_subscriptions` row following this profile.',
+    }),
+    viewer_bell: z.boolean().openapi({
+      description:
+        'Bell on that subscription (`user_subscriptions.bell`); false when not following or bell is null.',
+    }),
   }),
 );
 
@@ -49,9 +57,15 @@ registry.registerPath({
   path: '/query/v1/users/{name}/profile',
   summary: 'Get user profile by account name',
   description:
-    'Loads `accounts_current` by `name`, maps display fields from `alias`, `profile_image`, and parsed `posting_json_metadata`.',
+    'Loads `accounts_current` by `name`, maps display fields from `alias`, `profile_image`, and parsed `posting_json_metadata`. When `X-Viewer` is set, includes `is_following` and `viewer_bell` from `user_subscriptions`.',
   request: {
     params: z.object({ name: accountNameParam }),
+    headers: z.object({
+      'x-viewer': z.string().optional().openapi({
+        description:
+          'Optional Hive account viewing the profile; used for `is_following` and `viewer_bell`.',
+      }),
+    }),
   },
   responses: {
     200: {

@@ -1,5 +1,15 @@
 export * from './hive-operations';
-export * from './operation-builders';
+export {
+  buildCommentOptionsBeneficiaryExtension,
+  buildVoteOp,
+  buildCommentOp,
+  buildCommentOptionsOp,
+  buildCustomJsonOp,
+  buildReblogOp,
+  buildHiveFollowOp,
+  buildHiveUnfollowOp,
+  type CommentOptionsBeneficiary,
+} from './operation-builders';
 export { wireCommentOptionsPayload } from './hive-operation-wire';
 export {
   buildOdlUpdateCreateOp,
@@ -8,7 +18,9 @@ export {
   buildOdlRankVoteOp,
   buildOdlObjectAuthorityOp,
   buildOdlObjectFollowOp,
+  buildOdlUserFollowBellOp,
   type BuildOdlUpdateCreateOpInput,
+  type BuildOdlUserFollowBellOpInput,
   type BuildOdlUpdateVoteOpInput,
   type BuildOdlRankVoteOpInput,
   type BuildOdlObjectAuthorityOpInput,

@@ -129,6 +129,14 @@ export const objectFollowPayloadSchema = z
 
 export type ObjectFollowPayload = z.infer<typeof objectFollowPayloadSchema>;
 
+export const userFollowPayloadSchema = z.object({
+  following: z.string().min(1).max(32),
+  method: z.literal('bell'),
+  bell: z.boolean(),
+});
+
+export type UserFollowPayload = z.infer<typeof userFollowPayloadSchema>;
+
 // ---------------------------------------------------------------------------
 // Envelope schema
 // ---------------------------------------------------------------------------
@@ -141,6 +149,7 @@ const odlEventSchema = z.object({
     'rank_vote',
     'object_authority',
     'object_follow',
+    'user_follow',
     'update_user_metadata',
     'user_shop_deselect',
     'batch_import',

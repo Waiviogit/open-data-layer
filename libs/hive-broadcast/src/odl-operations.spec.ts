@@ -5,6 +5,7 @@ import {
   buildOdlUpdateCreateOp,
   buildOdlUpdateCreateWithLikeOp,
   buildOdlUpdateVoteOp,
+  buildOdlUserFollowBellOp,
 } from './odl-operations';
 
 describe('buildOdlUpdateCreateOp', () => {
@@ -229,6 +230,26 @@ describe('buildOdlObjectAuthorityOp', () => {
     });
     expect(JSON.parse(op.json).events[0].payload['method']).toBe('remove');
     expect(JSON.parse(op.json).events[0].payload['authority_type']).toBe('ownership');
+  });
+});
+
+describe('buildOdlUserFollowBellOp', () => {
+  it('emits user_follow bell event', () => {
+    const op = buildOdlUserFollowBellOp({
+      id: 'odl-testnet',
+      following: 'alice',
+      bell: true,
+      required_posting_auths: ['bob'],
+    });
+    const parsed = JSON.parse(op.json) as {
+      events: { action: string; payload: Record<string, unknown> }[];
+    };
+    expect(parsed.events[0]?.action).toBe('user_follow');
+    expect(parsed.events[0]?.payload).toEqual({
+      following: 'alice',
+      method: 'bell',
+      bell: true,
+    });
   });
 });
 

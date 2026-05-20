@@ -126,6 +126,32 @@ export class UserSubscriptionsRepository {
     }
   }
 
+  async findByFollowerAndFollowing(
+    follower: string,
+    following: string,
+  ): Promise<{ bell: boolean | null } | null> {
+    const f = follower.trim();
+    const g = following.trim();
+    if (f.length === 0 || g.length === 0) {
+      return null;
+    }
+    try {
+      const row = await this.db
+        .selectFrom('user_subscriptions')
+        .select('bell')
+        .where('follower', '=', f)
+        .where('following', '=', g)
+        .executeTakeFirst();
+      if (!row) {
+        return null;
+      }
+      return { bell: row.bell };
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return null;
+    }
+  }
+
   /**
    * For each `following` account in `targets` that `viewer` follows, return that username.
    */

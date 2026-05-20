@@ -342,6 +342,7 @@ export function ObjectLeftRailPanel({
                   <Link
                     href={`/object/${encodeURIComponent(block.objectId)}`}
                     prefetch={false}
+                    suppressHydrationWarning
                     className="mt-3 -mx-1 -my-1 flex min-w-0 items-center gap-2.5 rounded-btn p-1 transition-colors hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                   >
                     <div className="relative size-10 shrink-0 overflow-hidden rounded-btn border border-border bg-surface">

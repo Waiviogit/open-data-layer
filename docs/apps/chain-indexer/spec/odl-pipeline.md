@@ -33,6 +33,7 @@ Describe how ODL **envelopes** inside Hive `custom_json` are validated, sequence
 | `rank_vote` | `RankVoteHandler` | Rank votes; rejects single-cardinality targets; recomputes `object_updates.rank_score` |
 | `authority` | `AuthorityHandler` | Object authority edges |
 | `object_follow` | `FollowObjectHandler` | Object follows: upsert / delete `user_object_follows`; toggle `bell` |
+| `user_follow` | `FollowUserBellHandler` | User subscription bell toggle on `user_subscriptions` (requires existing follow row) |
 | `batch_import` | `BatchImportHandler` | Emit in-process event for async IPFS processing |
 
 Registry validation for `update_create` uses **`OBJECT_TYPE_REGISTRY`** / **`UPDATE_REGISTRY`** from `@opden-data-layer/core` (source of truth in code; see [AGENTS.md](../../../../AGENTS.md) — do not treat generated Markdown as canonical).

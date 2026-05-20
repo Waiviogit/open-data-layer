@@ -2807,6 +2807,8 @@
   "object_detail_unfollow": "Unfollow",
   "object_detail_bell_on": "Notifications on",
   "object_detail_bell_off": "Enable notifications",
+  "user_hero_bell_on": "Notifications on",
+  "user_hero_bell_off": "Enable notifications",
   "object_detail_edit": "Edit",
   "object_detail_view": "View",
   "object_detail_rating": "Rating",

@@ -5,8 +5,9 @@ import type { UserProfileShellUser } from '../../domain/types/user-profile-shell
 export function createGetUserProfileQuery(repo: UserProfileRepository) {
   return async function getUserProfile(
     name: string,
+    viewer?: string | null,
   ): Promise<UserProfileShellUser | null> {
-    const view = await repo.findByName(name);
+    const view = await repo.findByName(name, viewer);
     if (!view) {
       return null;
     }
@@ -25,5 +26,7 @@ function mapViewToShellUser(view: UserProfileView): UserProfileShellUser {
     postingCount: view.postingCount,
     coverImageUrl: view.coverImageUrl,
     avatarUrl: view.avatarUrl,
+    isFollowing: view.is_following,
+    viewerBell: view.viewer_bell,
   };
 }
