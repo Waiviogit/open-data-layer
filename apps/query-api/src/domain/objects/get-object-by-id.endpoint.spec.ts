@@ -112,6 +112,12 @@ describe('GetObjectByIdEndpoint', () => {
     } as unknown as ObjectProjectionService;
     const followsRepo = {
       countByObjectId: jest.fn().mockResolvedValue(7),
+      findByAccountAndObject: jest.fn().mockResolvedValue({
+        account: 'alice',
+        object_id: 'o1',
+        bell: true,
+        created_at: new Date(),
+      }),
     } as unknown as UserObjectFollowsRepository;
     const updatesRepo = {
       countByObjectId: jest.fn().mockResolvedValue(25),
@@ -149,7 +155,10 @@ describe('GetObjectByIdEndpoint', () => {
       updates_count: 25,
       administrative_count: 2,
       ownership_count: 3,
+      is_following: true,
+      viewer_bell: true,
     });
+    expect(followsRepo.findByAccountAndObject).toHaveBeenCalledWith('alice', 'o1');
     expect(governanceResolver.resolveMergedForObjectView).toHaveBeenCalledWith(undefined);
     expect(viewService.resolve).toHaveBeenCalledWith(
       expect.any(Array),

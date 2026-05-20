@@ -175,6 +175,10 @@ export type ObjectPageViewModel = {
   hasAdministrativeAuthority: boolean;
   /** Viewer has ownership authority on this object. */
   hasOwnershipAuthority: boolean;
+  /** Viewer follows this object (`user_object_follows`). */
+  isFollowing: boolean;
+  /** Viewer bell notifications on this object follow row. */
+  viewerBell: boolean;
   /** For Authority tab sub-nav badges (`object_authority` counts from resolve). */
   administrativeAuthorityCount: number;
   ownershipAuthorityCount: number;

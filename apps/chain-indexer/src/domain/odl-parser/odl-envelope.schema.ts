@@ -111,6 +111,24 @@ export const batchImportPayloadSchema = z.object({
 
 export type BatchImportPayload = z.infer<typeof batchImportPayloadSchema>;
 
+export const objectFollowPayloadSchema = z
+  .object({
+    object_id: z.string().min(1).max(256),
+    method: z.enum(['follow', 'unfollow', 'bell']),
+    bell: z.boolean().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.method === 'bell' && data.bell === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'bell is required when method is bell',
+        path: ['bell'],
+      });
+    }
+  });
+
+export type ObjectFollowPayload = z.infer<typeof objectFollowPayloadSchema>;
+
 // ---------------------------------------------------------------------------
 // Envelope schema
 // ---------------------------------------------------------------------------
@@ -122,6 +140,7 @@ const odlEventSchema = z.object({
     'update_vote',
     'rank_vote',
     'object_authority',
+    'object_follow',
     'update_user_metadata',
     'user_shop_deselect',
     'batch_import',

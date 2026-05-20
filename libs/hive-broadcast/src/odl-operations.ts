@@ -214,3 +214,44 @@ export function buildOdlObjectAuthorityOp(input: BuildOdlObjectAuthorityOpInput)
     json: JSON.stringify(envelope),
   });
 }
+
+export type OdlFollowMethod = 'follow' | 'unfollow' | 'bell';
+
+export type BuildOdlObjectFollowOpInput = {
+  readonly id: string;
+  readonly objectId: string;
+  readonly method: OdlFollowMethod;
+  readonly bell?: boolean;
+  readonly required_auths?: readonly string[];
+  readonly required_posting_auths?: readonly string[];
+};
+
+/**
+ * Builds a Hive `custom_json` op with one `object_follow` event.
+ */
+export function buildOdlObjectFollowOp(input: BuildOdlObjectFollowOpInput): CustomJsonOp {
+  const payload: Record<string, unknown> = {
+    object_id: input.objectId,
+    method: input.method,
+  };
+  if (input.method === 'bell' && input.bell !== undefined) {
+    payload['bell'] = input.bell;
+  }
+
+  const envelope = {
+    events: [
+      {
+        action: 'object_follow' as const,
+        v: 1,
+        payload,
+      },
+    ],
+  };
+
+  return buildCustomJsonOp({
+    required_auths: input.required_auths ?? [],
+    required_posting_auths: input.required_posting_auths ?? [],
+    id: input.id,
+    json: JSON.stringify(envelope),
+  });
+}

@@ -24,7 +24,7 @@ import type {
 import { UserSocialAccountList } from '@/modules/user-social/presentation/components/user-social-account-list';
 import { getWalletFacade, useHydrateWalletProvider, useLoginModal } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
-import { buildOdlObjectAuthorityOp } from '@opden-data-layer/hive-broadcast';
+import { buildOdlObjectAuthorityOp, buildOdlObjectFollowOp } from '@opden-data-layer/hive-broadcast';
 import { ODL_CUSTOM_JSON_ID } from '@/config/odl-network-public';
 
 import { loadMoreObjectAuthorityAction } from './authority/object-authority.actions';
@@ -74,7 +74,10 @@ export function ObjectPageClient({
   useHydrateWalletProvider();
 
   const [isEditMode, setEditMode] = useState(false);
-  const [isFollowing, setFollowing] = useState(false);
+  const [isFollowing, setFollowing] = useState(model.isFollowing);
+  const [viewerBell, setViewerBell] = useState(model.viewerBell);
+  const [followPending, setFollowPending] = useState(false);
+  const [bellPending, setBellPending] = useState(false);
   const [isFavorite, setFavorite] = useState(model.hasAdministrativeAuthority);
   const [favoritePending, setFavoritePending] = useState(false);
   const [activePrimarySegment, setActivePrimarySegment] =
@@ -89,6 +92,11 @@ export function ObjectPageClient({
   useEffect(() => {
     setFavorite(model.hasAdministrativeAuthority);
   }, [model.hasAdministrativeAuthority, model.objectId]);
+
+  useEffect(() => {
+    setFollowing(model.isFollowing);
+    setViewerBell(model.viewerBell);
+  }, [model.isFollowing, model.viewerBell, model.objectId]);
 
   const onPrimarySelect = useCallback(
     (segment: string) => {
@@ -153,6 +161,94 @@ export function ObjectPageClient({
     ),
     [model.primaryTabs, activePrimarySegment, onPrimarySelect],
   );
+
+  const onFollowToggle = useCallback(async () => {
+    const account = viewerUsername?.trim();
+    if (!account) {
+      openLogin();
+      return;
+    }
+    if (followPending) {
+      return;
+    }
+    const method = isFollowing ? 'unfollow' : 'follow';
+    const previousFollowing = isFollowing;
+    const previousBell = viewerBell;
+    setFollowing(!previousFollowing);
+    if (previousFollowing) {
+      setViewerBell(false);
+    }
+    setFollowPending(true);
+    try {
+      const op = buildOdlObjectFollowOp({
+        id: ODL_CUSTOM_JSON_ID,
+        objectId: model.objectId,
+        method,
+        required_posting_auths: [account],
+      });
+      const { transactionId } = await getWalletFacade().broadcast({
+        operations: [op],
+      });
+      void awaitTrxConfirmation(transactionId).finally(() => {
+        router.refresh();
+        setFollowPending(false);
+      });
+    } catch {
+      setFollowing(previousFollowing);
+      setViewerBell(previousBell);
+      setFollowPending(false);
+    }
+  }, [
+    followPending,
+    isFollowing,
+    model.objectId,
+    openLogin,
+    router,
+    viewerBell,
+    viewerUsername,
+  ]);
+
+  const onBellToggle = useCallback(async () => {
+    const account = viewerUsername?.trim();
+    if (!account) {
+      openLogin();
+      return;
+    }
+    if (bellPending || !isFollowing) {
+      return;
+    }
+    const nextBell = !viewerBell;
+    const previousBell = viewerBell;
+    setViewerBell(nextBell);
+    setBellPending(true);
+    try {
+      const op = buildOdlObjectFollowOp({
+        id: ODL_CUSTOM_JSON_ID,
+        objectId: model.objectId,
+        method: 'bell',
+        bell: nextBell,
+        required_posting_auths: [account],
+      });
+      const { transactionId } = await getWalletFacade().broadcast({
+        operations: [op],
+      });
+      void awaitTrxConfirmation(transactionId).finally(() => {
+        router.refresh();
+        setBellPending(false);
+      });
+    } catch {
+      setViewerBell(previousBell);
+      setBellPending(false);
+    }
+  }, [
+    bellPending,
+    isFollowing,
+    model.objectId,
+    openLogin,
+    router,
+    viewerBell,
+    viewerUsername,
+  ]);
 
   const onFavoriteToggle = useCallback(async () => {
     const account = viewerUsername?.trim();
@@ -352,9 +448,11 @@ export function ObjectPageClient({
           kindLabel={model.kindLabel}
           isEditMode={isEditMode}
           isFollowing={isFollowing}
+          isBell={viewerBell}
           isFavorite={isFavorite}
           onToggleEdit={() => setEditMode((v) => !v)}
-          onFollowToggle={() => setFollowing((v) => !v)}
+          onFollowToggle={onFollowToggle}
+          onBellToggle={onBellToggle}
           onFavoriteToggle={onFavoriteToggle}
           primaryNav={primaryNav}
         />

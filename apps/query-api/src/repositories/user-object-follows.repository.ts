@@ -3,6 +3,7 @@ import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
+import type { UserObjectFollow } from '@opden-data-layer/core';
 import type { UserSubscriptionSort, SubscriptionJoinedAccountRow } from './user-subscriptions.repository';
 
 export type UserObjectFollowSortMode = 'weight' | 'recency';
@@ -18,6 +19,24 @@ export class UserObjectFollowsRepository {
   private readonly logger = new Logger(UserObjectFollowsRepository.name);
 
   constructor(@Inject(KYSELY) private readonly db: Kysely<Database>) {}
+
+  async findByAccountAndObject(
+    account: string,
+    objectId: string,
+  ): Promise<UserObjectFollow | null> {
+    try {
+      const row = await this.db
+        .selectFrom('user_object_follows')
+        .selectAll()
+        .where('account', '=', account)
+        .where('object_id', '=', objectId)
+        .executeTakeFirst();
+      return row ?? null;
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return null;
+    }
+  }
 
   async countByObjectId(objectId: string): Promise<number> {
     try {

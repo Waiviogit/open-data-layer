@@ -426,6 +426,8 @@ export function projectedObjectWithCountsToPageModel(
     feedSubTabs: FEED_SUB_TABS,
     hasAdministrativeAuthority: api.hasAdministrativeAuthority ?? false,
     hasOwnershipAuthority: api.hasOwnershipAuthority ?? false,
+    isFollowing: api.is_following ?? false,
+    viewerBell: api.viewer_bell ?? false,
     administrativeAuthorityCount: api.administrative_count ?? 0,
     ownershipAuthorityCount: api.ownership_count ?? 0,
     leftRailBlocks,

@@ -1,5 +1,6 @@
 import {
   buildOdlObjectAuthorityOp,
+  buildOdlObjectFollowOp,
   buildOdlRankVoteOp,
   buildOdlUpdateCreateOp,
   buildOdlUpdateCreateWithLikeOp,
@@ -228,5 +229,49 @@ describe('buildOdlObjectAuthorityOp', () => {
     });
     expect(JSON.parse(op.json).events[0].payload['method']).toBe('remove');
     expect(JSON.parse(op.json).events[0].payload['authority_type']).toBe('ownership');
+  });
+});
+
+describe('buildOdlObjectFollowOp', () => {
+  it('emits object_follow with method follow and no bell field', () => {
+    const op = buildOdlObjectFollowOp({
+      id: 'odl-testnet',
+      objectId: 'obj-1',
+      method: 'follow',
+      required_posting_auths: ['alice'],
+    });
+    const parsed = JSON.parse(op.json) as {
+      events: { action: string; payload: Record<string, unknown> }[];
+    };
+    expect(parsed.events).toHaveLength(1);
+    expect(parsed.events[0]?.action).toBe('object_follow');
+    expect(parsed.events[0]?.payload['object_id']).toBe('obj-1');
+    expect(parsed.events[0]?.payload['method']).toBe('follow');
+    expect(parsed.events[0]?.payload).not.toHaveProperty('bell');
+  });
+
+  it('emits object_follow with method unfollow', () => {
+    const op = buildOdlObjectFollowOp({
+      id: 'odl-mainnet',
+      objectId: 'obj-2',
+      method: 'unfollow',
+    });
+    const payload = JSON.parse(op.json).events[0].payload as Record<string, unknown>;
+    expect(JSON.parse(op.json).events[0].action).toBe('object_follow');
+    expect(payload['method']).toBe('unfollow');
+    expect(payload).not.toHaveProperty('bell');
+  });
+
+  it('emits object_follow bell with bell true', () => {
+    const op = buildOdlObjectFollowOp({
+      id: 'odl-testnet',
+      objectId: 'obj-1',
+      method: 'bell',
+      bell: true,
+      required_posting_auths: ['alice'],
+    });
+    const payload = JSON.parse(op.json).events[0].payload as Record<string, unknown>;
+    expect(payload['method']).toBe('bell');
+    expect(payload['bell']).toBe(true);
   });
 });

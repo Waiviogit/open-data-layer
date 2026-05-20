@@ -5,4 +5,6 @@ export type ProjectedObjectWithCounts = ProjectedObject & {
   updates_count: number;
   administrative_count: number;
   ownership_count: number;
+  is_following: boolean;
+  viewer_bell: boolean;
 };

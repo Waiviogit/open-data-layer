@@ -18,12 +18,32 @@ export type ObjectHeroProps = {
   kindLabel: string;
   isEditMode: boolean;
   isFollowing: boolean;
+  isBell: boolean;
   isFavorite: boolean;
   onToggleEdit: () => void;
   onFollowToggle: () => void;
+  onBellToggle: () => void;
   onFavoriteToggle: () => void;
   primaryNav: ReactNode;
 };
+
+function IconBell({ filled }: { filled: boolean }) {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill={filled ? 'currentColor' : 'none'}
+      stroke="currentColor"
+      strokeWidth="2"
+      className={filled ? 'text-accent' : 'text-current'}
+      aria-hidden
+    >
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  );
+}
 
 function IconHeartFavorite({ filled }: { filled: boolean }) {
   return (
@@ -52,9 +72,11 @@ export function ObjectHero({
   kindLabel,
   isEditMode,
   isFollowing,
+  isBell,
   isFavorite,
   onToggleEdit,
   onFollowToggle,
+  onBellToggle,
   onFavoriteToggle,
   primaryNav,
 }: ObjectHeroProps) {
@@ -169,10 +191,42 @@ export function ObjectHero({
               <button
                 type="button"
                 onClick={onFollowToggle}
-                className="rounded-btn bg-accent px-4 py-2 text-sm font-medium text-accent-fg hover:opacity-90"
+                className={[
+                  'group rounded-btn px-4 py-2 text-sm font-medium',
+                  isFollowing
+                    ? 'border border-white/50 bg-white/15 text-white hover:border-red-400/80 hover:bg-red-500/25 hover:text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.75)]'
+                    : 'bg-accent text-accent-fg hover:opacity-90',
+                  !hasCoverPhoto && isFollowing
+                    ? 'border-border bg-bg text-fg hover:border-red-400 hover:bg-red-500/10 hover:text-red-600'
+                    : '',
+                ].join(' ')}
               >
-                {isFollowing ? t('object_detail_following') : t('object_detail_follow')}
+                <span className={isFollowing ? 'group-hover:hidden' : ''}>
+                  {isFollowing ? t('object_detail_following') : t('object_detail_follow')}
+                </span>
+                {isFollowing ? (
+                  <span className="hidden group-hover:inline">
+                    {t('object_detail_unfollow')}
+                  </span>
+                ) : null}
               </button>
+              {isFollowing ? (
+                <button
+                  type="button"
+                  onClick={onBellToggle}
+                  className={[
+                    'rounded-btn p-2',
+                    hasCoverPhoto
+                      ? 'border border-white/50 bg-white/15 text-white hover:bg-white/25 [text-shadow:0_1px_2px_rgba(0,0,0,0.75)]'
+                      : 'border border-border bg-bg text-fg hover:bg-muted',
+                  ].join(' ')}
+                  aria-pressed={isBell}
+                  title={isBell ? t('object_detail_bell_on') : t('object_detail_bell_off')}
+                  aria-label={isBell ? t('object_detail_bell_on') : t('object_detail_bell_off')}
+                >
+                  <IconBell filled={isBell} />
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={onToggleEdit}

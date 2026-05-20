@@ -9,6 +9,8 @@ export const projectedObjectWithCountsSchema = projectedObjectViewSchema
     updates_count: z.number().int(),
     administrative_count: z.number().int().default(0),
     ownership_count: z.number().int().default(0),
+    is_following: z.boolean().default(false),
+    viewer_bell: z.boolean().default(false),
   })
   .passthrough();
 

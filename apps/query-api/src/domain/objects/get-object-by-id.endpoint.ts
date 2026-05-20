@@ -66,19 +66,28 @@ export class GetObjectByIdEndpoint {
 
     const objectId = view.object_id;
 
-    const [projected, followers_count, updates_count, administrative_count, ownership_count] =
-      await Promise.all([
-        this.objectProjectionService.project(view, {
-          locale: input.locale,
-          governanceObjectIdFromHeader: input.governanceObjectIdFromHeader,
-          viewerAccount: input.viewerAccount,
-          rankVoteProjection,
-        }),
-        this.userObjectFollowsRepo.countByObjectId(objectId),
-        this.objectUpdatesRepo.countByObjectId(objectId),
-        this.objectAuthorityRepo.countByObjectIdAndType(objectId, 'administrative'),
-        this.objectAuthorityRepo.countByObjectIdAndType(objectId, 'ownership'),
-      ]);
+    const [
+      projected,
+      followers_count,
+      updates_count,
+      administrative_count,
+      ownership_count,
+      viewerFollow,
+    ] = await Promise.all([
+      this.objectProjectionService.project(view, {
+        locale: input.locale,
+        governanceObjectIdFromHeader: input.governanceObjectIdFromHeader,
+        viewerAccount: input.viewerAccount,
+        rankVoteProjection,
+      }),
+      this.userObjectFollowsRepo.countByObjectId(objectId),
+      this.objectUpdatesRepo.countByObjectId(objectId),
+      this.objectAuthorityRepo.countByObjectIdAndType(objectId, 'administrative'),
+      this.objectAuthorityRepo.countByObjectIdAndType(objectId, 'ownership'),
+      input.viewerAccount
+        ? this.userObjectFollowsRepo.findByAccountAndObject(input.viewerAccount, objectId)
+        : Promise.resolve(null),
+    ]);
 
     return {
       ...projected,
@@ -86,6 +95,8 @@ export class GetObjectByIdEndpoint {
       updates_count,
       administrative_count,
       ownership_count,
+      is_following: viewerFollow != null,
+      viewer_bell: viewerFollow?.bell ?? false,
     };
   }
 }
