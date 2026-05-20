@@ -33,6 +33,11 @@ const FTS_TEXT_UPDATE_TYPES = [
   UPDATE_TYPES.DESCRIPTION,
 ] as const;
 
+/** Rank boost for exact `value_text_normalized` match (name/title/description). */
+const SEARCH_RANK_EXACT_TEXT = 1000;
+/** Rank boost for id-shaped substring hit on `object_id`. */
+const SEARCH_RANK_ID_SUBSTRING = 500;
+
 @Injectable()
 export class SearchRepository {
   private readonly logger = new Logger(SearchRepository.name);
@@ -40,9 +45,8 @@ export class SearchRepository {
   constructor(@Inject(KYSELY) private readonly db: Kysely<Database>) {}
 
   /**
-   * Object hits: (1) FTS on `name` / `title` / `description` updates (`search_vector`),
-   * or (2) when `q` is id-shaped, substring match on `objects_core.object_id`.
-   * Active objects only, one row per `meta_group_id` (or per `object_id`) — highest `weight` wins.
+   * Object hits: FTS on `name` / `title` / `description`, optional id substring, ranked by
+   * relevance (exact text, ts_rank, id) then `weight`. One row per `meta_group_id`.
    */
   async searchObjects(queryText: string, limit: number): Promise<SearchObjectCandidateRow[]> {
     const trimmed = queryText.trim();
@@ -55,58 +59,67 @@ export class SearchRepository {
       return [];
     }
 
+    const normalized = trimmed.toLowerCase();
     const includeIdSubstring = shouldSearchObjectIdSubstring(trimmed);
     const idSubstringPattern = `%${escapeIlikePattern(trimmed)}%`;
 
     try {
-      const result = includeIdSubstring
-        ? await sql<SearchObjectCandidateRow>`
-            WITH fts_ids AS (
-              SELECT DISTINCT ou.object_id
-              FROM object_updates ou
-              WHERE ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
-                AND ou.search_vector @@ to_tsquery('english', ${tsQuery})
-            ),
-            id_hits AS (
-              SELECT object_id
-              FROM objects_core
-              WHERE status = 'active'
-                AND object_id ILIKE ${idSubstringPattern} ESCAPE '\\'
-            ),
-            candidate_ids AS (
-              SELECT object_id FROM fts_ids
-              UNION
-              SELECT object_id FROM id_hits
-            )
-            SELECT DISTINCT ON (COALESCE(oc.meta_group_id, oc.object_id))
-              oc.object_id AS object_id,
-              oc.object_type AS object_type,
-              oc.meta_group_id AS meta_group_id,
-              oc.weight AS weight
-            FROM objects_core oc
-            INNER JOIN candidate_ids c ON c.object_id = oc.object_id
-            WHERE oc.status = 'active'
-            ORDER BY COALESCE(oc.meta_group_id, oc.object_id), oc.weight DESC NULLS LAST
-            LIMIT ${limit}
-          `.execute(this.db)
-        : await sql<SearchObjectCandidateRow>`
-            WITH fts_ids AS (
-              SELECT DISTINCT ou.object_id
-              FROM object_updates ou
-              WHERE ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
-                AND ou.search_vector @@ to_tsquery('english', ${tsQuery})
-            )
-            SELECT DISTINCT ON (COALESCE(oc.meta_group_id, oc.object_id))
-              oc.object_id AS object_id,
-              oc.object_type AS object_type,
-              oc.meta_group_id AS meta_group_id,
-              oc.weight AS weight
-            FROM objects_core oc
-            INNER JOIN fts_ids c ON c.object_id = oc.object_id
-            WHERE oc.status = 'active'
-            ORDER BY COALESCE(oc.meta_group_id, oc.object_id), oc.weight DESC NULLS LAST
-            LIMIT ${limit}
-          `.execute(this.db);
+      const result = await sql<SearchObjectCandidateRow>`
+        WITH fts_hits AS (
+          SELECT
+            ou.object_id,
+            MAX(ts_rank_cd(ou.search_vector, to_tsquery('english', ${tsQuery})))::real AS rank
+          FROM object_updates ou
+          WHERE ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
+            AND ou.search_vector @@ to_tsquery('english', ${tsQuery})
+          GROUP BY ou.object_id
+        ),
+        exact_hits AS (
+          SELECT DISTINCT ou.object_id, ${SEARCH_RANK_EXACT_TEXT}::real AS rank
+          FROM object_updates ou
+          WHERE ou.update_type IN (${FTS_TEXT_UPDATE_TYPES[0]}, ${FTS_TEXT_UPDATE_TYPES[1]}, ${FTS_TEXT_UPDATE_TYPES[2]})
+            AND ou.value_text_normalized = ${normalized}
+        ),
+        id_hits AS (
+          SELECT object_id, ${SEARCH_RANK_ID_SUBSTRING}::real AS rank
+          FROM objects_core
+          WHERE status = 'active'
+            AND ${includeIdSubstring}
+            AND object_id ILIKE ${idSubstringPattern} ESCAPE '\\'
+        ),
+        scored AS (
+          SELECT object_id, rank FROM fts_hits
+          UNION ALL
+          SELECT object_id, rank FROM exact_hits
+          UNION ALL
+          SELECT object_id, rank FROM id_hits
+        ),
+        best AS (
+          SELECT object_id, MAX(rank) AS rank
+          FROM scored
+          GROUP BY object_id
+        ),
+        collapsed AS (
+          SELECT DISTINCT ON (COALESCE(oc.meta_group_id, oc.object_id))
+            oc.object_id AS object_id,
+            oc.object_type AS object_type,
+            oc.meta_group_id AS meta_group_id,
+            oc.weight AS weight,
+            b.rank AS rank
+          FROM objects_core oc
+          INNER JOIN best b ON b.object_id = oc.object_id
+          WHERE oc.status = 'active'
+          ORDER BY COALESCE(oc.meta_group_id, oc.object_id), b.rank DESC, oc.weight DESC NULLS LAST
+        )
+        SELECT
+          object_id,
+          object_type,
+          meta_group_id,
+          weight
+        FROM collapsed
+        ORDER BY rank DESC, weight DESC NULLS LAST
+        LIMIT ${limit}
+      `.execute(this.db);
 
       return (result.rows as SearchObjectCandidateRow[]) ?? [];
     } catch (error) {
