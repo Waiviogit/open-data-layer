@@ -2,14 +2,20 @@
 
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
 
+import type { UpdateTypeOption } from './update-filter-bar';
+
 export type UpdateTypeSelectFieldProps = {
   label: string;
   value: string;
-  options: readonly string[];
+  options: readonly UpdateTypeOption[];
   onChange: (updateType: string) => void;
   disabled?: boolean;
   id?: string;
 };
+
+function optionLabel(option: UpdateTypeOption): string {
+  return option.label || labelForUpdateType(option.value);
+}
 
 export function UpdateTypeSelectField({
   label,
@@ -30,9 +36,9 @@ export function UpdateTypeSelectField({
         disabled={disabled}
         aria-disabled={disabled}
       >
-        {options.map((type) => (
-          <option key={type} value={type}>
-            {labelForUpdateType(type)}
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {optionLabel(option)}
           </option>
         ))}
       </select>

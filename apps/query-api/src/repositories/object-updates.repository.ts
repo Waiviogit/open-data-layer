@@ -29,6 +29,21 @@ export class ObjectUpdatesRepository {
     }
   }
 
+  async countByObjectIdGroupByUpdateType(objectId: string): Promise<Record<string, number>> {
+    try {
+      const rows = await this.db
+        .selectFrom('object_updates')
+        .select(['update_type', sql<number>`count(*)::int`.as('count')])
+        .where('object_id', '=', objectId)
+        .groupBy('update_type')
+        .execute();
+      return Object.fromEntries(rows.map((r) => [r.update_type, Number(r.count)]));
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return {};
+    }
+  }
+
   async findByUpdateId(updateId: string) {
     return this.db
       .selectFrom('object_updates')

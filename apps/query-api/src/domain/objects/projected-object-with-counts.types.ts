@@ -7,4 +7,5 @@ export type ProjectedObjectWithCounts = ProjectedObject & {
   ownership_count: number;
   is_following: boolean;
   viewer_bell: boolean;
+  update_type_counts: Record<string, number>;
 };

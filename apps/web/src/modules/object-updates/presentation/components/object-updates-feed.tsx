@@ -129,6 +129,9 @@ export function ObjectUpdatesFeed({
           viewerUsername={effectiveViewerUsername}
           tagCategoryNames={tagCategoryNames}
           candidateUpdateTypes={supportedUpdateTypes}
+          updateTypeCounts={Object.fromEntries(
+            typeOptions.map((o) => [o.value, o.count ?? 0]),
+          )}
           initialUpdateType={filters.update_type}
           initialLocale={filters.locale}
         />

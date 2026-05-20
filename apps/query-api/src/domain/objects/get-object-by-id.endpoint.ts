@@ -68,8 +68,8 @@ export class GetObjectByIdEndpoint {
 
     const [
       projected,
+      update_type_counts,
       followers_count,
-      updates_count,
       administrative_count,
       ownership_count,
       viewerFollow,
@@ -80,14 +80,16 @@ export class GetObjectByIdEndpoint {
         viewerAccount: input.viewerAccount,
         rankVoteProjection,
       }),
+      this.objectUpdatesRepo.countByObjectIdGroupByUpdateType(objectId),
       this.userObjectFollowsRepo.countByObjectId(objectId),
-      this.objectUpdatesRepo.countByObjectId(objectId),
       this.objectAuthorityRepo.countByObjectIdAndType(objectId, 'administrative'),
       this.objectAuthorityRepo.countByObjectIdAndType(objectId, 'ownership'),
       input.viewerAccount
         ? this.userObjectFollowsRepo.findByAccountAndObject(input.viewerAccount, objectId)
         : Promise.resolve(null),
     ]);
+
+    const updates_count = Object.values(update_type_counts).reduce((sum, n) => sum + n, 0);
 
     return {
       ...projected,
@@ -97,6 +99,7 @@ export class GetObjectByIdEndpoint {
       ownership_count,
       is_following: viewerFollow != null,
       viewer_bell: viewerFollow?.bell ?? false,
+      update_type_counts,
     };
   }
 }

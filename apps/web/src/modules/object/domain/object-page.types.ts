@@ -179,6 +179,8 @@ export type ObjectPageViewModel = {
   isFollowing: boolean;
   /** Viewer bell notifications on this object follow row. */
   viewerBell: boolean;
+  /** Count of existing update rows per `update_type` (e.g. `{ menuItem: 12, name: 1 }`). */
+  updateTypeCounts: Record<string, number>;
   /** For Authority tab sub-nav badges (`object_authority` counts from resolve). */
   administrativeAuthorityCount: number;
   ownershipAuthorityCount: number;

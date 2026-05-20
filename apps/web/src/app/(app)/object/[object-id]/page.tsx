@@ -111,6 +111,7 @@ export default async function ObjectDetailPage({
   const typeOptions = supported.map((u) => ({
     value: u,
     label: labelForUpdateType(u),
+    count: model.updateTypeCounts[u] ?? 0,
   }));
   const showLocaleFilter = supported.some((u) => UPDATE_REGISTRY[u]?.localizable === true);
   const localizableTypes = supported.filter((u) => UPDATE_REGISTRY[u]?.localizable === true);

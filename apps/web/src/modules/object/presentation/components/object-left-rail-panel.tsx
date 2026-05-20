@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
 import {
+  BLOCK_KIND_TO_UPDATE_TYPES,
   getUpdateTypesForBlockKind,
   primaryUpdateTypeForBlockKind,
   type ObjectLeftRailBlockKind,
@@ -17,6 +18,7 @@ import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 
 import type { ObjectLeftRailBlock } from '../../domain/object-page.types';
 
+import { LeftRailUpdateCountBadge } from './left-rail-update-count-badge';
 import { ObjectGeoPreview } from './object-geo-preview';
 import { ObjectMenuItemsStatic } from './object-menu-items-static';
 import { StarRating } from './star-rating';
@@ -27,7 +29,21 @@ export type ObjectLeftRailEditContext = {
   supportedUpdateTypes: readonly string[];
   /** Existing `tagCategory` names on the object (for `tagCategoryItem` picker). */
   tagCategoryNames: readonly string[];
+  /** Per-type update row counts from object resolve. */
+  updateTypeCounts: Record<string, number>;
 };
+
+function countForBlockKind(
+  kind: ObjectLeftRailBlockKind,
+  counts: Record<string, number>,
+): number {
+  return (
+    BLOCK_KIND_TO_UPDATE_TYPES[kind]?.reduce(
+      (sum, updateType) => sum + (counts[updateType] ?? 0),
+      0,
+    ) ?? 0
+  );
+}
 
 export type ObjectLeftRailPanelProps = {
   blocks: ObjectLeftRailBlock[];
@@ -119,17 +135,27 @@ function LeftRailBlockHeading({
   label,
   onAdd,
   addLabel,
+  count,
 }: {
   label: string;
   onAdd?: () => void;
   addLabel: string;
+  /** Existing update rows for this block (edit mode only). */
+  count?: number;
 }) {
   if (!onAdd) {
     return <p className="font-medium text-fg">{label}</p>;
   }
   return (
-    <div className="flex items-center justify-between gap-2">
-      <p className="min-w-0 font-medium text-fg">{label}</p>
+    <div className="flex items-start justify-between gap-2">
+      <div className="min-w-0 flex-1">
+        <p className="font-medium text-fg">{label}</p>
+        {count != null ? (
+          <div className="mt-1">
+            <LeftRailUpdateCountBadge count={count} />
+          </div>
+        ) : null}
+      </div>
       <LeftRailAddUpdateButton onClick={onAdd} addLabel={addLabel} />
     </div>
   );
@@ -141,32 +167,35 @@ function LeftRailIdentifierSection({
   rows,
   onAdd,
   addLabel,
+  count,
 }: {
   cardClass: string;
   headingLabel: string;
   rows: { type: string; value: string }[];
   onAdd?: () => void;
   addLabel: string;
+  count?: number;
 }) {
   const [open, setOpen] = useState(false);
   const contentId = useId();
 
   return (
     <aside className={cardClass}>
-      <div className="flex w-full min-w-0 items-center justify-between gap-2">
-        <button
-          type="button"
-          className="flex min-w-0 flex-1 items-center justify-between gap-2 text-left text-sm font-medium text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus rounded-sm"
-          aria-expanded={open}
-          aria-controls={contentId}
-          onClick={() => setOpen((v) => !v)}
-        >
-          <span className="min-w-0 truncate">{headingLabel}</span>
-          <ChevronAccordion expanded={open} />
-        </button>
-        {onAdd ? (
-          <LeftRailAddUpdateButton onClick={onAdd} addLabel={addLabel} />
-        ) : null}
+      <div className="flex w-full min-w-0 items-start justify-between gap-2">
+        <div className="min-w-0 flex-1 space-y-1">
+          <button
+            type="button"
+            className="flex w-full min-w-0 items-center justify-between gap-2 text-left text-sm font-medium text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus rounded-sm"
+            aria-expanded={open}
+            aria-controls={contentId}
+            onClick={() => setOpen((v) => !v)}
+          >
+            <span className="min-w-0 truncate">{headingLabel}</span>
+            <ChevronAccordion expanded={open} />
+          </button>
+          {onAdd && count != null ? <LeftRailUpdateCountBadge count={count} /> : null}
+        </div>
+        {onAdd ? <LeftRailAddUpdateButton onClick={onAdd} addLabel={addLabel} /> : null}
       </div>
       {open ? (
         <div id={contentId} className="mt-3 space-y-4">
@@ -231,6 +260,13 @@ export function ObjectLeftRailPanel({
     return () => openAddModal(kind);
   }
 
+  function railBlockCount(kind: ObjectLeftRailBlockKind): number | undefined {
+    if (!editContext) {
+      return undefined;
+    }
+    return countForBlockKind(kind, editContext.updateTypeCounts);
+  }
+
   return (
     <div className="flex min-w-0 flex-col gap-card-padding">
       {editContext && addModal ? (
@@ -243,6 +279,7 @@ export function ObjectLeftRailPanel({
           candidateUpdateTypes={addModal.candidateUpdateTypes}
           initialUpdateType={addModal.initialUpdateType}
           tagCategoryNames={editContext.tagCategoryNames}
+          updateTypeCounts={editContext.updateTypeCounts}
         />
       ) : null}
       {displayBlocks.map((block, index) => {
@@ -257,6 +294,7 @@ export function ObjectLeftRailPanel({
                   label={block.headingLabel}
                   onAdd={makeOnAdd('menuItems')}
                   addLabel={addLabel}
+                  count={railBlockCount('menuItems')}
                 />
                 <div className="mt-3">
                   <ObjectMenuItemsStatic items={block.items} />
@@ -270,6 +308,7 @@ export function ObjectLeftRailPanel({
                   label={block.headingLabel}
                   onAdd={makeOnAdd('name')}
                   addLabel={addLabel}
+                  count={railBlockCount('name')}
                 />
                 {block.text.trim() ? (
                   <p className="mt-2 font-medium text-fg">{block.text}</p>
@@ -283,6 +322,7 @@ export function ObjectLeftRailPanel({
                   label={block.headingLabel}
                   onAdd={makeOnAdd('title')}
                   addLabel={addLabel}
+                  count={railBlockCount('title')}
                 />
                 {block.text.trim() ? (
                   <p className="mt-2 text-fg">{block.text}</p>
@@ -296,6 +336,7 @@ export function ObjectLeftRailPanel({
                   label={block.headingLabel}
                   onAdd={makeOnAdd('parent')}
                   addLabel={addLabel}
+                  count={railBlockCount('parent')}
                 />
                 {block.objectId.trim() ? (
                   <Link
@@ -335,6 +376,7 @@ export function ObjectLeftRailPanel({
                   label={block.headingLabel}
                   onAdd={makeOnAdd('description')}
                   addLabel={addLabel}
+                  count={railBlockCount('description')}
                 />
                 {intro.display ? (
                   <p
@@ -362,6 +404,7 @@ export function ObjectLeftRailPanel({
                   label={block.headingLabel}
                   onAdd={makeOnAdd('rating')}
                   addLabel={addLabel}
+                  count={railBlockCount('rating')}
                 />
                 <ul className="mt-3 list-none space-y-4 p-0">
                   {block.aspects.map((aspect, aspectIndex) => (
@@ -397,6 +440,7 @@ export function ObjectLeftRailPanel({
                   label={block.headingLabel}
                   onAdd={makeOnAdd('tags')}
                   addLabel={addLabel}
+                  count={railBlockCount('tags')}
                 />
                 <div className="mt-3 space-y-4">
                   {block.sections.map((section) => (
@@ -426,6 +470,7 @@ export function ObjectLeftRailPanel({
                   label={block.headingLabel}
                   onAdd={makeOnAdd('gallery')}
                   addLabel={addLabel}
+                  count={railBlockCount('gallery')}
                 />
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   {block.urls.slice(0, 4).map((src, i) => (
@@ -453,6 +498,7 @@ export function ObjectLeftRailPanel({
                   label={block.headingLabel}
                   onAdd={makeOnAdd('price')}
                   addLabel={addLabel}
+                  count={railBlockCount('price')}
                 />
                 <div className="mt-2 flex items-center gap-1">
                   <span className="text-muted" aria-hidden>
@@ -469,6 +515,7 @@ export function ObjectLeftRailPanel({
                   label={block.headingLabel}
                   onAdd={makeOnAdd('workHours')}
                   addLabel={addLabel}
+                  count={railBlockCount('workHours')}
                 />
                 <ul className="mt-2 space-y-1">
                   {block.lines.map((line) => (
@@ -484,6 +531,7 @@ export function ObjectLeftRailPanel({
                   label={block.headingLabel}
                   onAdd={makeOnAdd('address')}
                   addLabel={addLabel}
+                  count={railBlockCount('address')}
                 />
                 <p className="mt-2 whitespace-pre-line leading-relaxed">{block.text}</p>
               </aside>
@@ -500,6 +548,7 @@ export function ObjectLeftRailPanel({
                   label={block.headingLabel}
                   onAdd={makeOnAdd('geo')}
                   addLabel={addLabel}
+                  count={railBlockCount('geo')}
                 />
                 {hasCoords ? (
                   <div className="mt-3 overflow-hidden rounded-btn">
@@ -520,6 +569,7 @@ export function ObjectLeftRailPanel({
                   label={block.headingLabel}
                   onAdd={makeOnAdd('websites')}
                   addLabel={addLabel}
+                  count={railBlockCount('websites')}
                 />
                 <ul className="mt-2 space-y-2">
                   {block.entries.map((entry) => (
@@ -544,6 +594,7 @@ export function ObjectLeftRailPanel({
                   label={block.headingLabel}
                   onAdd={makeOnAdd('phones')}
                   addLabel={addLabel}
+                  count={railBlockCount('phones')}
                 />
                 <ul className="mt-2 space-y-1 tabular-nums">
                   {block.numbers.map((n) => (
@@ -559,6 +610,7 @@ export function ObjectLeftRailPanel({
                   label={block.headingLabel}
                   onAdd={makeOnAdd('email')}
                   addLabel={addLabel}
+                  count={railBlockCount('email')}
                 />
                 <p className="mt-2 break-all">{block.address}</p>
               </aside>
@@ -570,6 +622,7 @@ export function ObjectLeftRailPanel({
                   label={block.headingLabel}
                   onAdd={makeOnAdd('walletAddress')}
                   addLabel={addLabel}
+                  count={railBlockCount('walletAddress')}
                 />
                 <ul className="mt-3 list-none space-y-2 p-0">
                   {block.items.map((row, rowIndex) => (
@@ -603,6 +656,7 @@ export function ObjectLeftRailPanel({
                 rows={block.rows}
                 onAdd={makeOnAdd('identifier')}
                 addLabel={addLabel}
+                count={railBlockCount('identifier')}
               />
             );
           case 'link':
@@ -612,6 +666,7 @@ export function ObjectLeftRailPanel({
                   label={block.headingLabel}
                   onAdd={makeOnAdd('link')}
                   addLabel={addLabel}
+                  count={railBlockCount('link')}
                 />
                 <ul className="mt-3 list-none space-y-2 p-0">
                   {block.items.map((row, rowIndex) => (

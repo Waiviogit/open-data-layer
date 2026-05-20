@@ -119,8 +119,9 @@ describe('GetObjectByIdEndpoint', () => {
         created_at: new Date(),
       }),
     } as unknown as UserObjectFollowsRepository;
+    const updateTypeCounts = { name: 10, menuItem: 15 };
     const updatesRepo = {
-      countByObjectId: jest.fn().mockResolvedValue(25),
+      countByObjectIdGroupByUpdateType: jest.fn().mockResolvedValue(updateTypeCounts),
     } as unknown as ObjectUpdatesRepository;
     const authorityRepo = {
       countByObjectIdAndType: jest
@@ -157,6 +158,7 @@ describe('GetObjectByIdEndpoint', () => {
       ownership_count: 3,
       is_following: true,
       viewer_bell: true,
+      update_type_counts: updateTypeCounts,
     });
     expect(followsRepo.findByAccountAndObject).toHaveBeenCalledWith('alice', 'o1');
     expect(governanceResolver.resolveMergedForObjectView).toHaveBeenCalledWith(undefined);
@@ -180,7 +182,7 @@ describe('GetObjectByIdEndpoint', () => {
       }),
     );
     expect(followsRepo.countByObjectId).toHaveBeenCalledWith('o1');
-    expect(updatesRepo.countByObjectId).toHaveBeenCalledWith('o1');
+    expect(updatesRepo.countByObjectIdGroupByUpdateType).toHaveBeenCalledWith('o1');
     expect(authorityRepo.countByObjectIdAndType).toHaveBeenCalledWith('o1', 'administrative');
     expect(authorityRepo.countByObjectIdAndType).toHaveBeenCalledWith('o1', 'ownership');
   });
@@ -242,7 +244,7 @@ describe('GetObjectByIdEndpoint', () => {
       countByObjectId: jest.fn().mockResolvedValue(0),
     } as unknown as UserObjectFollowsRepository;
     const updatesRepo = {
-      countByObjectId: jest.fn().mockResolvedValue(0),
+      countByObjectIdGroupByUpdateType: jest.fn().mockResolvedValue({}),
     } as unknown as ObjectUpdatesRepository;
     const authorityRepo = {
       countByObjectIdAndType: jest.fn().mockResolvedValue(0),
@@ -314,7 +316,7 @@ describe('GetObjectByIdEndpoint', () => {
       countByObjectId: jest.fn().mockResolvedValue(0),
     } as unknown as UserObjectFollowsRepository;
     const updatesRepo = {
-      countByObjectId: jest.fn().mockResolvedValue(0),
+      countByObjectIdGroupByUpdateType: jest.fn().mockResolvedValue({}),
     } as unknown as ObjectUpdatesRepository;
     const authorityRepo = {
       countByObjectIdAndType: jest.fn().mockResolvedValue(0),
@@ -382,7 +384,7 @@ describe('GetObjectByIdEndpoint', () => {
       countByObjectId: jest.fn().mockResolvedValue(0),
     } as unknown as UserObjectFollowsRepository;
     const updatesRepo = {
-      countByObjectId: jest.fn().mockResolvedValue(0),
+      countByObjectIdGroupByUpdateType: jest.fn().mockResolvedValue({}),
     } as unknown as ObjectUpdatesRepository;
     const authorityRepo = {
       countByObjectIdAndType: jest.fn().mockResolvedValue(0),
@@ -440,7 +442,7 @@ describe('GetObjectByIdEndpoint', () => {
       countByObjectId: jest.fn(),
     } as unknown as UserObjectFollowsRepository;
     const updatesRepo = {
-      countByObjectId: jest.fn(),
+      countByObjectIdGroupByUpdateType: jest.fn(),
     } as unknown as ObjectUpdatesRepository;
     const authorityRepo = {
       countByObjectIdAndType: jest.fn(),
@@ -465,6 +467,7 @@ describe('GetObjectByIdEndpoint', () => {
     expect(result).toBeNull();
     expect(projectionService.project).not.toHaveBeenCalled();
     expect(followsRepo.countByObjectId).not.toHaveBeenCalled();
+    expect(updatesRepo.countByObjectIdGroupByUpdateType).not.toHaveBeenCalled();
     expect(authorityRepo.countByObjectIdAndType).not.toHaveBeenCalled();
   });
 });

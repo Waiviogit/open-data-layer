@@ -11,7 +11,7 @@ import {
 
 import type { ObjectUpdatesUrlFilters } from '../../application/parse-object-updates-search-params';
 
-export type UpdateTypeOption = { value: string; label: string };
+export type UpdateTypeOption = { value: string; label: string; count?: number };
 
 export type ObjectUpdatesFilterBarProps = {
   typeOptions: UpdateTypeOption[];

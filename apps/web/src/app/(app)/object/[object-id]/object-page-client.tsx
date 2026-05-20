@@ -420,6 +420,7 @@ export function ObjectPageClient({
           viewerUsername,
           supportedUpdateTypes,
           tagCategoryNames: model.tagCategoryNames,
+          updateTypeCounts: model.updateTypeCounts,
         }
       : undefined;
 

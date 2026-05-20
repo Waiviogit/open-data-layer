@@ -7,6 +7,8 @@ export type AddUpdateModalBaseProps = {
   objectId: string;
   viewerUsername: string;
   tagCategoryNames?: readonly string[];
+  /** Per-type update row counts from object resolve (for type picker labels). */
+  updateTypeCounts?: Record<string, number>;
 };
 
 /** Opened from a left-rail block `+` — read-only “I suggest adding field” shows the update type. */

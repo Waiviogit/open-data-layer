@@ -428,6 +428,7 @@ export function projectedObjectWithCountsToPageModel(
     hasOwnershipAuthority: api.hasOwnershipAuthority ?? false,
     isFollowing: api.is_following ?? false,
     viewerBell: api.viewer_bell ?? false,
+    updateTypeCounts: api.update_type_counts ?? {},
     administrativeAuthorityCount: api.administrative_count ?? 0,
     ownershipAuthorityCount: api.ownership_count ?? 0,
     leftRailBlocks,

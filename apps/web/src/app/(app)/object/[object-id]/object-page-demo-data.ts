@@ -138,6 +138,26 @@ const DEMO_SHOP_API: ProjectedObjectWithCountsView = {
   updates_count: 25,
   administrative_count: 1,
   ownership_count: 0,
+  is_following: false,
+  viewer_bell: false,
+  update_type_counts: {
+    menuItem: 3,
+    name: 1,
+    title: 1,
+    description: 1,
+    tagCategoryItem: 1,
+    tagCategory: 1,
+    workHours: 1,
+    geo: 1,
+    address: 1,
+    website: 1,
+    link: 3,
+    telephone: 1,
+    email: 1,
+    walletAddress: 3,
+    identifier: 1,
+    price: 1,
+  },
 };
 
 const DEMO_NEWSFEED_API: ProjectedObjectWithCountsView = {
@@ -156,6 +176,9 @@ const DEMO_NEWSFEED_API: ProjectedObjectWithCountsView = {
   updates_count: 25,
   administrative_count: 0,
   ownership_count: 0,
+  is_following: false,
+  viewer_bell: false,
+  update_type_counts: { name: 1, description: 1 },
 };
 
 const DEMO_BY_ID: Record<string, ProjectedObjectWithCountsView> = {
