@@ -12,6 +12,8 @@ export type {
 } from './providers/keychain-provider';
 export { redirectToHiveSigner } from './providers/hivesigner-provider';
 export { buildHiveAuthPayload } from './providers/hiveauth-provider';
+export { buildOdlCustomJsonOp } from './odl-custom-json';
+export type { BuildOdlCustomJsonOpInput } from './odl-custom-json';
 export { createKeychainSigner } from './signers/keychain-signer';
 export { createHiveSignerSigner } from './signers/hivesigner-signer';
 export { createHiveAuthSigner } from './signers/hiveauth-signer';

@@ -122,6 +122,8 @@ Requires **`NEXT_PUBLIC_NOTIFICATIONS_WS_URL`** and a logged-in session (JWT via
 
 Implementation reference: `story-vote-button.tsx`, `story-comment-editor.tsx`, `modules/notifications/`. Server-side: [`docs/apps/notifications/spec/transport.md`](../../docs/apps/notifications/spec/transport.md).
 
+**ODL envelope broadcasts** (e.g. `update_vote`, `update_create`): use **`buildOdlCustomJsonOp`** from `@/modules/auth` — do not hardcode `odl-mainnet` / `odl-testnet`. Network id comes from **`NEXT_PUBLIC_ODL_NETWORK`** (client) / **`env.odlCustomJsonId`** (server); must match chain-indexer **`ODL_NETWORK`**.
+
 ## Maps (`src/modules/map/`)
 
 - **Public API:** `AppMap`, `AppMarker`, `AppPopup`, `MapProvider`, and types from `@/modules/map` — do **not** import `react-leaflet`, `leaflet`, or MapLibre directly in feature UIs.

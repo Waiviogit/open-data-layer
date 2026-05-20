@@ -2,6 +2,8 @@ import 'server-only';
 
 import { z } from 'zod';
 
+import { parseOdlNetwork, resolveOdlCustomJsonId } from './odl-network';
+
 /**
  * Single source of truth for server-side env vars used by `apps/web`.
  * Parsed at import time; invalid values throw (fail fast).
@@ -38,6 +40,16 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((v) => (v?.trim() ? v.trim() : undefined)),
+  /** Must match chain-indexer `ODL_NETWORK` for the same deployment. */
+  ODL_NETWORK: z.enum(['mainnet', 'testnet']).optional().default('mainnet'),
 });
 
-export const env = envSchema.parse(process.env);
+const parsed = envSchema.parse(process.env);
+const odlNetwork = parseOdlNetwork(parsed.ODL_NETWORK);
+
+export const env = {
+  ...parsed,
+  odlNetwork,
+  /** Hive `custom_json.id` for server-side ODL envelope builders. */
+  odlCustomJsonId: resolveOdlCustomJsonId(odlNetwork),
+};
