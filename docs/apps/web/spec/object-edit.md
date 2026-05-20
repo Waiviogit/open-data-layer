@@ -73,7 +73,7 @@ With Like enabled, the create event gets `event_id` (client UUID) and a second e
 
 `chain-indexer` stores Hive `transaction_id` on rows from the block context (not from payload). For same-broadcast votes it resolves `update_id` via `create_event_id` → envelope event index (`update-vote.handler.ts`). Separate broadcasts use explicit `update_id` in the vote payload.
 
-- Hive `custom_json.id`: `ODL_CUSTOM_JSON_ID` from `NEXT_PUBLIC_ODL_NETWORK` (see [auth.md](auth.md)).
+- Hive `custom_json.id`: `useOdlCustomJsonId()` from runtime `ODL_NETWORK` (see [auth.md](auth.md)).
 - Value field: `value_${value_kind}`, except `object_ref` → `value_text`.
 - Client validation reuses `UPDATE_REGISTRY[update_type].schema` from `@opden-data-layer/core`.
 

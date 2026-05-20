@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { buildOdlObjectAuthorityOp } from '@opden-data-layer/hive-broadcast';
 
-import { ODL_CUSTOM_JSON_ID } from '@/config/odl-network-public';
+import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
@@ -28,6 +28,7 @@ export function AuthorityActionButton({
   onRequireLogin,
 }: AuthorityActionButtonProps) {
   useHydrateWalletProvider();
+  const odlCustomJsonId = useOdlCustomJsonId();
   const router = useRouter();
   const { t } = useI18n();
   const [active, setActive] = useState(hasAuthority);
@@ -52,7 +53,7 @@ export function AuthorityActionButton({
     setPending(true);
     try {
       const op = buildOdlObjectAuthorityOp({
-        id: ODL_CUSTOM_JSON_ID,
+        id: odlCustomJsonId,
         objectId,
         authorityType,
         method,
@@ -69,7 +70,16 @@ export function AuthorityActionButton({
       setActive(previous);
       setPending(false);
     }
-  }, [active, authorityType, objectId, onRequireLogin, pending, router, viewerUsername]);
+  }, [
+    active,
+    authorityType,
+    objectId,
+    odlCustomJsonId,
+    onRequireLogin,
+    pending,
+    router,
+    viewerUsername,
+  ]);
 
   const label = active ? t('object_authority_action_remove') : t('object_authority_action_add');
 

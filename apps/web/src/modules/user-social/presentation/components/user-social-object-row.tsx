@@ -8,6 +8,7 @@ import { useCallback, useState } from 'react';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { objectFields, type ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
 import type { SocialProjectedObjectView } from '@/modules/user-social/application/dto/user-social.dto';
+import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useLoginModal } from '@/modules/auth/presentation';
 import { broadcastObjectUnfollow } from '@/modules/user-social/infrastructure/broadcast-object-unfollow';
 import { AVATAR_PLACEHOLDER_SRC, shouldUnoptimizeRemoteImage } from '@/shared/presentation';
@@ -27,6 +28,7 @@ export function UserSocialObjectRow({
   onRemoved,
 }: UserSocialObjectRowProps) {
   const { t } = useI18n();
+  const odlCustomJsonId = useOdlCustomJsonId();
   const router = useRouter();
   const { openLogin } = useLoginModal();
   const [pending, setPending] = useState(false);
@@ -49,7 +51,7 @@ export function UserSocialObjectRow({
     }
     setPending(true);
     try {
-      await broadcastObjectUnfollow(account, o.object_id);
+      await broadcastObjectUnfollow(account, o.object_id, odlCustomJsonId);
       onRemoved?.(o.object_id);
       router.refresh();
     } catch {
@@ -57,7 +59,7 @@ export function UserSocialObjectRow({
     } finally {
       setPending(false);
     }
-  }, [o.object_id, onRemoved, openLogin, pending, router, viewerUsername]);
+  }, [o.object_id, odlCustomJsonId, onRemoved, openLogin, pending, router, viewerUsername]);
 
   return (
     <li className="flex items-center gap-3 border-b border-border py-3 last:border-b-0">

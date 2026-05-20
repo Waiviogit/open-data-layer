@@ -7,5 +7,3 @@
 export const NOTIFICATIONS_WS_URL = (
   process.env.NEXT_PUBLIC_NOTIFICATIONS_WS_URL ?? ''
 ).trim();
-
-export { ODL_NETWORK, ODL_CUSTOM_JSON_ID } from './odl-network-public';

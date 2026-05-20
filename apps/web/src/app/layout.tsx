@@ -4,6 +4,8 @@ import { isRTL } from '../i18n/domain/is-rtl';
 import { I18nProvider } from '../i18n/providers/i18n-provider';
 import { getRequestLocale } from '../i18n/runtime/get-request-locale';
 import { loadMessages } from '../i18n/runtime/load-messages';
+import { env } from '@/config/env';
+import { OdlNetworkProvider } from '@/config/odl-network-provider';
 import { ShellModeProvider } from '@/shell-mode';
 import { getServerShellModeResolution } from '@/shell-mode/server';
 import { getServerThemeResolution } from '../theme/get-server-theme-resolution';
@@ -36,9 +38,11 @@ export default async function RootLayout({
       <body className="min-h-screen bg-bg text-fg antialiased">
         <ThemeProvider initialResolution={themeResolution}>
           <ShellModeProvider initialResolution={shellModeResolution}>
-            <I18nProvider locale={locale} messages={messages}>
-              {children}
-            </I18nProvider>
+            <OdlNetworkProvider customJsonId={env.odlCustomJsonId}>
+              <I18nProvider locale={locale} messages={messages}>
+                {children}
+              </I18nProvider>
+            </OdlNetworkProvider>
           </ShellModeProvider>
         </ThemeProvider>
       </body>

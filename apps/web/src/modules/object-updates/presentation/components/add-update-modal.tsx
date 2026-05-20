@@ -12,7 +12,7 @@ import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
 
 import { DEFAULT_LOCALE } from '@/i18n/config/default-locale';
 import { locales } from '@/i18n/config/locales';
-import { ODL_CUSTOM_JSON_ID } from '@/config/odl-network-public';
+import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
 import { formatUpdateCountLabel } from '@/modules/object/domain/update-count-label';
@@ -88,6 +88,7 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
     updateTypeCounts,
   } = props;
 
+  const odlCustomJsonId = useOdlCustomJsonId();
   const leftRail = isLeftRailModalProps(props);
   const feedAdd = isFeedAddModalProps(props);
   const typePicker = isTypePickerModalProps(props);
@@ -184,7 +185,7 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
     setError(null);
     try {
       const createInput = {
-        id: ODL_CUSTOM_JSON_ID,
+        id: odlCustomJsonId,
         objectId,
         updateType: selectedType,
         creator: viewerUsername,
@@ -217,6 +218,7 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
     viewerUsername,
     locale,
     likeChecked,
+    odlCustomJsonId,
     onClose,
     router,
     t,

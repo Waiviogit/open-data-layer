@@ -25,7 +25,7 @@ import { UserSocialAccountList } from '@/modules/user-social/presentation/compon
 import { getWalletFacade, useHydrateWalletProvider, useLoginModal } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
 import { buildOdlObjectAuthorityOp, buildOdlObjectFollowOp } from '@opden-data-layer/hive-broadcast';
-import { ODL_CUSTOM_JSON_ID } from '@/config/odl-network-public';
+import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 
 import { loadMoreObjectAuthorityAction } from './authority/object-authority.actions';
 import { loadMoreObjectFollowersAction } from './followers/object-followers.actions';
@@ -72,6 +72,7 @@ export function ObjectPageClient({
   const searchParams = useSearchParams();
   const { openLogin } = useLoginModal();
   useHydrateWalletProvider();
+  const odlCustomJsonId = useOdlCustomJsonId();
 
   const [isEditMode, setEditMode] = useState(false);
   const [isFollowing, setFollowing] = useState(model.isFollowing);
@@ -181,7 +182,7 @@ export function ObjectPageClient({
     setFollowPending(true);
     try {
       const op = buildOdlObjectFollowOp({
-        id: ODL_CUSTOM_JSON_ID,
+        id: odlCustomJsonId,
         objectId: model.objectId,
         method,
         required_posting_auths: [account],
@@ -202,6 +203,7 @@ export function ObjectPageClient({
     followPending,
     isFollowing,
     model.objectId,
+    odlCustomJsonId,
     openLogin,
     router,
     viewerBell,
@@ -223,7 +225,7 @@ export function ObjectPageClient({
     setBellPending(true);
     try {
       const op = buildOdlObjectFollowOp({
-        id: ODL_CUSTOM_JSON_ID,
+        id: odlCustomJsonId,
         objectId: model.objectId,
         method: 'bell',
         bell: nextBell,
@@ -244,6 +246,7 @@ export function ObjectPageClient({
     bellPending,
     isFollowing,
     model.objectId,
+    odlCustomJsonId,
     openLogin,
     router,
     viewerBell,
@@ -265,7 +268,7 @@ export function ObjectPageClient({
     setFavoritePending(true);
     try {
       const op = buildOdlObjectAuthorityOp({
-        id: ODL_CUSTOM_JSON_ID,
+        id: odlCustomJsonId,
         objectId: model.objectId,
         authorityType: 'administrative',
         method,
@@ -286,6 +289,7 @@ export function ObjectPageClient({
     favoritePending,
     isFavorite,
     model.objectId,
+    odlCustomJsonId,
     openLogin,
     router,
     viewerUsername,

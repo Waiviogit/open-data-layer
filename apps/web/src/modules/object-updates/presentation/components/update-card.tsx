@@ -8,7 +8,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { buildOdlUpdateVoteOp } from '@opden-data-layer/hive-broadcast';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
-import { ODL_CUSTOM_JSON_ID } from '@/config/odl-network-public';
+import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import type { LocaleId } from '@/i18n/types';
 import {
@@ -53,6 +53,7 @@ export function UpdateCard({
   onRequireLogin,
 }: UpdateCardProps) {
   useHydrateWalletProvider();
+  const odlCustomJsonId = useOdlCustomJsonId();
   const router = useRouter();
   const { t, locale } = useI18n();
   const loc = locale as LocaleId;
@@ -108,7 +109,7 @@ export function UpdateCard({
       setPending(true);
       try {
         const op = buildOdlUpdateVoteOp({
-          id: ODL_CUSTOM_JSON_ID,
+          id: odlCustomJsonId,
           updateId: item.update_id,
           objectId: item.object_id,
           voter,
@@ -134,6 +135,7 @@ export function UpdateCard({
       confirming,
       item.object_id,
       item.update_id,
+      odlCustomJsonId,
       onRequireLogin,
       optimisticVote,
       pending,

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useId, useState } from 'react';
 
 import { buildOdlRankVoteOp } from '@opden-data-layer/hive-broadcast';
 
-import { ODL_CUSTOM_JSON_ID } from '@/config/odl-network-public';
+import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
 
@@ -184,6 +184,7 @@ export function StarRating({
   showNumeric = true,
 }: StarRatingProps) {
   useHydrateWalletProvider();
+  const odlCustomJsonId = useOdlCustomJsonId();
   const router = useRouter();
   const baseId = useId();
   const sizePx = STAR_SIZE_PX[size];
@@ -231,7 +232,7 @@ export function StarRating({
       setPending(true);
       try {
         const op = buildOdlRankVoteOp({
-          id: ODL_CUSTOM_JSON_ID,
+          id: odlCustomJsonId,
           updateId,
           objectId,
           voter,
@@ -254,7 +255,15 @@ export function StarRating({
         setPending(false);
       }
     },
-    [objectId, onRequireLogin, optimisticUserStars, router, updateId, viewerUsername],
+    [
+      objectId,
+      odlCustomJsonId,
+      onRequireLogin,
+      optimisticUserStars,
+      router,
+      updateId,
+      viewerUsername,
+    ],
   );
 
   const ariaLabel =

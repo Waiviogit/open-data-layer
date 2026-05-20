@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { buildOdlObjectAuthorityOp } from '@opden-data-layer/hive-broadcast';
 
-import { ODL_CUSTOM_JSON_ID } from '@/config/odl-network-public';
+import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
 import type { ProjectedObjectView } from '../../application/dto/object-fields';
@@ -84,6 +84,7 @@ function AdministrativeHeartButton({
   onRequireLogin?: () => void;
 }) {
   useHydrateWalletProvider();
+  const odlCustomJsonId = useOdlCustomJsonId();
   const router = useRouter();
   const { t } = useI18n();
   const [active, setActive] = useState(initialActive);
@@ -108,7 +109,7 @@ function AdministrativeHeartButton({
     setPending(true);
     try {
       const op = buildOdlObjectAuthorityOp({
-        id: ODL_CUSTOM_JSON_ID,
+        id: odlCustomJsonId,
         objectId,
         authorityType: 'administrative',
         method,
@@ -125,7 +126,7 @@ function AdministrativeHeartButton({
       setActive(previous);
       setPending(false);
     }
-  }, [active, objectId, onRequireLogin, pending, router, viewerUsername]);
+  }, [active, objectId, odlCustomJsonId, onRequireLogin, pending, router, viewerUsername]);
 
   const hint = active ? t('feed_linked_object_admin_hint') : t('object_detail_favorites_add');
   const canInteract = viewerUsername != null && viewerUsername.trim().length > 0;

@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
+import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useLoginModal } from '@/modules/auth/presentation';
 import {
   broadcastUserFollowBell,
@@ -33,6 +34,7 @@ export function UserProfileHeroClient({
   const search = searchParams.toString();
   const router = useRouter();
   const { openLogin } = useLoginModal();
+  const odlCustomJsonId = useOdlCustomJsonId();
   const [isHeroLoading, setIsHeroLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(initialUser.isFollowing);
   const [viewerBell, setViewerBell] = useState(initialUser.viewerBell);
@@ -106,7 +108,7 @@ export function UserProfileHeroClient({
     setViewerBell(nextBell);
     setBellPending(true);
     try {
-      await broadcastUserFollowBell(account, accountName, nextBell);
+      await broadcastUserFollowBell(account, accountName, nextBell, odlCustomJsonId);
       router.refresh();
     } catch {
       setViewerBell(previousBell);
@@ -118,6 +120,7 @@ export function UserProfileHeroClient({
     bellPending,
     isFollowing,
     openLogin,
+    odlCustomJsonId,
     router,
     viewerBell,
     viewerUsername,

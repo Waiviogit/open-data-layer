@@ -15,7 +15,7 @@ Clean architecture: `domain` (wallet facade, provider metadata), `application` (
 
 ## Env
 
-See `apps/web/.env.example`: `AUTH_API_BASE_URL`, `AUTH_JWT_SECRET`, `ODL_NETWORK` / `NEXT_PUBLIC_ODL_NETWORK`.
+See `apps/web/.env.example`: `AUTH_API_BASE_URL`, `AUTH_JWT_SECRET`, `ODL_NETWORK` (repo root `.env` on compose).
 
 ## Wallet facade
 
@@ -23,7 +23,7 @@ See `apps/web/.env.example`: `AUTH_API_BASE_URL`, `AUTH_JWT_SECRET`, `ODL_NETWOR
 
 - **Browser singleton:** `getWalletFacade()` (`infrastructure/wallet-facade.client.ts`) shares one facade + BFF client across the app. After a **full page reload**, the cookie session is still valid but the in-memory `activeProvider` is lost; successful Keychain login stores `'keychain'` in **`sessionStorage`** (`ODL_WALLET_PROVIDER_SESSION_KEY`). Client code calls **`useHydrateWalletProvider()`** to read `sessionStorage` and `setActiveProvider('keychain')` so `broadcast` works after refresh. **HiveSigner / HiveAuth** hydration is not implemented yet.
 - **Operations:** Domain builders (`buildVoteOp`, `buildCommentOp`, `buildCommentOptionsOp`, `buildCustomJsonOp`, `buildReblogOp`) produce a normalized `BroadcastTransactionInput` (`HiveOperationPayload`).
-- **ODL `custom_json`:** Use **`buildOdlCustomJsonOp`** from `@/modules/auth` for ODL envelope broadcasts. It sets Hive `custom_json.id` from **`NEXT_PUBLIC_ODL_NETWORK`** (`mainnet` → `odl-mainnet`, `testnet` → `odl-testnet`) — must match **chain-indexer** `ODL_NETWORK` on the same stack. Server code: `env.odlCustomJsonId` from `@/config/env`.
+- **ODL `custom_json`:** Client broadcasts use **`useOdlCustomJsonId()`** (runtime **`ODL_NETWORK`** via root layout). `mainnet` → `odl-mainnet`, `testnet` → `odl-testnet` — same **`ODL_NETWORK`** as **chain-indexer**. Docker: one repo-root **`.env`** at container start only (no build-time ODL env on the image).
 - **Signing:** `DefaultWalletFacade` dispatches to an `IHiveSigner` for the active provider. Keychain uses `hive_keychain.requestBroadcast`; HiveSigner and HiveAuth signers are stubs until wired.
 - **Providers:** Keychain, HiveAuth (manual `authData` step in UI), HiveSigner (redirect).
 

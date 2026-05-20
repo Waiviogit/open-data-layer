@@ -19,6 +19,7 @@ RUN pnpm install --frozen-lockfile
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# ODL network (odl-mainnet / odl-testnet) is runtime-only: set ODL_NETWORK in compose env_file.
 # Build the Next app (workspace package @opden-data-layer/web — see apps/web/package.json).
 WORKDIR /app
 RUN pnpm exec next build ./apps/web

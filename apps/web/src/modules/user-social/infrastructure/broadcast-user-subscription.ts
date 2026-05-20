@@ -6,7 +6,6 @@ import {
   buildOdlUserFollowBellOp,
 } from '@opden-data-layer/hive-broadcast';
 
-import { ODL_CUSTOM_JSON_ID } from '@/config/odl-network-public';
 import { getWalletFacade } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
 
@@ -27,9 +26,10 @@ export async function broadcastUserFollowBell(
   follower: string,
   following: string,
   bell: boolean,
+  odlCustomJsonId: string,
 ): Promise<string> {
   const op = buildOdlUserFollowBellOp({
-    id: ODL_CUSTOM_JSON_ID,
+    id: odlCustomJsonId,
     following,
     bell,
     required_posting_auths: [follower],

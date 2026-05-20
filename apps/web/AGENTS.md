@@ -122,7 +122,7 @@ Requires **`NEXT_PUBLIC_NOTIFICATIONS_WS_URL`** and a logged-in session (JWT via
 
 Implementation reference: `story-vote-button.tsx`, `story-comment-editor.tsx`, `modules/notifications/`. Server-side: [`docs/apps/notifications/spec/transport.md`](../../docs/apps/notifications/spec/transport.md).
 
-**ODL envelope broadcasts** (e.g. `update_vote`, `update_create`): use **`buildOdlCustomJsonOp`** from `@/modules/auth` — do not hardcode `odl-mainnet` / `odl-testnet`. Network id comes from **`NEXT_PUBLIC_ODL_NETWORK`** (client) / **`env.odlCustomJsonId`** (server); must match chain-indexer **`ODL_NETWORK`**.
+**ODL envelope broadcasts** (e.g. `update_vote`, `update_create`): use **`useOdlCustomJsonId()`** from `@/config/odl-network-provider` — do not hardcode `odl-mainnet` / `odl-testnet`. **`ODL_NETWORK`** is runtime-only (compose `env_file`); not a Docker build-arg.
 
 ## Maps (`src/modules/map/`)
 
