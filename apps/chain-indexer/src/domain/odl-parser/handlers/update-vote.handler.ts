@@ -133,6 +133,15 @@ export class UpdateVoteHandler implements OdlActionHandler {
       return;
     }
 
+    const existing = await this.validityVotesRepository.findByUpdateIdAndVoter(
+      update_id,
+      voter,
+    );
+    if (existing?.vote === vote) {
+      this.emitTrxProcessed(ctx);
+      return;
+    }
+
     const row: NewValidityVote = {
       update_id,
       object_id,
@@ -142,7 +151,15 @@ export class UpdateVoteHandler implements OdlActionHandler {
       transaction_id: ctx.transactionId,
     };
 
-    await this.validityVotesRepository.create(row);
+    if (existing) {
+      await this.validityVotesRepository.update(update_id, voter, {
+        vote,
+        event_seq: ctx.eventSeq,
+        transaction_id: ctx.transactionId,
+      });
+    } else {
+      await this.validityVotesRepository.create(row);
+    }
     if (votedUpdate.update_type === UPDATE_TYPES.CATEGORY) {
       this.eventEmitter.emit(CATEGORY_MUTATED_EVENT, new CategoryMutatedEvent(object_id));
     }

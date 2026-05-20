@@ -143,6 +143,8 @@ export function ObjectUpdatesFeed({
                 <UpdateCard
                   item={item}
                   showLocaleBadge={localizable.has(item.update_type)}
+                  viewerUsername={effectiveViewerUsername}
+                  onRequireLogin={openLogin}
                 />
               </li>
             ))}

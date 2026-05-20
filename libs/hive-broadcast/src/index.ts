@@ -4,6 +4,9 @@ export { wireCommentOptionsPayload } from './hive-operation-wire';
 export {
   buildOdlUpdateCreateOp,
   buildOdlUpdateCreateWithLikeOp,
+  buildOdlUpdateVoteOp,
   type BuildOdlUpdateCreateOpInput,
+  type BuildOdlUpdateVoteOpInput,
   type OdlUpdateCreateValueKind,
+  type OdlUpdateVoteValue,
 } from './odl-operations';

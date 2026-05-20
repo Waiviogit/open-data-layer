@@ -1,4 +1,8 @@
-import { buildOdlUpdateCreateOp, buildOdlUpdateCreateWithLikeOp } from './odl-operations';
+import {
+  buildOdlUpdateCreateOp,
+  buildOdlUpdateCreateWithLikeOp,
+  buildOdlUpdateVoteOp,
+} from './odl-operations';
 
 describe('buildOdlUpdateCreateOp', () => {
   const base = {
@@ -134,5 +138,38 @@ describe('buildOdlUpdateCreateWithLikeOp', () => {
     expect(parsed.events[1]?.payload['update_id']).toBeUndefined();
     expect(parsed.events[1]?.payload['transaction_id']).toBeUndefined();
     expect(parsed.events[0]?.payload['transaction_id']).toBeUndefined();
+  });
+});
+
+describe('buildOdlUpdateVoteOp', () => {
+  it('emits update_vote with update_id and vote for', () => {
+    const op = buildOdlUpdateVoteOp({
+      id: 'odl-testnet',
+      updateId: 'trx-0-0-1',
+      objectId: 'obj-1',
+      voter: 'alice',
+      vote: 'for',
+      required_posting_auths: ['alice'],
+    });
+    const parsed = JSON.parse(op.json) as {
+      events: { action: string; payload: Record<string, unknown> }[];
+    };
+    expect(parsed.events).toHaveLength(1);
+    expect(parsed.events[0]?.action).toBe('update_vote');
+    expect(parsed.events[0]?.payload['update_id']).toBe('trx-0-0-1');
+    expect(parsed.events[0]?.payload['object_id']).toBe('obj-1');
+    expect(parsed.events[0]?.payload['voter']).toBe('alice');
+    expect(parsed.events[0]?.payload['vote']).toBe('for');
+  });
+
+  it('emits vote against', () => {
+    const op = buildOdlUpdateVoteOp({
+      id: 'odl-mainnet',
+      updateId: 'u1',
+      objectId: 'o1',
+      voter: 'bob',
+      vote: 'against',
+    });
+    expect(JSON.parse(op.json).events[0].payload['vote']).toBe('against');
   });
 });

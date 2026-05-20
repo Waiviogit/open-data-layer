@@ -2,15 +2,21 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 
+import { buildOdlUpdateVoteOp } from '@opden-data-layer/hive-broadcast';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
+import { ODL_CUSTOM_JSON_ID } from '@/config/odl-network-public';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import type { LocaleId } from '@/i18n/types';
 import {
   formatRelativeFeedTime,
   formatReputation,
 } from '@/modules/feed/presentation/components/story-utils';
+import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
+import { awaitTrxConfirmation } from '@/modules/notifications';
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
 import { shouldUnoptimizeRemoteImage, UserAvatar } from '@/shared/presentation';
 
@@ -32,15 +38,36 @@ const UPDATE_TYPES_HIDE_JSON_WHEN_IMAGE: ReadonlySet<string> = new Set([
 export type UpdateCardProps = {
   item: ObjectUpdateFeedItemView;
   showLocaleBadge: boolean;
+  viewerUsername?: string | null;
+  onRequireLogin?: () => void;
 };
 
 function unixToIsoSeconds(sec: number): string {
   return new Date(sec * 1000).toISOString();
 }
 
-export function UpdateCard({ item, showLocaleBadge }: UpdateCardProps) {
+export function UpdateCard({
+  item,
+  showLocaleBadge,
+  viewerUsername,
+  onRequireLogin,
+}: UpdateCardProps) {
+  useHydrateWalletProvider();
+  const router = useRouter();
   const { t, locale } = useI18n();
   const loc = locale as LocaleId;
+
+  const [optimisticVote, setOptimisticVote] = useState(item.viewer_vote);
+  const [pending, setPending] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setOptimisticVote(item.viewer_vote);
+    setError(null);
+    setConfirming(false);
+  }, [item.update_id, item.viewer_vote]);
+
   const relative = formatRelativeFeedTime(unixToIsoSeconds(item.created_at_unix), loc);
   const weightLabel = formatReputation(item.creator_wobjects_weight, loc);
   const approvePercentLabel = item.approve_percent.toLocaleString(loc, {
@@ -50,13 +77,13 @@ export function UpdateCard({ item, showLocaleBadge }: UpdateCardProps) {
   const meetsThreshold = item.approve_percent > OBJECT_UPDATES_MIN_APPROVAL_PERCENT;
 
   const forActive =
-    item.viewer_vote === 'for'
+    optimisticVote === 'for'
       ? 'text-success bg-success/10 border-success/30'
-      : 'text-fg-secondary border-border bg-surface-control';
+      : 'text-fg-secondary border-border bg-surface-control hover:bg-surface-control-hover';
   const againstActive =
-    item.viewer_vote === 'against'
+    optimisticVote === 'against'
       ? 'text-destructive bg-destructive/10 border-destructive/30'
-      : 'text-fg-secondary border-border bg-surface-control';
+      : 'text-fg-secondary border-border bg-surface-control hover:bg-surface-control-hover';
 
   const minLine = t('object_updates_min_required').replace(
     '{percent}',
@@ -64,6 +91,57 @@ export function UpdateCard({ item, showLocaleBadge }: UpdateCardProps) {
   );
 
   const creatorProfileHref = `/@${encodeURIComponent(item.creator)}`;
+
+  const voteDisabled = pending || confirming;
+
+  const onVote = useCallback(
+    async (vote: 'for' | 'against') => {
+      const voter = viewerUsername?.trim();
+      if (!voter) {
+        onRequireLogin?.();
+        return;
+      }
+      if (pending || confirming || optimisticVote === vote) {
+        return;
+      }
+      setError(null);
+      setPending(true);
+      try {
+        const op = buildOdlUpdateVoteOp({
+          id: ODL_CUSTOM_JSON_ID,
+          updateId: item.update_id,
+          objectId: item.object_id,
+          voter,
+          vote,
+          required_posting_auths: [voter],
+        });
+        const { transactionId } = await getWalletFacade().broadcast({
+          operations: [op],
+        });
+        setOptimisticVote(vote);
+        setPending(false);
+        setConfirming(true);
+        void awaitTrxConfirmation(transactionId).finally(() => {
+          router.refresh();
+          setConfirming(false);
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : t('object_edit_validation_error'));
+        setPending(false);
+      }
+    },
+    [
+      confirming,
+      item.object_id,
+      item.update_id,
+      onRequireLogin,
+      optimisticVote,
+      pending,
+      router,
+      t,
+      viewerUsername,
+    ],
+  );
 
   return (
     <article className="rounded-card border border-border bg-surface/80 p-card-padding">
@@ -158,19 +236,31 @@ export function UpdateCard({ item, showLocaleBadge }: UpdateCardProps) {
         <div className="mt-3 flex flex-wrap gap-2">
           <button
             type="button"
-            disabled
-            className={`rounded-md border px-3 py-1.5 text-caption font-medium ${forActive}`}
+            disabled={voteDisabled}
+            aria-pressed={optimisticVote === 'for'}
+            className={`rounded-md border px-3 py-1.5 text-caption font-medium disabled:cursor-not-allowed disabled:opacity-50 ${forActive}`}
+            onClick={() => void onVote('for')}
           >
             {t('object_updates_approve')} {item.for_vote_count}
           </button>
           <button
             type="button"
-            disabled
-            className={`rounded-md border px-3 py-1.5 text-caption font-medium ${againstActive}`}
+            disabled={voteDisabled}
+            aria-pressed={optimisticVote === 'against'}
+            className={`rounded-md border px-3 py-1.5 text-caption font-medium disabled:cursor-not-allowed disabled:opacity-50 ${againstActive}`}
+            onClick={() => void onVote('against')}
           >
             {t('object_updates_reject')} {item.against_vote_count}
           </button>
         </div>
+        {error ? (
+          <p className="mt-2 text-caption text-accent" role="alert">
+            {error}
+          </p>
+        ) : null}
+        {confirming ? (
+          <p className="mt-2 text-caption text-muted">{t('drafts_loading')}</p>
+        ) : null}
       </div>
     </article>
   );

@@ -97,3 +97,42 @@ export function buildOdlUpdateCreateWithLikeOp(
     json: JSON.stringify(envelope),
   });
 }
+
+export type OdlUpdateVoteValue = 'for' | 'against' | 'remove';
+
+export type BuildOdlUpdateVoteOpInput = {
+  readonly id: string;
+  readonly updateId: string;
+  readonly objectId: string;
+  readonly voter: string;
+  readonly vote: OdlUpdateVoteValue;
+  readonly required_auths?: readonly string[];
+  readonly required_posting_auths?: readonly string[];
+};
+
+/**
+ * Builds a Hive `custom_json` op with one `update_vote` event (existing `update_id`).
+ */
+export function buildOdlUpdateVoteOp(input: BuildOdlUpdateVoteOpInput): CustomJsonOp {
+  const envelope = {
+    events: [
+      {
+        action: 'update_vote' as const,
+        v: 1,
+        payload: {
+          update_id: input.updateId,
+          object_id: input.objectId,
+          voter: input.voter,
+          vote: input.vote,
+        },
+      },
+    ],
+  };
+
+  return buildCustomJsonOp({
+    required_auths: input.required_auths ?? [],
+    required_posting_auths: input.required_posting_auths ?? [input.voter],
+    id: input.id,
+    json: JSON.stringify(envelope),
+  });
+}

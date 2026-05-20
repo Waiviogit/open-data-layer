@@ -42,6 +42,8 @@ describe('UpdateVoteHandler notifications', () => {
       {
         create: jest.fn().mockResolvedValue(undefined),
         delete: jest.fn().mockResolvedValue(undefined),
+        findByUpdateIdAndVoter: jest.fn().mockResolvedValue(undefined),
+        update: jest.fn(),
       } as unknown as import('../../../repositories').ValidityVotesRepository,
       {
         findByUpdateId: jest.fn().mockResolvedValue(votedUpdate),

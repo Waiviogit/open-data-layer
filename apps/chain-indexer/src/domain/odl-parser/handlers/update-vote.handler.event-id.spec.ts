@@ -49,7 +49,12 @@ describe('UpdateVoteHandler create_event_id', () => {
     const create = jest.fn().mockResolvedValue(undefined);
     const findByUpdateId = jest.fn().mockResolvedValue(votedUpdate);
     const handler = new UpdateVoteHandler(
-      { create, delete: jest.fn() } as unknown as import('../../../repositories').ValidityVotesRepository,
+      {
+        create,
+        delete: jest.fn(),
+        findByUpdateIdAndVoter: jest.fn().mockResolvedValue(undefined),
+        update: jest.fn(),
+      } as unknown as import('../../../repositories').ValidityVotesRepository,
       { findByUpdateId } as unknown as import('../../../repositories').ObjectUpdatesRepository,
       {
         findByObjectId: jest.fn().mockResolvedValue(core),
