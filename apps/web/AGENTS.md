@@ -108,6 +108,20 @@ index.ts         public barrel — other features import only from here
 - Normalize input consistently before broadcast.
 - Do not add form libraries unless complexity clearly requires them.
 
+## Blockchain broadcast and trx confirmation
+
+After every successful **Hive wallet broadcast** that should update on-chain-backed UI (votes, comments, and similar flows):
+
+1. **Capture `transactionId`** from the broadcast result immediately.
+2. **Subscribe on the notifications WebSocket** for that trx id — use **`awaitTrxConfirmation(trxId)`** from **`@/modules/notifications`** (wraps `NotificationsWsClient.subscribeTrx` with a correlation id). Do not poll HTTP for indexer completion.
+3. **Show in-place loading** on the affected control while waiting (e.g. spinner on vote count, subtle “waiting for confirmation” on comment submit) — keep optimistic UI until broadcast finishes; switch to confirming state only after you have the trx id.
+4. **Refresh server-rendered data** when confirmation arrives **or** when **`TRX_CONFIRMATION_TIMEOUT_MS`** elapses (default 10s): call **`router.refresh()`** (or equivalent refetch). **Never treat timeout as a hard error** — still refresh so the UI catches up eventually.
+5. **New on-chain actions** must follow the same pattern; do not leave stale counts or lists after broadcast.
+
+Requires **`NEXT_PUBLIC_NOTIFICATIONS_WS_URL`** and a logged-in session (JWT via **`/api/auth/ws-token`**). If WS is unavailable, `awaitTrxConfirmation` waits the timeout then returns so step 4 still runs.
+
+Implementation reference: `story-vote-button.tsx`, `story-comment-editor.tsx`, `modules/notifications/`. Server-side: [`docs/apps/notifications/spec/transport.md`](../../docs/apps/notifications/spec/transport.md).
+
 ## Maps (`src/modules/map/`)
 
 - **Public API:** `AppMap`, `AppMarker`, `AppPopup`, `MapProvider`, and types from `@/modules/map` — do **not** import `react-leaflet`, `leaflet`, or MapLibre directly in feature UIs.
