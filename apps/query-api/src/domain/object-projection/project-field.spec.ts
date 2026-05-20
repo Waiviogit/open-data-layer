@@ -20,8 +20,10 @@ describe('projectFieldValue aggregateRating', () => {
           value_geo: null,
           value_json: null,
           validity_status: 'VALID',
+          validity_tier: 'baseline',
           approve_percent: 100,
           field_weight: null,
+          decisive_vote_event_seq: null,
           rank_score: 8000,
           rank_context: null,
           rank_decisive_event_seq: null,
@@ -37,8 +39,10 @@ describe('projectFieldValue aggregateRating', () => {
           value_geo: null,
           value_json: null,
           validity_status: 'VALID',
+          validity_tier: 'baseline',
           approve_percent: 100,
           field_weight: null,
+          decisive_vote_event_seq: null,
           rank_score: 10000,
           rank_context: null,
           rank_decisive_event_seq: null,
@@ -57,8 +61,20 @@ describe('projectFieldValue aggregateRating', () => {
     };
     const out = projectFieldValue(field, UPDATE_TYPES.AGGREGATE_RATING, 'https://ipfs.io', 'alice', rankVp);
     expect(out).toEqual([
-      { dimension: 'Overall', averageRating: 8000, userRating: 7000, totalVoters: 10 },
-      { dimension: 'Value', averageRating: 10000, userRating: 9000, totalVoters: 200 },
+      {
+        update_id: 'u1',
+        dimension: 'Overall',
+        averageRating: 8000,
+        userRating: 7000,
+        totalVoters: 10,
+      },
+      {
+        update_id: 'u2',
+        dimension: 'Value',
+        averageRating: 10000,
+        userRating: 9000,
+        totalVoters: 200,
+      },
     ]);
   });
 
@@ -78,8 +94,10 @@ describe('projectFieldValue aggregateRating', () => {
           value_geo: null,
           value_json: null,
           validity_status: 'VALID',
+          validity_tier: 'baseline',
           approve_percent: 100,
           field_weight: null,
+          decisive_vote_event_seq: null,
           rank_score: 5000,
           rank_context: null,
           rank_decisive_event_seq: null,
@@ -92,9 +110,11 @@ describe('projectFieldValue aggregateRating', () => {
     };
     expect(
       projectFieldValue(field, UPDATE_TYPES.AGGREGATE_RATING, 'https://ipfs.io', 'alice', rankVp),
-    ).toEqual([{ dimension: 'X', averageRating: 5000, userRating: null, totalVoters: 3 }]);
+    ).toEqual([
+      { update_id: 'u1', dimension: 'X', averageRating: 5000, userRating: null, totalVoters: 3 },
+    ]);
     expect(projectFieldValue(field, UPDATE_TYPES.AGGREGATE_RATING, 'https://ipfs.io', undefined, rankVp)).toEqual([
-      { dimension: 'X', averageRating: 5000, userRating: null, totalVoters: 3 },
+      { update_id: 'u1', dimension: 'X', averageRating: 5000, userRating: null, totalVoters: 3 },
     ]);
   });
 });

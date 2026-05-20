@@ -19,6 +19,7 @@ import type { ObjectLeftRailBlock } from '../../domain/object-page.types';
 
 import { ObjectGeoPreview } from './object-geo-preview';
 import { ObjectMenuItemsStatic } from './object-menu-items-static';
+import { StarRating } from './star-rating';
 
 export type ObjectLeftRailEditContext = {
   objectId: string;
@@ -31,6 +32,9 @@ export type ObjectLeftRailEditContext = {
 export type ObjectLeftRailPanelProps = {
   blocks: ObjectLeftRailBlock[];
   editContext?: ObjectLeftRailEditContext;
+  objectId: string;
+  viewerUsername?: string | null;
+  onRequireLogin?: () => void;
 };
 
 /** Max characters for description preview card (matches legacy sidebar truncation). */
@@ -48,24 +52,6 @@ function truncateIntroForPreview(text: string): { display: string; isTruncated: 
     .slice(0, OBJECT_LEFT_RAIL_DESCRIPTION_PREVIEW_MAX_CHARS)
     .trimEnd();
   return { display: `${clipped}...`, isTruncated: true };
-}
-
-function IconStar({ filled }: { filled: boolean }) {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      className={filled ? 'text-accent-alt' : 'text-fg-disabled'}
-      aria-hidden
-    >
-      <path
-        fill="currentColor"
-        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-        opacity={filled ? 1 : 0.25}
-      />
-    </svg>
-  );
 }
 
 function ChevronAccordion({ expanded }: { expanded: boolean }) {
@@ -201,7 +187,13 @@ type AddUpdateModalState = {
   initialUpdateType?: string;
 };
 
-export function ObjectLeftRailPanel({ blocks, editContext }: ObjectLeftRailPanelProps) {
+export function ObjectLeftRailPanel({
+  blocks,
+  editContext,
+  objectId,
+  viewerUsername,
+  onRequireLogin,
+}: ObjectLeftRailPanelProps) {
   const { t } = useI18n();
   const [addModal, setAddModal] = useState<AddUpdateModalState | null>(null);
 
@@ -366,63 +358,34 @@ export function ObjectLeftRailPanel({ blocks, editContext }: ObjectLeftRailPanel
           case 'rating': {
             return (
               <aside key={`rating-${index}`} className={cardClass}>
-                <p className="font-medium text-fg">{block.headingLabel}</p>
+                <LeftRailBlockHeading
+                  label={block.headingLabel}
+                  onAdd={makeOnAdd('rating')}
+                  addLabel={addLabel}
+                />
                 <ul className="mt-3 list-none space-y-4 p-0">
-                  {block.aspects.map((aspect, aspectIndex) => {
-                    const avg = aspect.averageRating01To5;
-                    const roundedAvgStars =
-                      avg != null ? Math.min(5, Math.max(0, Math.round(avg))) : null;
-                    const viewer = aspect.viewerRating01To5;
-                    const roundedViewerStars =
-                      viewer != null
-                        ? Math.min(5, Math.max(0, Math.round(viewer)))
-                        : null;
-                    const avgLabel =
-                      avg != null ? `${aspect.dimension}: ${avg.toFixed(1)}` : `${aspect.dimension}: —`;
-                    return (
-                      <li key={`${aspect.dimension}-${aspectIndex}`} className="min-w-0">
-                        <p
-                          className="truncate font-medium leading-snug text-fg"
-                          title={aspect.dimension}
-                        >
-                          {aspect.dimension}
-                        </p>
-                        <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                          <span className="inline-flex items-center gap-0.5" role="img" aria-label={avgLabel}>
-                            {Array.from({ length: 5 }, (_, i) => (
-                              <IconStar
-                                key={i}
-                                filled={roundedAvgStars !== null ? i < roundedAvgStars : false}
-                              />
-                            ))}
-                          </span>
-                          {avg != null ? (
-                            <span className="tabular-nums">{avg.toFixed(1)}</span>
-                          ) : null}
-                          <span className="tabular-nums text-muted">
-                            ({aspect.totalVoters})
-                          </span>
-                        </div>
-                        {viewer != null ? (
-                          <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-border/60 pt-2">
-                            <span
-                              className="inline-flex items-center gap-0.5 opacity-95"
-                              role="img"
-                              aria-label={`Your rating (${aspect.dimension}): ${viewer.toFixed(1)}`}
-                            >
-                              {Array.from({ length: 5 }, (_, i) => (
-                                <IconStar
-                                  key={i}
-                                  filled={roundedViewerStars !== null ? i < roundedViewerStars : false}
-                                />
-                              ))}
-                            </span>
-                            <span className="tabular-nums text-caption text-muted">{viewer.toFixed(1)}</span>
-                          </div>
-                        ) : null}
-                      </li>
-                    );
-                  })}
+                  {block.aspects.map((aspect, aspectIndex) => (
+                    <li key={`${aspect.update_id}-${aspectIndex}`} className="min-w-0">
+                      <p
+                        className="truncate font-medium leading-snug text-fg"
+                        title={aspect.dimension}
+                      >
+                        {aspect.dimension}
+                      </p>
+                      <div className="mt-1.5">
+                        <StarRating
+                          averageRating01To5={aspect.averageRating01To5}
+                          userRating01To5={aspect.viewerRating01To5}
+                          totalVoters={aspect.totalVoters}
+                          dimension={aspect.dimension}
+                          updateId={aspect.update_id}
+                          objectId={objectId}
+                          viewerUsername={viewerUsername}
+                          onRequireLogin={onRequireLogin}
+                        />
+                      </div>
+                    </li>
+                  ))}
                 </ul>
               </aside>
             );

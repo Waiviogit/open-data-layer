@@ -194,14 +194,14 @@ function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock
         break;
       }
       case 'rating': {
-        const aspects = objectFields.aggregateRatingAspects(viewLike);
-        if (aspects.length === 0) {
-          break;
-        }
-        blocks.push({
-          kind: 'rating',
-          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.rating,
-          aspects: aspects.map((a) => ({
+        const aspects = objectFields
+          .aggregateRatingAspects(viewLike)
+          .filter(
+            (a): a is typeof a & { update_id: string } =>
+              typeof a.update_id === 'string' && a.update_id.length > 0,
+          )
+          .map((a) => ({
+            update_id: a.update_id,
             dimension: a.dimension,
             averageRating01To5:
               a.averageRating != null && Number.isFinite(a.averageRating)
@@ -212,7 +212,14 @@ function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock
               a.userRating != null && Number.isFinite(a.userRating)
                 ? Math.min(5, Math.max(0, a.userRating / 2000))
                 : null,
-          })),
+          }));
+        if (aspects.length === 0) {
+          break;
+        }
+        blocks.push({
+          kind: 'rating',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.rating,
+          aspects,
         });
         break;
       }

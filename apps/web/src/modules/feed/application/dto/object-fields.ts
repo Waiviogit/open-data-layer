@@ -3,6 +3,7 @@ import type { FeedStoryView } from './feed-story.dto';
 export type ProjectedObjectView = NonNullable<FeedStoryView['objects']>[number];
 
 export type AggregateRatingAspectRow = {
+  update_id: string | null;
   dimension: string;
   averageRating: number | null;
   userRating: number | null;
@@ -38,8 +39,13 @@ function parseAggregateRatingAspects(raw: unknown): AggregateRatingAspectRow[] {
     const tv = o.totalVoters;
     const totalVoters =
       typeof tv === 'number' && Number.isFinite(tv) && tv >= 0 ? Math.floor(tv) : 0;
+    const updateIdRaw = o.update_id;
+    const update_id =
+      typeof updateIdRaw === 'string' && updateIdRaw.trim().length > 0
+        ? updateIdRaw.trim()
+        : null;
 
-    out.push({ dimension, averageRating, userRating, totalVoters });
+    out.push({ update_id, dimension, averageRating, userRating, totalVoters });
   }
   return out;
 }

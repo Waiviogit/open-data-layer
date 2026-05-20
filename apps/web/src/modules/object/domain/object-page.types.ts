@@ -70,6 +70,7 @@ export type ObjectLeftRailBlock =
       kind: 'rating';
       headingLabel: string;
       aspects: {
+        update_id: string;
         dimension: string;
         averageRating01To5: number | null;
         totalVoters: number;

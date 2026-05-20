@@ -21,6 +21,7 @@ import type {
   UserSubscriptionSort,
 } from '@/modules/user-social/application/dto/user-social.dto';
 import { UserSocialAccountList } from '@/modules/user-social/presentation/components/user-social-account-list';
+import { useLoginModal } from '@/modules/auth';
 
 import { loadMoreObjectAuthorityAction } from './authority/object-authority.actions';
 import { loadMoreObjectFollowersAction } from './followers/object-followers.actions';
@@ -65,6 +66,7 @@ export function ObjectPageClient({
 
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { openLogin } = useLoginModal();
 
   const [isEditMode, setEditMode] = useState(false);
   const [isFollowing, setFollowing] = useState(false);
@@ -269,6 +271,9 @@ export function ObjectPageClient({
       <ObjectLeftRailPanel
         blocks={model.leftRailBlocks}
         editContext={leftRailEditContext}
+        objectId={model.objectId}
+        viewerUsername={viewerUsername}
+        onRequireLogin={openLogin}
       />
     </LeftObjectProfileSidebar>
   );

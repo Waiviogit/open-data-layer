@@ -19,12 +19,19 @@ describe('objectFields aggregateRating', () => {
   it('parses aggregateRating aspect rows', () => {
     const rows: AggregateRatingAspectRow[] = [
       {
+        update_id: 'u-overall',
         dimension: 'Overall',
         averageRating: 9500,
         userRating: 1000,
         totalVoters: 12,
       },
-      { dimension: 'Value', averageRating: null, userRating: null, totalVoters: 0 },
+      {
+        update_id: null,
+        dimension: 'Value',
+        averageRating: null,
+        userRating: null,
+        totalVoters: 0,
+      },
     ];
     expect(objectFields.aggregateRatingAspects(viewWithAgg(rows))).toEqual(rows);
     expect(objectFields.ratingStars01To5(viewWithAgg(rows))).toBeCloseTo(9500 / 2000, 5);
@@ -35,6 +42,7 @@ describe('objectFields aggregateRating', () => {
       objectFields.ratingStars01To5(
         viewWithAgg([
           {
+            update_id: 'u-x',
             dimension: 'X',
             averageRating: null,
             userRating: 500,
@@ -49,8 +57,8 @@ describe('objectFields aggregateRating', () => {
     expect(
       objectFields.ratingStars01To5(
         viewWithAgg([
-          { dimension: 'A', averageRating: 10000, userRating: null, totalVoters: 2 },
-          { dimension: 'B', averageRating: 0, userRating: null, totalVoters: 2 },
+          { update_id: 'a', dimension: 'A', averageRating: 10000, userRating: null, totalVoters: 2 },
+          { update_id: 'b', dimension: 'B', averageRating: 0, userRating: null, totalVoters: 2 },
         ]),
       ),
     ).toBe(2.5);

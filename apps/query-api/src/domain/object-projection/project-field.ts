@@ -183,6 +183,7 @@ function projectAggregateRatingField(
         ? viewerRankRaw
         : null;
     return {
+      update_id: u.update_id,
       dimension: typeof u.value_text === 'string' && u.value_text.length > 0 ? u.value_text : '',
       averageRating: avg,
       userRating,

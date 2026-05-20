@@ -136,3 +136,43 @@ export function buildOdlUpdateVoteOp(input: BuildOdlUpdateVoteOpInput): CustomJs
     json: JSON.stringify(envelope),
   });
 }
+
+export type BuildOdlRankVoteOpInput = {
+  readonly id: string;
+  readonly updateId: string;
+  readonly objectId: string;
+  readonly voter: string;
+  /** ODL rank 0–10000 (half-star step = 1000). */
+  readonly rank: number;
+  readonly rankContext?: string;
+  readonly required_auths?: readonly string[];
+  readonly required_posting_auths?: readonly string[];
+};
+
+/**
+ * Builds a Hive `custom_json` op with one `rank_vote` event for an `aggregateRating` update.
+ */
+export function buildOdlRankVoteOp(input: BuildOdlRankVoteOpInput): CustomJsonOp {
+  const envelope = {
+    events: [
+      {
+        action: 'rank_vote' as const,
+        v: 1,
+        payload: {
+          update_id: input.updateId,
+          object_id: input.objectId,
+          voter: input.voter,
+          rank: input.rank,
+          rank_context: input.rankContext ?? 'default',
+        },
+      },
+    ],
+  };
+
+  return buildCustomJsonOp({
+    required_auths: input.required_auths ?? [],
+    required_posting_auths: input.required_posting_auths ?? [input.voter],
+    id: input.id,
+    json: JSON.stringify(envelope),
+  });
+}

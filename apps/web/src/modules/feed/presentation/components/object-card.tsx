@@ -7,6 +7,7 @@ import type { ProjectedObjectView } from '../../application/dto/object-fields';
 import { objectFields } from '../../application/dto/object-fields';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AVATAR_PLACEHOLDER_SRC, shouldUnoptimizeRemoteImage } from '@/shared/presentation';
+import { StarRating } from '@/modules/object/presentation/components/star-rating';
 import { objectPagePath } from '@/shared/routes/object-page-path';
 
 const THUMB_SIZE = 80;
@@ -22,43 +23,27 @@ function formatLinkedObjectTypeLabel(type: string | null): string {
     .join(' ');
 }
 
-function IconStar({ filled }: { filled: boolean }) {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      className={filled ? 'text-accent-alt' : 'text-fg-disabled'}
-      aria-hidden
-    >
-      <path
-        fill="currentColor"
-        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-        opacity={filled ? 1 : 0.25}
-      />
-    </svg>
-  );
-}
-
 function RatingRow({ rating01To5 }: { rating01To5: number | null }) {
   const { t } = useI18n();
   if (rating01To5 == null) {
     return null;
   }
-  const fullStars = Math.round(rating01To5);
-  const label = rating01To5.toFixed(1);
   return (
     <div className="mt-2 flex flex-wrap items-center gap-2">
-      <span className="text-caption font-medium text-fg-secondary">{t('feed_linked_object_rating')}</span>
-      <span
-        className="inline-flex items-center gap-0.5"
-        role="img"
-        aria-label={`${t('feed_linked_object_rating')}: ${label}`}
-      >
-        {Array.from({ length: 5 }, (_, i) => (
-          <IconStar key={i} filled={i < fullStars} />
-        ))}
+      <span className="text-caption font-medium text-fg-secondary">
+        {t('feed_linked_object_rating')}
       </span>
+      <StarRating
+        averageRating01To5={rating01To5}
+        userRating01To5={null}
+        totalVoters={0}
+        dimension=""
+        updateId=""
+        objectId=""
+        readOnly
+        size="sm"
+        showNumeric={false}
+      />
     </div>
   );
 }

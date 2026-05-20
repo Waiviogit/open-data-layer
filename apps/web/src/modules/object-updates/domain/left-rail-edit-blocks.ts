@@ -14,9 +14,6 @@ function isEditableKind(
   kind: EditModeLeftRailBlockId,
   supported: Set<string>,
 ): boolean {
-  if (kind === 'rating') {
-    return false;
-  }
   const candidates = BLOCK_KIND_TO_UPDATE_TYPES[kind as ObjectLeftRailBlockKind];
   return candidates.some((t) => supported.has(t));
 }
@@ -40,6 +37,8 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
       };
     case 'description':
       return { kind: 'description', headingLabel, text: '' };
+    case 'rating':
+      return { kind: 'rating', headingLabel, aspects: [] };
     case 'tags':
       return { kind: 'tags', headingLabel, sections: [] };
     case 'gallery':
@@ -74,7 +73,6 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
 /**
  * In edit mode, show every supported left-rail slot (heading + add) even when empty.
  * View-mode blocks with content are reused; missing slots get empty placeholders.
- * Rating is shown only when it already has data (no add control).
  */
 export function mergeLeftRailBlocksForEditMode(
   viewBlocks: ObjectLeftRailBlock[],
@@ -89,14 +87,6 @@ export function mergeLeftRailBlocksForEditMode(
   const merged: ObjectLeftRailBlock[] = [];
 
   for (const slot of EDIT_MODE_LEFT_RAIL_BLOCK_ORDER) {
-    if (slot === 'rating') {
-      const existing = byKind.get('rating');
-      if (existing) {
-        merged.push(existing);
-      }
-      continue;
-    }
-
     if (!isEditableKind(slot, supported)) {
       continue;
     }

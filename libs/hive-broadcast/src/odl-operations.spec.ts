@@ -1,4 +1,5 @@
 import {
+  buildOdlRankVoteOp,
   buildOdlUpdateCreateOp,
   buildOdlUpdateCreateWithLikeOp,
   buildOdlUpdateVoteOp,
@@ -171,5 +172,28 @@ describe('buildOdlUpdateVoteOp', () => {
       vote: 'against',
     });
     expect(JSON.parse(op.json).events[0].payload['vote']).toBe('against');
+  });
+});
+
+describe('buildOdlRankVoteOp', () => {
+  it('emits rank_vote with rank and default rank_context', () => {
+    const op = buildOdlRankVoteOp({
+      id: 'odl-testnet',
+      updateId: 'trx-0-0-3',
+      objectId: 'obj-1',
+      voter: 'alice',
+      rank: 7000,
+      required_posting_auths: ['alice'],
+    });
+    const parsed = JSON.parse(op.json) as {
+      events: { action: string; payload: Record<string, unknown> }[];
+    };
+    expect(parsed.events).toHaveLength(1);
+    expect(parsed.events[0]?.action).toBe('rank_vote');
+    expect(parsed.events[0]?.payload['update_id']).toBe('trx-0-0-3');
+    expect(parsed.events[0]?.payload['object_id']).toBe('obj-1');
+    expect(parsed.events[0]?.payload['voter']).toBe('alice');
+    expect(parsed.events[0]?.payload['rank']).toBe(7000);
+    expect(parsed.events[0]?.payload['rank_context']).toBe('default');
   });
 });

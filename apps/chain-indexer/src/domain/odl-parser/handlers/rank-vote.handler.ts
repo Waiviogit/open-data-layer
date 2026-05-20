@@ -85,6 +85,15 @@ export class RankVoteHandler implements OdlActionHandler {
       return;
     }
 
+    const existing = await this.rankVotesRepository.findByUpdateIdVoterAndContext(
+      update_id,
+      voter,
+      rank_context,
+    );
+    if (existing?.rank === rank) {
+      return;
+    }
+
     const row: NewRankVote = {
       update_id,
       object_id,
@@ -95,7 +104,15 @@ export class RankVoteHandler implements OdlActionHandler {
       transaction_id: ctx.transactionId,
     };
 
-    await this.rankVotesRepository.create(row);
+    if (existing) {
+      await this.rankVotesRepository.update(update_id, voter, rank_context, {
+        rank,
+        event_seq: ctx.eventSeq,
+        transaction_id: ctx.transactionId,
+      });
+    } else {
+      await this.rankVotesRepository.create(row);
+    }
     this.eventEmitter.emit(
       GOVERNANCE_OBJECT_MUTATED_EVENT,
       new GovernanceObjectMutatedEvent(object_id),

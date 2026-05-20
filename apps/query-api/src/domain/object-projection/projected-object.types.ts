@@ -36,6 +36,7 @@ export function emptyRankVoteProjection(): RankVoteProjection {
 
 /** One `aggregateRating` aspect; `fields.aggregateRating` is an array of these (0-length if none). */
 export interface ProjectedAggregateRatingRow {
+  update_id: string;
   dimension: string;
   averageRating: number | null;
   /** Viewer’s ODL rank (0–10000) when `rank_votes` has a vote for `(update_id, viewer)` with latest `event_seq`. */

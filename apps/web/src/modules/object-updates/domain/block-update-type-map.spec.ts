@@ -20,7 +20,10 @@ describe('getUpdateTypesForBlockKind', () => {
     ]);
   });
 
-  it('returns empty for rating block', () => {
+  it('returns aggregateRating when supported', () => {
+    expect(
+      getUpdateTypesForBlockKind('rating', [...supported, UPDATE_TYPES.AGGREGATE_RATING]),
+    ).toEqual([UPDATE_TYPES.AGGREGATE_RATING]);
     expect(getUpdateTypesForBlockKind('rating', supported)).toEqual([]);
   });
 
