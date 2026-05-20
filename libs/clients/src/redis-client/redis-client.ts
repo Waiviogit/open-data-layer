@@ -149,7 +149,11 @@ class RedisClientWrapper implements RedisClientInterface {
     for (const [k, v] of Object.entries(fields)) {
       flat.push(k, v);
     }
-    return this.client.xadd(stream, '*', ...flat);
+    const id = await this.client.xadd(stream, '*', ...flat);
+    if (id === null) {
+      throw new Error(`Redis XADD returned null for stream ${stream}`);
+    }
+    return id;
   }
 
   async xGroupCreate(

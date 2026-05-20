@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import type { UpdateDefinition } from '@opden-data-layer/core/update-registry/types';
+import type { UpdateDefinition } from '@opden-data-layer/core/update-registry';
 import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
