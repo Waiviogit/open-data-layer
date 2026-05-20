@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { useLoginModal } from '@/modules/auth';
+import { useSyncedPaginatedList } from '@/shared/presentation';
 
 import type { ObjectUpdateFeedItemView } from '../../application/dto/object-updates-feed.dto';
 import type { ObjectUpdatesUrlFilters } from '../../application/parse-object-updates-search-params';
@@ -75,9 +76,12 @@ export function ObjectUpdatesFeed({
   const [localFilters, setLocalFilters] = useState<ObjectUpdatesUrlFilters>(filtersProp);
   const filters = filterSync === 'local' ? localFilters : filtersProp;
 
-  const [items, setItems] = useState(initialItems);
-  const [cursor, setCursor] = useState<string | null>(initialCursor);
-  const [hasMore, setHasMore] = useState(initialHasMore);
+  const initialPage = useMemo(
+    () => ({ items: initialItems, cursor: initialCursor, hasMore: initialHasMore }),
+    [initialItems, initialCursor, initialHasMore],
+  );
+  const { items, setItems, cursor, setCursor, hasMore, setHasMore } =
+    useSyncedPaginatedList(initialPage);
   const [pending, startTransition] = useTransition();
 
   const localizable = new Set(localizableTypes);

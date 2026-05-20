@@ -9,7 +9,6 @@ export type NotificationsWsConfigProviderProps = {
   children: ReactNode;
 };
 
-/** Sets WS URL before child hooks call `getNotificationsWsClient()`. */
 export function NotificationsWsConfigProvider({
   wsUrl,
   children,

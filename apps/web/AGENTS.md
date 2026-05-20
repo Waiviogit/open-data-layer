@@ -117,12 +117,32 @@ After every successful **Hive wallet broadcast** that should update on-chain-bac
 3. **Show in-place loading** on the affected control while waiting (e.g. spinner on vote count, subtle “waiting for confirmation” on comment submit) — keep optimistic UI until broadcast finishes; switch to confirming state only after you have the trx id.
 4. **Refresh server-rendered data** when confirmation arrives **or** when **`TRX_CONFIRMATION_TIMEOUT_MS`** elapses (default 10s): call **`router.refresh()`** (or equivalent refetch). **Never treat timeout as a hard error** — still refresh so the UI catches up eventually.
 5. **New on-chain actions** must follow the same pattern; do not leave stale counts or lists after broadcast.
+6. **Paginated client lists** seeded from RSC (`initialPage` / `initialItems`) must re-sync after `router.refresh()` — use **`useSyncedPaginatedList`** from `@/shared/presentation` (or an equivalent `useEffect` on the server initial payload). Counts from parent props update automatically; `useState(initial*)` for list rows does not.
 
 Requires **`NEXT_PUBLIC_NOTIFICATIONS_WS_URL`** and a logged-in session (JWT via **`/api/auth/ws-token`**). If WS is unavailable, `awaitTrxConfirmation` waits the timeout then returns so step 4 still runs.
 
 Implementation reference: `story-vote-button.tsx`, `story-comment-editor.tsx`, `modules/notifications/`. Server-side: [`docs/apps/notifications/spec/transport.md`](../../docs/apps/notifications/spec/transport.md).
 
 **ODL envelope broadcasts** (e.g. `update_vote`, `update_create`): use **`useOdlCustomJsonId()`** from `@/config/odl-network-provider` — do not hardcode `odl-mainnet` / `odl-testnet`. **`ODL_NETWORK`** is runtime-only (compose `env_file`); not a Docker build-arg.
+
+## `router.refresh()` and client state
+
+Use **`router.refresh()`** from `next/navigation` when server-rendered data should catch up after a mutation (broadcast confirmed, login/logout, locale change, draft save, etc.). It **re-runs Server Components** for the current route and passes **new props** into existing client boundaries — it is **not** a full page reload and **does not** remount client components by default.
+
+| Updates after refresh | Does **not** update automatically |
+|-----------------------|-------------------------------------|
+| Props from RSC parent (`model`, counts in nav, `initialPage` passed as prop) | `useState(initialValue)` seeded once at mount |
+| Server-only fetches in `page.tsx` / `layout.tsx` | Client list rows, cursor, load-more accumulation |
+| Metadata / cookies read on the server | `key` on a child unless the key value changes |
+
+**Checklist for new client UI after a mutation + `router.refresh()`:**
+
+1. **Scalar / flags from props** (follow, bell, authority, vote on a row): keep optimistic local state, add **`useEffect`** to sync when the prop changes — see `user-profile-hero-client.tsx`, `story-vote-button.tsx`.
+2. **Paginated lists** from RSC (`initialPage`, `initialItems`): use **`useSyncedPaginatedList`** from `@/shared/presentation` — see `user-social-account-list.tsx`, `object-updates-feed.tsx`, `blog-feed-posts-list.tsx`. Do not rely on Next.js cache invalidation alone; the bug is client `useState`, not stale RSC cache.
+3. **Avoid** bumping `key` on every refresh just to reset lists — it drops scroll position and load-more state. Prefer explicit sync.
+4. **Symptom to watch for:** server counts or tab badges change, but list rows or card fields stay old — missing sync after refresh.
+
+Primary pattern elsewhere in the app: **`awaitTrxConfirmation(trxId)` → `router.refresh()`** (see section above). Always refresh even on trx timeout so the UI eventually matches chain/indexer state.
 
 ## Maps (`src/modules/map/`)
 

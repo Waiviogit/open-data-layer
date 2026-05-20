@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { useSyncedPaginatedList } from '@/shared/presentation';
 
 import type {
   PaginatedUserFollowListView,
@@ -37,8 +38,7 @@ export function UserSocialAccountList({
   loadMoreAction,
 }: UserSocialAccountListProps) {
   const { t } = useI18n();
-  const [items, setItems] = useState(initialPage.items);
-  const [hasMore, setHasMore] = useState(initialPage.hasMore);
+  const { items, setItems, hasMore, setHasMore } = useSyncedPaginatedList(initialPage);
   const [pending, startTransition] = useTransition();
 
   const emptyKey =

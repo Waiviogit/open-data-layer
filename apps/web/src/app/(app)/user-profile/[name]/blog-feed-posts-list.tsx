@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
 
 import type { UserBlogFeedPage } from '@/modules/feed/application/dto/user-blog-feed-page.dto';
 import type { FeedTab } from '@/modules/feed/domain/feed-tab';
 import { FeedList, FeedPostGrid } from '@/modules/feed/presentation';
+import { useSyncedPaginatedList } from '@/shared/presentation';
 import { FeedColumn } from '@/shared/presentation/layout';
 import { shouldUsePostGrid, useShellMode } from '@/shell-mode';
 
@@ -27,9 +28,8 @@ export function BlogFeedPostsList({
   currentUsername,
 }: BlogFeedPostsListProps) {
   const { resolvedMode } = useShellMode();
-  const [items, setItems] = useState(initialPage.items);
-  const [cursor, setCursor] = useState(initialPage.cursor);
-  const [hasMore, setHasMore] = useState(initialPage.hasMore);
+  const { items, setItems, cursor, setCursor, hasMore, setHasMore } =
+    useSyncedPaginatedList(initialPage);
   const [pending, startTransition] = useTransition();
   const useInstagramGrid =
     shouldUsePostGrid(resolvedMode) && feedTab === 'posts';
