@@ -12,10 +12,10 @@ export type SyncedPaginatedInitial<TItem> = {
 export type SyncedPaginatedListState<TItem> = {
   items: TItem[];
   hasMore: boolean;
-  cursor: string | null | undefined;
+  cursor: string | null;
   setItems: Dispatch<SetStateAction<TItem[]>>;
   setHasMore: Dispatch<SetStateAction<boolean>>;
-  setCursor: Dispatch<SetStateAction<string | null | undefined>>;
+  setCursor: Dispatch<SetStateAction<string | null>>;
 };
 
 /**
@@ -27,7 +27,7 @@ export function useSyncedPaginatedList<TItem>(
 ): SyncedPaginatedListState<TItem> {
   const [items, setItems] = useState(initial.items);
   const [hasMore, setHasMore] = useState(initial.hasMore);
-  const [cursor, setCursor] = useState(initial.cursor);
+  const [cursor, setCursor] = useState<string | null>(initial.cursor ?? null);
 
   useEffect(() => {
     setItems(initial.items);
