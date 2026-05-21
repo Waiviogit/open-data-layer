@@ -324,7 +324,12 @@ let singletonForUrl: string | undefined;
 /** Called from `NotificationsWsConfigProvider` (server passes runtime compose URL). */
 export function configureNotificationsWsUrl(url: string): void {
   const trimmed = url.trim();
-  runtimeWsUrl = trimmed.length > 0 ? trimmed : undefined;
+  const nextUrl = trimmed.length > 0 ? trimmed : undefined;
+  if (nextUrl === runtimeWsUrl && singleton !== undefined) {
+    return;
+  }
+  singleton?.close();
+  runtimeWsUrl = nextUrl;
   singleton = undefined;
   singletonForUrl = undefined;
 }
