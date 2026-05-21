@@ -5,6 +5,8 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { buildVoteOp, getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
+import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
+import { revalidateUserFeedAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 import {
@@ -106,8 +108,11 @@ export function StoryVoteButton({
       setPending(false);
       setConfirming(true);
       void awaitTrxConfirmation(transactionId).finally(() => {
-        router.refresh();
-        setConfirming(false);
+        void refreshAfterBroadcast(router, () =>
+          revalidateUserFeedAfterBroadcast(authorName),
+        ).finally(() => {
+          setConfirming(false);
+        });
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Vote failed');

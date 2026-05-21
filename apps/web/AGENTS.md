@@ -115,9 +115,10 @@ After every successful **Hive wallet broadcast** that should update on-chain-bac
 1. **Capture `transactionId`** from the broadcast result immediately.
 2. **Subscribe on the notifications WebSocket** for that trx id — use **`awaitTrxConfirmation(trxId)`** from **`@/modules/notifications`** (wraps `NotificationsWsClient.subscribeTrx` with a correlation id). Do not poll HTTP for indexer completion.
 3. **Show in-place loading** on the affected control while waiting (e.g. spinner on vote count, subtle “waiting for confirmation” on comment submit) — keep optimistic UI until broadcast finishes; switch to confirming state only after you have the trx id.
-4. **Refresh server-rendered data** when confirmation arrives **or** when **`TRX_CONFIRMATION_TIMEOUT_MS`** elapses (default 10s): call **`router.refresh()`** (or equivalent refetch). **Never treat timeout as a hard error** — still refresh so the UI catches up eventually.
+4. **Refresh server-rendered data** when confirmation arrives **or** when **`TRX_CONFIRMATION_TIMEOUT_MS`** elapses (default 10s): call **`refreshAfterBroadcast(router, revalidateAction)`** from `@/shared/infrastructure/query/refresh-after-broadcast` — it runs a tagged **`revalidateTag`** server action, then **`router.refresh()`**. **Never treat timeout as a hard error** — still refresh so the UI catches up eventually.
 5. **New on-chain actions** must follow the same pattern; do not leave stale counts or lists after broadcast.
 6. **Paginated client lists** seeded from RSC (`initialPage` / `initialItems`) must re-sync after `router.refresh()` — use **`useSyncedPaginatedList`** from `@/shared/presentation` (or an equivalent `useEffect` on the server initial payload). Counts from parent props update automatically; `useState(initial*)` for list rows does not.
+7. **Query-api Data Cache:** page-load clients use **`queryApiFetch`** with **`cacheTags`** (60s GET cache). After broadcast, invalidate via **`updateTag`** in **`revalidateObjectAfterBroadcast`**, **`revalidateUserSocialAfterBroadcast`**, or **`revalidateUserFeedAfterBroadcast`** (`revalidate-after-broadcast.server.ts`) — **not** `queryApiFetchLive` on every page load. `queryApiFetchLive` is for post-broadcast server actions only. POST `/resolve` counts stay fresh; stale lists were from cached GETs without tag invalidation.
 
 Requires **`NEXT_PUBLIC_NOTIFICATIONS_WS_URL`** and a logged-in session (JWT via **`/api/auth/ws-token`**). If WS is unavailable, `awaitTrxConfirmation` waits the timeout then returns so step 4 still runs.
 
@@ -142,7 +143,7 @@ Use **`router.refresh()`** from `next/navigation` when server-rendered data shou
 3. **Avoid** bumping `key` on every refresh just to reset lists — it drops scroll position and load-more state. Prefer explicit sync.
 4. **Symptom to watch for:** server counts or tab badges change, but list rows or card fields stay old — missing sync after refresh.
 
-Primary pattern elsewhere in the app: **`awaitTrxConfirmation(trxId)` → `router.refresh()`** (see section above). Always refresh even on trx timeout so the UI eventually matches chain/indexer state.
+Primary pattern elsewhere in the app: **`awaitTrxConfirmation(trxId)` → `refreshAfterBroadcast(router, revalidate*)`**. Always refresh even on trx timeout so the UI eventually matches chain/indexer state.
 
 ## Maps (`src/modules/map/`)
 

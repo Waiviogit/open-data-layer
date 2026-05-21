@@ -9,6 +9,8 @@ import {
   broadcastUserFollowBell,
   broadcastUserFollowToggle,
 } from '@/modules/user-social/infrastructure/broadcast-user-subscription';
+import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
+import { revalidateUserSocialAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 import type { UserProfileShellUser } from './types';
 import { UserHero } from './user-hero';
@@ -76,7 +78,9 @@ export function UserProfileHeroClient({
     setFollowPending(true);
     try {
       await broadcastUserFollowToggle(account, accountName, previousFollowing);
-      router.refresh();
+      await refreshAfterBroadcast(router, () =>
+        revalidateUserSocialAfterBroadcast(accountName),
+      );
     } catch {
       setIsFollowing(previousFollowing);
       setViewerBell(previousBell);
@@ -109,7 +113,9 @@ export function UserProfileHeroClient({
     setBellPending(true);
     try {
       await broadcastUserFollowBell(account, accountName, nextBell, odlCustomJsonId);
-      router.refresh();
+      await refreshAfterBroadcast(router, () =>
+        revalidateUserSocialAfterBroadcast(accountName),
+      );
     } catch {
       setViewerBell(previousBell);
     } finally {

@@ -18,6 +18,8 @@ import { labelForUpdateType } from '@/modules/object/domain/object-update-labels
 import { formatUpdateCountLabel } from '@/modules/object/domain/update-count-label';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
+import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
+import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 import {
   defaultUpdateTypeForCandidates,
@@ -202,7 +204,7 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
       });
       onClose();
       void awaitTrxConfirmation(transactionId).finally(() => {
-        router.refresh();
+        void refreshAfterBroadcast(router, () => revalidateObjectAfterBroadcast(objectId));
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : t('object_edit_validation_error'));

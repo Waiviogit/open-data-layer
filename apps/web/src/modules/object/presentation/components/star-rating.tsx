@@ -8,6 +8,8 @@ import { buildOdlRankVoteOp } from '@opden-data-layer/hive-broadcast';
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
+import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
+import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 /** ODL rank units per half-star (5 stars = 10000). */
 export const RANK_UNITS_PER_HALF_STAR = 1000;
@@ -247,8 +249,11 @@ export function StarRating({
         setPending(false);
         setConfirming(true);
         void awaitTrxConfirmation(transactionId).finally(() => {
-          router.refresh();
-          setConfirming(false);
+          void refreshAfterBroadcast(router, () =>
+            revalidateObjectAfterBroadcast(objectId),
+          ).finally(() => {
+            setConfirming(false);
+          });
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Vote failed');

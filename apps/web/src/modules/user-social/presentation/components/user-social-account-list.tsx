@@ -27,6 +27,8 @@ export type UserSocialAccountListProps = {
   sort: UserSubscriptionSort;
   currentUsername: string | null;
   loadMoreAction: LoadMoreUserSocialAccountListFn;
+  /** Invalidates tagged query-api cache after a row follow toggle (before `router.refresh`). */
+  onBroadcastRevalidate?: () => Promise<void>;
 };
 
 export function UserSocialAccountList({
@@ -36,6 +38,7 @@ export function UserSocialAccountList({
   sort,
   currentUsername,
   loadMoreAction,
+  onBroadcastRevalidate,
 }: UserSocialAccountListProps) {
   const { t } = useI18n();
   const { items, setItems, hasMore, setHasMore } = useSyncedPaginatedList(initialPage);
@@ -76,7 +79,12 @@ export function UserSocialAccountList({
         <>
           <ul>
             {items.map((row) => (
-              <UserSocialAccountRow key={row.name} row={row} viewerUsername={currentUsername} />
+              <UserSocialAccountRow
+                key={row.name}
+                row={row}
+                viewerUsername={currentUsername}
+                onBroadcastRevalidate={onBroadcastRevalidate}
+              />
             ))}
           </ul>
           {hasMore ? (

@@ -10,14 +10,20 @@ import { UserAvatar } from '@/shared/presentation';
 
 import type { UserFollowListView } from '@/modules/user-social/application/dto/user-social.dto';
 import { broadcastUserFollowToggle } from '@/modules/user-social/infrastructure/broadcast-user-subscription';
+import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 
 export type UserSocialAccountRowProps = {
   row: UserFollowListView;
   /** Current logged-in Hive account; when absent, follow control is disabled. */
   viewerUsername: string | null;
+  onBroadcastRevalidate?: () => Promise<void>;
 };
 
-export function UserSocialAccountRow({ row, viewerUsername }: UserSocialAccountRowProps) {
+export function UserSocialAccountRow({
+  row,
+  viewerUsername,
+  onBroadcastRevalidate,
+}: UserSocialAccountRowProps) {
   const { t } = useI18n();
   const router = useRouter();
   const { openLogin } = useLoginModal();
@@ -45,13 +51,13 @@ export function UserSocialAccountRow({ row, viewerUsername }: UserSocialAccountR
     setPending(true);
     try {
       await broadcastUserFollowToggle(account, row.name, previous);
-      router.refresh();
+      await refreshAfterBroadcast(router, onBroadcastRevalidate ?? (async () => {}));
     } catch {
       setIsCurrentFollowing(previous);
     } finally {
       setPending(false);
     }
-  }, [isCurrentFollowing, openLogin, pending, row.name, router, viewerUsername]);
+  }, [isCurrentFollowing, onBroadcastRevalidate, openLogin, pending, row.name, router, viewerUsername]);
 
   return (
     <li className="flex items-center gap-3 border-b border-border py-3 last:border-b-0">

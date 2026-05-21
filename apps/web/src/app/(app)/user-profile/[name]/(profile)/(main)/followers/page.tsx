@@ -7,6 +7,7 @@ import {
 import { Suspense } from 'react';
 
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
+import { revalidateUserSocialAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 import { loadMoreUserFollowersAction } from '../../../user-profile-social.actions';
 
@@ -43,6 +44,7 @@ export default async function UserProfileFollowersPage({
           sort={sort}
           currentUsername={viewer}
           loadMoreAction={loadMoreUserFollowersAction}
+          onBroadcastRevalidate={() => revalidateUserSocialAfterBroadcast(decoded)}
         />
       </Suspense>
     </div>

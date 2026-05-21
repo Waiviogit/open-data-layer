@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { queryApiFetch } from '@/modules/user-profile/infrastructure/clients/query-api.client';
+import { queryApiCacheTags } from '@/shared/infrastructure/query/query-api-cache-tags';
 
 import type {
   PaginatedFollowingObjectsView,
@@ -33,7 +34,10 @@ export async function fetchUserFollowers(
   if (viewer) {
     headers['X-Viewer'] = viewer;
   }
-  return queryApiFetch<PaginatedUserFollowListView>(path, { headers });
+  return queryApiFetch<PaginatedUserFollowListView>(path, {
+    headers,
+    cacheTags: [queryApiCacheTags.userFollowers(accountName)],
+  });
 }
 
 export async function fetchUserFollowing(
@@ -48,7 +52,10 @@ export async function fetchUserFollowing(
   if (viewer) {
     headers['X-Viewer'] = viewer;
   }
-  return queryApiFetch<PaginatedUserFollowListView>(path, { headers });
+  return queryApiFetch<PaginatedUserFollowListView>(path, {
+    headers,
+    cacheTags: [queryApiCacheTags.userFollowing(accountName)],
+  });
 }
 
 export async function fetchUserFollowingObjects(
@@ -66,5 +73,8 @@ export async function fetchUserFollowingObjects(
   if (viewer) {
     headers['X-Viewer'] = viewer;
   }
-  return queryApiFetch<PaginatedFollowingObjectsView>(path, { headers });
+  return queryApiFetch<PaginatedFollowingObjectsView>(path, {
+    headers,
+    cacheTags: [queryApiCacheTags.userFollowingObjects(accountName)],
+  });
 }

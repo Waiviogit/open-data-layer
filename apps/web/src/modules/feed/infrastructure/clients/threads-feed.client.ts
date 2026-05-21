@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { queryApiFetch } from '@/modules/user-profile/infrastructure/clients/query-api.client';
+import { queryApiCacheTags } from '@/shared/infrastructure/query/query-api-cache-tags';
 
 export interface UserThreadsFeedResponse {
   items: unknown[];
@@ -22,5 +23,6 @@ export async function fetchUserThreadsFeed(
     method: 'POST',
     headers,
     body: JSON.stringify(body ?? {}),
+    cacheTags: [queryApiCacheTags.userThreadsFeed(accountName)],
   });
 }

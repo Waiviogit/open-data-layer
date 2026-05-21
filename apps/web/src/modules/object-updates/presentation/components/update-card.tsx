@@ -17,6 +17,8 @@ import {
 } from '@/modules/feed/presentation/components/story-utils';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
+import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
+import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
 import { shouldUnoptimizeRemoteImage, UserAvatar } from '@/shared/presentation';
 
@@ -123,8 +125,11 @@ export function UpdateCard({
         setPending(false);
         setConfirming(true);
         void awaitTrxConfirmation(transactionId).finally(() => {
-          router.refresh();
-          setConfirming(false);
+          void refreshAfterBroadcast(router, () =>
+            revalidateObjectAfterBroadcast(item.object_id),
+          ).finally(() => {
+            setConfirming(false);
+          });
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : t('object_edit_validation_error'));

@@ -7,6 +7,8 @@ import { getHiveJsonMetadataDefaults } from '@/config/hive-json-metadata-public'
 import { LexicalPostEditor } from '@/modules/editor';
 import { buildCommentOp, getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
+import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
+import { revalidateUserFeedAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 import { buildHiveJsonMetadataString, createCommentPermlink } from '@/shared';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
@@ -75,8 +77,11 @@ export function StoryCommentEditor({ story, currentUsername }: StoryCommentEdito
       setPending(false);
       setConfirming(true);
       void awaitTrxConfirmation(transactionId).finally(() => {
-        router.refresh();
-        setConfirming(false);
+        void refreshAfterBroadcast(router, () =>
+          revalidateUserFeedAfterBroadcast(story.authorName),
+        ).finally(() => {
+          setConfirming(false);
+        });
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Comment failed');

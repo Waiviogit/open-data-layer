@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { queryApiFetch } from '@/modules/user-profile/infrastructure/clients/query-api.client';
+import { queryApiCacheTags } from '@/shared/infrastructure/query/query-api-cache-tags';
 
 import type { ObjectUpdatesFeedPageView } from '../../application/dto/object-updates-feed.dto';
 
@@ -51,5 +52,8 @@ export async function fetchObjectUpdatesFeed(
     headers['X-Viewer'] = params.viewer.trim();
   }
 
-  return queryApiFetch<ObjectUpdatesFeedPageView>(path, { headers });
+  return queryApiFetch<ObjectUpdatesFeedPageView>(path, {
+    headers,
+    cacheTags: [queryApiCacheTags.objectUpdates(params.objectId)],
+  });
 }

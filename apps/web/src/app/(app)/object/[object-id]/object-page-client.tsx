@@ -34,6 +34,8 @@ import {
   OBJECT_PAGE_PRIMARY_TAB_PARAM,
 } from './object-page-search';
 import { loadMoreObjectUpdatesFeedAction } from './updates/updates-feed.actions';
+import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
+import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 export type ObjectPageClientProps = {
   model: ObjectPageViewModel;
@@ -191,8 +193,11 @@ export function ObjectPageClient({
         operations: [op],
       });
       void awaitTrxConfirmation(transactionId).finally(() => {
-        router.refresh();
-        setFollowPending(false);
+        void refreshAfterBroadcast(router, () =>
+          revalidateObjectAfterBroadcast(model.objectId),
+        ).finally(() => {
+          setFollowPending(false);
+        });
       });
     } catch {
       setFollowing(previousFollowing);
@@ -235,8 +240,11 @@ export function ObjectPageClient({
         operations: [op],
       });
       void awaitTrxConfirmation(transactionId).finally(() => {
-        router.refresh();
-        setBellPending(false);
+        void refreshAfterBroadcast(router, () =>
+          revalidateObjectAfterBroadcast(model.objectId),
+        ).finally(() => {
+          setBellPending(false);
+        });
       });
     } catch {
       setViewerBell(previousBell);
@@ -278,8 +286,11 @@ export function ObjectPageClient({
         operations: [op],
       });
       void awaitTrxConfirmation(transactionId).finally(() => {
-        router.refresh();
-        setFavoritePending(false);
+        void refreshAfterBroadcast(router, () =>
+          revalidateObjectAfterBroadcast(model.objectId),
+        ).finally(() => {
+          setFavoritePending(false);
+        });
       });
     } catch {
       setFavorite(previous);
@@ -332,6 +343,7 @@ export function ObjectPageClient({
         sort={followersSort}
         currentUsername={viewerUsername}
         loadMoreAction={loadMoreObjectFollowersAction}
+        onBroadcastRevalidate={() => revalidateObjectAfterBroadcast(model.objectId)}
       />
     );
   }, [embeddedFollowersPage, followersSort, model.objectId, viewerUsername]);
@@ -394,6 +406,7 @@ export function ObjectPageClient({
           sort={authoritySort}
           currentUsername={viewerUsername}
           loadMoreAction={loadMoreObjectAuthority}
+          onBroadcastRevalidate={() => revalidateObjectAfterBroadcast(model.objectId)}
         />
       </div>
     );

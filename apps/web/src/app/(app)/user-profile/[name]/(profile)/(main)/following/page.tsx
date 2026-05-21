@@ -7,6 +7,7 @@ import {
   USER_SOCIAL_PAGE_SIZE,
 } from '@/modules/user-social';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
+import { revalidateUserSocialAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 import { loadMoreUserFollowingAction } from '../../../user-profile-social.actions';
 
@@ -43,6 +44,7 @@ export default async function UserProfileFollowingPage({
           sort={sort}
           currentUsername={viewer}
           loadMoreAction={loadMoreUserFollowingAction}
+          onBroadcastRevalidate={() => revalidateUserSocialAfterBroadcast(decoded)}
         />
       </Suspense>
     </div>

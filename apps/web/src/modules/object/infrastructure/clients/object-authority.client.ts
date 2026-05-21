@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { queryApiFetch } from '@/modules/user-profile/infrastructure/clients/query-api.client';
+import { queryApiCacheTags } from '@/shared/infrastructure/query/query-api-cache-tags';
 
 import type {
   PaginatedUserFollowListView,
@@ -41,5 +42,8 @@ export async function fetchObjectAuthority(
   if (viewer) {
     headers['X-Viewer'] = viewer;
   }
-  return queryApiFetch<PaginatedUserFollowListView>(path, { headers });
+  return queryApiFetch<PaginatedUserFollowListView>(path, {
+    headers,
+    cacheTags: [queryApiCacheTags.objectAuthority(objectId)],
+  });
 }

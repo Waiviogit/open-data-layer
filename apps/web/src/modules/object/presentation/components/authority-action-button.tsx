@@ -9,6 +9,8 @@ import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
+import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
+import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 import type { AuthoritySubType } from '../../domain/object-page.types';
 
@@ -63,8 +65,11 @@ export function AuthorityActionButton({
         operations: [op],
       });
       void awaitTrxConfirmation(transactionId).finally(() => {
-        router.refresh();
-        setPending(false);
+        void refreshAfterBroadcast(router, () =>
+          revalidateObjectAfterBroadcast(objectId),
+        ).finally(() => {
+          setPending(false);
+        });
       });
     } catch {
       setActive(previous);

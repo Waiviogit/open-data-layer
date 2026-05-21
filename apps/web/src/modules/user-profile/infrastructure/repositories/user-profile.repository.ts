@@ -2,6 +2,7 @@ import { userProfileViewSchema } from '../../application/dto/user-profile.dto';
 import type { UserProfileRepository } from '../../domain/ports/user-profile.repository';
 import type { UserProfileView } from '../../domain/types/user-profile-view';
 import { queryApiFetch } from '../clients/query-api.client';
+import { queryApiCacheTags } from '@/shared/infrastructure/query/query-api-cache-tags';
 
 export function createHttpUserProfileRepository(): UserProfileRepository {
   return {
@@ -12,7 +13,10 @@ export function createHttpUserProfileRepository(): UserProfileRepository {
         viewerTrimmed && viewerTrimmed.length > 0
           ? { 'X-Viewer': viewerTrimmed }
           : {};
-      const data = await queryApiFetch<unknown>(path, { headers });
+      const data = await queryApiFetch<unknown>(path, {
+        headers,
+        cacheTags: [queryApiCacheTags.userProfile(name)],
+      });
       if (data === null) {
         return null;
       }

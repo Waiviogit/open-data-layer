@@ -11,6 +11,8 @@ import type { SocialProjectedObjectView } from '@/modules/user-social/applicatio
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useLoginModal } from '@/modules/auth/presentation';
 import { broadcastObjectUnfollow } from '@/modules/user-social/infrastructure/broadcast-object-unfollow';
+import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
+import { revalidateUserSocialAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 import { AVATAR_PLACEHOLDER_SRC, shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 import { objectPagePath } from '@/shared/routes/object-page-path';
 
@@ -18,12 +20,14 @@ const THUMB = 44;
 
 export type UserSocialObjectRowProps = {
   object: SocialProjectedObjectView;
+  profileAccountName: string;
   viewerUsername: string | null;
   onRemoved?: (objectId: string) => void;
 };
 
 export function UserSocialObjectRow({
   object: o,
+  profileAccountName,
   viewerUsername,
   onRemoved,
 }: UserSocialObjectRowProps) {
@@ -53,13 +57,15 @@ export function UserSocialObjectRow({
     try {
       await broadcastObjectUnfollow(account, o.object_id, odlCustomJsonId);
       onRemoved?.(o.object_id);
-      router.refresh();
+      await refreshAfterBroadcast(router, () =>
+        revalidateUserSocialAfterBroadcast(profileAccountName),
+      );
     } catch {
       /* revert via refresh on next success */
     } finally {
       setPending(false);
     }
-  }, [o.object_id, odlCustomJsonId, onRemoved, openLogin, pending, router, viewerUsername]);
+  }, [o.object_id, odlCustomJsonId, onRemoved, openLogin, pending, profileAccountName, router, viewerUsername]);
 
   return (
     <li className="flex items-center gap-3 border-b border-border py-3 last:border-b-0">

@@ -10,6 +10,8 @@ import { buildOdlObjectAuthorityOp } from '@opden-data-layer/hive-broadcast';
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
+import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
+import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 import type { ProjectedObjectView } from '../../application/dto/object-fields';
 import { objectFields } from '../../application/dto/object-fields';
 import { useI18n } from '@/i18n/providers/i18n-provider';
@@ -119,8 +121,11 @@ function AdministrativeHeartButton({
         operations: [op],
       });
       void awaitTrxConfirmation(transactionId).finally(() => {
-        router.refresh();
-        setPending(false);
+        void refreshAfterBroadcast(router, () =>
+          revalidateObjectAfterBroadcast(objectId),
+        ).finally(() => {
+          setPending(false);
+        });
       });
     } catch {
       setActive(previous);
