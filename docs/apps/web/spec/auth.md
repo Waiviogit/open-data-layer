@@ -7,7 +7,7 @@
 - **auth-api** (Nest) issues JWTs; **web** never calls auth-api from the browser directly for login.
 - Next.js **route handlers** under `src/app/api/auth/*` proxy to `{AUTH_API_BASE_URL}/auth/v1/...` and set **httpOnly** cookies (`odl_access`, `odl_refresh`). `AUTH_API_BASE_URL` must be the **origin only** (no path segment).
 - Server code resolves the current user via `createCookieAuthContextProvider()` using `jose` and `AUTH_JWT_SECRET` (must match auth-api `JWT_SECRET`).
-- **Silent refresh:** `src/proxy.ts` runs before RSC on each matched request. If `odl_access` is missing or expired but `odl_refresh` is valid, web calls auth-api `POST /auth/v1/refresh` and sets new httpOnly cookies (up to refresh TTL, default 7d). Skips `/api/auth/*` to avoid refresh loops. Manual refresh remains `POST /api/auth/refresh`.
+- **Silent refresh:** `src/proxy.ts` runs before RSC on each matched request. If `odl_access` is missing or expired but `odl_refresh` is valid, web calls auth-api `POST /auth/v1/refresh` and sets new httpOnly cookies (up to refresh TTL, default 7d). Skips `/api/auth/*` to avoid refresh loops. Parallel requests coalesce refresh (in-flight dedup); a failed refresh **does not** clear cookies while the refresh JWT is still cryptographically valid (avoids rotation races wiping `odl_*` cookies). Manual refresh remains `POST /api/auth/refresh`.
 
 ## Module: `src/modules/auth`
 

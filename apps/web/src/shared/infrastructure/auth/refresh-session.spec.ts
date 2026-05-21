@@ -2,7 +2,10 @@ jest.mock('jose', () => ({
   jwtVerify: jest.fn(),
 }));
 
-import { fetchSessionTokenPairFromAuthApi } from './refresh-session';
+import {
+  fetchSessionTokenPairFromAuthApi,
+  resolveProxySessionRefresh,
+} from './refresh-session';
 import { shouldSkipProxySessionRefresh } from './proxy-session-paths';
 import { parseAuthApiTokenResponse } from './session-tokens';
 
@@ -73,6 +76,35 @@ describe('fetchSessionTokenPairFromAuthApi', () => {
       expect.objectContaining({ method: 'POST' }),
     );
   });
+
+  it('deduplicates parallel refresh calls for the same token', async () => {
+    const fetchMock = jest.spyOn(global, 'fetch').mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(
+            () =>
+              resolve({
+                ok: true,
+                json: async () => ({
+                  accessToken: 'access',
+                  refreshToken: 'refresh',
+                  user: { username: 'alice' },
+                }),
+              } as Response),
+            10,
+          );
+        }),
+    );
+
+    const token = 'same-refresh-token';
+    const [a, b] = await Promise.all([
+      fetchSessionTokenPairFromAuthApi(token, null, env),
+      fetchSessionTokenPairFromAuthApi(token, null, env),
+    ]);
+
+    expect(a).toEqual(b);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('parseAuthApiTokenResponse', () => {
@@ -97,5 +129,49 @@ describe('parseAuthApiTokenResponse', () => {
         refreshToken: 'r',
       }),
     ).toBeNull();
+  });
+});
+
+describe('resolveProxySessionRefresh', () => {
+  const jwtSecret = 'test-jwt-secret-min-16';
+
+  function requestWithCookies(access?: string, refresh?: string) {
+    return {
+      cookies: {
+        get: (name: string) => {
+          if (name === 'odl_access' && access) {
+            return { value: access };
+          }
+          if (name === 'odl_refresh' && refresh) {
+            return { value: refresh };
+          }
+          return undefined;
+        },
+      },
+      headers: { get: () => null },
+    } as unknown as import('next/server').NextRequest;
+  }
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('does not clear cookies when refresh JWT is still valid but auth-api rejects (rotation race)', async () => {
+    const { jwtVerify } = await import('jose');
+    (jwtVerify as jest.Mock).mockResolvedValue({
+      payload: { typ: 'refresh', sub: 'alice', jti: 'session-1' },
+    });
+
+    jest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: false,
+      json: async () => ({}),
+    } as Response);
+
+    const result = await resolveProxySessionRefresh(
+      requestWithCookies(undefined, 'refresh-jwt'),
+      jwtSecret,
+    );
+
+    expect(result).toEqual({ kind: 'unchanged' });
   });
 });

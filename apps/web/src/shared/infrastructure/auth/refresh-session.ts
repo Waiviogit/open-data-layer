@@ -16,6 +16,9 @@ import {
   type SessionTokenPair,
 } from './session-tokens';
 
+/** Coalesce parallel proxy refreshes using the same refresh cookie (rotation race). */
+const refreshInflightByToken = new Map<string, Promise<FetchSessionTokenPairResult>>();
+
 export async function isAccessTokenValid(
   accessToken: string,
   jwtSecret: string,
@@ -31,6 +34,25 @@ export async function isAccessTokenValid(
   }
 }
 
+export async function isRefreshTokenValid(
+  refreshToken: string,
+  jwtSecret: string,
+): Promise<boolean> {
+  try {
+    const secret = new TextEncoder().encode(jwtSecret);
+    const { payload } = await jwtVerify(refreshToken, secret, {
+      algorithms: ['HS256'],
+    });
+    return (
+      payload.typ === 'refresh' &&
+      typeof payload.sub === 'string' &&
+      typeof payload.jti === 'string'
+    );
+  } catch {
+    return false;
+  }
+}
+
 export type FetchSessionTokenPairResult =
   | { status: 'ok'; tokens: SessionTokenPair }
   /** Refresh rejected or invalid response — caller should clear session cookies. */
@@ -39,6 +61,25 @@ export type FetchSessionTokenPairResult =
   | { status: 'unavailable' };
 
 export async function fetchSessionTokenPairFromAuthApi(
+  refreshToken: string,
+  userAgent: string | null,
+  env: NodeJS.ProcessEnv = process.env,
+): Promise<FetchSessionTokenPairResult> {
+  const inflight = refreshInflightByToken.get(refreshToken);
+  if (inflight) {
+    return inflight;
+  }
+
+  const promise = fetchSessionTokenPairFromAuthApiOnce(refreshToken, userAgent, env).finally(
+    () => {
+      refreshInflightByToken.delete(refreshToken);
+    },
+  );
+  refreshInflightByToken.set(refreshToken, promise);
+  return promise;
+}
+
+async function fetchSessionTokenPairFromAuthApiOnce(
   refreshToken: string,
   userAgent: string | null,
   env: NodeJS.ProcessEnv = process.env,
@@ -105,6 +146,10 @@ export async function resolveProxySessionRefresh(
     return { kind: 'unchanged' };
   }
   if (result.status === 'auth_failed') {
+    // Parallel proxy requests can rotate refresh once; losers get 401 — do not wipe cookies.
+    if (await isRefreshTokenValid(refresh, jwtSecret)) {
+      return { kind: 'unchanged' };
+    }
     return { kind: 'cleared' };
   }
 

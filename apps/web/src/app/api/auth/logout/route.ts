@@ -2,10 +2,8 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
 import { authApiUrl } from '@/shared/infrastructure/auth/bff-proxy';
-import {
-  AUTH_ACCESS_COOKIE,
-  AUTH_REFRESH_COOKIE,
-} from '@/shared/infrastructure/auth/session-cookie';
+import { clearSessionCookiesOnResponse } from '@/shared/infrastructure/auth/refresh-session';
+import { AUTH_REFRESH_COOKIE } from '@/shared/infrastructure/auth/session-cookie';
 
 export async function POST(req: Request) {
   let body = await req.text();
@@ -33,8 +31,7 @@ export async function POST(req: Request) {
     },
   });
 
-  out.cookies.set(AUTH_ACCESS_COOKIE, '', { httpOnly: true, path: '/', maxAge: 0 });
-  out.cookies.set(AUTH_REFRESH_COOKIE, '', { httpOnly: true, path: '/', maxAge: 0 });
+  clearSessionCookiesOnResponse(out);
 
   return out;
 }
