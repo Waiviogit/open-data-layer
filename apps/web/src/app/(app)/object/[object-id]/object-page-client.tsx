@@ -343,7 +343,7 @@ export function ObjectPageClient({
         sort={followersSort}
         currentUsername={viewerUsername}
         loadMoreAction={loadMoreObjectFollowersAction}
-        onBroadcastRevalidate={() => revalidateObjectAfterBroadcast(model.objectId)}
+        onBroadcastRevalidate={revalidateObjectAfterBroadcast}
       />
     );
   }, [embeddedFollowersPage, followersSort, model.objectId, viewerUsername]);
@@ -406,7 +406,7 @@ export function ObjectPageClient({
           sort={authoritySort}
           currentUsername={viewerUsername}
           loadMoreAction={loadMoreObjectAuthority}
-          onBroadcastRevalidate={() => revalidateObjectAfterBroadcast(model.objectId)}
+          onBroadcastRevalidate={revalidateObjectAfterBroadcast}
         />
       </div>
     );

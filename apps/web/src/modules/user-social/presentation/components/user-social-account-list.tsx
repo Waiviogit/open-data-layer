@@ -27,8 +27,8 @@ export type UserSocialAccountListProps = {
   sort: UserSubscriptionSort;
   currentUsername: string | null;
   loadMoreAction: LoadMoreUserSocialAccountListFn;
-  /** Invalidates tagged query-api cache after a row follow toggle (before `router.refresh`). */
-  onBroadcastRevalidate?: () => Promise<void>;
+  /** Server action — pass by reference from RSC (not an inline arrow). */
+  onBroadcastRevalidate?: (accountName: string) => Promise<void>;
 };
 
 export function UserSocialAccountList({
@@ -82,6 +82,7 @@ export function UserSocialAccountList({
               <UserSocialAccountRow
                 key={row.name}
                 row={row}
+                profileAccountName={profileAccountName}
                 viewerUsername={currentUsername}
                 onBroadcastRevalidate={onBroadcastRevalidate}
               />

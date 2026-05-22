@@ -14,13 +14,15 @@ import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-aft
 
 export type UserSocialAccountRowProps = {
   row: UserFollowListView;
+  profileAccountName: string;
   /** Current logged-in Hive account; when absent, follow control is disabled. */
   viewerUsername: string | null;
-  onBroadcastRevalidate?: () => Promise<void>;
+  onBroadcastRevalidate?: (accountName: string) => Promise<void>;
 };
 
 export function UserSocialAccountRow({
   row,
+  profileAccountName,
   viewerUsername,
   onBroadcastRevalidate,
 }: UserSocialAccountRowProps) {
@@ -51,13 +53,25 @@ export function UserSocialAccountRow({
     setPending(true);
     try {
       await broadcastUserFollowToggle(account, row.name, previous);
-      await refreshAfterBroadcast(router, onBroadcastRevalidate ?? (async () => {}));
+      await refreshAfterBroadcast(
+        router,
+        () => onBroadcastRevalidate?.(profileAccountName) ?? Promise.resolve(),
+      );
     } catch {
       setIsCurrentFollowing(previous);
     } finally {
       setPending(false);
     }
-  }, [isCurrentFollowing, onBroadcastRevalidate, openLogin, pending, row.name, router, viewerUsername]);
+  }, [
+    isCurrentFollowing,
+    onBroadcastRevalidate,
+    openLogin,
+    pending,
+    profileAccountName,
+    row.name,
+    router,
+    viewerUsername,
+  ]);
 
   return (
     <li className="flex items-center gap-3 border-b border-border py-3 last:border-b-0">

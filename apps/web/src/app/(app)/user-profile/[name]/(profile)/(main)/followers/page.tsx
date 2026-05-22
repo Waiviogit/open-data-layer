@@ -44,7 +44,7 @@ export default async function UserProfileFollowersPage({
           sort={sort}
           currentUsername={viewer}
           loadMoreAction={loadMoreUserFollowersAction}
-          onBroadcastRevalidate={() => revalidateUserSocialAfterBroadcast(decoded)}
+          onBroadcastRevalidate={revalidateUserSocialAfterBroadcast}
         />
       </Suspense>
     </div>
