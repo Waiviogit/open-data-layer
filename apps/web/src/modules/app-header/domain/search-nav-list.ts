@@ -1,7 +1,9 @@
 import type { SearchObjectResult, SearchResponse, SearchUserResult } from './search-response.schema';
 
-/** Tab key: a specific `object_type` or users-only. */
-export type SearchFilterTab = 'users' | string;
+/** Tab key: all object hits, a specific `object_type`, or users-only. */
+export type SearchFilterTab = 'all' | 'users' | string;
+
+export const HEADER_SEARCH_ALL_TAB = 'all' as const satisfies SearchFilterTab;
 
 /** Pick default tab when counts load: highest object_type count, else users if only users, else first type key. */
 export function pickDefaultSearchFilterTab(
@@ -16,6 +18,43 @@ export function pickDefaultSearchFilterTab(
   return entries[0][0];
 }
 
+/** Keep the active tab when possible after `/search` results arrive. */
+export function pickSearchFilterTabFromResults(
+  results: SearchResponse,
+  prev: SearchFilterTab,
+): SearchFilterTab {
+  if (prev === 'users' && results.users.length > 0) {
+    return 'users';
+  }
+  if (results.objects.length > 0) {
+    return HEADER_SEARCH_ALL_TAB;
+  }
+  if (results.users.length > 0) {
+    return 'users';
+  }
+  return HEADER_SEARCH_ALL_TAB;
+}
+
+/** Keep the active tab when possible after `/search/counts` arrives. */
+export function reconcileSearchFilterTabFromCounts(
+  prev: SearchFilterTab,
+  typeCounts: Record<string, number>,
+  totalUsers: number,
+  results?: SearchResponse | null,
+): SearchFilterTab {
+  if (prev === 'users' && totalUsers > 0) {
+    return 'users';
+  }
+  const objectCount = Object.values(typeCounts).reduce((sum, n) => sum + n, 0);
+  if (objectCount > 0 || (results?.objects.length ?? 0) > 0) {
+    return HEADER_SEARCH_ALL_TAB;
+  }
+  if (totalUsers > 0) {
+    return 'users';
+  }
+  return HEADER_SEARCH_ALL_TAB;
+}
+
 export function buildDiscoverHrefFromSearch(
   tab: SearchFilterTab,
   query: string,
@@ -27,7 +66,7 @@ export function buildDiscoverHrefFromSearch(
   }
   if (tab === 'users') {
     sp.set('users', '1');
-  } else {
+  } else if (tab !== HEADER_SEARCH_ALL_TAB) {
     sp.set('type', tab);
   }
   const qs = sp.toString();
@@ -39,7 +78,7 @@ export type SearchFlatEntry =
   | { kind: 'user'; item: SearchUserResult };
 
 /**
- * Linear order for keyboard nav and Enter: objects first (maybe filtered), then users (maybe filtered).
+ * Linear order for keyboard nav: all objects then users (users tab is users-only).
  */
 export function buildSearchFlatList(
   results: SearchResponse,
@@ -48,9 +87,9 @@ export function buildSearchFlatList(
   if (tab === 'users') {
     return results.users.map((item) => ({ kind: 'user' as const, item }));
   }
-  return results.objects
-    .filter((o) => o.object_type === tab)
-    .map((item) => ({ kind: 'object' as const, item }));
+  const objects = results.objects.map((item) => ({ kind: 'object' as const, item }));
+  const users = results.users.map((item) => ({ kind: 'user' as const, item }));
+  return [...objects, ...users];
 }
 
 export function formatObjectTypeLabel(objectType: string): string {

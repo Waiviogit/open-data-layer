@@ -15,11 +15,13 @@ import {
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import type { AppHeaderUser } from '../../domain/app-header-user';
+import type { SearchFilterTab } from '../../domain/search-nav-list';
 import {
   buildSearchFlatList,
-  pickDefaultSearchFilterTab,
+  HEADER_SEARCH_ALL_TAB,
+  pickSearchFilterTabFromResults,
+  reconcileSearchFilterTabFromCounts,
 } from '../../domain/search-nav-list';
-import type { SearchFilterTab } from '../../domain/search-nav-list';
 import { fetchSearchCounts, fetchSearchResults } from '../../infrastructure/search.client';
 import type { SearchCountsResponse, SearchResponse } from '../../domain/search-response.schema';
 import { HeaderActions } from './header-actions';
@@ -91,7 +93,7 @@ export function TopNav({ user: _user }: TopNavProps) {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchCounts, setSearchCounts] = useState<SearchCountsResponse | null>(null);
   const [searchCountsLoading, setSearchCountsLoading] = useState(false);
-  const [filterTab, setFilterTab] = useState<SearchFilterTab>('product');
+  const [filterTab, setFilterTab] = useState<SearchFilterTab>(HEADER_SEARCH_ALL_TAB);
   const [activeIndex, setActiveIndex] = useState(0);
 
   const clearDebounce = useCallback(() => {
@@ -119,7 +121,7 @@ export function TopNav({ user: _user }: TopNavProps) {
     setSearchLoading(false);
     setSearchCounts(null);
     setSearchCountsLoading(false);
-    setFilterTab('product');
+    setFilterTab(HEADER_SEARCH_ALL_TAB);
     setActiveIndex(0);
   }, [pathname]);
 
@@ -167,6 +169,10 @@ export function TopNav({ user: _user }: TopNavProps) {
     setSearchLoading(true);
     setSearchCounts(null);
     setSearchCountsLoading(true);
+    setFilterTab(HEADER_SEARCH_ALL_TAB);
+    setActiveIndex(0);
+
+    let latestResults: SearchResponse | null = null;
 
     void (async () => {
       try {
@@ -179,15 +185,9 @@ export function TopNav({ user: _user }: TopNavProps) {
           setActiveIndex(0);
           return;
         }
+        latestResults = data;
         setSearchResults(data);
-        const types = [...new Set(data.objects.map((o) => o.object_type))];
-        const defaultTab =
-          types.length > 0
-            ? types.sort((a, b) => a.localeCompare(b))[0]
-            : data.users.length > 0
-              ? 'users'
-              : 'product';
-        setFilterTab(defaultTab);
+        setFilterTab((prev) => pickSearchFilterTabFromResults(data, prev));
         setActiveIndex(0);
       } catch {
         if (!mainAc.signal.aborted) {
@@ -211,12 +211,14 @@ export function TopNav({ user: _user }: TopNavProps) {
           return;
         }
         setSearchCounts(countData);
-        setFilterTab((prev) => {
-          if (prev !== 'users' && countData.type_counts[prev] != null) {
-            return prev;
-          }
-          return pickDefaultSearchFilterTab(countData.type_counts, countData.total_users);
-        });
+        setFilterTab((prev) =>
+          reconcileSearchFilterTabFromCounts(
+            prev,
+            countData.type_counts,
+            countData.total_users,
+            latestResults,
+          ),
+        );
       } catch {
         if (!countsAc.signal.aborted) {
           setSearchCounts(null);
@@ -432,6 +434,7 @@ export function TopNav({ user: _user }: TopNavProps) {
                   empty: t('search_empty_state'),
                   loading: t('app_header_search_loading'),
                   tabUsers: t('search_tab_users'),
+                  tabAll: t('search_tab_all'),
                   following: t('search_user_following'),
                 }}
               />

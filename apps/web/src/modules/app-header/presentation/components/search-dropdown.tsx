@@ -7,6 +7,7 @@ import type { SearchCountsResponse, SearchResponse } from '../../domain/search-r
 import type { SearchFilterTab, SearchFlatEntry } from '../../domain/search-nav-list';
 import {
   buildDiscoverHrefFromSearch,
+  HEADER_SEARCH_ALL_TAB,
   formatObjectTypeLabel,
 } from '../../domain/search-nav-list';
 
@@ -32,6 +33,7 @@ export type SearchDropdownProps = {
     empty: string;
     loading: string;
     tabUsers: string;
+    tabAll: string;
     following: string;
   };
   onClose: () => void;
@@ -107,6 +109,10 @@ export function SearchDropdown({
 
   const usersTabCount = hasGlobalCounts ? counts.total_users : results.users.length;
 
+  const allTabCount = hasGlobalCounts
+    ? Object.values(counts.type_counts).reduce((sum, n) => sum + n, 0)
+    : results.objects.length;
+
   function navigateEntry(entry: SearchFlatEntry) {
     onClose();
     if (entry.kind === 'object') {
@@ -120,22 +126,19 @@ export function SearchDropdown({
     results.objects.length > 0 || results.users.length > 0;
   const showResultsBody = !resultsLoading || hasResults;
 
-  const visibleObjects =
-    filterTab === 'users'
-      ? []
-      : results.objects.filter((o) => o.object_type === filterTab);
+  const visibleObjects = filterTab === 'users' ? [] : results.objects;
 
-  const visibleUsers = filterTab === 'users' ? results.users : [];
+  const visibleUsers = results.users;
 
   const showObjectsSection =
     showResultsBody && filterTab !== 'users' && visibleObjects.length > 0;
-  const showUsersSection = showResultsBody && filterTab === 'users';
+  const showUsersSection = showResultsBody && visibleUsers.length > 0;
 
   const isEmpty =
     !resultsLoading &&
     (filterTab === 'users'
       ? results.users.length === 0
-      : visibleObjects.length === 0);
+      : visibleObjects.length === 0 && results.users.length === 0);
 
   return (
     <div className="grid max-h-[min(70vh,28rem)] grid-rows-[auto_minmax(0,1fr)]">
@@ -145,45 +148,56 @@ export function SearchDropdown({
         aria-label={messages.tabUsers}
       >
         <div className="flex flex-wrap items-center gap-1.5">
-        {countsPending ? (
-          <TypeTabSkeletons />
-        ) : (
-          objectTypes.map((ot) => (
-            <Link
-              key={ot}
-              href={buildDiscoverHrefFromSearch(ot, searchQuery)}
-              role="tab"
-              aria-selected={filterTab === ot}
-              className={tabPillClass(filterTab === ot)}
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={() => {
-                onFilterTabChange(ot);
-                onClose();
-              }}
-            >
-              {formatObjectTypeLabel(ot)}
-              <span className="tabular-nums">
-                {' '}
-                ({hasGlobalCounts && counts ? (counts.type_counts[ot] ?? 0) : 0})
-              </span>
-            </Link>
-          ))
-        )}
+          {countsPending ? (
+            <TypeTabSkeletons />
+          ) : (
+            <>
+              <Link
+                href={buildDiscoverHrefFromSearch(HEADER_SEARCH_ALL_TAB, searchQuery)}
+                role="tab"
+                aria-selected={filterTab === HEADER_SEARCH_ALL_TAB}
+                className={tabPillClass(filterTab === HEADER_SEARCH_ALL_TAB)}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => onClose()}
+              >
+                {messages.tabAll}
+                <TabCountSuffix loading={countsPending} value={allTabCount} />
+              </Link>
+              {objectTypes.map((ot) => (
+              <Link
+                key={ot}
+                href={buildDiscoverHrefFromSearch(ot, searchQuery)}
+                role="tab"
+                aria-selected={filterTab === ot}
+                className={tabPillClass(filterTab === ot)}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => onClose()}
+              >
+                {formatObjectTypeLabel(ot)}
+                <TabCountSuffix
+                  loading={countsPending}
+                  value={
+                    hasGlobalCounts && counts
+                      ? (counts.type_counts[ot] ?? 0)
+                      : results.objects.filter((o) => o.object_type === ot).length
+                  }
+                />
+              </Link>
+            ))}
+            </>
+          )}
 
-        <Link
-          href={buildDiscoverHrefFromSearch('users', searchQuery)}
-          role="tab"
-          aria-selected={filterTab === 'users'}
-          className={tabPillClass(filterTab === 'users')}
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => {
-            onFilterTabChange('users');
-            onClose();
-          }}
-        >
-          {messages.tabUsers}
-          <TabCountSuffix loading={countsPending} value={usersTabCount} />
-        </Link>
+          <Link
+            href={buildDiscoverHrefFromSearch('users', searchQuery)}
+            role="tab"
+            aria-selected={filterTab === 'users'}
+            className={tabPillClass(filterTab === 'users')}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => onClose()}
+          >
+            {messages.tabUsers}
+            <TabCountSuffix loading={countsPending} value={usersTabCount} />
+          </Link>
         </div>
       </div>
 

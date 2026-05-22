@@ -19,7 +19,9 @@ export async function fetchSearchResults(
 
   let res: Response;
   try {
-    res = await fetch(`/api/search?${new URLSearchParams({ q }).toString()}`, {
+    res = await fetch(
+      `/api/search?${new URLSearchParams({ q, limit: '20' }).toString()}`,
+      {
       method: 'GET',
       headers: { Accept: 'application/json' },
       cache: 'no-store',
