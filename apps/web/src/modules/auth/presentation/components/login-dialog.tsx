@@ -1,14 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { WALLET_PROVIDERS } from '../../domain/wallet-providers';
-import type { WalletProviderId } from '../../domain/types';
-import { HiveAuthLogin } from './hiveauth-login';
-import { HivesignerLogin } from './hivesigner-login';
-import { KeychainLogin } from './keychain-login';
 import { ProviderList } from './provider-list';
 
 export type LoginDialogProps = {
@@ -16,9 +11,10 @@ export type LoginDialogProps = {
   onClose: () => void;
 };
 
+const INLINE_PROVIDERS = WALLET_PROVIDERS.filter((p) => p.id !== 'hiveauth');
+
 export function LoginDialog({ open, onClose }: LoginDialogProps) {
   const router = useRouter();
-  const [provider, setProvider] = useState<WalletProviderId | null>('keychain');
 
   function handleLoginSuccess() {
     onClose();
@@ -55,20 +51,9 @@ export function LoginDialog({ open, onClose }: LoginDialogProps) {
         </div>
 
         <ProviderList
-          providers={WALLET_PROVIDERS}
-          selectedId={provider}
-          onSelect={setProvider}
+          providers={INLINE_PROVIDERS}
+          onLoginSuccess={handleLoginSuccess}
         />
-
-        <div className="mt-6 border-t border-border pt-6">
-          {provider === 'keychain' ? (
-            <KeychainLogin onLoginSuccess={handleLoginSuccess} />
-          ) : null}
-          {provider === 'hiveauth' ? (
-            <HiveAuthLogin onLoginSuccess={handleLoginSuccess} />
-          ) : null}
-          {provider === 'hivesigner' ? <HivesignerLogin /> : null}
-        </div>
       </div>
     </div>
   );

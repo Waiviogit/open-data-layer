@@ -7,6 +7,7 @@ export type WalletProviderCategory = 'extension' | 'mobile' | 'web';
 export interface WalletProviderMeta {
   readonly id: WalletProviderId;
   readonly displayName: string;
+  readonly iconSrc: string;
   readonly category: WalletProviderCategory;
   readonly isCustodial: boolean;
 }

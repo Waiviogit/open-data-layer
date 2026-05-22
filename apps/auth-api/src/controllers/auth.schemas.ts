@@ -1,9 +1,19 @@
 import { z } from 'zod';
 
-export const challengeBodySchema = z.object({
-  provider: z.enum(['keychain', 'hiveauth', 'hivesigner']),
-  username: z.string().min(1),
-});
+export const challengeBodySchema = z
+  .object({
+    provider: z.enum(['keychain', 'hiveauth', 'hivesigner']),
+    username: z.string(),
+  })
+  .superRefine((body, ctx) => {
+    if (body.provider !== 'hivesigner' && !body.username.trim()) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'username is required',
+        path: ['username'],
+      });
+    }
+  });
 
 export const verifyKeychainBodySchema = z.object({
   challengeId: z.string().uuid(),

@@ -94,7 +94,11 @@ export class HivesignerCallbackService {
     const hiveName =
       meJson.user?.name ?? meJson.name ?? challenge.hive_username;
     const normalized = String(hiveName).trim().toLowerCase().replace(/^@/, '');
-    if (normalized !== challenge.hive_username) {
+    if (!normalized) {
+      throw new UnauthorizedException('HiveSigner account name missing');
+    }
+    const expectedUser = challenge.hive_username.trim();
+    if (expectedUser && normalized !== expectedUser) {
       throw new UnauthorizedException('Hive account mismatch');
     }
 

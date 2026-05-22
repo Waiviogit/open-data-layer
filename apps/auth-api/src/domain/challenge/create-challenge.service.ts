@@ -29,7 +29,7 @@ export class CreateChallengeService {
     userAgent?: string | null;
   }): Promise<ChallengeResponse> {
     const normalizedUser = input.username.trim().toLowerCase().replace(/^@/, '');
-    if (!normalizedUser) {
+    if (!normalizedUser && input.provider !== 'hivesigner') {
       throw new BadRequestException('username is required');
     }
 
@@ -40,7 +40,9 @@ export class CreateChallengeService {
     const challengeId = randomUUID();
     const origin = this.config.getOrThrow<string>('authAppDisplayOrigin');
 
-    const message = `${origin} wants you to sign in as @${normalizedUser}\nNonce: ${nonce}\nIssuedAt: ${issuedAt.toISOString()}\nExpiresAt: ${expiresAt.toISOString()}`;
+    const message = normalizedUser
+      ? `${origin} wants you to sign in as @${normalizedUser}\nNonce: ${nonce}\nIssuedAt: ${issuedAt.toISOString()}\nExpiresAt: ${expiresAt.toISOString()}`
+      : `${origin} wants you to sign in\nNonce: ${nonce}\nIssuedAt: ${issuedAt.toISOString()}\nExpiresAt: ${expiresAt.toISOString()}`;
 
     if (input.provider === 'keychain' || input.provider === 'hiveauth') {
       await this.challenges.insert({
@@ -84,7 +86,9 @@ export class CreateChallengeService {
         scope: scopes,
         responseType: 'code',
       });
-      const authorizeUrl = hs.getLoginURL(state, normalizedUser);
+      const authorizeUrl = normalizedUser
+        ? hs.getLoginURL(state, normalizedUser)
+        : hs.getLoginURL(state);
 
       await this.challenges.insert({
         id: challengeId,

@@ -1,3 +1,8 @@
+export {
+  clearAccountHistory,
+  getAccountHistory,
+  pushAccountHistory,
+} from './account-history';
 export { WALLET_PROVIDERS } from './wallet-providers';
 export * from '@opden-data-layer/hive-broadcast';
 export type {
