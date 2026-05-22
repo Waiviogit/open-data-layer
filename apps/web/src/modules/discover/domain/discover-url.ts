@@ -6,6 +6,25 @@ export type DiscoverUrlParams = {
   sort?: 'newest' | 'oldest' | 'rank';
 };
 
+/** Encodes tag filter for URL/API: `category:value` (split on first `:`). */
+export function encodeTagFilter(category: string, value: string): string {
+  return `${category}:${value}`;
+}
+
+/** Decodes `category:value` from URL query param; returns null if malformed. */
+export function decodeTagFilter(encoded: string): { category: string; value: string } | null {
+  const idx = encoded.indexOf(':');
+  if (idx < 1) {
+    return null;
+  }
+  const category = encoded.slice(0, idx);
+  const value = encoded.slice(idx + 1);
+  if (value.length === 0) {
+    return null;
+  }
+  return { category, value };
+}
+
 export function buildDiscoverHref(params: DiscoverUrlParams): string {
   const sp = new URLSearchParams();
   if (params.users) {

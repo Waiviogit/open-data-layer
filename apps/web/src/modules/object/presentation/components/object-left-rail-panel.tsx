@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { buildDiscoverHref, encodeTagFilter } from '@/modules/discover/domain/discover-url';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
 import {
   BLOCK_KIND_TO_UPDATE_TYPES,
@@ -47,6 +48,8 @@ function countForBlockKind(
 
 export type ObjectLeftRailPanelProps = {
   blocks: ObjectLeftRailBlock[];
+  /** Registry `object_type` key (e.g. `recipe`) for discover links from tag chips. */
+  objectTypeKey: string;
   editContext?: ObjectLeftRailEditContext;
   objectId: string;
   viewerUsername?: string | null;
@@ -218,6 +221,7 @@ type AddUpdateModalState = {
 
 export function ObjectLeftRailPanel({
   blocks,
+  objectTypeKey,
   editContext,
   objectId,
   viewerUsername,
@@ -451,12 +455,21 @@ export function ObjectLeftRailPanel({
                       </p>
                       <div className="mt-1.5 flex flex-wrap gap-2">
                         {section.values.map((tag) => (
-                          <span
+                          <Link
                             key={`${section.categoryTitle}-${tag}`}
-                            className="rounded-btn bg-surface px-2 py-1 text-caption text-fg"
+                            href={buildDiscoverHref({
+                              type: objectTypeKey,
+                              tags: [encodeTagFilter(section.categoryTitle, tag)],
+                            })}
+                            prefetch={false}
+                            className="rounded-btn bg-surface px-2 py-1 text-caption text-fg transition-colors hover:bg-ghost-surface hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                            aria-label={t('object_tag_discover_aria', {
+                              category: section.categoryTitle,
+                              tag,
+                            })}
                           >
                             {tag}
-                          </span>
+                          </Link>
                         ))}
                       </div>
                     </div>

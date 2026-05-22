@@ -445,6 +445,7 @@ export function ObjectPageClient({
     <LeftObjectProfileSidebar>
       <ObjectLeftRailPanel
         blocks={model.leftRailBlocks}
+        objectTypeKey={model.objectTypeKey}
         editContext={leftRailEditContext}
         objectId={model.objectId}
         viewerUsername={viewerUsername}

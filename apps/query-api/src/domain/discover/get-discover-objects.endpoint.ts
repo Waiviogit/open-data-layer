@@ -20,6 +20,24 @@ function orderAggregatedByIds(objects: AggregatedObject[], objectIds: string[]):
   return objectIds.map((id) => map.get(id)).filter((x): x is AggregatedObject => x != null);
 }
 
+/** Parses `category:value` query tags; skips legacy value-only strings. */
+export function parseTagFilters(
+  raw: string[],
+): Array<{ category: string; value: string }> {
+  return raw.flatMap((s) => {
+    const idx = s.indexOf(':');
+    if (idx < 1) {
+      return [];
+    }
+    const category = s.slice(0, idx);
+    const value = s.slice(idx + 1);
+    if (value.length === 0) {
+      return [];
+    }
+    return [{ category, value }];
+  });
+}
+
 @Injectable()
 export class GetDiscoverObjectsEndpoint {
   constructor(
@@ -39,7 +57,7 @@ export class GetDiscoverObjectsEndpoint {
     const { rows, hasMore } = await this.discoverRepo.listObjects({
       objectType: input.query.object_type,
       q: q && q.length > 0 ? q : undefined,
-      tags: input.query.tags,
+      tags: parseTagFilters(input.query.tags),
       sort: input.query.sort,
       cursor: input.query.cursor,
       limit: input.query.limit,

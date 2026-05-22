@@ -2613,5 +2613,8 @@
   "discover_sort_rank": "Rank",
   "discover_show_more": "Show more",
   "discover_loading": "Loading…",
-  "discover_no_results": "No results found."
+  "discover_no_results": "No results found.",
+  "discover_selected_filters": "Selected",
+  "discover_clear_all": "Clear all",
+  "discover_remove_filter": "Remove filter {tag}"
 }

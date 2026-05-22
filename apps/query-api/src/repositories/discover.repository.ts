@@ -46,10 +46,15 @@ export interface DiscoverUserRow {
   wobjects_weight: number | null;
 }
 
+export interface DiscoverTagFilter {
+  category: string;
+  value: string;
+}
+
 export interface ListDiscoverObjectsParams {
   objectType?: string;
   q?: string;
-  tags: string[];
+  tags: DiscoverTagFilter[];
   sort: DiscoverSort;
   cursor?: string;
   limit: number;
@@ -93,11 +98,12 @@ export class DiscoverRepository {
 
     try {
       const tagExistsFragments = params.tags.map(
-        (tag) => sql`EXISTS (
+        ({ category, value }) => sql`EXISTS (
           SELECT 1 FROM object_updates ou_tag
           WHERE ou_tag.object_id = oc.object_id
             AND ou_tag.update_type = ${UPDATE_TYPES.TAG_CATEGORY_ITEM}
-            AND ou_tag.value_json->>'value' = ${tag}
+            AND ou_tag.value_json->>'value' = ${value}
+            AND ou_tag.value_json->>'category' = ${category}
         )`,
       );
 
