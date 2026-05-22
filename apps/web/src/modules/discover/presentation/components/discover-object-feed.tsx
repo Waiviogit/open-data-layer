@@ -16,9 +16,18 @@ export type DiscoverObjectFeedProps = {
   q: string;
   tags: string[];
   sort: 'newest' | 'oldest' | 'rank';
+  viewerUsername?: string | null;
+  onRequireLogin?: () => void;
 };
 
-export function DiscoverObjectFeed({ objectType, q, tags, sort }: DiscoverObjectFeedProps) {
+export function DiscoverObjectFeed({
+  objectType,
+  q,
+  tags,
+  sort,
+  viewerUsername,
+  onRequireLogin,
+}: DiscoverObjectFeedProps) {
   const { t } = useI18n();
   const [items, setItems] = useState<SocialProjectedObjectView[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -90,6 +99,8 @@ export function DiscoverObjectFeed({ objectType, q, tags, sort }: DiscoverObject
               <ObjectCard
                 key={o.object_id}
                 object={o as unknown as ProjectedObjectView}
+                viewerUsername={viewerUsername}
+                onRequireLogin={onRequireLogin}
               />
             ))}
           </ul>

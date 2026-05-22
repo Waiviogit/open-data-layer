@@ -4,6 +4,7 @@ import {
   buildOdlRankVoteOp,
   buildOdlUpdateCreateOp,
   buildOdlUpdateCreateWithLikeOp,
+  buildOdlUpdateCreateWithRankVoteOp,
   buildOdlUpdateVoteOp,
   buildOdlUserFollowBellOp,
 } from './odl-operations';
@@ -175,6 +176,39 @@ describe('buildOdlUpdateVoteOp', () => {
       vote: 'against',
     });
     expect(JSON.parse(op.json).events[0].payload['vote']).toBe('against');
+  });
+});
+
+describe('buildOdlUpdateCreateWithRankVoteOp', () => {
+  it('emits update_create with event_id then rank_vote with create_event_id', () => {
+    const op = buildOdlUpdateCreateWithRankVoteOp({
+      id: 'odl-testnet',
+      objectId: 'obj-1',
+      valueText: 'Quality',
+      creator: 'alice',
+      rank: 8000,
+      required_posting_auths: ['alice'],
+    });
+    const parsed = JSON.parse(op.json) as {
+      events: {
+        action: string;
+        event_id?: string;
+        payload: Record<string, unknown>;
+      }[];
+    };
+    expect(parsed.events).toHaveLength(2);
+    expect(parsed.events[0]?.action).toBe('update_create');
+    expect(parsed.events[1]?.action).toBe('rank_vote');
+    const createEventId = parsed.events[0]?.event_id;
+    expect(createEventId).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+    );
+    expect(parsed.events[0]?.payload['update_type']).toBe('aggregateRating');
+    expect(parsed.events[0]?.payload['value_text']).toBe('Quality');
+    expect(parsed.events[1]?.payload['create_event_id']).toBe(createEventId);
+    expect(parsed.events[1]?.payload['update_id']).toBeUndefined();
+    expect(parsed.events[1]?.payload['rank']).toBe(8000);
+    expect(parsed.events[1]?.payload['voter']).toBe('alice');
   });
 });
 

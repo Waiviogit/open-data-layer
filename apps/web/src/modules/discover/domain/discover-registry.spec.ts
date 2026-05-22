@@ -1,4 +1,5 @@
 import {
+  getRatingDimensionNamesForObjectType,
   getTagCategoryNamesForObjectType,
   listDiscoverObjectTypes,
   objectTypeHasTagCategoryFilters,
@@ -22,5 +23,17 @@ describe('discover-registry', () => {
 
   it('hashtag has no tag category filters', () => {
     expect(objectTypeHasTagCategoryFilters('hashtag')).toBe(false);
+  });
+
+  it('product has rating dimensions from supposed_updates', () => {
+    expect(getRatingDimensionNamesForObjectType('product')).toEqual(['Quality', 'Value']);
+  });
+
+  it('unknown type has no rating dimensions', () => {
+    expect(getRatingDimensionNamesForObjectType('not-a-type')).toEqual([]);
+  });
+
+  it('hashtag has no rating dimensions in supposed_updates', () => {
+    expect(getRatingDimensionNamesForObjectType('hashtag')).toEqual([]);
   });
 });

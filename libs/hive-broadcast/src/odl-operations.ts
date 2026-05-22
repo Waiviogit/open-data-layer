@@ -152,6 +152,64 @@ export type BuildOdlRankVoteOpInput = {
 /**
  * Builds a Hive `custom_json` op with one `rank_vote` event for an `aggregateRating` update.
  */
+export type BuildOdlUpdateCreateWithRankVoteOpInput = {
+  readonly id: string;
+  readonly objectId: string;
+  /** Dimension label stored as `value_text` on the new `aggregateRating` update. */
+  readonly valueText: string;
+  readonly creator: string;
+  /** ODL rank 0–10000 (half-star step = 1000). */
+  readonly rank: number;
+  readonly rankContext?: string;
+  readonly required_auths?: readonly string[];
+  readonly required_posting_auths?: readonly string[];
+};
+
+/**
+ * One `custom_json` op: `update_create` (aggregateRating) then `rank_vote` in the same Hive transaction.
+ * Create event carries `event_id`; rank vote references it via `create_event_id`.
+ */
+export function buildOdlUpdateCreateWithRankVoteOp(
+  input: BuildOdlUpdateCreateWithRankVoteOpInput,
+): CustomJsonOp {
+  const eventId = crypto.randomUUID();
+  const postingAuths = input.required_posting_auths ?? [input.creator];
+
+  const envelope = {
+    events: [
+      {
+        action: 'update_create' as const,
+        v: 1,
+        event_id: eventId,
+        payload: {
+          object_id: input.objectId,
+          update_type: 'aggregateRating',
+          creator: input.creator,
+          value_text: input.valueText,
+        },
+      },
+      {
+        action: 'rank_vote' as const,
+        v: 1,
+        payload: {
+          create_event_id: eventId,
+          object_id: input.objectId,
+          voter: input.creator,
+          rank: input.rank,
+          rank_context: input.rankContext ?? 'default',
+        },
+      },
+    ],
+  };
+
+  return buildCustomJsonOp({
+    required_auths: input.required_auths ?? [],
+    required_posting_auths: postingAuths,
+    id: input.id,
+    json: JSON.stringify(envelope),
+  });
+}
+
 export function buildOdlRankVoteOp(input: BuildOdlRankVoteOpInput): CustomJsonOp {
   const envelope = {
     events: [

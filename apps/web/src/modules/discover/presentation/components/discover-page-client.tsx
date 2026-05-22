@@ -2,6 +2,8 @@
 
 import { useSearchParams } from 'next/navigation';
 
+import { useLoginModal } from '@/modules/auth';
+
 import { parseDiscoverTagsParam } from '../../domain/discover-url';
 import { objectTypeHasTagCategoryFilters } from '../../domain/discover-registry';
 import { DiscoverFeed } from './discover-feed';
@@ -10,7 +12,12 @@ import { DiscoverSidebar } from './discover-sidebar';
 
 const DEFAULT_OBJECT_TYPE = 'product';
 
-export function DiscoverPageClient() {
+export type DiscoverPageClientProps = {
+  viewerUsername?: string | null;
+};
+
+export function DiscoverPageClient({ viewerUsername = null }: DiscoverPageClientProps) {
+  const { openLogin } = useLoginModal();
   const searchParams = useSearchParams();
   const usersMode = searchParams.get('users') === '1';
   const objectType = usersMode ? null : (searchParams.get('type')?.trim() || DEFAULT_OBJECT_TYPE);
@@ -37,6 +44,8 @@ export function DiscoverPageClient() {
           q={q}
           tags={tags}
           sort={sort}
+          viewerUsername={viewerUsername}
+          onRequireLogin={openLogin}
         />
         {showFilters && objectType ? (
           <DiscoverFilters objectType={objectType} q={q} tags={tags} sort={sort} />

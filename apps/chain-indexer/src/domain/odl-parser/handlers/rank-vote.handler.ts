@@ -41,8 +41,22 @@ export class RankVoteHandler implements OdlActionHandler {
       return;
     }
 
-    const { update_id, voter, rank, rank_context } = result.data;
+    const { voter, rank, rank_context } = result.data;
     let { object_id } = result.data;
+
+    let update_id: string;
+    if (result.data.create_event_id !== undefined) {
+      const createIndex = ctx.eventIdIndexMap.get(result.data.create_event_id);
+      if (createIndex === undefined) {
+        this.logger.warn(
+          `rank_vote: create_event_id '${result.data.create_event_id}' not found in envelope; skipping`,
+        );
+        return;
+      }
+      update_id = `${ctx.transactionId}-${ctx.transactionIndex}-${ctx.operationIndex}-${createIndex}`;
+    } else {
+      update_id = result.data.update_id!;
+    }
 
     if (!object_id) {
       const update = await this.objectUpdatesRepository.findByUpdateId(update_id);

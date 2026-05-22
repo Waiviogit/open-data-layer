@@ -6,6 +6,10 @@
 
 Feed rows render `Story` (via `StoryContainer`) with stats, overflow menu, and optional media.
 
+## Linked object cards
+
+Post bodies and discover use shared **`ObjectCard`** — see [object-card.md](object-card.md) (rating grid, administrative heart, description).
+
 ## Comment editor (logged-in)
 
 When the viewer is logged in (`currentUsername` set), each story card shows **`StoryCommentEditor`** below the footer (`apps/web/src/modules/feed/presentation/components/story-comment-editor.tsx`).

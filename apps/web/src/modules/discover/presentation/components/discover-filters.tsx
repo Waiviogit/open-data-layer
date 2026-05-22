@@ -277,7 +277,9 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
                     />
                   </button>
                   {!collapsed ? (
-                    <div className={`${CATEGORY_LIST_MAX_HEIGHT} overflow-y-auto`}>
+                    <div
+                      className={`${CATEGORY_LIST_MAX_HEIGHT} scrollbar-minimal overflow-y-auto pe-0.5`}
+                    >
                       <ul className="flex flex-col gap-1 pb-1">
                         {section.items.map((item) => {
                           const encoded = encodeTagFilter(section.category, item.value);

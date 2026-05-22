@@ -44,13 +44,27 @@ export const updateVotePayloadSchema = z
 
 export type UpdateVotePayload = z.infer<typeof updateVotePayloadSchema>;
 
-export const rankVotePayloadSchema = z.object({
-  update_id: z.string().min(1).max(256),
-  object_id: z.string().min(1).max(256).optional(),
-  voter: z.string().min(1).max(32),
-  rank: z.number().int().min(0).max(10000),
-  rank_context: z.string().max(64).default('default'),
-});
+/**
+ * Rank vote: either references an existing `update_id`, or targets the `update_create`
+ * event identified by `create_event_id` in the same custom_json envelope (same Hive trx).
+ */
+export const rankVotePayloadSchema = z
+  .object({
+    update_id: z.string().min(1).max(256).optional(),
+    create_event_id: z.string().uuid().optional(),
+    object_id: z.string().min(1).max(256).optional(),
+    voter: z.string().min(1).max(32),
+    rank: z.number().int().min(0).max(10000),
+    rank_context: z.string().max(64).default('default'),
+  })
+  .superRefine((data, ctx) => {
+    if (data.update_id == null && data.create_event_id == null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Either update_id or create_event_id is required',
+      });
+    }
+  });
 
 export type RankVotePayload = z.infer<typeof rankVotePayloadSchema>;
 

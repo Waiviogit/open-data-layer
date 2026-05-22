@@ -25,3 +25,16 @@ export function getTagCategoryNamesForObjectType(objectType: string): string[] {
   const raw = entry?.values ?? [];
   return raw.filter((v): v is string => typeof v === 'string');
 }
+
+/** Rating dimension names from supposed_updates for an object type. */
+export function getRatingDimensionNamesForObjectType(objectType: string): string[] {
+  const def = OBJECT_TYPE_REGISTRY[objectType];
+  if (!def) {
+    return [];
+  }
+  const entry = def.supposed_updates.find(
+    (u) => u.update_type === UPDATE_TYPES.AGGREGATE_RATING,
+  );
+  const raw = entry?.values ?? [];
+  return raw.filter((v): v is string => typeof v === 'string');
+}

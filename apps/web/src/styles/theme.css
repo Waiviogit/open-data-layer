@@ -123,10 +123,15 @@
   --shell-left-width: 14rem;
   --shell-right-width: 14rem;
   --shell-bottom-height: 3.5rem;
+
+  --scrollbar-thumb: rgb(107 114 128 / 0.45);
+  --scrollbar-track: transparent;
 }
 
 [data-theme='dark'] {
   color-scheme: dark;
+  --scrollbar-thumb: rgb(161 161 170 / 0.35);
+  --scrollbar-track: transparent;
   --color-bg: #0a0a0a;
   --color-fg: #f3f4f6;
   --color-fg-secondary: rgb(243 244 246 / 0.7);

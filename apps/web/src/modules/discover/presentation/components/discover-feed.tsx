@@ -12,6 +12,8 @@ export type DiscoverFeedProps = {
   q: string;
   tags: string[];
   sort: 'newest' | 'oldest' | 'rank';
+  viewerUsername?: string | null;
+  onRequireLogin?: () => void;
 };
 
 export function DiscoverFeed({
@@ -20,6 +22,8 @@ export function DiscoverFeed({
   q,
   tags,
   sort,
+  viewerUsername,
+  onRequireLogin,
 }: DiscoverFeedProps) {
   const { t } = useI18n();
 
@@ -40,7 +44,14 @@ export function DiscoverFeed({
       {usersMode ? (
         <DiscoverUserFeed q={q} />
       ) : objectType ? (
-        <DiscoverObjectFeed objectType={objectType} q={q} tags={tags} sort={sort} />
+        <DiscoverObjectFeed
+          objectType={objectType}
+          q={q}
+          tags={tags}
+          sort={sort}
+          viewerUsername={viewerUsername}
+          onRequireLogin={onRequireLogin}
+        />
       ) : null}
     </main>
   );

@@ -3,7 +3,10 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useId, useState } from 'react';
 
-import { buildOdlRankVoteOp } from '@opden-data-layer/hive-broadcast';
+import {
+  buildOdlRankVoteOp,
+  buildOdlUpdateCreateWithRankVoteOp,
+} from '@opden-data-layer/hive-broadcast';
 
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
@@ -24,6 +27,8 @@ export type StarRatingProps = {
   totalVoters: number;
   dimension: string;
   updateId: string;
+  /** When `updateId` is empty, creates aggregateRating + rank_vote on first vote. */
+  valueText?: string;
   objectId: string;
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
@@ -178,6 +183,7 @@ export function StarRating({
   totalVoters,
   dimension,
   updateId,
+  valueText,
   objectId,
   viewerUsername,
   onRequireLogin,
@@ -201,14 +207,13 @@ export function StarRating({
     setOptimisticUserStars(userRating01To5);
     setError(null);
     setConfirming(false);
-  }, [userRating01To5, updateId]);
+  }, [userRating01To5, updateId, valueText]);
+
+  const canVote =
+    updateId.length > 0 || (valueText != null && valueText.trim().length > 0);
 
   const interactive =
-    !readOnly &&
-    updateId.length > 0 &&
-    objectId.length > 0 &&
-    !pending &&
-    !confirming;
+    !readOnly && canVote && objectId.length > 0 && !pending && !confirming;
 
   const avgSlots = halfSlotsFromStars(averageRating01To5);
   const userSlots = halfSlotsFromStars(optimisticUserStars);
@@ -233,14 +238,24 @@ export function StarRating({
       setError(null);
       setPending(true);
       try {
-        const op = buildOdlRankVoteOp({
-          id: odlCustomJsonId,
-          updateId,
-          objectId,
-          voter,
-          rank,
-          required_posting_auths: [voter],
-        });
+        const op =
+          updateId.length > 0
+            ? buildOdlRankVoteOp({
+                id: odlCustomJsonId,
+                updateId,
+                objectId,
+                voter,
+                rank,
+                required_posting_auths: [voter],
+              })
+            : buildOdlUpdateCreateWithRankVoteOp({
+                id: odlCustomJsonId,
+                objectId,
+                valueText: valueText!.trim(),
+                creator: voter,
+                rank,
+                required_posting_auths: [voter],
+              });
         const { transactionId } = await getWalletFacade().broadcast({
           operations: [op],
         });
@@ -267,6 +282,7 @@ export function StarRating({
       optimisticUserStars,
       router,
       updateId,
+      valueText,
       viewerUsername,
     ],
   );
