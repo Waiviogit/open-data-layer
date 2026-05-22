@@ -16,6 +16,8 @@ import { UsersController } from './users.controller';
 import { UserThreadsController } from './user-threads.controller';
 import { SearchController } from './search.controller';
 import { SearchModule } from '../domain/search';
+import { DiscoverController } from './discover.controller';
+import { DiscoverModule } from '../domain/discover';
 
 @Module({
   imports: [
@@ -29,6 +31,7 @@ import { SearchModule } from '../domain/search';
     ShopModule,
     SocialModule,
     SearchModule,
+    DiscoverModule,
   ],
   controllers: [
     ObjectsController,
@@ -38,6 +41,7 @@ import { SearchModule } from '../domain/search';
     UserPostDraftsController,
     CurrencyController,
     SearchController,
+    DiscoverController,
   ],
 })
 export class ControllersModule {}

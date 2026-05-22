@@ -1,10 +1,14 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import type { SearchCountsResponse, SearchResponse } from '../../domain/search-response.schema';
 import type { SearchFilterTab, SearchFlatEntry } from '../../domain/search-nav-list';
-import { formatObjectTypeLabel } from '../../domain/search-nav-list';
+import {
+  buildDiscoverHrefFromSearch,
+  formatObjectTypeLabel,
+} from '../../domain/search-nav-list';
 
 const TAB_SKELETON_WIDTHS = [56, 72, 64] as const;
 
@@ -21,12 +25,12 @@ export type SearchDropdownProps = {
   flatList: SearchFlatEntry[];
   onHighlightIndex: (index: number) => void;
   listId: string;
+  searchQuery: string;
   messages: {
     sectionObjects: string;
     sectionUsers: string;
     empty: string;
     loading: string;
-    tabAll: string;
     tabUsers: string;
     following: string;
   };
@@ -43,14 +47,6 @@ function pickFlatIndexForRow(
       ? e.kind === 'object' && e.item.object_id === key
       : e.kind === 'user' && e.item.name === key,
   );
-}
-
-function totalObjectCountFromTypeCounts(typeCounts: Record<string, number>): number {
-  let sum = 0;
-  for (const n of Object.values(typeCounts)) {
-    sum += n;
-  }
-  return sum;
 }
 
 function tabPillClass(selected: boolean): string {
@@ -98,6 +94,7 @@ export function SearchDropdown({
   listId,
   messages,
   onClose,
+  searchQuery,
 }: SearchDropdownProps) {
   const router = useRouter();
 
@@ -106,11 +103,7 @@ export function SearchDropdown({
 
   const objectTypes = hasGlobalCounts
     ? Object.keys(counts.type_counts).sort((a, b) => a.localeCompare(b))
-    : [];
-
-  const totalAll = hasGlobalCounts
-    ? totalObjectCountFromTypeCounts(counts.type_counts) + counts.total_users
-    : results.objects.length + results.users.length;
+    : [...new Set(results.objects.map((o) => o.object_type))].sort((a, b) => a.localeCompare(b));
 
   const usersTabCount = hasGlobalCounts ? counts.total_users : results.users.length;
 
@@ -127,87 +120,70 @@ export function SearchDropdown({
     results.objects.length > 0 || results.users.length > 0;
   const showResultsBody = !resultsLoading || hasResults;
 
-  const showObjectsSection =
-    showResultsBody &&
-    (filterTab === 'all' ||
-      (filterTab !== 'users' &&
-        results.objects.some((o) => o.object_type === filterTab)));
-  const showUsersSection =
-    showResultsBody && (filterTab === 'all' || filterTab === 'users');
-
   const visibleObjects =
-    filterTab === 'all' || filterTab === 'users'
-      ? filterTab === 'users'
-        ? []
-        : results.objects
+    filterTab === 'users'
+      ? []
       : results.objects.filter((o) => o.object_type === filterTab);
 
-  const visibleUsers =
-    filterTab === 'all' || filterTab === 'users'
-      ? filterTab === 'users'
-        ? results.users
-        : results.users
-      : [];
+  const visibleUsers = filterTab === 'users' ? results.users : [];
+
+  const showObjectsSection =
+    showResultsBody && filterTab !== 'users' && visibleObjects.length > 0;
+  const showUsersSection = showResultsBody && filterTab === 'users';
 
   const isEmpty =
     !resultsLoading &&
-    ((filterTab === 'all' && results.objects.length === 0 && results.users.length === 0) ||
-      (filterTab === 'users' && results.users.length === 0) ||
-      (filterTab !== 'all' && filterTab !== 'users' && visibleObjects.length === 0));
+    (filterTab === 'users'
+      ? results.users.length === 0
+      : visibleObjects.length === 0);
 
   return (
     <div className="grid max-h-[min(70vh,28rem)] grid-rows-[auto_minmax(0,1fr)]">
       <div
         className="shrink-0 border-b border-border bg-surface px-2 py-2"
         role="tablist"
-        aria-label={messages.tabAll}
+        aria-label={messages.tabUsers}
       >
         <div className="flex flex-wrap items-center gap-1.5">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={filterTab === 'all'}
-          className={tabPillClass(filterTab === 'all')}
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => onFilterTabChange('all')}
-        >
-          {messages.tabAll}
-          <TabCountSuffix loading={countsPending} value={totalAll} />
-        </button>
-
         {countsPending ? (
           <TypeTabSkeletons />
         ) : (
           objectTypes.map((ot) => (
-            <button
+            <Link
               key={ot}
-              type="button"
+              href={buildDiscoverHrefFromSearch(ot, searchQuery)}
               role="tab"
               aria-selected={filterTab === ot}
               className={tabPillClass(filterTab === ot)}
               onMouseDown={(e) => e.preventDefault()}
-              onClick={() => onFilterTabChange(ot)}
+              onClick={() => {
+                onFilterTabChange(ot);
+                onClose();
+              }}
             >
               {formatObjectTypeLabel(ot)}
               <span className="tabular-nums">
                 {' '}
-                ({hasGlobalCounts ? (counts.type_counts[ot] ?? 0) : 0})
+                ({hasGlobalCounts && counts ? (counts.type_counts[ot] ?? 0) : 0})
               </span>
-            </button>
+            </Link>
           ))
         )}
 
-        <button
-          type="button"
+        <Link
+          href={buildDiscoverHrefFromSearch('users', searchQuery)}
           role="tab"
           aria-selected={filterTab === 'users'}
           className={tabPillClass(filterTab === 'users')}
           onMouseDown={(e) => e.preventDefault()}
-          onClick={() => onFilterTabChange('users')}
+          onClick={() => {
+            onFilterTabChange('users');
+            onClose();
+          }}
         >
           {messages.tabUsers}
           <TabCountSuffix loading={countsPending} value={usersTabCount} />
-        </button>
+        </Link>
         </div>
       </div>
 

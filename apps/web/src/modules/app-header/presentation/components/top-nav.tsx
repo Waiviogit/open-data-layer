@@ -15,7 +15,10 @@ import {
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import type { AppHeaderUser } from '../../domain/app-header-user';
-import { buildSearchFlatList } from '../../domain/search-nav-list';
+import {
+  buildSearchFlatList,
+  pickDefaultSearchFilterTab,
+} from '../../domain/search-nav-list';
 import type { SearchFilterTab } from '../../domain/search-nav-list';
 import { fetchSearchCounts, fetchSearchResults } from '../../infrastructure/search.client';
 import type { SearchCountsResponse, SearchResponse } from '../../domain/search-response.schema';
@@ -88,7 +91,7 @@ export function TopNav({ user: _user }: TopNavProps) {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchCounts, setSearchCounts] = useState<SearchCountsResponse | null>(null);
   const [searchCountsLoading, setSearchCountsLoading] = useState(false);
-  const [filterTab, setFilterTab] = useState<SearchFilterTab>('all');
+  const [filterTab, setFilterTab] = useState<SearchFilterTab>('product');
   const [activeIndex, setActiveIndex] = useState(0);
 
   const clearDebounce = useCallback(() => {
@@ -116,7 +119,7 @@ export function TopNav({ user: _user }: TopNavProps) {
     setSearchLoading(false);
     setSearchCounts(null);
     setSearchCountsLoading(false);
-    setFilterTab('all');
+    setFilterTab('product');
     setActiveIndex(0);
   }, [pathname]);
 
@@ -172,7 +175,14 @@ export function TopNav({ user: _user }: TopNavProps) {
           return;
         }
         setSearchResults(data);
-        setFilterTab('all');
+        const types = [...new Set(data.objects.map((o) => o.object_type))];
+        const defaultTab =
+          types.length > 0
+            ? types.sort((a, b) => a.localeCompare(b))[0]
+            : data.users.length > 0
+              ? 'users'
+              : 'product';
+        setFilterTab(defaultTab);
         setActiveIndex(0);
       } catch {
         if (!mainAc.signal.aborted) {
@@ -192,6 +202,12 @@ export function TopNav({ user: _user }: TopNavProps) {
           return;
         }
         setSearchCounts(countData);
+        setFilterTab((prev) => {
+          if (prev !== 'users' && countData.type_counts[prev] != null) {
+            return prev;
+          }
+          return pickDefaultSearchFilterTab(countData.type_counts, countData.total_users);
+        });
       } catch {
         if (!countsAc.signal.aborted) {
           setSearchCounts(null);
@@ -399,13 +415,13 @@ export function TopNav({ user: _user }: TopNavProps) {
                 flatList={flatList}
                 onHighlightIndex={setActiveIndex}
                 listId={listId}
+                searchQuery={activeQuery}
                 onClose={closeDropdown}
                 messages={{
                   sectionObjects: t('search_section_objects'),
                   sectionUsers: t('search_section_users'),
                   empty: t('search_empty_state'),
                   loading: t('app_header_search_loading'),
-                  tabAll: t('search_tab_all'),
                   tabUsers: t('search_tab_users'),
                   following: t('search_user_following'),
                 }}

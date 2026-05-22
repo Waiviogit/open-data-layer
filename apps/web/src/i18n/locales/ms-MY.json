@@ -1880,5 +1880,17 @@
   "object_detail_overall_rating": "Overall",
   "object_detail_pros_label": "Pros",
   "object_detail_gallery_preview": "Gallery preview",
-  "object_detail_hours_heading": "Hours"
+  "object_detail_hours_heading": "Hours",
+  "discover_page_title": "Discover",
+  "discover_objects_menu": "Objects",
+  "discover_users_menu": "Users",
+  "discover_all_users": "All",
+  "discover_filters_title": "Filters",
+  "discover_sort_label": "Sort by",
+  "discover_sort_newest": "Newest first",
+  "discover_sort_oldest": "Oldest first",
+  "discover_sort_rank": "Rank",
+  "discover_show_more": "Show more",
+  "discover_loading": "Loading…",
+  "discover_no_results": "No results found."
 }

@@ -10,6 +10,7 @@ import './user-post-drafts.openapi';
 import './categories.openapi';
 import './currency.openapi';
 import './search.openapi';
+import './discover.openapi';
 
 export function generateOpenApiDocument() {
   const base = new OpenApiGeneratorV31(registry.definitions).generateDocument({

@@ -24,6 +24,12 @@ export type { LoadAggregatedObjectsOptions } from './aggregated-object.repositor
 export { UpdatesFeedRepository } from './updates-feed.repository';
 export { SearchRepository } from './search.repository';
 export type { SearchObjectCandidateRow, SearchUserRow } from './search.repository';
+export { DiscoverRepository } from './discover.repository';
+export type {
+  DiscoverObjectCandidateRow,
+  DiscoverTagCategoryRow,
+  DiscoverUserRow,
+} from './discover.repository';
 export { PostsRepository } from './posts.repository';
 export type { FeedBranchRow, PostVoteSummary } from './posts.repository';
 export { UserPostDraftsRepository } from './user-post-drafts.repository';
