@@ -240,9 +240,10 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
                     <span className="truncate">{decodeTagFilter(tag)?.value ?? tag}</span>
                     <button
                       type="button"
-                      aria-label={t('discover_remove_filter', {
-                        tag: decodeTagFilter(tag)?.value ?? tag,
-                      })}
+                      aria-label={t('discover_remove_filter').replace(
+                        '{tag}',
+                        decodeTagFilter(tag)?.value ?? tag,
+                      )}
                       className="shrink-0 rounded-full p-0.5 hover:bg-accent/20"
                       onClick={() => onToggleTag(tag, false)}
                     >

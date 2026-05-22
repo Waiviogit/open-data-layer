@@ -463,10 +463,9 @@ export function ObjectLeftRailPanel({
                             })}
                             prefetch={false}
                             className="rounded-btn bg-surface px-2 py-1 text-caption text-fg transition-colors hover:bg-ghost-surface hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                            aria-label={t('object_tag_discover_aria', {
-                              category: section.categoryTitle,
-                              tag,
-                            })}
+                            aria-label={t('object_tag_discover_aria')
+                              .replace('{category}', section.categoryTitle)
+                              .replace('{tag}', tag)}
                           >
                             {tag}
                           </Link>

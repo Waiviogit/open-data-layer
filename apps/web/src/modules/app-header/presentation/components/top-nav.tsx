@@ -206,6 +206,10 @@ export function TopNav({ user: _user }: TopNavProps) {
         if (countsAc.signal.aborted) {
           return;
         }
+        if (!countData) {
+          setSearchCounts(null);
+          return;
+        }
         setSearchCounts(countData);
         setFilterTab((prev) => {
           if (prev !== 'users' && countData.type_counts[prev] != null) {
