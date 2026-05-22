@@ -174,6 +174,11 @@ export function TopNav({ user: _user }: TopNavProps) {
         if (mainAc.signal.aborted) {
           return;
         }
+        if (!data) {
+          setSearchResults(null);
+          setActiveIndex(0);
+          return;
+        }
         setSearchResults(data);
         const types = [...new Set(data.objects.map((o) => o.object_type))];
         const defaultTab =
