@@ -7,6 +7,8 @@ import type { UpdateVoteHandler } from './handlers/update-vote.handler';
 import type { RankVoteHandler } from './handlers/rank-vote.handler';
 import type { AuthorityHandler } from './handlers/authority.handler';
 import type { BatchImportHandler } from './handlers/batch-import.handler';
+import type { FollowObjectHandler } from './handlers/follow-object.handler';
+import type { FollowUserBellHandler } from './handlers/follow-user-bell.handler';
 import type { ShopDeselectHandler } from './handlers/shop-deselect.handler';
 import type { UserMetadataHandler } from './handlers/user-metadata.handler';
 import type { GovernanceCacheService } from '../governance/governance-cache.service';
@@ -76,6 +78,16 @@ describe('OdlCustomJsonParser', () => {
     handle: jest.fn(),
   } as unknown as BatchImportHandler;
 
+  const followObjectHandler = {
+    action: 'object_follow',
+    handle: jest.fn(),
+  } as unknown as FollowObjectHandler;
+
+  const followUserBellHandler = {
+    action: 'user_follow',
+    handle: jest.fn(),
+  } as unknown as FollowUserBellHandler;
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -97,6 +109,8 @@ describe('OdlCustomJsonParser', () => {
       userMetadataHandler,
       shopDeselectHandler,
       batchImportHandler,
+      followObjectHandler,
+      followUserBellHandler,
       governanceCache,
     );
 
@@ -119,6 +133,8 @@ describe('OdlCustomJsonParser', () => {
       userMetadataHandler,
       shopDeselectHandler,
       batchImportHandler,
+      followObjectHandler,
+      followUserBellHandler,
       governanceCache,
     );
 

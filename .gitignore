@@ -7,6 +7,7 @@ out-tsc
 
 # dependencies
 node_modules
+osv-results.json
 
 # IDEs and editors
 /.idea

@@ -1,0 +1,23 @@
+# Config: https://google.github.io/osv-scanner/configuration/
+#
+# POLICY: Every [[IgnoredVulns]] entry MUST include:
+#   reason      = "Why this CVE is not applicable or mitigated"
+#   ignoreUntil = YYYY-MM-DD   (hard expiry — review before this date)
+#
+# Entries without both fields will be rejected in code review.
+
+# Example (uncomment and fill when needed):
+# [[IgnoredVulns]]
+# id = "GHSA-xxxx-xxxx-xxxx"
+# reason = "Not reachable: vulnerable code path not used in this project"
+# ignoreUntil = 2026-12-31
+
+[[IgnoredVulns]]
+id = "GHSA-848j-6mx2-7j84"
+reason = "Transitive via @hiveio/dhive -> secp256k1 for Hive ECDSA. No patched elliptic release on npm (latest 6.6.1)."
+ignoreUntil = 2026-08-31
+
+[[IgnoredVulns]]
+id = "GHSA-w5hq-g745-h8pq"
+reason = "Dev-only via webpack-dev-server -> sockjs; not shipped in production Docker bundles. Fix requires uuid v11+ incompatible with sockjs ^8.3.2."
+ignoreUntil = 2026-08-31

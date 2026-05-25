@@ -22,3 +22,31 @@ jobs:
 
       - name: Verify apps/web locale catalogs (strict UTF-8, no BOM, valid JSON)
         run: node scripts/verify-web-locale-json-utf8.cjs
+
+  osv-scan:
+    name: OSV vulnerability scan
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: OSV scan (PR — new vulns only)
+        if: github.event_name == 'pull_request'
+        uses: google/osv-scanner-action/osv-scanner-pr-action@v2.0.2
+        with:
+          scan-args: |
+            --config osv-scanner.toml
+            --recursive
+            ./
+
+      - name: OSV scan (push — full)
+        if: github.event_name == 'push'
+        uses: google/osv-scanner-action/osv-scanner-action@v2.0.2
+        with:
+          scan-args: |
+            --config osv-scanner.toml
+            --recursive
+            ./

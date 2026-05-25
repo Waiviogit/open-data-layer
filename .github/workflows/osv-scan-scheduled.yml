@@ -1,0 +1,43 @@
+name: OSV Scheduled Vulnerability Scan
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Every Monday at 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  osv-scan:
+    name: Full vulnerability scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google/osv-scanner-action/osv-scanner-action@v2.0.2
+        continue-on-error: true
+        id: scan
+        with:
+          scan-args: |
+            --config osv-scanner.toml
+            --recursive
+            --format json
+            --output osv-results.json
+            ./
+
+      - name: Upload scan results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: osv-results-${{ github.run_id }}
+          path: osv-results.json
+          if-no-files-found: ignore
+
+      - name: Fail if vulnerabilities found
+        if: steps.scan.outcome == 'failure'
+        run: exit 1

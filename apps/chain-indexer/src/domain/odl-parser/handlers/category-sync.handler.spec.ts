@@ -14,6 +14,7 @@ describe('CategorySyncHandler', () => {
           object_id: 'o1',
           account: 'shop',
           authority_type: 'administrative',
+          created_at: new Date(),
         },
       ],
     );
