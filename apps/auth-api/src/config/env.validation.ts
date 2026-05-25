@@ -1,5 +1,23 @@
 import { z } from 'zod';
 
+import {
+  DEFAULT_AUTH_APP_DISPLAY_ORIGIN,
+  DEFAULT_HIVESIGNER_API_URL,
+  DEFAULT_HIVESIGNER_APP_NAME,
+  DEFAULT_HIVESIGNER_CALLBACK_URL,
+  DEFAULT_HIVESIGNER_SCOPE,
+} from '../constants/hivesigner-defaults';
+
+function nonEmptyOr<T extends string>(fallback: T) {
+  return z
+    .string()
+    .optional()
+    .transform((value) => {
+      const trimmed = value?.trim();
+      return trimmed && trimmed.length > 0 ? trimmed : fallback;
+    });
+}
+
 export const authApiConfigSchema = z.object({
   PORT: z.coerce.number().optional().default(7100),
   REDIS_URI: z.string().optional().default('redis://localhost:6379'),
@@ -24,16 +42,14 @@ export const authApiConfigSchema = z.object({
     ),
   CHALLENGE_TTL_SECONDS: z.coerce.number().optional().default(300),
   /** Shown inside the sign-in message (e.g. your app hostname). */
-  AUTH_APP_DISPLAY_ORIGIN: z.string().min(1).optional().default('https://example.com'),
-  HIVESIGNER_APP_NAME: z.string().optional().default(''),
+  AUTH_APP_DISPLAY_ORIGIN: nonEmptyOr(DEFAULT_AUTH_APP_DISPLAY_ORIGIN),
+  HIVESIGNER_APP_NAME: nonEmptyOr(DEFAULT_HIVESIGNER_APP_NAME),
   HIVESIGNER_CLIENT_SECRET: z.string().optional().default(''),
-  HIVESIGNER_CALLBACK_URL: z.string().url().optional().or(z.literal('')).default(''),
-  HIVESIGNER_SCOPE: z.string().optional().default('login'),
-  HIVESIGNER_API_URL: z
-    .string()
-    .url()
-    .optional()
-    .default('https://hivesigner.com'),
+  HIVESIGNER_CALLBACK_URL: nonEmptyOr(DEFAULT_HIVESIGNER_CALLBACK_URL).pipe(
+    z.string().url(),
+  ),
+  HIVESIGNER_SCOPE: nonEmptyOr(DEFAULT_HIVESIGNER_SCOPE),
+  HIVESIGNER_API_URL: nonEmptyOr(DEFAULT_HIVESIGNER_API_URL).pipe(z.string().url()),
 });
 
 export type AuthApiEnv = z.infer<typeof authApiConfigSchema>;

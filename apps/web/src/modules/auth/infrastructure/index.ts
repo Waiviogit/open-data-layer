@@ -11,6 +11,13 @@ export type {
   KeychainWireOperation,
 } from './providers/keychain-provider';
 export { redirectToHiveSigner } from './providers/hivesigner-provider';
+export {
+  clearHivesignerToken,
+  getHivesignerToken,
+  hydrateHivesignerTokenFromCookie,
+  ODL_HS_TOKEN_COOKIE,
+  ODL_HS_TOKEN_STORAGE_KEY,
+} from './hivesigner-token';
 export { buildHiveAuthPayload } from './providers/hiveauth-provider';
 export { buildOdlCustomJsonOp } from './odl-custom-json';
 export type { BuildOdlCustomJsonOpInput } from './odl-custom-json';

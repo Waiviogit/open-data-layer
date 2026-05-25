@@ -88,12 +88,14 @@ export class AuthController {
 
   @Get('callback/hivesigner')
   async hivesignerCallbackRoute(
-    @Query('code') code: string,
+    @Query('access_token') accessToken: string,
+    @Query('username') username: string,
     @Query('state') state: string,
     @Req() req: Request,
   ) {
     return this.hivesignerCallback.execute({
-      code,
+      accessToken,
+      username,
       state,
       ip: req.ip,
       userAgent: typeof req.headers['user-agent'] === 'string'

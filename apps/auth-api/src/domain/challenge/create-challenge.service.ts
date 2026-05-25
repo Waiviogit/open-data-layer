@@ -84,7 +84,6 @@ export class CreateChallengeService {
         app: appName,
         callbackURL: callbackUrl,
         scope: scopes,
-        responseType: 'code',
       });
       const authorizeUrl = normalizedUser
         ? hs.getLoginURL(state, normalizedUser)

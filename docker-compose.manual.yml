@@ -123,6 +123,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       REDIS_URI: ${REDIS_URI:-redis://redis:6379}
       JWT_SECRET: ${JWT_SECRET:-change-me-min-16-chars-for-dev}
+      AUTH_APP_DISPLAY_ORIGIN: ${AUTH_APP_DISPLAY_ORIGIN:-https://${DOMAIN}}
+      HIVESIGNER_APP_NAME: ${HIVESIGNER_APP_NAME:-www.waivio.com}
+      HIVESIGNER_CALLBACK_URL: ${HIVESIGNER_CALLBACK_URL:-https://${DOMAIN}/api/auth/callback/hivesigner}
+      HIVESIGNER_SCOPE: ${HIVESIGNER_SCOPE:-login,vote,comment,delete_comment,custom_json,follow,reblog,claim_reward_balance,transfer,transfer_to_vesting,withdraw_vesting,account_update,account_update2,convert,limit_order_create,limit_order_cancel}
+      HIVESIGNER_API_URL: ${HIVESIGNER_API_URL:-https://hivesigner.com}
     depends_on:
       - postgres
       - redis

@@ -9,6 +9,8 @@ export type AuthApiTokenResponse = {
   accessToken?: string;
   refreshToken?: string;
   user?: { username: string };
+  /** HiveSigner OAuth access token — forwarded to browser for client-side signing. */
+  hsToken?: string;
 };
 
 export function parseAuthApiTokenResponse(

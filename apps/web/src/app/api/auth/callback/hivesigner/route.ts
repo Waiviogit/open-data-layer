@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 
+import { ODL_HS_TOKEN_COOKIE } from '@/modules/auth/infrastructure/hivesigner-token.constants';
 import { authApiUrl } from '@/shared/infrastructure/auth/bff-proxy';
 import { setSessionCookiesFromAuthApiResponse } from '@/shared/infrastructure/auth/set-session-on-response';
 import type { AuthApiTokenResponse } from '@/shared/infrastructure/auth/session-tokens';
+
+const HS_TOKEN_COOKIE_MAX_AGE_SEC = 300;
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -35,5 +38,17 @@ export async function GET(req: Request) {
 
   const redirect = NextResponse.redirect(new URL('/?auth=ok', url.origin));
   setSessionCookiesFromAuthApiResponse(redirect, json);
+
+  const hsToken = json.hsToken?.trim();
+  if (hsToken) {
+    redirect.cookies.set(ODL_HS_TOKEN_COOKIE, hsToken, {
+      httpOnly: false,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: HS_TOKEN_COOKIE_MAX_AGE_SEC,
+      secure: process.env.NODE_ENV === 'production',
+    });
+  }
+
   return redirect;
 }
