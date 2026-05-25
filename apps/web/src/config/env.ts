@@ -42,6 +42,13 @@ const envSchema = z.object({
     .transform((v) => (v?.trim() ? v.trim() : undefined)),
   /** Must match chain-indexer `ODL_NETWORK` for the same deployment. */
   ODL_NETWORK: z.enum(['mainnet', 'testnet']).optional().default('mainnet'),
+  /**
+   * When true, unauthenticated users are redirected to `/sign-in` and cannot browse the site.
+   */
+  REQUIRE_AUTH: z
+    .string()
+    .optional()
+    .transform((v) => v?.trim().toLowerCase() === 'true'),
 });
 
 const parsed = envSchema.parse(process.env);
@@ -50,6 +57,7 @@ const odlNetwork = parseOdlNetwork(parsed.ODL_NETWORK);
 export const env = {
   ...parsed,
   odlNetwork,
+  requireAuth: parsed.REQUIRE_AUTH,
   /** Hive `custom_json.id` for server-side ODL envelope builders. */
   odlCustomJsonId: resolveOdlCustomJsonId(odlNetwork),
 };

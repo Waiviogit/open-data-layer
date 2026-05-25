@@ -1,11 +1,19 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+import { env } from '@/config/env';
 import { isUserProfileReservedFirstSegment } from '@/modules/user-profile/presentation/components/profile-path';
 import {
   applyProxySessionRefreshToResponse,
   refreshSessionCookiesIfNeeded,
 } from '@/shared/infrastructure/auth/refresh-session';
+import { AUTH_ACCESS_COOKIE } from '@/shared/infrastructure/auth/session-cookie';
+
+const REQUIRE_AUTH_EXCLUDED_PREFIXES = [
+  '/sign-in',
+  '/api/auth/',
+  '/images/',
+] as const;
 
 /**
  * Public `/@account/...` → App Router paths under `/user-profile/...`.
@@ -22,6 +30,21 @@ export async function proxy(request: NextRequest) {
 
   const finish = (response: NextResponse) =>
     applyProxySessionRefreshToResponse(response, sessionRefresh);
+
+  if (env.requireAuth) {
+    const isExcluded = REQUIRE_AUTH_EXCLUDED_PREFIXES.some((prefix) =>
+      pathname.startsWith(prefix),
+    );
+    if (!isExcluded) {
+      const hasSession =
+        sessionRefresh.kind === 'refreshed' ||
+        (sessionRefresh.kind === 'unchanged' &&
+          request.cookies.has(AUTH_ACCESS_COOKIE));
+      if (!hasSession) {
+        return finish(NextResponse.redirect(new URL('/sign-in', request.url)));
+      }
+    }
+  }
 
   /**
    * Public `/object/:id/updates` stays in the address bar; App Router serves
