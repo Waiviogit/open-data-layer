@@ -145,6 +145,7 @@ services:
       AUTH_API_BASE_URL: ${AUTH_API_BASE_URL:-http://auth-api:7100}
       AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-${JWT_SECRET:-change-me-min-16-chars-for-dev}}
       NOTIFICATIONS_WS_PUBLIC_URL: ${NOTIFICATIONS_WS_PUBLIC_URL:-}
+      WEB_PUBLIC_ORIGIN: ${WEB_PUBLIC_ORIGIN:-${AUTH_APP_DISPLAY_ORIGIN:-https://${DOMAIN}}}
     networks:
       - opden-data-layer-net
     restart: unless-stopped

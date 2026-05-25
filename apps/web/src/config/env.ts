@@ -49,15 +49,31 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((v) => v?.trim().toLowerCase() === 'true'),
+  /**
+   * Public site origin for browser redirects (Docker/nginx). Falls back to `AUTH_APP_DISPLAY_ORIGIN`.
+   */
+  WEB_PUBLIC_ORIGIN: z
+    .string()
+    .optional()
+    .transform((v) => {
+      const t = v?.trim();
+      return t ? t.replace(/\/$/, '') : undefined;
+    }),
 });
 
 const parsed = envSchema.parse(process.env);
 const odlNetwork = parseOdlNetwork(parsed.ODL_NETWORK);
 
+const authAppDisplayOrigin = process.env.AUTH_APP_DISPLAY_ORIGIN?.trim();
+const publicOrigin =
+  parsed.WEB_PUBLIC_ORIGIN ??
+  (authAppDisplayOrigin ? authAppDisplayOrigin.replace(/\/$/, '') : undefined);
+
 export const env = {
   ...parsed,
   odlNetwork,
   requireAuth: parsed.REQUIRE_AUTH,
+  publicOrigin,
   /** Hive `custom_json.id` for server-side ODL envelope builders. */
   odlCustomJsonId: resolveOdlCustomJsonId(odlNetwork),
 };

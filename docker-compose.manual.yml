@@ -176,6 +176,7 @@ services:
       QUERY_API_URL: ${QUERY_API_URL:-http://query-api:7000}
       AUTH_API_BASE_URL: ${AUTH_API_BASE_URL:-http://auth-api:7100}
       AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-${JWT_SECRET:-change-me-min-16-chars-for-dev}}
+      WEB_PUBLIC_ORIGIN: ${WEB_PUBLIC_ORIGIN:-${AUTH_APP_DISPLAY_ORIGIN:-https://${DOMAIN}}}
     depends_on:
       - query-api
       - auth-api

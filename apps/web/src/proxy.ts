@@ -8,6 +8,7 @@ import {
   refreshSessionCookiesIfNeeded,
 } from '@/shared/infrastructure/auth/refresh-session';
 import { AUTH_ACCESS_COOKIE } from '@/shared/infrastructure/auth/session-cookie';
+import { buildPublicUrl } from '@/shared/infrastructure/http/get-public-origin';
 
 const REQUIRE_AUTH_EXCLUDED_PREFIXES = [
   '/sign-in',
@@ -41,7 +42,11 @@ export async function proxy(request: NextRequest) {
         (sessionRefresh.kind === 'unchanged' &&
           request.cookies.has(AUTH_ACCESS_COOKIE));
       if (!hasSession) {
-        return finish(NextResponse.redirect(new URL('/sign-in', request.url)));
+        return finish(
+          NextResponse.redirect(
+            buildPublicUrl(request, '/sign-in', env.publicOrigin),
+          ),
+        );
       }
     }
   }

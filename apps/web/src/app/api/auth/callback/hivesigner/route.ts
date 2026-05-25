@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 
+import { env } from '@/config/env';
 import { ODL_HS_TOKEN_COOKIE } from '@/modules/auth/infrastructure/hivesigner-token.constants';
 import { authApiUrl } from '@/shared/infrastructure/auth/bff-proxy';
 import { setSessionCookiesFromAuthApiResponse } from '@/shared/infrastructure/auth/set-session-on-response';
 import type { AuthApiTokenResponse } from '@/shared/infrastructure/auth/session-tokens';
+import { buildPublicUrl } from '@/shared/infrastructure/http/get-public-origin';
 
 const HS_TOKEN_COOKIE_MAX_AGE_SEC = 300;
 
@@ -33,10 +35,14 @@ export async function GET(req: Request) {
   try {
     json = JSON.parse(text) as AuthApiTokenResponse;
   } catch {
-    return NextResponse.redirect(new URL('/?auth=error', url.origin));
+    return NextResponse.redirect(
+      buildPublicUrl(req, '/?auth=error', env.publicOrigin),
+    );
   }
 
-  const redirect = NextResponse.redirect(new URL('/?auth=ok', url.origin));
+  const redirect = NextResponse.redirect(
+    buildPublicUrl(req, '/?auth=ok', env.publicOrigin),
+  );
   setSessionCookiesFromAuthApiResponse(redirect, json);
 
   const hsToken = json.hsToken?.trim();
