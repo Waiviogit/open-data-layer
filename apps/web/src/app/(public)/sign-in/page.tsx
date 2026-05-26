@@ -4,6 +4,11 @@ import { LoginWall } from '@/modules/auth/presentation/components/login-wall';
 
 export const metadata: Metadata = {
   title: 'Sign in',
+  description: 'Sign in with your Hive account to use Waivio.',
+  openGraph: {
+    title: 'Sign in',
+    description: 'Sign in with your Hive account to use Waivio.',
+  },
 };
 
 export default function SignInPage() {

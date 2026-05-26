@@ -38,11 +38,13 @@ export class CreateChallengeService {
     const expiresAt = new Date(issuedAt.getTime() + ttl * 1000);
     const nonce = randomBytes(32).toString('hex');
     const challengeId = randomUUID();
-    const origin = this.config.getOrThrow<string>('authAppDisplayOrigin');
 
-    const message = normalizedUser
-      ? `${origin} wants you to sign in as @${normalizedUser}\nNonce: ${nonce}\nIssuedAt: ${issuedAt.toISOString()}\nExpiresAt: ${expiresAt.toISOString()}`
-      : `${origin} wants you to sign in\nNonce: ${nonce}\nIssuedAt: ${issuedAt.toISOString()}\nExpiresAt: ${expiresAt.toISOString()}`;
+    const message = [
+      'Sign this nonce to sign in',
+      `Nonce: ${nonce}`,
+      `IssuedAt: ${issuedAt.toISOString()}`,
+      `ExpiresAt: ${expiresAt.toISOString()}`,
+    ].join('\n');
 
     if (input.provider === 'keychain' || input.provider === 'hiveauth') {
       await this.challenges.insert({
