@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { ProjectedObject, ProjectedObjectSeo } from './projected-object.types';
 import { buildObjectCanonicalUrl } from './build-object-canonical-url';
+import { buildObjectJsonLd } from './jsonld';
 
 @Injectable()
 export class ObjectSeoService {
@@ -27,7 +28,10 @@ export class ObjectSeoService {
         obj.object_id,
         fallbackOrigin,
       ),
-      json_ld: {},
+      json_ld: buildObjectJsonLd(
+        obj,
+        buildObjectCanonicalUrl(viewCanonical, obj.object_id, fallbackOrigin),
+      ),
     };
   }
 }

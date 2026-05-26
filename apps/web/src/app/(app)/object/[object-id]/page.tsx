@@ -12,6 +12,7 @@ import {
 import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
 import { loadMessages } from '@/i18n/runtime/load-messages';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
+import { buildObjectMetadata, JsonLdScript } from '@/seo';
 
 import { getObjectAuthorityPageQuery } from '@/modules/object/application/queries/get-object-authority-page.query';
 import { getObjectFollowersPageQuery } from '@/modules/object/application/queries/get-object-followers-page.query';
@@ -42,34 +43,42 @@ export async function generateMetadata({
   const sp = await searchParams;
 
   const model = await loadObjectPageModel(objectId, locale);
-  const title = model?.title ?? objectId;
+  if (!model) {
+    return { title: objectId };
+  }
+
+  const baseTitle = model.seo?.title ?? model.title;
   const objectLabel =
     typeof messages.object === 'string' ? messages.object : 'object';
 
   const tab = firstSearchParam(sp, OBJECT_PAGE_PRIMARY_TAB_PARAM)?.trim();
+  let title = `${baseTitle} · ${objectLabel}`;
   if (tab === 'updates') {
     const updatesLabel =
       typeof messages.object_updates_title === 'string'
         ? messages.object_updates_title
         : 'Updates';
-    return { title: `${title} · ${updatesLabel}` };
-  }
-
-  if (tab === 'followers') {
+    title = `${baseTitle} · ${updatesLabel}`;
+  } else if (tab === 'followers') {
     const followersLabel =
       typeof messages.followers === 'string' ? messages.followers : 'Followers';
-    return { title: `${title} · ${followersLabel}` };
-  }
-
-  if (tab === 'authority') {
+    title = `${baseTitle} · ${followersLabel}`;
+  } else if (tab === 'authority') {
     const authorityLabel =
       typeof messages.authority === 'string' ? messages.authority : 'Authority';
-    return { title: `${title} · ${authorityLabel}` };
+    title = `${baseTitle} · ${authorityLabel}`;
   }
 
-  return {
-    title: `${title} · ${objectLabel}`,
-  };
+  return buildObjectMetadata({
+    objectId: model.objectId,
+    title,
+    description: model.seo?.description ?? model.tagline,
+    canonicalUrl: model.seo?.canonical_url ?? null,
+    avatarUrl: model.avatarUrl,
+    coverImageUrl: model.coverImageUrl,
+    objectTypeKey: model.objectTypeKey,
+    jsonLd: model.seo?.json_ld ?? null,
+  });
 }
 
 export default async function ObjectDetailPage({
@@ -152,17 +161,20 @@ export default async function ObjectDetailPage({
       : null;
 
   return (
-    <ObjectPageClient
-      model={model}
-      embeddedUpdatesFeed={embeddedUpdatesFeed}
-      embeddedFollowersPage={embeddedFollowersPage}
-      followersSort={followersSort}
-      embeddedAuthorityPage={embeddedAuthorityPage}
-      authoritySubType={authoritySubType}
-      authoritySort={authoritySort}
-      viewerUsername={user?.username ?? null}
-      initialPrimarySegment={initialPrimarySegment}
-      defaultPrimarySegment={defaultSeg}
-    />
+    <>
+      <JsonLdScript data={model.seo?.json_ld} />
+      <ObjectPageClient
+        model={model}
+        embeddedUpdatesFeed={embeddedUpdatesFeed}
+        embeddedFollowersPage={embeddedFollowersPage}
+        followersSort={followersSort}
+        embeddedAuthorityPage={embeddedAuthorityPage}
+        authoritySubType={authoritySubType}
+        authoritySort={authoritySort}
+        viewerUsername={user?.username ?? null}
+        initialPrimarySegment={initialPrimarySegment}
+        defaultPrimarySegment={defaultSeg}
+      />
+    </>
   );
 }

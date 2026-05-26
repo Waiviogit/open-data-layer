@@ -39,12 +39,7 @@ export class CreateChallengeService {
     const nonce = randomBytes(32).toString('hex');
     const challengeId = randomUUID();
 
-    const message = [
-      'Sign this nonce to sign in',
-      `Nonce: ${nonce}`,
-      `IssuedAt: ${issuedAt.toISOString()}`,
-      `ExpiresAt: ${expiresAt.toISOString()}`,
-    ].join('\n');
+    const message = `Hive sign in; nonce=${nonce}`;
 
     if (input.provider === 'keychain' || input.provider === 'hiveauth') {
       await this.challenges.insert({

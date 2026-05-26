@@ -6,8 +6,9 @@ export function createGetUserProfileQuery(repo: UserProfileRepository) {
   return async function getUserProfile(
     name: string,
     viewer?: string | null,
+    locale?: string | null,
   ): Promise<UserProfileShellUser | null> {
-    const view = await repo.findByName(name, viewer);
+    const view = await repo.findByName(name, viewer, locale);
     if (!view) {
       return null;
     }

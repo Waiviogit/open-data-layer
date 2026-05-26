@@ -1,3 +1,5 @@
+import { cache } from 'react';
+
 import { sanitizePostHtml } from '@/shared/infrastructure/sanitize-post-html';
 
 import type { FeedStoryView } from '../dto/feed-story.dto';
@@ -12,7 +14,7 @@ export type BlogPostPayload = {
   bodyHtmlSafe: string;
 };
 
-export async function getSinglePostQuery(
+async function getSinglePostQueryImpl(
   author: string,
   permlink: string,
   locale: string,
@@ -31,3 +33,5 @@ export async function getSinglePostQuery(
   const bodyHtmlSafe = sanitizePostHtml(parsed.data.body);
   return { story, bodyHtmlSafe };
 }
+
+export const getSinglePostQuery = cache(getSinglePostQueryImpl);

@@ -1895,5 +1895,11 @@
   "discover_no_results": "No results found.",
   "discover_selected_filters": "Selected",
   "discover_clear_all": "Clear all",
-  "discover_remove_filter": "Remove filter {tag}"
+  "discover_remove_filter": "Remove filter {tag}",
+  "site_name": "Open Data Layer",
+  "site_description": "Discover, organize, and earn rewards on the Hive blockchain.",
+  "seo_home_title": "Home",
+  "seo_discover_title": "Discover",
+  "seo_sign_in_title": "Sign in",
+  "seo_sign_in_description": "Sign in with your Hive account to use Waivio."
 }

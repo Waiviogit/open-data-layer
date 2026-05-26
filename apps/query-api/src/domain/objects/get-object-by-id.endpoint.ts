@@ -79,6 +79,7 @@ export class GetObjectByIdEndpoint {
         governanceObjectIdFromHeader: input.governanceObjectIdFromHeader,
         viewerAccount: input.viewerAccount,
         rankVoteProjection,
+        includeSeo: true,
       }),
       this.objectUpdatesRepo.countByObjectIdGroupByUpdateType(objectId),
       this.userObjectFollowsRepo.countByObjectId(objectId),

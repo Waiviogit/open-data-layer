@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
 
+import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
+import { loadMessages } from '@/i18n/runtime/load-messages';
 import { LoginWall } from '@/modules/auth/presentation/components/login-wall';
+import { buildSignInMetadata } from '@/seo';
 
-export const metadata: Metadata = {
-  title: 'Sign in',
-  description: 'Sign in with your Hive account to use Waivio.',
-  openGraph: {
-    title: 'Sign in',
-    description: 'Sign in with your Hive account to use Waivio.',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const messages = await loadMessages(locale);
+  return buildSignInMetadata({ locale, messages });
+}
 
 export default function SignInPage() {
   return (

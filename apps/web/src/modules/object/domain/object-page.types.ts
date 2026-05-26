@@ -142,6 +142,13 @@ export type ObjectLeftRailBlock =
       rows: { type: string; value: string }[];
     };
 
+export type ObjectPageSeoView = {
+  title: string | null;
+  description: string | null;
+  canonical_url: string | null;
+  json_ld: Record<string, unknown>;
+};
+
 export type ObjectPageViewModel = {
   objectId: string;
   /** Hero heading from `name` update. */
@@ -184,4 +191,5 @@ export type ObjectPageViewModel = {
   /** For Authority tab sub-nav badges (`object_authority` counts from resolve). */
   administrativeAuthorityCount: number;
   ownershipAuthorityCount: number;
+  seo: ObjectPageSeoView | null;
 };

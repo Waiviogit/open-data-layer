@@ -11,6 +11,7 @@ import {
 import type {
   ObjectFeedSubTabView,
   ObjectLeftRailBlock,
+  ObjectPageSeoView,
   ObjectPageViewModel,
   ObjectPrimaryTabView,
   ObjectSidebarMiniCardView,
@@ -121,6 +122,26 @@ function miniCard(id: string, title: string): ObjectSidebarMiniCardView {
 function coverImageUrl(fields: Record<string, unknown>): string | null {
   const v = fields.imageBackground;
   return typeof v === 'string' && v.trim().length > 0 ? v.trim() : null;
+}
+
+function parseSeo(api: ProjectedObjectWithCountsView): ObjectPageSeoView | null {
+  const raw = api.seo;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return null;
+  }
+  const record = raw as Record<string, unknown>;
+  const jsonLdRaw = record.json_ld;
+  return {
+    title: typeof record.title === 'string' ? record.title : null,
+    description:
+      typeof record.description === 'string' ? record.description : null,
+    canonical_url:
+      typeof record.canonical_url === 'string' ? record.canonical_url : null,
+    json_ld:
+      jsonLdRaw && typeof jsonLdRaw === 'object' && !Array.isArray(jsonLdRaw)
+        ? { ...(jsonLdRaw as Record<string, unknown>) }
+        : {},
+  };
 }
 
 function workHoursLines(raw: string): string[] {
@@ -436,5 +457,6 @@ export function projectedObjectWithCountsToPageModel(
     rightFeatured: [miniCard('ex-f1', 'Experts')],
     rightRelated: [miniCard('nr-f1', 'Nearby')],
     rightSimilar: [miniCard('sm-f1', 'Similar')],
+    seo: parseSeo(api),
   };
 }

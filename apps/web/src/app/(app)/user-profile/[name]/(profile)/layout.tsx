@@ -25,7 +25,7 @@ export default async function ProfileGroupLayout({
   const locale = await getRequestLocale();
 
   const [profile, objectsHead] = await Promise.all([
-    getUserProfileQuery(decoded, viewer),
+    getUserProfileQuery(decoded, viewer, locale),
     getUserFollowingObjectsPageQuery(
       decoded,
       { sort: 'weight', skip: 0, limit: 0 },

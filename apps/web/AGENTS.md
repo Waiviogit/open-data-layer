@@ -83,6 +83,86 @@ index.ts         public barrel — other features import only from here
 
 - BFF / auth plumbing only — **delegate** to `src/shared/infrastructure/auth/` (and related helpers). No business rules in route handlers.
 
+## SEO and metadata
+
+Cross-cutting SEO lives in **`src/seo/`** (parallel to `src/i18n/` and `src/theme/`). Import via **`@/seo`** barrel only. Module layout: [`docs/apps/web/spec/architecture.md`](../../docs/apps/web/spec/architecture.md).
+
+```
+src/seo/
+  domain/          metadata contracts, JSON-LD builders for post/profile (pure)
+  application/     buildPageMetadata({ route, model, locale, messages }) use-cases
+  infrastructure/  publicOrigin / buildPublicUrl helpers, API → OG mappers
+  presentation/    JsonLdScript (server component)
+  index.ts         public barrel — @/seo
+```
+
+Route files keep **`export async function generateMetadata`** (or static `metadata`), but stay **thin** — call the matching builder from `@/seo`. Do **not** put SEO logic in `src/shared/` or inline in page components.
+
+### Next.js Metadata API
+
+- Use **`Metadata` / `generateMetadata`** only — **never** `next/head` (deprecated in App Router).
+- Root defaults live in **`app/layout.tsx`**: `metadataBase` from `env.publicOrigin` (`WEB_PUBLIC_ORIGIN` or `AUTH_APP_DISPLAY_ORIGIN`), site title template, default OG/Twitter.
+- Per-route metadata overrides title, description, `openGraph`, `twitter`, `alternates.canonical`, and (when needed) robots.
+
+### Object pages — query-api `seo` block is source of truth
+
+`ProjectedObject.seo` is attached only when query-api projects with **`includeSeo: true`** (object resolve endpoints). Contract: [`apps/query-api/src/domain/object-projection/projected-object.types.ts`](../../apps/query-api/src/domain/object-projection/projected-object.types.ts) (`ProjectedObjectSeo`: `title`, `description`, `canonical_url`, `json_ld`).
+
+- **`generateMetadata` for object routes must read `model.seo`** via `@/seo` builders — do not build a parallel title from `obj.fields.name`.
+- **`seo.canonical_url`** is computed in query-api via [`build-object-canonical-url.ts`](../../apps/query-api/src/domain/object-projection/build-object-canonical-url.ts) and [`@opden-data-layer/site-canonical`](../../libs/site-canonical/src/lib/fallback.ts). Web **must not** hand-build object canonical URLs; use `seo.canonical_url`. If `seo` is absent, fallback to `env.publicOrigin` + object path.
+- If `seo.canonical_url` points at a custom object site origin, **accept it as-is** — query-api owns that decision; web does not override.
+
+### JSON-LD
+
+- **Objects:** schema.org payloads are built in query-api [`ObjectSeoService`](../../apps/query-api/src/domain/object-projection/object-seo.service.ts) (`json_ld` is `{}` today — intentional stub; will grow by `object_type`: `Thing`, `Product`, `Recipe`, etc.). Web **injects only** — render via `<JsonLdScript data={model.seo.json_ld} />` in `src/seo/presentation/` when non-empty. **Do not** add or patch schema.org fields on the web side for objects.
+- **Posts / profiles:** builders live in `src/seo/domain/` (e.g. `Article`, `Person`) — query-api does not project these entity types yet.
+- Validity of `json_ld` is query-api’s responsibility; web still injects what the API returns.
+
+### Canonical URLs (non-object routes)
+
+Build in `@/seo` using `env.publicOrigin` and public URL rules from [`proxy.ts`](src/proxy.ts) (`/@account` → profile, `/object/:id`, post permalinks). One canonical URL per entity; **do not** use `alternates.languages` — locale is not a URL segment (see **i18n** above).
+
+### Open Graph and Twitter
+
+- **`openGraph.images` / `twitter.images`:** absolute URLs from API data:
+  - Object: `coverImageUrl`, `avatarUrl`
+  - Post (`FeedStoryView`): `thumbnailUrl`, `videoThumbnailUrl`
+  - Profile: `avatarUrl`, `coverImageUrl` from profile query
+- Resolve relative URLs with `buildPublicUrl()` from `@/shared/infrastructure/http/get-public-origin`.
+- When no image is available, fall back to default **`app/opengraph-image.png`** (static site banner).
+- Use **`twitter.card: 'summary_large_image'`** when a page has an OG image; otherwise inherit root default (`summary`).
+
+### i18n in metadata
+
+- `@/seo` builders encapsulate **`getRequestLocale()`** + **`loadMessages()`** — no repeated boilerplate in every `generateMetadata`.
+- Shareable routes (post, object, profile): prefer API-localized fields (`obj.seo.title` via `X-Locale`) plus i18n suffix keys from locale catalogs for tab/context labels.
+- Title fallback chain for objects: `obj.seo.title` → `obj.fields.name` → `object_id`. Never emit an empty `<title>`.
+- Do **not** hardcode English title/description on public shareable pages (post, object, profile, home, sign-in) when i18n keys or API fields exist.
+
+### Fetch deduplication
+
+Any loader used by **`generateMetadata` and the page body** must be wrapped in **`react.cache()`**. Reference: [`object-page-model.server.ts`](src/app/(app)/object/[object-id]/object-page-model.server.ts). Object fetches for metadata should request **`includeSeo: true`** (query-api resolve); extend API calls in the same PR when wiring SEO.
+
+### Edge cases
+
+| Situation | Behavior |
+|-----------|----------|
+| API returned no `seo` (`includeSeo: false` or error) | Builder falls back to root metadata defaults; route must not throw |
+| Empty `json_ld` | Skip `<JsonLdScript>`; HTML meta still from `Metadata` |
+| Missing OG image | Use default `app/opengraph-image.png` |
+
+### Sitemap and robots
+
+- Add **`app/sitemap.ts`** and **`app/robots.ts`** as Next.js conventions when implementing crawl coverage (dynamic sources: query-api objects/posts/users). Not required on every route change — track in a dedicated SEO PR.
+
+### Don’ts
+
+- Do not use **`next/head`** or ad-hoc `<head>` writes in components.
+- Do not build **object** canonical URLs on the web — use **`seo.canonical_url`**.
+- Do not duplicate API fetches in `generateMetadata` — reuse **`cache()`** loaders.
+- Do not place SEO helpers in **`src/shared/`** — use **`src/seo/`**.
+- Do not treat legacy Helmet docs under [`docs/apps/web/spec/pages/user-profile/`](../../docs/apps/web/spec/pages/user-profile/) as App Router patterns.
+
 ## Shared code
 
 - **`src/shared/`** uses the same layer idea as feature modules; import via **`@/shared`**.

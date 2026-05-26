@@ -2873,5 +2873,11 @@
   "object_edit_geo_map_hint": "Click the map to set coordinates, or edit latitude and longitude above.",
   "object_edit_wallet_symbol": "Cryptocurrency",
   "object_edit_wallet_address": "Address",
-  "object_edit_wallet_title": "Title (optional)"
+  "object_edit_wallet_title": "Title (optional)",
+  "site_name": "Open Data Layer",
+  "site_description": "Discover, organize, and earn rewards on the Hive blockchain.",
+  "seo_home_title": "Home",
+  "seo_discover_title": "Discover",
+  "seo_sign_in_title": "Sign in",
+  "seo_sign_in_description": "Sign in with your Hive account to use Waivio."
 }
