@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { FeedColumn } from '@/shared/presentation/layout';
 
@@ -16,7 +16,9 @@ import type {
 } from '../../domain/object-page.types';
 
 import { resolveNestedObjectContentAction } from '../../application/actions/resolve-nested-object-content.action';
+import { resolveNestedObjectPathAction } from '../../application/actions/resolve-nested-object-path.action';
 import { OBJECT_PAGE_VIEW_PATH_PARAM } from '../../domain/object-page-url.constants';
+import { parseViewPathFromUrlSearchParams } from '../../domain/object-page-path';
 import {
   applySortCustomToListItems,
   resolveListItemCatalogSortType,
@@ -153,19 +155,22 @@ export function ObjectPrimaryContent({
 }: ObjectPrimaryContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const skipUrlSyncRef = useRef(false);
 
   const [nestedStack, setNestedStack] = useState<ObjectNestedViewEntry[]>(() =>
     initialNestedStack.map(resolvedToEntry),
   );
 
   const initialPathKey = initialNestedStack.map((e) => e.objectId).join(',');
+  const urlPathKey = searchParams.get(OBJECT_PAGE_VIEW_PATH_PARAM) ?? '';
 
   useEffect(() => {
     setNestedStack(initialNestedStack.map(resolvedToEntry));
   }, [objectId, initialPathKey, initialNestedStack]);
 
   const syncPathToUrl = useCallback(
-    (stack: ObjectNestedViewEntry[]) => {
+    (stack: ObjectNestedViewEntry[], mode: 'push' | 'replace' = 'push') => {
+      skipUrlSyncRef.current = true;
       const u = new URLSearchParams(searchParams.toString());
       if (stack.length === 0) {
         u.delete(OBJECT_PAGE_VIEW_PATH_PARAM);
@@ -174,17 +179,73 @@ export function ObjectPrimaryContent({
       }
       const qs = u.toString();
       const base = `/object/${encodeURIComponent(objectId)}`;
-      router.replace(qs ? `${base}?${qs}` : base, { scroll: false });
+      const href = qs ? `${base}?${qs}` : base;
+      if (mode === 'replace') {
+        router.replace(href, { scroll: false });
+      } else {
+        router.push(href, { scroll: false });
+      }
     },
     [objectId, router, searchParams],
   );
+
+  useEffect(() => {
+    if (skipUrlSyncRef.current) {
+      skipUrlSyncRef.current = false;
+      return;
+    }
+
+    const pathIds = parseViewPathFromUrlSearchParams(searchParams);
+    const pathKey = pathIds.join(',');
+
+    let cancelled = false;
+
+    void (async () => {
+      let needsFetch = false;
+      setNestedStack((prev) => {
+        const stackKey = prev.map((e) => e.objectId).join(',');
+        if (stackKey === pathKey) {
+          return prev;
+        }
+
+        if (
+          pathIds.length <= prev.length &&
+          pathIds.every((id, i) => prev[i]?.objectId === id)
+        ) {
+          return prev.slice(0, pathIds.length);
+        }
+
+        needsFetch = true;
+        return prev;
+      });
+
+      if (!needsFetch || cancelled) {
+        return;
+      }
+
+      if (pathIds.length === 0) {
+        setNestedStack([]);
+        return;
+      }
+
+      const resolved = await resolveNestedObjectPathAction(pathIds);
+      if (cancelled) {
+        return;
+      }
+      setNestedStack(resolved.map(resolvedToEntry));
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [urlPathKey, searchParams]);
 
   const navigateToDepth = useCallback(
     (depth: number) => {
       setNestedStack((prev) => {
         const next =
           depth < 0 ? [] : prev.slice(0, Math.min(depth + 1, prev.length));
-        syncPathToUrl(next);
+        syncPathToUrl(next, 'push');
         return next;
       });
     },
@@ -196,7 +257,7 @@ export function ObjectPrimaryContent({
       const optimistic = pendingEntryFromListItem(item);
       setNestedStack((prev) => {
         const next = [...prev, optimistic];
-        syncPathToUrl(next);
+        syncPathToUrl(next, 'push');
         return next;
       });
 
@@ -204,7 +265,7 @@ export function ObjectPrimaryContent({
       if (!resolved) {
         setNestedStack((prev) => {
           const next = prev.filter((e) => e.objectId !== item.objectId || !e.pending);
-          syncPathToUrl(next);
+          syncPathToUrl(next, 'replace');
           return next;
         });
         return;
@@ -216,7 +277,7 @@ export function ObjectPrimaryContent({
         );
         const withoutDup = withoutPending.filter((e) => e.objectId !== item.objectId);
         const next = [...withoutDup, resolvedToEntry(resolved)];
-        syncPathToUrl(next);
+        syncPathToUrl(next, 'replace');
         return next;
       });
     },

@@ -3,6 +3,7 @@ import {
   type AuthoritySubType,
 } from '@/modules/object/domain/object-page.types';
 import { OBJECT_PAGE_VIEW_PATH_PARAM } from '@/modules/object/domain/object-page-url.constants';
+import { parseViewPathFromSearchParam } from '@/modules/object/domain/object-page-path';
 
 /** Search param for the object profile primary tab (Reviews, Updates, …). */
 export const OBJECT_PAGE_PRIMARY_TAB_PARAM = 'tab';
@@ -39,12 +40,5 @@ export function parseAuthoritySubTypeParam(
 export function parseViewPathParam(
   sp: Record<string, string | string[] | undefined>,
 ): string[] {
-  const raw = firstSearchParam(sp, OBJECT_PAGE_VIEW_PATH_PARAM)?.trim();
-  if (!raw) {
-    return [];
-  }
-  return raw
-    .split(',')
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
+  return parseViewPathFromSearchParam(firstSearchParam(sp, OBJECT_PAGE_VIEW_PATH_PARAM));
 }
