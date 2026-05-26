@@ -2,8 +2,8 @@
 
 /**
  * Ensures apps/<app>/package.json lists every npm package that webpack leaves as
- * external `require("…")` in dist/apps/<app>/main.js. Docker builder stages run
- * `pnpm deploy --legacy --prod` from that manifest — missing deps cause MODULE_NOT_FOUND at runtime.
+ * external `require("…")` or runtime `import("…")` in dist/apps/<app>/main.js.
+ * Docker production stages install from that manifest — missing deps cause MODULE_NOT_FOUND at runtime.
  *
  * Usage (after nx build):
  *   node scripts/check-bundle-deps.cjs
@@ -38,17 +38,21 @@ function npmPackageName(spec) {
   return spec.split('/')[0];
 }
 
+function addRuntimePackage(packages, spec) {
+  if (spec.startsWith('node:')) return;
+  if (NODE_BUILTINS.has(spec)) return;
+  if (spec === 'crypto') return;
+  packages.add(npmPackageName(spec));
+}
+
 function extractExternalPackages(mainJsPath) {
   const content = fs.readFileSync(mainJsPath, 'utf8');
-  const re = /require\("([^"]+)"\)/g;
   const packages = new Set();
-  let m;
-  while ((m = re.exec(content))) {
-    const spec = m[1];
-    if (spec.startsWith('node:')) continue;
-    if (NODE_BUILTINS.has(spec)) continue;
-    if (spec === 'crypto') continue;
-    packages.add(npmPackageName(spec));
+  for (const re of [/require\("([^"]+)"\)/g, /import\("([^"]+)"\)/g]) {
+    let m;
+    while ((m = re.exec(content))) {
+      addRuntimePackage(packages, m[1]);
+    }
   }
   return packages;
 }

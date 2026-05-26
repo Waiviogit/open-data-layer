@@ -6,6 +6,7 @@ import {
   RedisPipelineInterface,
   RedisStreamEntry,
 } from './interface';
+import { parseRedisUri } from './parse-redis-uri';
 import { REDIS_MODULE_OPTIONS } from './redis-client.options';
 import type { RedisModuleOptions } from './redis-client.options';
 
@@ -243,7 +244,8 @@ export class RedisClientFactory
       return this.clients.get(db)!;
     }
 
-    const client = new Redis(this.redisUri, {
+    const client = new Redis({
+      ...parseRedisUri(this.redisUri),
       db,
       retryStrategy: (times) => Math.min(times * 50, 2000),
       maxRetriesPerRequest: 3,
