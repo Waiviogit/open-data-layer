@@ -107,6 +107,7 @@ describe('projectObjectCore menuItem', () => {
         object_id: 'ref-page',
         object_type: 'page',
         fields: { name: 'Page title', image: 'https://x/img.png' },
+        weight: null,
       },
     ],
   ]);
@@ -147,5 +148,60 @@ describe('projectObjectCore menuItem', () => {
     const rows = menu as Record<string, unknown>[];
     expect(rows[0]?.object).toEqual(refMap.get('ref-page'));
     expect(rows[1]?.object).toBeUndefined();
+  });
+});
+
+describe('projectObjectCore listItem', () => {
+  it('embeds addedAtUnix from the parent listItem update on each ref summary', () => {
+    const refMap = new Map<string, RefSummary>([
+      [
+        'child-a',
+        {
+          object_id: 'child-a',
+          object_type: 'page',
+          fields: { name: 'A' },
+          weight: 1,
+        },
+      ],
+      [
+        'child-b',
+        {
+          object_id: 'child-b',
+          object_type: 'page',
+          fields: { name: 'B' },
+          weight: 2,
+        },
+      ],
+    ]);
+
+    const view = baseView({
+      listItem: {
+        update_type: UPDATE_TYPES.LIST_ITEM,
+        cardinality: 'multi',
+        values: [
+          resolvedUpdate({
+            update_type: UPDATE_TYPES.LIST_ITEM,
+            value_text: 'child-a',
+            created_at_unix: 100,
+          }),
+          resolvedUpdate({
+            update_type: UPDATE_TYPES.LIST_ITEM,
+            value_text: 'child-b',
+            created_at_unix: 200,
+          }),
+        ],
+      },
+    });
+
+    const core = projectObjectCore({
+      view,
+      ipfsGatewayBaseUrl: 'https://ipfs.io',
+      refSummariesById: refMap,
+      rankVoteProjection: emptyRankVoteProjection(),
+    });
+
+    const listItem = core.fields.listItem as RefSummary[];
+    expect(listItem.map((s) => s.object_id)).toEqual(['child-a', 'child-b']);
+    expect(listItem.map((s) => s.addedAtUnix)).toEqual([100, 200]);
   });
 });

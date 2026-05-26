@@ -9,6 +9,14 @@ export interface RefSummary {
   object_id: string;
   object_type: string;
   fields: Record<string, unknown>;
+  /** From `objects_core.weight` — used for legacy catalog `rank` sort. */
+  weight: number | null;
+  /** Unix seconds when this ref was added on the parent (`listItem` update `created_at_unix`). */
+  addedAtUnix?: number;
+  /** Direct `listItem` update count; present only for `object_type === 'list'`. */
+  listItemsCount?: number;
+  /** True when viewer has administrative authority on this ref target. */
+  hasAdministrativeAuthority?: boolean;
 }
 
 export interface ProjectedObjectSeo {

@@ -21,15 +21,17 @@ import { OBJECT_LEFT_RAIL_BLOCK_LABEL } from '../domain/object-update-labels';
 
 import type { ProjectedObjectWithCountsView } from './object-resolve.types';
 import {
-  applySortCustomToMenuItems,
+  applySortCustomToListItems,
   projectedAddressDisplayLine,
   projectedEmail,
   projectedGalleryImageUrls,
   projectedIdentifierRows,
   projectedGeoLatLon,
-  projectedMenuItems,
+  projectedListItems,
   projectedObjectLinkRows,
+  projectedPageContent,
   projectedParentRow,
+  resolveMenuItemsForView,
   projectedPrice,
   projectedSortCustom,
   projectedTagCategoryNames,
@@ -66,6 +68,23 @@ function toSwitcherKind(objectType: string): ObjectSwitcherKind {
   return SWITCHER_KINDS.has(objectType as ObjectSwitcherKind)
     ? (objectType as ObjectSwitcherKind)
     : 'default';
+}
+
+/** First navigable menu target for business-like objects (legacy `getDefaultLink`). */
+function computeDefaultMenuObjectId(
+  viewLike: ProjectedObjectView,
+  switcherKind: ObjectSwitcherKind,
+): string | null {
+  if (switcherKind !== 'default') {
+    return null;
+  }
+  for (const item of resolveMenuItemsForView(viewLike)) {
+    const targetId = item.link_to_object?.trim();
+    if (targetId) {
+      return targetId;
+    }
+  }
+  return null;
 }
 
 /** Fallback label when `object_type` from API is empty. */
@@ -152,10 +171,7 @@ function workHoursLines(raw: string): string[] {
 function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock[] {
   const blocks: ObjectLeftRailBlock[] = [];
 
-  const menuOrdered = applySortCustomToMenuItems(
-    projectedMenuItems(viewLike),
-    projectedSortCustom(viewLike),
-  );
+  const menuOrdered = resolveMenuItemsForView(viewLike);
   if (menuOrdered.length > 0) {
     blocks.push({
       kind: MENU_BLOCK_ID,
@@ -427,6 +443,12 @@ export function projectedObjectWithCountsToPageModel(
 
   const leftRailBlocks = buildLeftRailBlocks(viewLike);
   const tagCategoryNames = projectedTagCategoryNames(viewLike);
+  const sortCustom = projectedSortCustom(viewLike);
+  const listItems = applySortCustomToListItems(
+    projectedListItems(viewLike),
+    sortCustom,
+  );
+  const pageContent = projectedPageContent(viewLike);
 
   return {
     objectId: api.object_id,
@@ -442,6 +464,10 @@ export function projectedObjectWithCountsToPageModel(
         : null,
     objectTypeKey: objectTypeRaw,
     objectType: switcher,
+    defaultMenuObjectId: computeDefaultMenuObjectId(viewLike, switcher),
+    listItems,
+    listItemsSortCustom: sortCustom,
+    pageContent,
     rating01To5: objectFields.ratingStars01To5(viewLike),
     primaryTabs: primaryTabs(api.updates_count, api.followers_count),
     feedSubTabs: FEED_SUB_TABS,

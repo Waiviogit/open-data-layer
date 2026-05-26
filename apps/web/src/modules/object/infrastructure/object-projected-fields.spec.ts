@@ -2,6 +2,11 @@ import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-
 
 import {
   applySortCustomToMenuItems,
+  applySortCustomToListItems,
+  projectedListItems,
+  projectedMenuItemsFromListItems,
+  resolveMenuItemsForView,
+  sortListItemsListsFirst,
   projectedGeoLatLon,
   projectedIdentifierRows,
   projectedMenuItems,
@@ -53,6 +58,241 @@ describe('object-projected-fields', () => {
     const v = viewWithMenu(menu, sort);
     const items = applySortCustomToMenuItems(projectedMenuItems(v), projectedSortCustom(v));
     expect(items.map((i) => i.displayTitle)).toEqual(['A']);
+  });
+
+  it('sorts list-type items before other object types', () => {
+    const items = sortListItemsListsFirst([
+      { objectId: 'p1', objectType: 'page', name: 'Page', imageUrl: null, weight: null },
+      { objectId: 'l1', objectType: 'list', name: 'List A', imageUrl: null, weight: null },
+      { objectId: 'b1', objectType: 'business', name: 'Biz', imageUrl: null, weight: null },
+      { objectId: 'l2', objectType: 'list', name: 'List B', imageUrl: null, weight: null },
+    ]);
+    expect(items.map((i) => i.objectId)).toEqual(['l1', 'l2', 'p1', 'b1']);
+  });
+
+  it('applySortCustomToListItems uses rank (weight desc) when sortCustom is absent', () => {
+    const items = [
+      {
+        objectId: 'dips',
+        objectType: 'list',
+        name: 'Dips and Salsas',
+        imageUrl: null,
+        weight: 0.00001534,
+      },
+      {
+        objectId: 'finger',
+        objectType: 'list',
+        name: 'Finger Foods',
+        imageUrl: null,
+        weight: 0.00003854,
+      },
+      {
+        objectId: 'street',
+        objectType: 'list',
+        name: 'Street Food Favorites',
+        imageUrl: null,
+        weight: 0.000037,
+      },
+    ];
+    const sorted = applySortCustomToListItems(items, null);
+    expect(sorted.map((i) => i.objectId)).toEqual(['finger', 'street', 'dips']);
+  });
+
+  it('applySortCustomToListItems sorts by addedAtUnix for recency modes', () => {
+    const items = [
+      {
+        objectId: 'old',
+        objectType: 'page',
+        name: 'Old',
+        imageUrl: null,
+        weight: null,
+        addedAtUnix: 100,
+      },
+      {
+        objectId: 'new',
+        objectType: 'page',
+        name: 'New',
+        imageUrl: null,
+        weight: null,
+        addedAtUnix: 300,
+      },
+      {
+        objectId: 'mid',
+        objectType: 'page',
+        name: 'Mid',
+        imageUrl: null,
+        weight: null,
+        addedAtUnix: 200,
+      },
+    ];
+    expect(
+      applySortCustomToListItems(items, {
+        include: [],
+        exclude: [],
+        sortType: 'reverse_recency',
+      }).map((i) => i.objectId),
+    ).toEqual(['new', 'mid', 'old']);
+    expect(
+      applySortCustomToListItems(items, {
+        include: [],
+        exclude: [],
+        sortType: 'recency',
+      }).map((i) => i.objectId),
+    ).toEqual(['old', 'mid', 'new']);
+  });
+
+  it('applySortCustomToListItems moves lists first after include ordering', () => {
+    const items = [
+      { objectId: 'p1', objectType: 'page', name: 'Page', imageUrl: null, weight: null },
+      { objectId: 'l1', objectType: 'list', name: 'List', imageUrl: null, weight: null },
+    ];
+    const sorted = applySortCustomToListItems(items, { include: ['p1', 'l1'], exclude: [] });
+    expect(sorted.map((i) => i.objectId)).toEqual(['l1', 'p1']);
+  });
+
+  it('projectedListItems deduplicates rows with the same objectId', () => {
+    const v: ProjectedObjectView = {
+      object_id: 'parent-list',
+      object_type: 'list',
+      semantic_type: null,
+      weight: null,
+      fields: {
+        listItem: [
+          {
+            object_id: 'bev-test-list-not-bad-advice-2',
+            object_type: 'list',
+            fields: { name: 'test list not bad advice 2' },
+          },
+          {
+            object_id: 'bev-test-list-not-bad-advice-2',
+            object_type: 'list',
+            fields: { name: 'test list not bad advice 2 duplicate' },
+          },
+          {
+            object_id: 'other-list',
+            object_type: 'list',
+            fields: { name: 'other' },
+          },
+        ],
+      },
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+    };
+    const items = projectedListItems(v);
+    expect(items.map((i) => i.objectId)).toEqual([
+      'bev-test-list-not-bad-advice-2',
+      'other-list',
+    ]);
+    expect(items[0]?.name).toBe('test list not bad advice 2');
+  });
+
+  it('projectedListItems reads description and tagCategoryLabels from ref summary fields', () => {
+    const v: ProjectedObjectView = {
+      object_id: 'parent-list',
+      object_type: 'list',
+      semantic_type: null,
+      weight: null,
+      fields: {
+        listItem: [
+          {
+            object_id: 'shop-1',
+            object_type: 'shop',
+            weight: 1.5,
+            fields: {
+              name: 'Italian Deli',
+              image: 'https://example.com/img.jpg',
+              description: 'Fresh pasta and sandwiches.',
+              tagCategoryItem: [
+                { category: 'cuisine', value: 'Italian' },
+                { category: 'region', value: 'Europe' },
+                { category: 'style', value: 'Casual' },
+              ],
+            },
+          },
+        ],
+      },
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+    };
+    const items = projectedListItems(v);
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({
+      objectId: 'shop-1',
+      objectType: 'shop',
+      name: 'Italian Deli',
+      imageUrl: 'https://example.com/img.jpg',
+      description: 'Fresh pasta and sandwiches.',
+      tagCategoryLabels: ['Europe', 'Casual'],
+      weight: 1.5,
+    });
+  });
+
+  it('falls back to listItem refs when menuItem updates are absent', () => {
+    const v: ProjectedObjectView = {
+      object_id: 'ylr-waivio',
+      object_type: 'business',
+      semantic_type: null,
+      weight: null,
+      fields: {
+        listItem: [
+          {
+            object_id: 'oxa-legal',
+            object_type: 'list',
+            fields: { name: 'Legal' },
+          },
+          {
+            object_id: '6vcmab-tutorials',
+            object_type: 'list',
+            fields: { name: 'Tutorials' },
+          },
+          {
+            object_id: 'mim-transform-your-passion-into-profit-with-waivio',
+            object_type: 'page',
+            fields: { name: 'Social Shopping' },
+          },
+        ],
+        sortCustom: {
+          include: [
+            'mim-transform-your-passion-into-profit-with-waivio',
+            '6vcmab-tutorials',
+            'oxa-legal',
+          ],
+          exclude: [],
+        },
+      },
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+    };
+    const items = resolveMenuItemsForView(v);
+    expect(items.map((i) => i.displayTitle)).toEqual([
+      'Tutorials',
+      'Legal',
+      'Social Shopping',
+    ]);
+    expect(items[0]?.link_to_object).toBe('6vcmab-tutorials');
+    expect(items[0]?.object_type).toBe('list');
+  });
+
+  it('prefers menuItem updates over listItem fallback', () => {
+    const v: ProjectedObjectView = {
+      object_id: 'x',
+      object_type: 'business',
+      semantic_type: null,
+      weight: null,
+      fields: {
+        menuItem: [
+          { title: 'From menuItem', style: 'standard', link_to_web: 'https://example.com' },
+        ],
+        listItem: [
+          { object_id: 'child-list', object_type: 'list', fields: { name: 'List child' } },
+        ],
+      },
+      hasAdministrativeAuthority: false,
+      hasOwnershipAuthority: false,
+    };
+    const items = resolveMenuItemsForView(v);
+    expect(items).toHaveLength(1);
+    expect(items[0]?.displayTitle).toBe('From menuItem');
   });
 
   it('parses identifier rows from projected fields.identifier', () => {

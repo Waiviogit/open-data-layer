@@ -1,4 +1,5 @@
 import type { ProjectedMenuItem } from './projected-menu-item.types';
+import type { ProjectedListItem, ProjectedSortCustom } from './projected-list-item.types';
 
 /** Logical switcher kinds aligned with legacy `wobj-switcher-by-type.md`. */
 export type ObjectSwitcherKind =
@@ -36,6 +37,21 @@ export type ObjectFeedSubTabView = {
   /** Display label from API or mock — not an i18n key. */
   label: string;
 };
+
+/** Center-column nested view entry (list/page stack). */
+export type ObjectNestedViewEntry = {
+  objectId: string;
+  name: string;
+  objectType: ObjectSwitcherKind;
+  listItems: ProjectedListItem[];
+  /** Raw `sortCustom` for client-side catalog sort override. */
+  listItemsSortCustom: ProjectedSortCustom | null;
+  pageContentHtml: string | null;
+  pending: boolean;
+};
+
+/** Resolved nested entry without pending flag (SSR / server action). */
+export type ObjectNestedViewResolved = Omit<ObjectNestedViewEntry, 'pending'>;
 
 /** Ordered blocks for the left rail (legacy `ObjectInfo` stack). */
 export type ObjectLeftRailBlock =
@@ -168,6 +184,14 @@ export type ObjectPageViewModel = {
   /** Raw `object_type` from query-api / registry key (e.g. `shop`, `place`). */
   objectTypeKey: string;
   objectType: ObjectSwitcherKind;
+  /** First menu item target for business-like objects; shown in center when URL has no `?path=`. */
+  defaultMenuObjectId: string | null;
+  /** List catalog rows (`listItem` updates), order from `sortCustom` when present. */
+  listItems: ProjectedListItem[];
+  /** Raw `sortCustom` for client-side catalog sort override. */
+  listItemsSortCustom: ProjectedSortCustom | null;
+  /** Raw page body (`pageContent` update) for page-type objects. */
+  pageContent: string | null;
   rating01To5: number | null;
   primaryTabs: ObjectPrimaryTabView[];
   feedSubTabs: ObjectFeedSubTabView[];

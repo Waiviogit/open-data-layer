@@ -301,7 +301,7 @@ export function ObjectLeftRailPanel({
                   count={railBlockCount('menuItems')}
                 />
                 <div className="mt-3">
-                  <ObjectMenuItemsStatic items={block.items} />
+                  <ObjectMenuItemsStatic items={block.items} hostObjectId={objectId} />
                 </div>
               </aside>
             );

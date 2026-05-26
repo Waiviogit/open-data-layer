@@ -44,6 +44,26 @@ export class ObjectUpdatesRepository {
     }
   }
 
+  async countListItemsByObjectIds(objectIds: string[]): Promise<Map<string, number>> {
+    if (objectIds.length === 0) {
+      return new Map();
+    }
+    try {
+      const rows = await this.db
+        .selectFrom('object_updates')
+        .select(['object_id', sql<number>`count(distinct value_text)::int`.as('count')])
+        .where('object_id', 'in', objectIds)
+        .where('update_type', '=', 'listItem')
+        .where('value_text', 'is not', null)
+        .groupBy('object_id')
+        .execute();
+      return new Map(rows.map((r) => [r.object_id, Number(r.count)]));
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      return new Map();
+    }
+  }
+
   async findByUpdateId(updateId: string) {
     return this.db
       .selectFrom('object_updates')

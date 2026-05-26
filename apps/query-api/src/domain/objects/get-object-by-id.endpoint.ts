@@ -77,6 +77,7 @@ export class GetObjectByIdEndpoint {
       this.objectProjectionService.project(view, {
         locale: input.locale,
         governanceObjectIdFromHeader: input.governanceObjectIdFromHeader,
+        governance,
         viewerAccount: input.viewerAccount,
         rankVoteProjection,
         includeSeo: true,

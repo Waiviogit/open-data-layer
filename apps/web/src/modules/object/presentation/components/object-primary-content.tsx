@@ -1,15 +1,31 @@
 'use client';
 
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { FeedColumn } from '@/shared/presentation/layout';
 
+import type { ProjectedListItem, ProjectedSortCustom } from '../../domain/projected-list-item.types';
+import type { CatalogListSortOption } from './object-list-content';
 import type {
   ObjectFeedSubTabView,
+  ObjectNestedViewEntry,
+  ObjectNestedViewResolved,
   ObjectSwitcherKind,
 } from '../../domain/object-page.types';
 
+import { resolveNestedObjectContentAction } from '../../application/actions/resolve-nested-object-content.action';
+import { OBJECT_PAGE_VIEW_PATH_PARAM } from '../../domain/object-page-url.constants';
+import {
+  applySortCustomToListItems,
+  resolveListItemCatalogSortType,
+} from '../../infrastructure/object-projected-fields';
+
+import { ObjectCenterBreadcrumbs } from './object-center-breadcrumbs';
 import { ObjectFeedSubNav } from './object-feed-sub-nav';
+import { ObjectListContent } from './object-list-content';
+import { ObjectNestedPageBody } from './object-nested-page-body';
 import { ObjectWriteReviewPrompt } from './object-write-review-prompt';
 
 const REVIEWS_SEGMENT = 'reviews';
@@ -58,6 +74,32 @@ function centerHintForKind(kind: ObjectSwitcherKind): string {
   }
 }
 
+function resolvedToEntry(resolved: ObjectNestedViewResolved): ObjectNestedViewEntry {
+  return { ...resolved, pending: false };
+}
+
+function overrideSortCustomForSort(
+  base: ProjectedSortCustom | null,
+  sortType: CatalogListSortOption,
+): ProjectedSortCustom | null {
+  if (sortType === 'custom') {
+    return base;
+  }
+  return { include: [], exclude: base?.exclude ?? [], sortType };
+}
+
+function pendingEntryFromListItem(item: ProjectedListItem): ObjectNestedViewEntry {
+  return {
+    objectId: item.objectId,
+    name: item.name,
+    objectType: item.objectType as ObjectSwitcherKind,
+    listItems: [],
+    listItemsSortCustom: null,
+    pageContentHtml: null,
+    pending: true,
+  };
+}
+
 const MOCK_STUB_HINT =
   'Tab content will load here when routes and APIs are connected.';
 const MOCK_FEED_POSTS_HINT =
@@ -70,13 +112,24 @@ export type ObjectPrimaryContentProps = {
   feedSubTabs: ObjectFeedSubTabView[];
   title: string;
   objectType: ObjectSwitcherKind;
+  listItems: ProjectedListItem[];
+  /** Raw `sortCustom` for the top-level list object. */
+  listItemsSortCustom?: ProjectedSortCustom | null;
   onFeedSubSelect: (segment: string) => void;
+  /** SSR-restored nested stack from `?path=`. */
+  initialNestedStack?: ObjectNestedViewResolved[];
+  /** SSR-resolved first menu item when URL has no `?path=` (business-like objects). */
+  defaultNestedContent?: ObjectNestedViewResolved | null;
   /** Injected feed (client) when the Updates tab is active. */
   objectUpdatesFeed?: ReactNode;
   /** Injected feed (client) when the Followers tab is active. */
   objectFollowersFeed?: ReactNode | null;
   /** Injected feed (client) when the Authority tab is active. */
   objectAuthorityFeed?: ReactNode | null;
+  /** Server-rendered page body for top-level page-type object. */
+  objectPageBody?: ReactNode;
+  viewerUsername?: string | null;
+  onRequireLogin?: () => void;
 };
 
 export function ObjectPrimaryContent({
@@ -86,11 +139,214 @@ export function ObjectPrimaryContent({
   feedSubTabs,
   title,
   objectType,
+  listItems,
+  listItemsSortCustom = null,
   onFeedSubSelect,
+  initialNestedStack = [],
+  defaultNestedContent = null,
   objectUpdatesFeed,
   objectFollowersFeed,
   objectAuthorityFeed,
+  objectPageBody,
+  viewerUsername,
+  onRequireLogin,
 }: ObjectPrimaryContentProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [nestedStack, setNestedStack] = useState<ObjectNestedViewEntry[]>(() =>
+    initialNestedStack.map(resolvedToEntry),
+  );
+
+  const initialPathKey = initialNestedStack.map((e) => e.objectId).join(',');
+
+  useEffect(() => {
+    setNestedStack(initialNestedStack.map(resolvedToEntry));
+  }, [objectId, initialPathKey, initialNestedStack]);
+
+  const syncPathToUrl = useCallback(
+    (stack: ObjectNestedViewEntry[]) => {
+      const u = new URLSearchParams(searchParams.toString());
+      if (stack.length === 0) {
+        u.delete(OBJECT_PAGE_VIEW_PATH_PARAM);
+      } else {
+        u.set(OBJECT_PAGE_VIEW_PATH_PARAM, stack.map((e) => e.objectId).join(','));
+      }
+      const qs = u.toString();
+      const base = `/object/${encodeURIComponent(objectId)}`;
+      router.replace(qs ? `${base}?${qs}` : base, { scroll: false });
+    },
+    [objectId, router, searchParams],
+  );
+
+  const navigateToDepth = useCallback(
+    (depth: number) => {
+      setNestedStack((prev) => {
+        const next =
+          depth < 0 ? [] : prev.slice(0, Math.min(depth + 1, prev.length));
+        syncPathToUrl(next);
+        return next;
+      });
+    },
+    [syncPathToUrl],
+  );
+
+  const navigateInColumn = useCallback(
+    async (item: ProjectedListItem) => {
+      const optimistic = pendingEntryFromListItem(item);
+      setNestedStack((prev) => {
+        const next = [...prev, optimistic];
+        syncPathToUrl(next);
+        return next;
+      });
+
+      const resolved = await resolveNestedObjectContentAction(item.objectId);
+      if (!resolved) {
+        setNestedStack((prev) => {
+          const next = prev.filter((e) => e.objectId !== item.objectId || !e.pending);
+          syncPathToUrl(next);
+          return next;
+        });
+        return;
+      }
+
+      setNestedStack((prev) => {
+        const withoutPending = prev.filter(
+          (e) => !(e.objectId === item.objectId && e.pending),
+        );
+        const withoutDup = withoutPending.filter((e) => e.objectId !== item.objectId);
+        const next = [...withoutDup, resolvedToEntry(resolved)];
+        syncPathToUrl(next);
+        return next;
+      });
+    },
+    [syncPathToUrl],
+  );
+
+  const currentView = useMemo(() => {
+    const top = nestedStack.at(-1);
+    if (top) {
+      return {
+        objectType: top.objectType,
+        listItems: top.listItems,
+        listItemsSortCustom: top.listItemsSortCustom,
+        pageContentHtml: top.pageContentHtml,
+        pending: top.pending,
+        viewKey: top.objectId,
+      };
+    }
+    if (defaultNestedContent) {
+      return {
+        objectType: defaultNestedContent.objectType,
+        listItems: defaultNestedContent.listItems,
+        listItemsSortCustom: defaultNestedContent.listItemsSortCustom,
+        pageContentHtml: defaultNestedContent.pageContentHtml,
+        pending: false,
+        viewKey: defaultNestedContent.objectId,
+      };
+    }
+    return {
+      objectType,
+      listItems,
+      listItemsSortCustom,
+      pageContentHtml: null as string | null,
+      pending: false,
+      viewKey: objectId,
+    };
+  }, [nestedStack, defaultNestedContent, objectType, listItems, listItemsSortCustom, objectId]);
+
+  const [activeSortType, setActiveSortType] = useState<CatalogListSortOption>(() =>
+    resolveListItemCatalogSortType(listItemsSortCustom),
+  );
+
+  useEffect(() => {
+    setActiveSortType(resolveListItemCatalogSortType(currentView.listItemsSortCustom));
+  }, [currentView.viewKey, currentView.listItemsSortCustom]);
+
+  const sortedListItems = useMemo(() => {
+    if (currentView.objectType !== 'list') {
+      return currentView.listItems;
+    }
+    return applySortCustomToListItems(
+      currentView.listItems,
+      overrideSortCustomForSort(currentView.listItemsSortCustom, activeSortType),
+    );
+  }, [activeSortType, currentView]);
+
+  const renderTypeContent = useCallback((): ReactNode => {
+    if (currentView.pending) {
+      if (currentView.objectType === 'list') {
+        return (
+          <ObjectListContent
+            items={[]}
+            onNavigateInColumn={navigateInColumn}
+            pending
+            sortCustom={currentView.listItemsSortCustom}
+            activeSortType={activeSortType}
+            onSortChange={setActiveSortType}
+            viewerUsername={viewerUsername}
+            onRequireLogin={onRequireLogin}
+          />
+        );
+      }
+      return (
+        <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
+          Loading…
+        </div>
+      );
+    }
+
+    if (currentView.objectType === 'list') {
+      return (
+        <ObjectListContent
+          items={sortedListItems}
+          onNavigateInColumn={navigateInColumn}
+          sortCustom={currentView.listItemsSortCustom}
+          activeSortType={activeSortType}
+          onSortChange={setActiveSortType}
+          viewerUsername={viewerUsername}
+          onRequireLogin={onRequireLogin}
+        />
+      );
+    }
+
+    if (currentView.objectType === 'page') {
+      if (nestedStack.length === 0 && objectPageBody) {
+        return objectPageBody;
+      }
+      if (currentView.pageContentHtml) {
+        return <ObjectNestedPageBody html={currentView.pageContentHtml} />;
+      }
+      return (
+        <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
+          <p className="text-fg">This page has no content yet.</p>
+        </div>
+      );
+    }
+
+    const hint = centerHintForKind(currentView.objectType);
+    return (
+      <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
+        <p className="text-fg">
+          <span className="font-medium">{title}</span>
+          {' — '}
+          {hint}
+        </p>
+        <p className="mt-3 text-muted">{MOCK_FEED_POSTS_HINT}</p>
+      </div>
+    );
+  }, [
+    activeSortType,
+    currentView,
+    navigateInColumn,
+    nestedStack.length,
+    objectPageBody,
+    sortedListItems,
+    title,
+    viewerUsername,
+    onRequireLogin,
+  ]);
+
   if (activePrimarySegment !== REVIEWS_SEGMENT) {
     if (activePrimarySegment === 'authority' && objectAuthorityFeed != null) {
       return (
@@ -159,12 +415,22 @@ export function ObjectPrimaryContent({
     );
   }
 
-  const hint = centerHintForKind(objectType);
+  const showReviewsExtras =
+    currentView.objectType === 'default' &&
+    nestedStack.length === 0 &&
+    !defaultNestedContent;
 
   return (
     <FeedColumn>
-      <ObjectWriteReviewPrompt />
-      {feedSubTabs.length > 0 ? (
+      {nestedStack.length > 0 ? (
+        <ObjectCenterBreadcrumbs
+          rootName={title}
+          stack={nestedStack.map((e) => ({ objectId: e.objectId, name: e.name }))}
+          onNavigateTo={navigateToDepth}
+        />
+      ) : null}
+      {showReviewsExtras ? <ObjectWriteReviewPrompt /> : null}
+      {showReviewsExtras && feedSubTabs.length > 0 ? (
         <div className="rounded-card border border-border bg-bg px-card-padding pt-2">
           <ObjectFeedSubNav
             tabs={feedSubTabs}
@@ -173,14 +439,7 @@ export function ObjectPrimaryContent({
           />
         </div>
       ) : null}
-      <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
-        <p className="text-fg">
-          <span className="font-medium">{title}</span>
-          {' — '}
-          {hint}
-        </p>
-        <p className="mt-3 text-muted">{MOCK_FEED_POSTS_HINT}</p>
-      </div>
+      {renderTypeContent()}
     </FeedColumn>
   );
 }

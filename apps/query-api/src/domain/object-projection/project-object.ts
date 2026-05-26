@@ -105,11 +105,16 @@ function projectObjectRefField(
 ): RefSummary | RefSummary[] | null {
   const valid = field.values.filter((u) => u.validity_status === 'VALID');
   if (def.cardinality === 'single') {
-    const id = valid[0]?.value_text?.trim();
+    const u = valid[0];
+    const id = u?.value_text?.trim();
     if (!id) {
       return null;
     }
-    return refSummariesById.get(id) ?? null;
+    const s = refSummariesById.get(id);
+    if (!s) {
+      return null;
+    }
+    return u ? { ...s, addedAtUnix: u.created_at_unix } : s;
   }
   const summaries: RefSummary[] = [];
   for (const u of valid) {
@@ -119,7 +124,10 @@ function projectObjectRefField(
     }
     const s = refSummariesById.get(id);
     if (s) {
-      summaries.push(s);
+      summaries.push({
+        ...s,
+        addedAtUnix: u.created_at_unix,
+      });
     }
   }
   return summaries;

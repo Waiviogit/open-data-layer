@@ -1,8 +1,19 @@
 import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
 
 import type { ProjectedMenuItem, ProjectedMenuItemObject } from '../domain/projected-menu-item.types';
+import type {
+  CatalogListSortType,
+  ProjectedListItem,
+  ProjectedListItemRatingAspect,
+  ProjectedSortCustom,
+} from '../domain/projected-list-item.types';
 
 export type { ProjectedMenuItem } from '../domain/projected-menu-item.types';
+export type {
+  CatalogListSortType,
+  ProjectedListItem,
+  ProjectedSortCustom,
+} from '../domain/projected-list-item.types';
 
 /** Structured address (`address` update). */
 export type ProjectedAddress = {
@@ -12,12 +23,6 @@ export type ProjectedAddress = {
   country: string;
   state?: string;
   suite?: string;
-};
-
-/** Custom menu ordering (`sortCustom` update). */
-export type ProjectedSortCustom = {
-  include: string[];
-  exclude: string[];
 };
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -200,6 +205,328 @@ export function projectedParentRow(o: ProjectedObjectView): ProjectedParentRow |
   };
 }
 
+function refSummaryTagCategoryLabels(fields: Record<string, unknown>): string[] {
+  const raw = fields['tagCategoryItem'];
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  const labels: string[] = [];
+  for (const item of raw) {
+    if (item != null && typeof item === 'object' && !Array.isArray(item) && 'value' in item) {
+      const v = (item as { value?: unknown }).value;
+      if (typeof v === 'string' && v.length > 0) {
+        labels.push(v);
+      }
+    }
+  }
+  return labels.slice(-2);
+}
+
+function refSummaryAggregateRatingAspects(
+  fields: Record<string, unknown>,
+): ProjectedListItemRatingAspect[] {
+  const raw = fields['aggregateRating'];
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  const out: ProjectedListItemRatingAspect[] = [];
+  for (const item of raw) {
+    if (item == null || typeof item !== 'object' || Array.isArray(item)) {
+      continue;
+    }
+    const o = item as Record<string, unknown>;
+    const dimensionRaw = o.dimension;
+    if (typeof dimensionRaw !== 'string') {
+      continue;
+    }
+    const dimension = dimensionRaw.trim();
+    if (dimension.length === 0) {
+      continue;
+    }
+    const averageRating =
+      typeof o.averageRating === 'number' && Number.isFinite(o.averageRating)
+        ? o.averageRating
+        : null;
+    const userRating =
+      typeof o.userRating === 'number' && Number.isFinite(o.userRating) ? o.userRating : null;
+    const tv = o.totalVoters;
+    const totalVoters =
+      typeof tv === 'number' && Number.isFinite(tv) && tv >= 0 ? Math.floor(tv) : 0;
+    const updateIdRaw = o.update_id;
+    const update_id =
+      typeof updateIdRaw === 'string' && updateIdRaw.trim().length > 0
+        ? updateIdRaw.trim()
+        : null;
+    out.push({ update_id, dimension, averageRating, userRating, totalVoters });
+  }
+  return out;
+}
+
+function refSummaryToListItem(row: Record<string, unknown>): ProjectedListItem | null {
+  const object_id = readString(row['object_id']);
+  const object_type = readString(row['object_type']);
+  if (!object_id || !object_type) {
+    return null;
+  }
+  const fields = row['fields'];
+  const nameFromFields =
+    isRecord(fields) ? readString(fields['name']) : undefined;
+  const imageFromFields =
+    isRecord(fields) && typeof fields['image'] === 'string'
+      ? readString(fields['image'])
+      : undefined;
+  const descriptionFromFields =
+    isRecord(fields) ? readString(fields['description']) : undefined;
+  const tagCategoryLabels = isRecord(fields) ? refSummaryTagCategoryLabels(fields) : [];
+  const aggregateRatingAspects = isRecord(fields)
+    ? refSummaryAggregateRatingAspects(fields)
+    : [];
+  const hasAdministrativeAuthority = row['hasAdministrativeAuthority'] === true;
+  const rawCount = row['listItemsCount'];
+  const listItemsCount =
+    typeof rawCount === 'number' && Number.isFinite(rawCount) ? rawCount : undefined;
+  const weight = toFiniteNumber(row['weight']);
+  const addedAtUnix = toFiniteNumber(row['addedAtUnix']);
+  return {
+    objectId: object_id,
+    objectType: object_type,
+    name: nameFromFields ?? object_id,
+    imageUrl: imageFromFields ?? null,
+    weight,
+    ...(addedAtUnix !== null ? { addedAtUnix } : {}),
+    ...(listItemsCount !== undefined ? { listItemsCount } : {}),
+    ...(descriptionFromFields ? { description: descriptionFromFields } : {}),
+    ...(tagCategoryLabels.length > 0 ? { tagCategoryLabels } : {}),
+    ...(aggregateRatingAspects.length > 0 ? { aggregateRatingAspects } : {}),
+    ...(hasAdministrativeAuthority ? { hasAdministrativeAuthority: true } : {}),
+  };
+}
+
+export function projectedListItems(o: ProjectedObjectView): ProjectedListItem[] {
+  const raw = o.fields.listItem;
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  const seen = new Set<string>();
+  const out: ProjectedListItem[] = [];
+  for (const row of raw) {
+    if (!isRecord(row)) {
+      continue;
+    }
+    const item = refSummaryToListItem(row);
+    if (item && !seen.has(item.objectId)) {
+      seen.add(item.objectId);
+      out.push(item);
+    }
+  }
+  return out;
+}
+
+function listItemMatchesKey(item: ProjectedListItem, key: string): boolean {
+  if (item.objectId === key || item.name === key) {
+    return true;
+  }
+  return false;
+}
+
+function listItemExcluded(item: ProjectedListItem, exclude: string[]): boolean {
+  return exclude.some((k) => listItemMatchesKey(item, k));
+}
+
+const CATALOG_LIST_SORT_TYPES = new Set<CatalogListSortType>([
+  'rank',
+  'by-name-asc',
+  'by-name-desc',
+  'recency',
+  'reverse_recency',
+]);
+
+/** Legacy `CatalogWrap.defaultSortBy` — custom when include is set, else explicit sortType or rank. */
+export function resolveListItemCatalogSortType(
+  sort: ProjectedSortCustom | null,
+): CatalogListSortType | 'custom' {
+  if (sort?.sortType === 'custom' && sort.include.length > 0) {
+    return 'custom';
+  }
+  if (sort?.sortType && CATALOG_LIST_SORT_TYPES.has(sort.sortType as CatalogListSortType)) {
+    return sort.sortType as CatalogListSortType;
+  }
+  if (sort && sort.include.length > 0) {
+    return 'custom';
+  }
+  return 'rank';
+}
+
+function compareListItemsByRank(a: ProjectedListItem, b: ProjectedListItem): number {
+  const aw = a.weight ?? 0;
+  const bw = b.weight ?? 0;
+  if (bw !== aw) {
+    return bw - aw;
+  }
+  return a.name.localeCompare(b.name);
+}
+
+function compareListItemsByNameAsc(a: ProjectedListItem, b: ProjectedListItem): number {
+  return a.name.localeCompare(b.name);
+}
+
+function compareListItemsByNameDesc(a: ProjectedListItem, b: ProjectedListItem): number {
+  return b.name.localeCompare(a.name);
+}
+
+function compareListItemsByAddedAtAsc(a: ProjectedListItem, b: ProjectedListItem): number {
+  const aw = a.addedAtUnix ?? 0;
+  const bw = b.addedAtUnix ?? 0;
+  if (aw !== bw) {
+    return aw - bw;
+  }
+  return a.name.localeCompare(b.name);
+}
+
+function compareListItemsByAddedAtDesc(a: ProjectedListItem, b: ProjectedListItem): number {
+  const aw = a.addedAtUnix ?? 0;
+  const bw = b.addedAtUnix ?? 0;
+  if (bw !== aw) {
+    return bw - aw;
+  }
+  return a.name.localeCompare(b.name);
+}
+
+function sortListItemsByCatalogType(
+  items: ProjectedListItem[],
+  sortType: CatalogListSortType,
+): ProjectedListItem[] {
+  const copy = [...items];
+  switch (sortType) {
+    case 'rank':
+      copy.sort(compareListItemsByRank);
+      break;
+    case 'by-name-asc':
+      copy.sort(compareListItemsByNameAsc);
+      break;
+    case 'by-name-desc':
+      copy.sort(compareListItemsByNameDesc);
+      break;
+    case 'recency':
+      copy.sort(compareListItemsByAddedAtAsc);
+      break;
+    case 'reverse_recency':
+      copy.sort(compareListItemsByAddedAtDesc);
+      break;
+    default: {
+      const _exhaustive: never = sortType;
+      return _exhaustive;
+    }
+  }
+  return copy;
+}
+
+function applySortCustomIncludeOrder(
+  items: ProjectedListItem[],
+  sort: ProjectedSortCustom,
+): ProjectedListItem[] {
+  const picked: ProjectedListItem[] = [];
+  const used = new Set<ProjectedListItem>();
+  for (const key of sort.include) {
+    const found = items.find((item) => !used.has(item) && listItemMatchesKey(item, key));
+    if (found) {
+      picked.push(found);
+      used.add(found);
+    }
+  }
+  for (const item of items) {
+    if (!used.has(item)) {
+      picked.push(item);
+    }
+  }
+  return picked;
+}
+
+/** Legacy Waivio: list-type children always render before other object types. */
+export function sortListItemsListsFirst(items: ProjectedListItem[]): ProjectedListItem[] {
+  const lists: ProjectedListItem[] = [];
+  const nonLists: ProjectedListItem[] = [];
+  for (const item of items) {
+    if (item.objectType === 'list') {
+      lists.push(item);
+    } else {
+      nonLists.push(item);
+    }
+  }
+  return [...lists, ...nonLists];
+}
+
+/**
+ * Legacy catalog ordering: `sortCustom` include/exclude, else default `rank` (weight desc).
+ * List-type items are always moved to the front (`sortListItemsListsFirst`).
+ */
+export function applySortCustomToListItems(
+  items: ProjectedListItem[],
+  sort: ProjectedSortCustom | null,
+): ProjectedListItem[] {
+  const base = sort ? items.filter((item) => !listItemExcluded(item, sort.exclude)) : items;
+  const sortMode = resolveListItemCatalogSortType(sort);
+  const ordered =
+    sortMode === 'custom' && sort
+      ? applySortCustomIncludeOrder(base, sort)
+      : sortListItemsByCatalogType(base, sortMode);
+  return sortListItemsListsFirst(ordered);
+}
+
+export function projectedPageContent(o: ProjectedObjectView): string | null {
+  const raw = o.fields.pageContent;
+  if (typeof raw === 'string' && raw.trim().length > 0) {
+    return raw.trim();
+  }
+  return null;
+}
+
+/**
+ * Legacy Waivio business menus are often stored as `listItem` refs (menuList/menuPage)
+ * ordered by `sortCustom`, not as `menuItem` JSON updates.
+ */
+export function projectedMenuItemsFromListItems(
+  listItems: ProjectedListItem[],
+): ProjectedMenuItem[] {
+  const out: ProjectedMenuItem[] = [];
+  for (const item of listItems) {
+    out.push({
+      displayTitle: item.name,
+      style: 'standard',
+      link_to_object: item.objectId,
+      object_type: item.objectType,
+      ...(item.imageUrl ? { image: item.imageUrl } : {}),
+      object: {
+        object_id: item.objectId,
+        object_type: item.objectType,
+        fields: {
+          name: item.name,
+          ...(item.imageUrl ? { image: item.imageUrl } : {}),
+        },
+      },
+    });
+  }
+  return out;
+}
+
+export function resolveMenuItemsForView(
+  viewLike: ProjectedObjectView,
+): ProjectedMenuItem[] {
+  const sortCustom = projectedSortCustom(viewLike);
+  const fromMenuItem = applySortCustomToMenuItems(
+    projectedMenuItems(viewLike),
+    sortCustom,
+  );
+  if (fromMenuItem.length > 0) {
+    return fromMenuItem;
+  }
+  const listOrdered = applySortCustomToListItems(
+    projectedListItems(viewLike),
+    sortCustom,
+  );
+  return projectedMenuItemsFromListItems(listOrdered);
+}
+
 export function projectedMenuItems(o: ProjectedObjectView): ProjectedMenuItem[] {
   const raw = o.fields.menuItem;
   if (!Array.isArray(raw)) {
@@ -265,7 +592,17 @@ export function projectedSortCustom(o: ProjectedObjectView): ProjectedSortCustom
   const exc = Array.isArray(exclude)
     ? exclude.filter((x): x is string => typeof x === 'string' && x.length > 0)
     : [];
-  return { include: inc, exclude: exc };
+  const sortTypeRaw = readString(raw.sortType);
+  const sortType =
+    sortTypeRaw === 'custom' ||
+    (sortTypeRaw && CATALOG_LIST_SORT_TYPES.has(sortTypeRaw as CatalogListSortType))
+      ? (sortTypeRaw as ProjectedSortCustom['sortType'])
+      : undefined;
+  return {
+    include: inc,
+    exclude: exc,
+    ...(sortType ? { sortType } : {}),
+  };
 }
 
 function menuItemMatchesKey(item: ProjectedMenuItem, key: string): boolean {

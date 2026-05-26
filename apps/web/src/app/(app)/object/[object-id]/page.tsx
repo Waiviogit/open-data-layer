@@ -5,6 +5,11 @@ import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registr
 import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
 
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
+import { ObjectPageBody } from '@/modules/object/presentation/components/object-page-body';
+import {
+  resolveNestedObjectContent,
+  resolveNestedObjectPath,
+} from '@/modules/object/infrastructure/resolve-nested-object-content.server';
 import {
   getObjectUpdatesFeedPageQuery,
   parseObjectUpdatesSearchParams,
@@ -26,6 +31,7 @@ import {
   firstSearchParam,
   OBJECT_PAGE_PRIMARY_TAB_PARAM,
   parseAuthoritySubTypeParam,
+  parseViewPathParam,
 } from './object-page-search';
 import { ObjectPageClient } from './object-page-client';
 
@@ -160,6 +166,20 @@ export default async function ObjectDetailPage({
         )
       : null;
 
+  const pathIds = parseViewPathParam(sp);
+  const nestedResolveInit = { locale, viewer: user?.username ?? null };
+  const initialNestedStack = await resolveNestedObjectPath(pathIds, nestedResolveInit);
+
+  const defaultNestedContent =
+    pathIds.length === 0 && model.defaultMenuObjectId
+      ? await resolveNestedObjectContent(model.defaultMenuObjectId, nestedResolveInit)
+      : null;
+
+  const objectPageBody =
+    model.objectType === 'page' && model.pageContent
+      ? <ObjectPageBody rawContent={model.pageContent} />
+      : undefined;
+
   return (
     <>
       <JsonLdScript data={model.seo?.json_ld} />
@@ -174,6 +194,9 @@ export default async function ObjectDetailPage({
         viewerUsername={user?.username ?? null}
         initialPrimarySegment={initialPrimarySegment}
         defaultPrimarySegment={defaultSeg}
+        initialNestedStack={initialNestedStack}
+        defaultNestedContent={defaultNestedContent}
+        objectPageBody={objectPageBody}
       />
     </>
   );

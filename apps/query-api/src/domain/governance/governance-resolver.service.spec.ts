@@ -61,4 +61,15 @@ describe('GovernanceResolverService.resolveMergedForObjectView', () => {
     expect(resolveSpy).toHaveBeenCalledWith('gov-hdr');
     expect(result.admins).toEqual(['base', 'hdr']);
   });
+
+  it('returns cached snapshot on second call within TTL', async () => {
+    const { service } = createService({ 'governance.objectId': 'gov-cfg' });
+    const custom = { ...DEFAULT_GOVERNANCE_SNAPSHOT, admins: ['p'] };
+    const resolveSpy = jest.spyOn(service, 'resolve').mockResolvedValue(custom);
+
+    await service.resolveMergedForObjectView(undefined);
+    await service.resolveMergedForObjectView(undefined);
+
+    expect(resolveSpy).toHaveBeenCalledTimes(1);
+  });
 });

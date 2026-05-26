@@ -10,11 +10,15 @@ import {
 import { ReqLocale } from '@opden-data-layer/core';
 import {
   GetObjectByIdEndpoint,
+  GetNestedObjectsEndpoint,
   GetObjectFollowersEndpoint,
   GetObjectAuthorityEndpoint,
   resolveObjectBodySchema,
+  resolveNestedObjectsBodySchema,
   type ProjectedObjectWithCounts,
   type ResolveObjectBody,
+  type ResolveNestedObjectsBody,
+  type ResolveNestedObjectsResponse,
 } from '../domain/objects';
 import {
   userSocialListQuerySchema,
@@ -37,6 +41,7 @@ import { ZodBodyPipe, ZodQueryPipe } from '../pipes';
 export class ObjectsController {
   constructor(
     private readonly getObjectById: GetObjectByIdEndpoint,
+    private readonly getNestedObjects: GetNestedObjectsEndpoint,
     private readonly getObjectUpdatesFeed: GetObjectUpdatesFeedEndpoint,
     private readonly getObjectFollowersEndpoint: GetObjectFollowersEndpoint,
     private readonly getObjectAuthorityEndpoint: GetObjectAuthorityEndpoint,
@@ -109,5 +114,20 @@ export class ObjectsController {
       throw new NotFoundException(`Object not found: ${body.object_id}`);
     }
     return view;
+  }
+
+  @Post('resolve-nested')
+  async resolveNested(
+    @Body(new ZodBodyPipe(resolveNestedObjectsBodySchema)) body: ResolveNestedObjectsBody,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<ResolveNestedObjectsResponse> {
+    return this.getNestedObjects.execute({
+      ids: body.ids,
+      locale,
+      governanceObjectIdFromHeader,
+      viewerAccount: viewer,
+    });
   }
 }

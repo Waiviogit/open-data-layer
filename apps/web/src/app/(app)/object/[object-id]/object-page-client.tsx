@@ -1,9 +1,14 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
+import type { ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import type { ObjectPageViewModel, AuthoritySubType } from '@/modules/object';
+import type {
+  ObjectNestedViewResolved,
+  ObjectPageViewModel,
+  AuthoritySubType,
+} from '@/modules/object';
 import {
   LeftObjectProfileSidebar,
   ObjectHero,
@@ -54,6 +59,12 @@ export type ObjectPageClientProps = {
   initialPrimarySegment: string;
   /** First tab in the nav — URL omits `?tab` when this segment is active. */
   defaultPrimarySegment: string;
+  /** SSR-restored nested stack from `?path=`. */
+  initialNestedStack: ObjectNestedViewResolved[];
+  /** SSR-resolved first menu item content when URL has no `?path=` (business-like objects). */
+  defaultNestedContent: ObjectNestedViewResolved | null;
+  /** Server-rendered page body for top-level page-type objects. */
+  objectPageBody?: ReactNode;
 };
 
 export function ObjectPageClient({
@@ -67,6 +78,9 @@ export function ObjectPageClient({
   viewerUsername,
   initialPrimarySegment,
   defaultPrimarySegment,
+  initialNestedStack,
+  defaultNestedContent,
+  objectPageBody,
 }: ObjectPageClientProps) {
   const defaultFeedSub = model.feedSubTabs[0]?.segment ?? 'posts';
 
@@ -485,10 +499,17 @@ export function ObjectPageClient({
           feedSubTabs={model.feedSubTabs}
           title={model.title}
           objectType={model.objectType}
+          listItems={model.listItems}
+          listItemsSortCustom={model.listItemsSortCustom}
+          initialNestedStack={initialNestedStack}
+          defaultNestedContent={defaultNestedContent}
           onFeedSubSelect={setActiveFeedSubSegment}
           objectUpdatesFeed={objectUpdatesFeed}
           objectFollowersFeed={objectFollowersFeed}
           objectAuthorityFeed={objectAuthorityFeed}
+          objectPageBody={objectPageBody}
+          viewerUsername={viewerUsername}
+          onRequireLogin={openLogin}
         />
       }
       rightRail={
