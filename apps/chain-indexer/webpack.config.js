@@ -1,11 +1,13 @@
 const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
 const { join } = require('path');
 
+const isProd = process.env.NODE_ENV === 'production';
+
 module.exports = {
   output: {
     path: join(__dirname, '../../dist/apps/chain-indexer'),
     clean: true,
-    ...(process.env.NODE_ENV !== 'production' && {
+    ...(!isProd && {
       devtoolModuleFilenameTemplate: '[absolute-resource-path]',
     }),
   },
@@ -16,10 +18,10 @@ module.exports = {
       main: './src/main.ts',
       tsConfig: './tsconfig.app.json',
       assets: ['./src/assets'],
-      optimization: false,
+      optimization: isProd,
       outputHashing: 'none',
       generatePackageJson: true,
-      sourceMap: true,
+      sourceMap: !isProd,
     }),
   ],
 };
