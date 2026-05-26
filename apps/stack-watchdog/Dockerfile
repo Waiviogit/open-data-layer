@@ -6,13 +6,14 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN corepack enable && corepack install
 
 COPY nx.json tsconfig.base.json ./
+COPY apps/nest-webpack.shared.js ./apps/nest-webpack.shared.js
 COPY apps/stack-watchdog ./apps/stack-watchdog
 COPY libs ./libs
 
 RUN pnpm install --frozen-lockfile
 RUN pnpm exec nx run stack-watchdog:build
 
-RUN pnpm --filter @opden-data-layer/stack-watchdog --legacy --prod deploy /deploy \
+RUN mkdir -p /deploy \
     && cp dist/apps/stack-watchdog/main.js /deploy/main.js
 
 FROM node:24-bookworm-slim AS production

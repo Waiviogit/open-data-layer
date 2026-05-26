@@ -12,8 +12,12 @@
 
 const fs = require('fs');
 const path = require('path');
+const { builtinModules } = require('module');
 
 const ROOT = path.resolve(__dirname, '..');
+
+/** Node core modules — webpack may leave `require("fs")` etc. in bundled output */
+const NODE_BUILTINS = new Set(builtinModules);
 
 /** NestJS apps built with webpack + pnpm deploy Docker pattern */
 const WEBPACK_APPS = [
@@ -42,6 +46,7 @@ function extractExternalPackages(mainJsPath) {
   while ((m = re.exec(content))) {
     const spec = m[1];
     if (spec.startsWith('node:')) continue;
+    if (NODE_BUILTINS.has(spec)) continue;
     if (spec === 'crypto') continue;
     packages.add(npmPackageName(spec));
   }

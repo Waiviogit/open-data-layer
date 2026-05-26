@@ -245,7 +245,7 @@ All rules for design tokens, shell mode, images, React hydration, and clean arch
 
 - Dev: `pnpm nx serve <project>` (watch mode, uses root `node_modules`).
 - Build: `pnpm nx build <app>` — webpack auto-generates `dist/apps/<app>/package.json` with only used packages.
-- **Nest Docker images:** builder runs `pnpm exec nx run <app>:build`, then `pnpm --filter @opden-data-layer/<app> --legacy --prod deploy /deploy` and copies `dist/apps/<app>/main.js` into the deploy dir; production stage copies `/deploy` and runs `node main.js` (no second `pnpm install`). See `apps/<app>/Dockerfile`. Webpack often leaves `require("pkg")` in `main.js` for runtime deps — **`apps/<app>/package.json` must list every such package**. After changing imports or adding libs that pull new externals, run **`pnpm nx build <app> && pnpm check:bundle-deps`** (or rely on CI — image builds fail the **Verify Nest webpack bundle deps** step if anything is missing).
+- **Nest Docker images:** builder runs `pnpm exec nx run <app>:build` with whitelisted `externalDependencies` in `webpack.config.js` (bundles Nest/JS deps into `main.js`; only native modules stay external). Deploy dir gets `apps/<app>/package.json` (externals only) + `main.js`, then `pnpm install --prod --ignore-workspace` for those externals. See `apps/<app>/Dockerfile` and `apps/nest-webpack.shared.js`. **`apps/<app>/package.json` must list every external `require("…")` in the prod bundle** — enforced by `pnpm check:bundle-deps` / CI.
 - Docker: add `apps/<app>/Dockerfile` when containerized deployment is needed.
 - Libraries are bundled into app builds via webpack; standalone lib builds work best for libs without workspace deps.
 

@@ -40,16 +40,18 @@ const STEPS = [
     args: ['scripts/check-bundle-deps.cjs'],
   },
   {
-    label: 'pnpm deploy smoke (query-api)',
-    command: 'pnpm',
-    args: [
-      '--filter',
-      '@opden-data-layer/query-api',
-      '--legacy',
-      '--prod',
-      'deploy',
-      DEPLOY_SMOKE_DIR,
-    ],
+    label: 'Docker prod install smoke (query-api externals)',
+    command: process.platform === 'win32' ? 'node' : 'sh',
+    args:
+      process.platform === 'win32'
+        ? [
+            '-e',
+            `const fs=require('fs');const os=require('os');const path=require('path');const cp=require('child_process');const dir=path.join(os.tmpdir(),'odl-deploy-smoke');fs.rmSync(dir,{recursive:true,force:true});fs.mkdirSync(dir,{recursive:true});fs.copyFileSync('apps/query-api/package.json',path.join(dir,'package.json'));const r=cp.spawnSync('pnpm',['install','--prod','--ignore-workspace','--no-frozen-lockfile'],{cwd:dir,stdio:'inherit',shell:true});process.exit(r.status??1);`,
+          ]
+        : [
+            '-c',
+            'set -euo pipefail; dir="${TMPDIR:-/tmp}/odl-deploy-smoke"; rm -rf "$dir"; mkdir -p "$dir"; cp apps/query-api/package.json "$dir/package.json"; cd "$dir" && pnpm install --prod --ignore-workspace --no-frozen-lockfile',
+          ],
     cleanup: () => fs.rmSync(DEPLOY_SMOKE_DIR, { recursive: true, force: true }),
   },
   {
