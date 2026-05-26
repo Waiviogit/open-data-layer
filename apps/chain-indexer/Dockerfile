@@ -10,23 +10,15 @@ COPY apps/chain-indexer ./apps/chain-indexer
 COPY libs ./libs
 
 RUN pnpm install --frozen-lockfile
+RUN pnpm exec nx run chain-indexer:build
 
-RUN pnpx nx run chain-indexer:prune-lockfile
+RUN pnpm --filter @opden-data-layer/chain-indexer --legacy --prod deploy /deploy \
+    && cp dist/apps/chain-indexer/main.js /deploy/main.js
 
 FROM node:24.12.0-alpine3.23 AS production
 
 WORKDIR /app
 
-COPY --from=builder /app/package.json .root-package.json
-RUN corepack enable \
-    && PNPM_VER=$(node -p 'require("./.root-package.json").packageManager.split("@")[1].split("+")[0]') \
-    && corepack prepare "pnpm@${PNPM_VER}" --activate \
-    && rm .root-package.json
-
-COPY --from=builder /app/dist/apps/chain-indexer ./
-
-RUN pnpm install --frozen-lockfile --prod && \
-    pnpm store prune && \
-    rm -rf /tmp/* /var/tmp/*
+COPY --from=builder /deploy ./
 
 CMD ["node", "main.js"]

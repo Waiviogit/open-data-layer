@@ -10,23 +10,15 @@ COPY apps/query-api ./apps/query-api
 COPY libs ./libs
 
 RUN pnpm install --frozen-lockfile
+RUN pnpm exec nx run query-api:build
 
-RUN pnpx nx run query-api:prune-lockfile
+RUN pnpm --filter @opden-data-layer/query-api --legacy --prod deploy /deploy \
+    && cp dist/apps/query-api/main.js /deploy/main.js
 
 FROM node:24.12.0-alpine3.23 AS production
 
 WORKDIR /app
 
-COPY --from=builder /app/package.json .root-package.json
-RUN corepack enable \
-    && PNPM_VER=$(node -p 'require("./.root-package.json").packageManager.split("@")[1].split("+")[0]') \
-    && corepack prepare "pnpm@${PNPM_VER}" --activate \
-    && rm .root-package.json
-
-COPY --from=builder /app/dist/apps/query-api ./
-
-RUN pnpm install --frozen-lockfile --prod && \
-    pnpm store prune && \
-    rm -rf /tmp/* /var/tmp/*
+COPY --from=builder /deploy ./
 
 CMD ["node", "main.js"]

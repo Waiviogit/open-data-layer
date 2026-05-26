@@ -10,23 +10,15 @@ COPY apps/auth-api ./apps/auth-api
 COPY libs ./libs
 
 RUN pnpm install --frozen-lockfile
+RUN pnpm exec nx run auth-api:build
 
-RUN pnpx nx run auth-api:prune-lockfile
+RUN pnpm --filter @opden-data-layer/auth-api --legacy --prod deploy /deploy \
+    && cp dist/apps/auth-api/main.js /deploy/main.js
 
 FROM node:24.12.0-alpine3.23 AS production
 
 WORKDIR /app
 
-COPY --from=builder /app/package.json .root-package.json
-RUN corepack enable \
-    && PNPM_VER=$(node -p 'require("./.root-package.json").packageManager.split("@")[1].split("+")[0]') \
-    && corepack prepare "pnpm@${PNPM_VER}" --activate \
-    && rm .root-package.json
-
-COPY --from=builder /app/dist/apps/auth-api ./
-
-RUN pnpm install --frozen-lockfile --prod && \
-    pnpm store prune && \
-    rm -rf /tmp/* /var/tmp/*
+COPY --from=builder /deploy ./
 
 CMD ["node", "main.js"]

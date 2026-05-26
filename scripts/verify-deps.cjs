@@ -10,9 +10,12 @@
  */
 
 const { spawnSync } = require('child_process');
+const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
+const DEPLOY_SMOKE_DIR = path.join(os.tmpdir(), 'odl-deploy-smoke');
 
 /** Avoid Nx TUI race when nx is spawned from this script (Windows / VS Code terminal). */
 const SUBPROCESS_ENV = {
@@ -37,6 +40,19 @@ const STEPS = [
     args: ['scripts/check-bundle-deps.cjs'],
   },
   {
+    label: 'pnpm deploy smoke (query-api)',
+    command: 'pnpm',
+    args: [
+      '--filter',
+      '@opden-data-layer/query-api',
+      '--legacy',
+      '--prod',
+      'deploy',
+      DEPLOY_SMOKE_DIR,
+    ],
+    cleanup: () => fs.rmSync(DEPLOY_SMOKE_DIR, { recursive: true, force: true }),
+  },
+  {
     label: 'Unit tests',
     command: 'pnpm',
     args: ['nx', 'run-many', '-t', 'test', '--skip-nx-cache', '--output-style=stream'],
@@ -54,6 +70,9 @@ function runStep(step) {
   if (result.status !== 0) {
     console.error(`\nverify:deps failed at step: ${step.label}`);
     process.exit(result.status ?? 1);
+  }
+  if (step.cleanup) {
+    step.cleanup();
   }
 }
 

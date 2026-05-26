@@ -8,7 +8,7 @@ Remediate dependency vulnerabilities in this Nx + pnpm monorepo using OSV Scanne
 - **Verify script:** `pnpm verify:deps` → scan + build + bundle-deps + test
 - **Scanner config:** `osv-scanner.toml` at repo root
 - **CI:** `.github/workflows/verify.yml` (PR/push), `.github/workflows/osv-scan-scheduled.yml` (weekly)
-- **Package manager:** pnpm at root; Nest apps have per-app `apps/<app>/package.json` for Docker bundle-deps
+- **Package manager:** pnpm at root; Nest apps have per-app `apps/<app>/package.json` for Docker `pnpm deploy --legacy --prod`
 
 ## User Instructions
 
@@ -49,7 +49,7 @@ pnpm add -D <pkg>@<version>
 pnpm update @nestjs/common @nestjs/core ... --latest
 ```
 
-Also align matching versions in `apps/*/package.json` when the app lists the same package (Nest, kysely, ws, next). App manifests exist for Docker `check-bundle-deps`, not as the sole source of truth.
+Also align matching versions in `apps/*/package.json` when the app lists the same package (Nest, kysely, ws, next). App manifests declare webpack externals for Docker `pnpm deploy --prod`; keep them in sync with root deps.
 
 ### 4. Fix transitive dependencies
 
@@ -105,8 +105,11 @@ This runs in order:
 
 1. `pnpm scan:vulnerabilities` — OSV scan must pass (including documented suppressions)
 2. `pnpm nx run-many -t build --skip-nx-cache` — all apps compile
-3. `node scripts/check-bundle-deps.cjs` — Nest Docker prod deps match webpack externals
-4. `pnpm nx run-many -t test --skip-nx-cache` — unit tests
+3. `node scripts/check-bundle-deps.cjs` — Nest Docker deps match webpack externals
+4. `pnpm --filter @opden-data-layer/query-api --legacy --prod deploy <tmpdir>` — deploy smoke (same path Docker builder uses)
+5. `pnpm nx run-many -t test --skip-nx-cache` — unit tests
+
+Docker Nest images use `pnpm deploy --legacy --prod` in the builder stage (no second install). Any webpack external must be listed in `apps/<app>/package.json` — enforced by `check-bundle-deps.cjs`.
 
 Implementation: `scripts/verify-deps.cjs`. For a lighter check after small changes:
 

@@ -117,8 +117,8 @@ Copy from [`.env.example`](../../../.env.example) at the repo root as a starting
 
 [`apps/chain-indexer/Dockerfile`](../../../apps/chain-indexer/Dockerfile) multi-stage build:
 
-1. Install dependencies, copy app + libs, run `pnpm nx run chain-indexer:prune-lockfile`.
-2. Production image: copy `dist/apps/chain-indexer`, `pnpm install --frozen-lockfile --prod`, `CMD ["node", "main.js"]`.
+1. **Builder:** install dependencies, copy app + libs, `pnpm exec nx run chain-indexer:build`, then `pnpm --filter @opden-data-layer/chain-indexer --legacy --prod deploy /deploy` and copy `dist/apps/chain-indexer/main.js` into the deploy dir.
+2. **Production:** copy `/deploy` from builder (includes `node_modules` and `main.js`), `CMD ["node", "main.js"]` — no second `pnpm install`.
 
 Deploy with the same environment variables as local (typically injected by your orchestrator). Ensure Postgres, Redis, Hive, and (if used) IPFS are reachable from the container network.
 

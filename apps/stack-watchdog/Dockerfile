@@ -10,19 +10,16 @@ COPY apps/stack-watchdog ./apps/stack-watchdog
 COPY libs ./libs
 
 RUN pnpm install --frozen-lockfile
+RUN pnpm exec nx run stack-watchdog:build
 
-RUN pnpx nx run stack-watchdog:prune-lockfile
+RUN pnpm --filter @opden-data-layer/stack-watchdog --legacy --prod deploy /deploy \
+    && cp dist/apps/stack-watchdog/main.js /deploy/main.js
 
 FROM node:24-bookworm-slim AS production
 
 WORKDIR /app
 
-COPY --from=builder /app/package.json .root-package.json
-RUN corepack enable \
-    && PNPM_VER=$(node -p 'require("./.root-package.json").packageManager.split("@")[1].split("+")[0]') \
-    && corepack prepare "pnpm@${PNPM_VER}" --activate \
-    && rm .root-package.json \
-    && apt-get update \
+RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl gnupg \
     && install -m 0755 -d /etc/apt/keyrings \
     && curl -fsSL https://download.docker.com/linux/debian/gpg \
@@ -34,10 +31,6 @@ RUN corepack enable \
     && apt-get install -y --no-install-recommends docker-ce-cli docker-compose-plugin \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/dist/apps/stack-watchdog ./
-
-RUN pnpm install --frozen-lockfile --prod && \
-    pnpm store prune && \
-    rm -rf /tmp/* /var/tmp/*
+COPY --from=builder /deploy ./
 
 CMD ["node", "main.js"]

@@ -2,8 +2,8 @@
 
 /**
  * Ensures apps/<app>/package.json lists every npm package that webpack leaves as
- * external `require("…")` in dist/apps/<app>/main.js. Docker production stages run
- * `pnpm install --prod` from that lockfile — missing deps cause MODULE_NOT_FOUND at runtime.
+ * external `require("…")` in dist/apps/<app>/main.js. Docker builder stages run
+ * `pnpm deploy --legacy --prod` from that manifest — missing deps cause MODULE_NOT_FOUND at runtime.
  *
  * Usage (after nx build):
  *   node scripts/check-bundle-deps.cjs
@@ -15,7 +15,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 
-/** NestJS apps built with webpack + prune-lockfile Docker pattern */
+/** NestJS apps built with webpack + pnpm deploy Docker pattern */
 const WEBPACK_APPS = [
   'query-api',
   'auth-api',
