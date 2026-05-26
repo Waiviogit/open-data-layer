@@ -30,6 +30,47 @@
     @apply absolute inset-0 h-full w-full border-0;
   }
 
+  /**
+   * Object `pageContent` — legacy Waivio table rows (logo | brand + link | description).
+   * @see apps/web/src/modules/object/presentation/object-page-content-body.class.ts
+   */
+  .object-page-content-body table {
+    @apply mb-4 w-full border-collapse;
+  }
+
+  .object-page-content-body tr + tr td {
+    @apply border-t border-border;
+  }
+
+  .object-page-content-body td {
+    @apply align-middle py-3 pe-4 text-body-sm leading-body;
+  }
+
+  .object-page-content-body td:first-child {
+    width: 150px;
+    padding-right: 1rem;
+    vertical-align: middle;
+  }
+
+  .object-page-content-body td:first-child img {
+    @apply block size-[150px] max-w-none object-contain;
+  }
+
+  .object-page-content-body td:nth-child(2) {
+    width: 28%;
+    min-width: 9rem;
+    max-width: 12.5rem;
+    @apply text-fg;
+  }
+
+  .object-page-content-body td:last-child:not(:first-child) {
+    @apply text-fg-secondary;
+  }
+
+  .object-page-content-body img[align='left'] {
+    @apply float-left me-4 mb-2 size-[150px] max-w-none object-contain;
+  }
+
   /** Thin pill thumb, no scrollbar arrow buttons (Discover filters, etc.). */
   .scrollbar-minimal {
     scrollbar-width: thin;

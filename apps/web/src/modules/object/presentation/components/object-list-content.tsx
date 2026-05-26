@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { useMemo } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
@@ -55,6 +56,43 @@ export type CatalogListSortOption = CatalogListSortType | 'custom';
 
 function objectHref(objectId: string): string {
   return `/object/${encodeURIComponent(objectId)}`;
+}
+
+const navFocusClass =
+  'rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
+
+function CardNavTrigger({
+  item,
+  inColumn,
+  onNavigateInColumn,
+  className,
+  children,
+  ariaLabel,
+}: {
+  item: ProjectedListItem;
+  inColumn: boolean;
+  onNavigateInColumn: (item: ProjectedListItem) => void;
+  className?: string;
+  children: ReactNode;
+  ariaLabel?: string;
+}) {
+  if (inColumn) {
+    return (
+      <button
+        type="button"
+        className={className}
+        aria-label={ariaLabel}
+        onClick={() => onNavigateInColumn(item)}
+      >
+        {children}
+      </button>
+    );
+  }
+  return (
+    <Link href={objectHref(item.objectId)} className={className} aria-label={ariaLabel}>
+      {children}
+    </Link>
+  );
 }
 
 export type ObjectListContentProps = {
@@ -180,7 +218,7 @@ function ListItemCard({
   }
 
   const className =
-    'relative flex min-w-0 items-start gap-3 rounded-card border border-border bg-surface p-3 text-left transition hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
+    'relative flex min-w-0 items-start gap-3 rounded-card border border-border bg-surface p-3 text-left transition hover:bg-surface-alt';
   const subtitle = buildObjectCardSubtitle(item);
   const ratingDims = mergeRatingDimensions(
     getRatingDimensionNamesForObjectType(item.objectType),
@@ -193,9 +231,27 @@ function ListItemCard({
     })),
   );
 
-  const inner = (
-    <>
-      <div className="absolute end-3 top-3">
+  const thumb = item.imageUrl ? (
+    <Image
+      src={item.imageUrl}
+      alt=""
+      width={OBJECT_CARD_THUMB_SIZE}
+      height={OBJECT_CARD_THUMB_SIZE}
+      className="size-16 shrink-0 rounded-btn object-cover"
+      unoptimized={shouldUnoptimizeRemoteImage(item.imageUrl)}
+    />
+  ) : (
+    <span
+      className="flex size-16 shrink-0 items-center justify-center rounded-btn bg-surface-alt text-sm font-medium text-muted"
+      aria-hidden
+    >
+      {item.name.slice(0, 1).toUpperCase()}
+    </span>
+  );
+
+  return (
+    <article className={className}>
+      <div className="absolute end-3 top-3 z-10">
         <AdministrativeHeartButton
           objectId={item.objectId}
           initialActive={item.hasAdministrativeAuthority ?? false}
@@ -203,25 +259,24 @@ function ListItemCard({
           onRequireLogin={onRequireLogin}
         />
       </div>
-      {item.imageUrl ? (
-        <Image
-          src={item.imageUrl}
-          alt=""
-          width={OBJECT_CARD_THUMB_SIZE}
-          height={OBJECT_CARD_THUMB_SIZE}
-          className="size-16 shrink-0 rounded-btn object-cover"
-          unoptimized={shouldUnoptimizeRemoteImage(item.imageUrl)}
-        />
-      ) : (
-        <span
-          className="flex size-16 shrink-0 items-center justify-center rounded-btn bg-surface-alt text-sm font-medium text-muted"
-          aria-hidden
+      <CardNavTrigger
+        item={item}
+        inColumn={inColumn}
+        onNavigateInColumn={onNavigateInColumn}
+        className={`shrink-0 ${navFocusClass}`}
+        ariaLabel={item.name}
+      >
+        {thumb}
+      </CardNavTrigger>
+      <div className="min-w-0 flex-1 pe-8">
+        <CardNavTrigger
+          item={item}
+          inColumn={inColumn}
+          onNavigateInColumn={onNavigateInColumn}
+          className={`block max-w-full truncate text-left font-medium text-fg hover:underline ${navFocusClass}`}
         >
-          {item.name.slice(0, 1).toUpperCase()}
-        </span>
-      )}
-      <span className="min-w-0 flex-1 pe-8">
-        <span className="block truncate font-medium text-fg">{item.name}</span>
+          {item.name}
+        </CardNavTrigger>
         {subtitle ? (
           <span className="mt-0.5 block truncate text-xs text-muted">{subtitle}</span>
         ) : null}
@@ -254,21 +309,7 @@ function ListItemCard({
             {item.description}
           </span>
         ) : null}
-      </span>
-    </>
-  );
-
-  if (inColumn) {
-    return (
-      <button type="button" className={`w-full ${className}`} onClick={() => onNavigateInColumn(item)}>
-        {inner}
-      </button>
-    );
-  }
-
-  return (
-    <Link href={objectHref(item.objectId)} className={className}>
-      {inner}
-    </Link>
+      </div>
+    </article>
   );
 }

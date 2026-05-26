@@ -42,3 +42,32 @@ export function parseViewPathParam(
 ): string[] {
   return parseViewPathFromSearchParam(firstSearchParam(sp, OBJECT_PAGE_VIEW_PATH_PARAM));
 }
+
+const PATH_TAB_SEGMENTS = ['reviews', 'updates', 'followers', 'authority'] as const;
+
+function normalizePathname(pathname: string): string {
+  if (pathname.length > 1 && pathname.endsWith('/')) {
+    return pathname.slice(0, -1);
+  }
+  return pathname;
+}
+
+/**
+ * Resolves the active primary tab from the visible URL (pathname + optional `?tab=`).
+ * Empty string = menu landing (`/object/:id` with no tab segment).
+ */
+export function resolvePrimarySegmentFromObjectUrl(
+  objectId: string,
+  pathname: string,
+  searchParams: URLSearchParams,
+): string {
+  const base = `/object/${encodeURIComponent(objectId)}`;
+  const path = normalizePathname(pathname);
+  for (const segment of PATH_TAB_SEGMENTS) {
+    if (path === `${base}/${segment}`) {
+      return segment;
+    }
+  }
+  const tab = searchParams.get(OBJECT_PAGE_PRIMARY_TAB_PARAM)?.trim();
+  return tab ?? '';
+}

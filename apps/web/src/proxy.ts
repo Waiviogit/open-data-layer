@@ -52,9 +52,18 @@ export async function proxy(request: NextRequest) {
   }
 
   /**
-   * Public `/object/:id/updates` stays in the address bar; App Router serves
-   * `object/[object-id]/page.tsx` with `?tab=updates` injected (plus any existing query).
+   * Public `/object/:id/reviews` stays in the address bar; App Router serves
+   * `object/[object-id]/page.tsx` with `?tab=reviews` injected (plus any existing query).
    */
+  const objectReviewsMatch = pathname.match(/^\/object\/([^/]+)\/reviews\/?$/);
+  if (objectReviewsMatch) {
+    const id = objectReviewsMatch[1];
+    const url = request.nextUrl.clone();
+    url.pathname = `/object/${id}`;
+    url.searchParams.set('tab', 'reviews');
+    return finish(NextResponse.rewrite(url));
+  }
+
   const objectUpdatesMatch = pathname.match(/^\/object\/([^/]+)\/updates\/?$/);
   if (objectUpdatesMatch) {
     const id = objectUpdatesMatch[1];

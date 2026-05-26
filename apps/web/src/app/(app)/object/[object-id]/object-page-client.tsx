@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -37,6 +37,8 @@ import { loadMoreObjectFollowersAction } from './followers/object-followers.acti
 import {
   OBJECT_PAGE_AUTHORITY_SUB_PARAM,
   OBJECT_PAGE_PRIMARY_TAB_PARAM,
+  OBJECT_PAGE_VIEW_PATH_PARAM,
+  resolvePrimarySegmentFromObjectUrl,
 } from './object-page-search';
 import { loadMoreObjectUpdatesFeedAction } from './updates/updates-feed.actions';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
@@ -55,10 +57,8 @@ export type ObjectPageClientProps = {
   authoritySubType: AuthoritySubType;
   authoritySort: UserSubscriptionSort;
   viewerUsername: string | null;
-  /** Primary tab from `?tab=` (server-validated). */
+  /** Primary tab from `?tab=` (server-validated). Empty when URL has no tab (menu landing). */
   initialPrimarySegment: string;
-  /** First tab in the nav — URL omits `?tab` when this segment is active. */
-  defaultPrimarySegment: string;
   /** SSR-restored nested stack from `?path=`. */
   initialNestedStack: ObjectNestedViewResolved[];
   /** SSR-resolved first menu item content when URL has no `?path=` (business-like objects). */
@@ -77,7 +77,6 @@ export function ObjectPageClient({
   authoritySort,
   viewerUsername,
   initialPrimarySegment,
-  defaultPrimarySegment,
   initialNestedStack,
   defaultNestedContent,
   objectPageBody,
@@ -85,6 +84,7 @@ export function ObjectPageClient({
   const defaultFeedSub = model.feedSubTabs[0]?.segment ?? 'posts';
 
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const { openLogin } = useLoginModal();
   useHydrateWalletProvider();
@@ -103,8 +103,10 @@ export function ObjectPageClient({
     useState(defaultFeedSub);
 
   useEffect(() => {
-    setActivePrimarySegment(initialPrimarySegment);
-  }, [initialPrimarySegment]);
+    setActivePrimarySegment(
+      resolvePrimarySegmentFromObjectUrl(model.objectId, pathname, searchParams),
+    );
+  }, [model.objectId, pathname, searchParams]);
 
   useEffect(() => {
     setFavorite(model.hasAdministrativeAuthority);
@@ -122,8 +124,13 @@ export function ObjectPageClient({
       const base = `/object/${id}`;
       const u = new URLSearchParams(searchParams.toString());
 
-      if (segment === defaultPrimarySegment) {
-        router.replace(base, { scroll: false });
+      if (segment === 'reviews') {
+        u.delete(OBJECT_PAGE_VIEW_PATH_PARAM);
+        u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+        const qs = u.toString();
+        router.push(qs ? `${base}/reviews?${qs}` : `${base}/reviews`, {
+          scroll: false,
+        });
         return;
       }
 
@@ -165,7 +172,7 @@ export function ObjectPageClient({
       const qs = u.toString();
       router.replace(`${base}?${qs}`, { scroll: false });
     },
-    [defaultPrimarySegment, model.objectId, router, searchParams],
+    [model.objectId, router, searchParams],
   );
 
   const primaryNav = useMemo(

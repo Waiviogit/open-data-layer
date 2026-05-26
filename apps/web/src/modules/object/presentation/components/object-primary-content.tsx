@@ -32,6 +32,9 @@ import { ObjectWriteReviewPrompt } from './object-write-review-prompt';
 
 const REVIEWS_SEGMENT = 'reviews';
 
+/** Menu landing (`/object/:id`) — center column shows first menu item / nested catalog. */
+const MENU_LANDING_SEGMENT = '';
+
 function stubPrimaryCopy(primarySegment: string): string {
   switch (primarySegment) {
     case 'gallery':
@@ -296,7 +299,7 @@ export function ObjectPrimaryContent({
         viewKey: top.objectId,
       };
     }
-    if (defaultNestedContent) {
+    if (activePrimarySegment === MENU_LANDING_SEGMENT && defaultNestedContent) {
       return {
         objectType: defaultNestedContent.objectType,
         listItems: defaultNestedContent.listItems,
@@ -314,7 +317,15 @@ export function ObjectPrimaryContent({
       pending: false,
       viewKey: objectId,
     };
-  }, [nestedStack, defaultNestedContent, objectType, listItems, listItemsSortCustom, objectId]);
+  }, [
+    nestedStack,
+    defaultNestedContent,
+    objectType,
+    listItems,
+    listItemsSortCustom,
+    objectId,
+    activePrimarySegment,
+  ]);
 
   const [activeSortType, setActiveSortType] = useState<CatalogListSortOption>(() =>
     resolveListItemCatalogSortType(listItemsSortCustom),
@@ -408,7 +419,7 @@ export function ObjectPrimaryContent({
     onRequireLogin,
   ]);
 
-  if (activePrimarySegment !== REVIEWS_SEGMENT) {
+  if (activePrimarySegment !== MENU_LANDING_SEGMENT && activePrimarySegment !== REVIEWS_SEGMENT) {
     if (activePrimarySegment === 'authority' && objectAuthorityFeed != null) {
       return (
         <FeedColumn>
@@ -476,14 +487,17 @@ export function ObjectPrimaryContent({
     );
   }
 
+  const isMenuLanding = activePrimarySegment === MENU_LANDING_SEGMENT;
+  const isReviewsTab = activePrimarySegment === REVIEWS_SEGMENT;
+
   const showReviewsExtras =
+    isReviewsTab &&
     currentView.objectType === 'default' &&
-    nestedStack.length === 0 &&
-    !defaultNestedContent;
+    nestedStack.length === 0;
 
   return (
     <FeedColumn>
-      {nestedStack.length > 0 ? (
+      {isMenuLanding && nestedStack.length > 0 ? (
         <ObjectCenterBreadcrumbs
           rootName={title}
           stack={nestedStack.map((e) => ({ objectId: e.objectId, name: e.name }))}

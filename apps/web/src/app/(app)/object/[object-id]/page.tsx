@@ -104,11 +104,10 @@ export default async function ObjectDetailPage({
     notFound();
   }
 
-  const defaultSeg = model.primaryTabs[0]?.segment ?? 'reviews';
   const allowed = new Set(model.primaryTabs.map((t) => t.segment));
   const tabRaw = firstSearchParam(sp, OBJECT_PAGE_PRIMARY_TAB_PARAM)?.trim();
   const initialPrimarySegment =
-    tabRaw && allowed.has(tabRaw) ? tabRaw : defaultSeg;
+    tabRaw && allowed.has(tabRaw) ? tabRaw : '';
 
   const auth = createCookieAuthContextProvider();
   const user = await auth.getUser();
@@ -193,7 +192,6 @@ export default async function ObjectDetailPage({
         authoritySort={authoritySort}
         viewerUsername={user?.username ?? null}
         initialPrimarySegment={initialPrimarySegment}
-        defaultPrimarySegment={defaultSeg}
         initialNestedStack={initialNestedStack}
         defaultNestedContent={defaultNestedContent}
         objectPageBody={objectPageBody}
