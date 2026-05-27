@@ -16,14 +16,11 @@ import {
   ObjectPrimaryContent,
   ObjectPrimaryNav,
   ObjectAuthoritySubNav,
-  ObjectRightSidebar,
   ObjectRefListFeed,
   ObjectViewShell,
 } from '@/modules/object';
 import type { ObjectRefListPageView } from '@/modules/object/infrastructure/object-ref-list.client';
 import { AuthorityActionButton } from '@/modules/object/presentation/components/authority-action-button';
-import type { ObjectEmbeddedUpdatesFeedModel } from '@/modules/object-updates/embedded-updates-feed.model';
-import { ObjectUpdatesFeed } from '@/modules/object-updates/presentation/components/object-updates-feed';
 import type {
   PaginatedUserFollowListView,
   UserSubscriptionSort,
@@ -32,6 +29,7 @@ import { UserSocialAccountList } from '@/modules/user-social/presentation/compon
 import { getWalletFacade, useHydrateWalletProvider, useLoginModal } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
 import { buildOdlObjectAuthorityOp, buildOdlObjectFollowOp } from '@opden-data-layer/hive-broadcast';
+import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import {
   buildObjectAddOnPath,
@@ -50,14 +48,12 @@ import {
   resolveGalleryAlbumForObjectPage,
   resolvePrimarySegmentForObjectPage,
 } from './object-page-search';
-import { loadMoreObjectUpdatesFeedAction } from './updates/updates-feed.actions';
 import { loadMoreObjectRefListAction } from './related/load-more-ref-list.actions';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 export type ObjectPageClientProps = {
   model: ObjectPageViewModel;
-  embeddedUpdatesFeed: ObjectEmbeddedUpdatesFeedModel;
   /** Preloaded followers list when `?tab=followers` (see {@link getObjectFollowersPageQuery}). Null on other tabs. */
   embeddedFollowersPage: PaginatedUserFollowListView | null;
   /** Subscription list sort from `?sort=` (validated on the server for the initial followers payload). */
@@ -70,8 +66,6 @@ export type ObjectPageClientProps = {
   embeddedRelatedPage: ObjectRefListPageView | null;
   embeddedSimilarPage: ObjectRefListPageView | null;
   embeddedAddOnPage: ObjectRefListPageView | null;
-  /** SSR followers preview for right rail when `followers_count > 0`. */
-  rightRailFollowersPage: PaginatedUserFollowListView | null;
   viewerUsername: string | null;
   /** Primary tab from `?tab=` (server-validated). Empty when URL has no tab (menu landing). */
   initialPrimarySegment: string;
@@ -85,11 +79,16 @@ export type ObjectPageClientProps = {
   objectPageBody?: ReactNode;
   /** Server-rendered description body when `/object/:id/description` is active. */
   objectDescriptionBody?: ReactNode;
+  /** Streamed updates feed (Suspense) when Updates tab is active. */
+  updatesFeedSlot?: ReactNode;
+  /** Streamed right rail (Suspense). */
+  rightRailSlot: ReactNode;
+  /** True when `?path=` was present but nested objects could not be resolved. */
+  invalidPathRequested?: boolean;
 };
 
 export function ObjectPageClient({
   model,
-  embeddedUpdatesFeed,
   embeddedFollowersPage,
   followersSort,
   embeddedAuthorityPage,
@@ -98,7 +97,6 @@ export function ObjectPageClient({
   embeddedRelatedPage,
   embeddedSimilarPage,
   embeddedAddOnPage,
-  rightRailFollowersPage,
   viewerUsername,
   initialPrimarySegment,
   initialGalleryAlbum,
@@ -106,6 +104,9 @@ export function ObjectPageClient({
   defaultNestedContent,
   objectPageBody,
   objectDescriptionBody,
+  updatesFeedSlot = null,
+  rightRailSlot,
+  invalidPathRequested = false,
 }: ObjectPageClientProps) {
   const defaultFeedSub = model.feedSubTabs[0]?.segment ?? 'posts';
 
@@ -152,6 +153,20 @@ export function ObjectPageClient({
     setFollowing(model.isFollowing);
     setViewerBell(model.viewerBell);
   }, [model.isFollowing, model.viewerBell, model.objectId]);
+
+  useEffect(() => {
+    if (!invalidPathRequested) {
+      return;
+    }
+    const u = new URLSearchParams(searchParams.toString());
+    if (!u.has(OBJECT_PAGE_VIEW_PATH_PARAM)) {
+      return;
+    }
+    u.delete(OBJECT_PAGE_VIEW_PATH_PARAM);
+    const qs = u.toString();
+    const base = `/object/${encodeURIComponent(model.objectId)}`;
+    router.replace(qs ? `${base}?${qs}` : base, { scroll: false });
+  }, [invalidPathRequested, model.objectId, router, searchParams]);
 
   const onPrimarySelect = useCallback(
     (segment: string) => {
@@ -417,29 +432,11 @@ export function ObjectPageClient({
     viewerUsername,
   ]);
 
-  const updatesFeedKey = [
-    embeddedUpdatesFeed.filters.sort,
-    embeddedUpdatesFeed.filters.update_type ?? '',
-    embeddedUpdatesFeed.filters.locale ?? '',
-  ].join('|');
-
-  const objectUpdatesFeed = (
-    <ObjectUpdatesFeed
-      key={updatesFeedKey}
-      objectId={model.objectId}
-      initialItems={embeddedUpdatesFeed.initialPage.items}
-      initialCursor={embeddedUpdatesFeed.initialPage.cursor}
-      initialHasMore={embeddedUpdatesFeed.initialPage.hasMore}
-      filters={embeddedUpdatesFeed.filters}
-      typeOptions={embeddedUpdatesFeed.typeOptions}
-      showLocaleFilter={embeddedUpdatesFeed.showLocaleFilter}
-      localizableTypes={embeddedUpdatesFeed.localizableTypes}
-      filterSync="url"
-      loadMoreAction={loadMoreObjectUpdatesFeedAction}
-      viewerUsername={viewerUsername}
-      tagCategoryNames={model.tagCategoryNames}
-    />
-  );
+  const supportedUpdateTypes = useMemo(() => {
+    const registryEntry =
+      OBJECT_TYPE_REGISTRY[model.objectTypeKey as keyof typeof OBJECT_TYPE_REGISTRY];
+    return registryEntry?.supported_updates ?? [];
+  }, [model.objectTypeKey]);
 
   const objectFollowersFeed = useMemo(() => {
     if (embeddedFollowersPage == null) {
@@ -593,11 +590,6 @@ export function ObjectPageClient({
     loadMoreObjectAuthority,
   ]);
 
-  const supportedUpdateTypes = useMemo(
-    () => embeddedUpdatesFeed.typeOptions.map((o) => o.value),
-    [embeddedUpdatesFeed.typeOptions],
-  );
-
   const onOpenGalleryAlbum = useCallback(
     (albumName: string) => {
       setActiveGalleryAlbum(albumName);
@@ -698,7 +690,7 @@ export function ObjectPageClient({
           initialNestedStack={initialNestedStack}
           defaultNestedContent={defaultNestedContent}
           onFeedSubSelect={setActiveFeedSubSegment}
-          objectUpdatesFeed={objectUpdatesFeed}
+          objectUpdatesFeed={updatesFeedSlot}
           objectFollowersFeed={objectFollowersFeed}
           objectAuthorityFeed={objectAuthorityFeed}
           objectRelatedFeed={objectRelatedFeed}
@@ -716,18 +708,7 @@ export function ObjectPageClient({
           onRequireLogin={openLogin}
         />
       }
-      rightRail={
-        <ObjectRightSidebar
-          objectId={model.objectId}
-          related={model.rightRelated}
-          similar={model.rightSimilar}
-          addOn={model.rightAddOn}
-          relatedHasMore={model.rightRelatedHasMore}
-          similarHasMore={model.rightSimilarHasMore}
-          addOnHasMore={model.rightAddOnHasMore}
-          rightRailFollowersPage={rightRailFollowersPage}
-        />
-      }
+      rightRail={rightRailSlot}
     />
   );
 }

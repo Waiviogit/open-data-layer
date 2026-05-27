@@ -267,6 +267,11 @@ export function ObjectPrimaryContent({
       if (cancelled) {
         return;
       }
+      if (resolved.length === 0 && pathIds.length > 0) {
+        setNestedStack([]);
+        syncPathToUrl([], 'replace');
+        return;
+      }
       setNestedStack(resolved.map(resolvedToEntry));
     })();
 

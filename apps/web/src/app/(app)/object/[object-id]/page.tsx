@@ -1,21 +1,20 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 
 import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
-import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
-import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
 import { ObjectPageBody } from '@/modules/object/presentation/components/object-page-body';
 import { ObjectDescriptionBody } from '@/modules/object/presentation/components/object-description-body';
+import {
+  ObjectPageRightRailSkeleton,
+  ObjectPageUpdatesFeedSkeleton,
+} from '@/modules/object/presentation/components/object-page-loading-skeleton';
 import {
   resolveNestedObjectContent,
   resolveNestedObjectPath,
 } from '@/modules/object/infrastructure/resolve-nested-object-content.server';
-import {
-  getObjectUpdatesFeedPageQuery,
-  parseObjectUpdatesSearchParams,
-} from '@/modules/object-updates';
 import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
 import { loadMessages } from '@/i18n/runtime/load-messages';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
@@ -23,13 +22,9 @@ import { buildObjectMetadata, JsonLdScript } from '@/seo';
 
 import { getObjectAuthorityPageQuery } from '@/modules/object/application/queries/get-object-authority-page.query';
 import { getObjectFollowersPageQuery } from '@/modules/object/application/queries/get-object-followers-page.query';
-import { RIGHT_RAIL_FOLLOWERS_FETCH_LIMIT } from '@/modules/object/infrastructure/clients/object-social.client';
 import {
   fetchObjectRefList,
-  projectedObjectToRefCard,
   REF_LIST_PAGE_SIZE,
-  RIGHT_RAIL_REF_FETCH_LIMIT,
-  type ObjectRefListPageView,
 } from '@/modules/object/infrastructure/object-ref-list.client';
 import type { ObjectPageViewModel } from '@/modules/object';
 import {
@@ -38,6 +33,8 @@ import {
 } from '@/modules/user-social';
 
 import { loadObjectPageModel } from './object-page-model.server';
+import { ObjectPageRightRailSection } from './object-page-right-rail-section.server';
+import { ObjectPageUpdatesFeedSection } from './object-page-updates-feed-section.server';
 import {
   firstSearchParam,
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
@@ -45,6 +42,7 @@ import {
   OBJECT_PAGE_PRIMARY_TAB_PARAM,
   parseAuthoritySubTypeParam,
   parseViewPathParam,
+  sanitizeNestedStack,
 } from './object-page-search';
 import { ObjectPageClient } from './object-page-client';
 
@@ -63,21 +61,43 @@ function objectFollowersCount(model: ObjectPageViewModel): number {
   return model.primaryTabs.find((tab) => tab.segment === 'followers')?.count ?? 0;
 }
 
-function mergeRightRailIntoModel(
+function resolveInitialPrimarySegment(
   model: ObjectPageViewModel,
-  related: ObjectRefListPageView | null,
-  similar: ObjectRefListPageView | null,
-  addOn: ObjectRefListPageView | null,
-): ObjectPageViewModel {
-  return {
-    ...model,
-    rightRelated: related?.items.slice(0, 5).map(projectedObjectToRefCard) ?? [],
-    rightSimilar: similar?.items.slice(0, 5).map(projectedObjectToRefCard) ?? [],
-    rightAddOn: addOn?.items.slice(0, 5).map(projectedObjectToRefCard) ?? [],
-    rightRelatedHasMore: related?.hasMore ?? false,
-    rightSimilarHasMore: similar?.hasMore ?? false,
-    rightAddOnHasMore: addOn?.hasMore ?? false,
-  };
+  sp: Record<string, string | string[] | undefined>,
+  pathIds: string[],
+): string {
+  const allowed = new Set(model.primaryTabs.map((t) => t.segment));
+  const refListSegments = new Set<string>(REF_LIST_PRIMARY_SEGMENTS);
+  const tabRaw = firstSearchParam(sp, OBJECT_PAGE_PRIMARY_TAB_PARAM)?.trim();
+
+  if (tabRaw === OBJECT_PAGE_DESCRIPTION_SEGMENT) {
+    return OBJECT_PAGE_DESCRIPTION_SEGMENT;
+  }
+  if (tabRaw && (allowed.has(tabRaw) || refListSegments.has(tabRaw))) {
+    return tabRaw;
+  }
+  if (!tabRaw && pathIds.length === 0) {
+    switch (model.defaultLanding.kind) {
+      case 'primaryTab':
+        if (model.defaultLanding.segment === OBJECT_PAGE_DESCRIPTION_SEGMENT) {
+          return OBJECT_PAGE_DESCRIPTION_SEGMENT;
+        }
+        if (allowed.has(model.defaultLanding.segment)) {
+          return model.defaultLanding.segment;
+        }
+        break;
+      case 'routeStub':
+        if (allowed.has('reviews')) {
+          return 'reviews';
+        }
+        break;
+      case 'nestedInHost':
+      case 'hostContent':
+        return '';
+        break;
+    }
+  }
+  return '';
 }
 
 export async function generateMetadata({
@@ -93,7 +113,7 @@ export async function generateMetadata({
   const messages = await loadMessages(locale);
   const sp = await searchParams;
 
-  const model = await loadObjectPageModel(objectId, locale);
+  const model = await loadObjectPageModel(objectId, locale, null);
   if (!model) {
     return { title: objectId };
   }
@@ -175,46 +195,19 @@ export default async function ObjectDetailPage({
   const objectId = decodeURIComponent(rawId);
   const locale = await getRequestLocale();
   const sp = await searchParams;
-  const model = await loadObjectPageModel(objectId, locale);
+
+  const auth = createCookieAuthContextProvider();
+  const user = await auth.getUser();
+  const viewerUsername = user?.username ?? null;
+
+  const model = await loadObjectPageModel(objectId, locale, viewerUsername);
 
   if (!model) {
     notFound();
   }
 
-  const allowed = new Set(model.primaryTabs.map((t) => t.segment));
-  const refListSegments = new Set<string>(REF_LIST_PRIMARY_SEGMENTS);
-  const tabRaw = firstSearchParam(sp, OBJECT_PAGE_PRIMARY_TAB_PARAM)?.trim();
   const pathIds = parseViewPathParam(sp);
-
-  let initialPrimarySegment = '';
-  if (tabRaw === OBJECT_PAGE_DESCRIPTION_SEGMENT) {
-    initialPrimarySegment = OBJECT_PAGE_DESCRIPTION_SEGMENT;
-  } else if (tabRaw && (allowed.has(tabRaw) || refListSegments.has(tabRaw))) {
-    initialPrimarySegment = tabRaw;
-  } else if (!tabRaw && pathIds.length === 0) {
-    switch (model.defaultLanding.kind) {
-      case 'primaryTab':
-        if (model.defaultLanding.segment === OBJECT_PAGE_DESCRIPTION_SEGMENT) {
-          initialPrimarySegment = OBJECT_PAGE_DESCRIPTION_SEGMENT;
-        } else if (allowed.has(model.defaultLanding.segment)) {
-          initialPrimarySegment = model.defaultLanding.segment;
-        }
-        break;
-      case 'routeStub':
-        if (allowed.has('reviews')) {
-          initialPrimarySegment = 'reviews';
-        }
-        break;
-      case 'nestedInHost':
-      case 'hostContent':
-        initialPrimarySegment = '';
-        break;
-    }
-  }
-
-  const auth = createCookieAuthContextProvider();
-  const user = await auth.getUser();
-  const refFetchInit = { locale, viewer: user?.username ?? null };
+  const initialPrimarySegment = resolveInitialPrimarySegment(model, sp, pathIds);
 
   const supportsRelated = objectTypeSupportsRefList(
     model.objectTypeKey,
@@ -229,95 +222,30 @@ export default async function ObjectDetailPage({
     UPDATE_TYPES.ADD_ON,
   );
 
-  const [relatedRailPage, similarRailPage, addOnRailPage] = await Promise.all([
-    supportsRelated
-      ? fetchObjectRefList(
-          objectId,
-          'related',
-          { limit: RIGHT_RAIL_REF_FETCH_LIMIT },
-          refFetchInit,
-        )
-      : Promise.resolve(null),
-    supportsSimilar
-      ? fetchObjectRefList(
-          objectId,
-          'similar',
-          { limit: RIGHT_RAIL_REF_FETCH_LIMIT },
-          refFetchInit,
-        )
-      : Promise.resolve(null),
-    supportsAddOn
-      ? fetchObjectRefList(
-          objectId,
-          'add-on',
-          { limit: RIGHT_RAIL_REF_FETCH_LIMIT },
-          refFetchInit,
-        )
-      : Promise.resolve(null),
-  ]);
-
-  const clientModel = mergeRightRailIntoModel(
-    model,
-    relatedRailPage,
-    similarRailPage,
-    addOnRailPage,
-  );
-
-  const rightRailFollowersPage =
-    objectFollowersCount(model) > 0
-      ? await getObjectFollowersPageQuery(
-          objectId,
-          { sort: 'rank', skip: 0, limit: RIGHT_RAIL_FOLLOWERS_FETCH_LIMIT },
-          user?.username ?? null,
-        )
-      : null;
-  const rightRailFollowersPreview =
-    rightRailFollowersPage != null && rightRailFollowersPage.items.length > 0
-      ? rightRailFollowersPage
-      : null;
-
-  const filters = parseObjectUpdatesSearchParams(sp);
-  const initialUpdatesPage = await getObjectUpdatesFeedPageQuery(
-    objectId,
-    { filters, cursor: null },
-    { locale, viewer: user?.username ?? null },
-  );
-
-  const registryEntry =
-    OBJECT_TYPE_REGISTRY[model.objectTypeKey as keyof typeof OBJECT_TYPE_REGISTRY];
-  const supported = registryEntry?.supported_updates ?? [];
-  const typeOptions = supported.map((u) => ({
-    value: u,
-    label: labelForUpdateType(u),
-    count: model.updateTypeCounts[u] ?? 0,
-  }));
-  const showLocaleFilter = supported.some((u) => UPDATE_REGISTRY[u]?.localizable === true);
-  const localizableTypes = supported.filter((u) => UPDATE_REGISTRY[u]?.localizable === true);
-
-  const embeddedUpdatesFeed = {
-    initialPage: initialUpdatesPage,
-    filters,
-    typeOptions,
-    showLocaleFilter,
-    localizableTypes,
-  };
-
   const followersSort = parseSubscriptionSortParam(sp.sort);
   const authoritySubType = parseAuthoritySubTypeParam(sp);
   const authoritySort = parseSubscriptionSortParam(sp.sort);
+  const nestedResolveInit = { locale, viewer: viewerUsername };
+  const refFetchInit = { locale, viewer: viewerUsername };
 
-  const embeddedFollowersPage =
+  const [
+    embeddedFollowersPage,
+    embeddedAuthorityPage,
+    embeddedRelatedPage,
+    embeddedSimilarPage,
+    embeddedAddOnPage,
+    initialNestedStackRaw,
+    defaultNestedContent,
+  ] = await Promise.all([
     initialPrimarySegment === 'followers'
-      ? await getObjectFollowersPageQuery(
+      ? getObjectFollowersPageQuery(
           objectId,
           { sort: followersSort, skip: 0, limit: USER_SOCIAL_PAGE_SIZE },
-          user?.username ?? null,
+          viewerUsername,
         )
-      : null;
-
-  const embeddedAuthorityPage =
+      : Promise.resolve(null),
     initialPrimarySegment === 'authority'
-      ? await getObjectAuthorityPageQuery(
+      ? getObjectAuthorityPageQuery(
           objectId,
           {
             authorityType: authoritySubType,
@@ -325,50 +253,42 @@ export default async function ObjectDetailPage({
             skip: 0,
             limit: USER_SOCIAL_PAGE_SIZE,
           },
-          user?.username ?? null,
+          viewerUsername,
         )
-      : null;
-
-  const embeddedRelatedPage =
+      : Promise.resolve(null),
     initialPrimarySegment === 'related' && supportsRelated
-      ? await fetchObjectRefList(
+      ? fetchObjectRefList(
           objectId,
           'related',
           { limit: REF_LIST_PAGE_SIZE },
           refFetchInit,
         )
-      : null;
-
-  const embeddedSimilarPage =
+      : Promise.resolve(null),
     initialPrimarySegment === 'similar' && supportsSimilar
-      ? await fetchObjectRefList(
+      ? fetchObjectRefList(
           objectId,
           'similar',
           { limit: REF_LIST_PAGE_SIZE },
           refFetchInit,
         )
-      : null;
-
-  const embeddedAddOnPage =
+      : Promise.resolve(null),
     initialPrimarySegment === 'add-on' && supportsAddOn
-      ? await fetchObjectRefList(
+      ? fetchObjectRefList(
           objectId,
           'add-on',
           { limit: REF_LIST_PAGE_SIZE },
           refFetchInit,
         )
-      : null;
-
-  const nestedResolveInit = { locale, viewer: user?.username ?? null };
-  const initialNestedStack = await resolveNestedObjectPath(pathIds, nestedResolveInit);
-
-  const defaultNestedContent =
+      : Promise.resolve(null),
+    pathIds.length > 0
+      ? resolveNestedObjectPath(pathIds, nestedResolveInit)
+      : Promise.resolve([]),
     pathIds.length === 0 && model.defaultLanding.kind === 'nestedInHost'
-      ? await resolveNestedObjectContent(
-          model.defaultLanding.targetObjectId,
-          nestedResolveInit,
-        )
-      : null;
+      ? resolveNestedObjectContent(model.defaultLanding.targetObjectId, nestedResolveInit)
+      : Promise.resolve(null),
+  ]);
+
+  const initialNestedStack = sanitizeNestedStack(pathIds, initialNestedStackRaw);
 
   const objectPageBody =
     model.objectType === 'page' && model.pageContent
@@ -396,12 +316,38 @@ export default async function ObjectDetailPage({
       })()
     : null;
 
+  const followersTabCount = objectFollowersCount(model);
+
+  const updatesFeedSlot =
+    initialPrimarySegment === 'updates' ? (
+      <Suspense fallback={<ObjectPageUpdatesFeedSkeleton />}>
+        <ObjectPageUpdatesFeedSection
+          objectId={objectId}
+          model={model}
+          searchParams={sp}
+          locale={locale}
+          viewerUsername={viewerUsername}
+        />
+      </Suspense>
+    ) : null;
+
+  const rightRailSlot = (
+    <Suspense fallback={<ObjectPageRightRailSkeleton />}>
+      <ObjectPageRightRailSection
+        objectId={objectId}
+        objectTypeKey={model.objectTypeKey}
+        locale={locale}
+        viewerUsername={viewerUsername}
+        followersTabCount={followersTabCount}
+      />
+    </Suspense>
+  );
+
   return (
     <>
       <JsonLdScript data={model.seo?.json_ld} />
       <ObjectPageClient
-        model={clientModel}
-        embeddedUpdatesFeed={embeddedUpdatesFeed}
+        model={model}
         embeddedFollowersPage={embeddedFollowersPage}
         followersSort={followersSort}
         embeddedAuthorityPage={embeddedAuthorityPage}
@@ -410,14 +356,16 @@ export default async function ObjectDetailPage({
         embeddedRelatedPage={embeddedRelatedPage}
         embeddedSimilarPage={embeddedSimilarPage}
         embeddedAddOnPage={embeddedAddOnPage}
-        rightRailFollowersPage={rightRailFollowersPreview}
-        viewerUsername={user?.username ?? null}
+        viewerUsername={viewerUsername}
         initialPrimarySegment={initialPrimarySegment}
         initialGalleryAlbum={initialGalleryAlbum}
         initialNestedStack={initialNestedStack}
         defaultNestedContent={defaultNestedContent}
         objectPageBody={objectPageBody}
         objectDescriptionBody={objectDescriptionBody}
+        updatesFeedSlot={updatesFeedSlot}
+        rightRailSlot={rightRailSlot}
+        invalidPathRequested={pathIds.length > 0 && initialNestedStack.length === 0}
       />
     </>
   );

@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { RedisClientFactory } from '@opden-data-layer/clients';
 import type { GovernanceSnapshot } from '@opden-data-layer/objects-domain';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { AggregatedObjectRepository, ObjectAuthorityRepository } from '../../repositories';
 import { GovernanceResolverService } from '../governance';
-import { expandObjectRefs } from './object-ref-expansion';
+import { expandObjectRefsWithCache } from './expand-object-refs-cached';
 import { ListItemsRecursiveCountService } from './list-items-recursive-count.service';
 import { normalizeProjectedObjectForJson } from './normalize-projected-object-for-json';
 import { collectObjectRefIdsFromView, projectObjectCore } from './project-object';
@@ -44,6 +45,8 @@ export interface BatchProjectOptions {
 
 @Injectable()
 export class ObjectProjectionService {
+  private readonly logger = new Logger(ObjectProjectionService.name);
+
   constructor(
     private readonly aggregatedObjectRepo: AggregatedObjectRepository,
     private readonly objectAuthorityRepo: ObjectAuthorityRepository,
@@ -52,6 +55,7 @@ export class ObjectProjectionService {
     private readonly governanceResolver: GovernanceResolverService,
     private readonly seoService: ObjectSeoService,
     private readonly config: ConfigService,
+    private readonly redisFactory: RedisClientFactory,
   ) {}
 
   async project(view: ResolvedObjectView, options: ProjectOptions): Promise<ProjectedObject> {
@@ -85,17 +89,22 @@ export class ObjectProjectionService {
       viewerAdminIds = new Set([...(viewerAdminIds ?? []), ...refAdminIds]);
     }
 
-    const refSummariesById = await expandObjectRefs(refIds, {
-      aggregatedObjectRepo: this.aggregatedObjectRepo,
-      objectViewService: this.objectViewService,
-      listItemsRecursiveCountService: this.listItemsRecursiveCountService,
-      parentObjectId: view.object_id,
-      governance,
-      locale: options.locale,
-      ipfsGatewayBaseUrl,
-      viewerAccount,
-      viewerAdminIds,
-    });
+    const refSummariesById = await expandObjectRefsWithCache(
+      refIds,
+      {
+        aggregatedObjectRepo: this.aggregatedObjectRepo,
+        objectViewService: this.objectViewService,
+        listItemsRecursiveCountService: this.listItemsRecursiveCountService,
+        parentObjectId: view.object_id,
+        governance,
+        locale: options.locale,
+        ipfsGatewayBaseUrl,
+        viewerAccount,
+        viewerAdminIds,
+      },
+      this.redisFactory,
+      this.logger,
+    );
 
     const projectedCore = projectObjectCore({
       view,
@@ -165,17 +174,22 @@ export class ObjectProjectionService {
     const results: ProjectedObject[] = [];
     for (const view of views) {
       const refIds = collectObjectRefIdsFromView(view);
-      const refSummariesById = await expandObjectRefs(refIds, {
-        aggregatedObjectRepo: this.aggregatedObjectRepo,
-        objectViewService: this.objectViewService,
-        listItemsRecursiveCountService: this.listItemsRecursiveCountService,
-        parentObjectId: view.object_id,
-        governance,
-        locale: options.locale,
-        ipfsGatewayBaseUrl,
-        viewerAccount,
-        viewerAdminIds,
-      });
+      const refSummariesById = await expandObjectRefsWithCache(
+        refIds,
+        {
+          aggregatedObjectRepo: this.aggregatedObjectRepo,
+          objectViewService: this.objectViewService,
+          listItemsRecursiveCountService: this.listItemsRecursiveCountService,
+          parentObjectId: view.object_id,
+          governance,
+          locale: options.locale,
+          ipfsGatewayBaseUrl,
+          viewerAccount,
+          viewerAdminIds,
+        },
+        this.redisFactory,
+        this.logger,
+      );
 
       const projectedCore = projectObjectCore({
         view,

@@ -6,6 +6,7 @@ import {
   resolveGalleryAlbumFromObjectUrl,
   resolvePrimarySegmentForObjectPage,
   resolvePrimarySegmentFromObjectUrl,
+  sanitizeNestedStack,
 } from './object-page-search';
 
 describe('resolvePrimarySegmentForObjectPage', () => {
@@ -149,5 +150,39 @@ describe('resolveGalleryAlbumForObjectPage', () => {
     expect(resolveGalleryAlbumForObjectPage(objectId, `${base}/gallery`, sp)).toBe(
       'Menu shots',
     );
+  });
+});
+
+describe('sanitizeNestedStack', () => {
+  it('returns empty stack when path ids were requested but nothing resolved', () => {
+    expect(sanitizeNestedStack(['a', 'b'], [])).toEqual([]);
+  });
+
+  it('keeps stack when it matches path prefix', () => {
+    const stack = [
+      {
+        objectId: 'a',
+        name: 'A',
+        objectType: 'list' as const,
+        listItems: [],
+        listItemsSortCustom: null,
+        pageContentHtml: null,
+      },
+    ];
+    expect(sanitizeNestedStack(['a'], stack)).toEqual(stack);
+  });
+
+  it('returns empty when stack ids do not match requested path', () => {
+    const stack = [
+      {
+        objectId: 'wrong',
+        name: 'X',
+        objectType: 'list' as const,
+        listItems: [],
+        listItemsSortCustom: null,
+        pageContentHtml: null,
+      },
+    ];
+    expect(sanitizeNestedStack(['a'], stack)).toEqual([]);
   });
 });

@@ -7,4 +7,19 @@ export const redisKey = {
     buildRedisKey(APP, 'cache', 'tag-categories', objectType),
   listItemCount: (parentObjectId: string, listRefId: string) =>
     buildRedisKey(APP, 'cache', 'list-count', parentObjectId, listRefId),
+  objectRefExpansion: (
+    parentObjectId: string,
+    locale: string,
+    viewerSegment: string,
+    refIdsSegment: string,
+  ) =>
+    buildRedisKey(
+      APP,
+      'cache',
+      'obj-refs',
+      parentObjectId,
+      locale,
+      viewerSegment,
+      refIdsSegment,
+    ),
 } as const;

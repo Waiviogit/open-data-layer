@@ -10,6 +10,7 @@ import {
   OBJECT_PAGE_VIEW_PATH_PARAM,
 } from '@/modules/object/domain/object-page-url.constants';
 import { parseViewPathFromSearchParam } from '@/modules/object/domain/object-page-path';
+import type { ObjectNestedViewResolved } from '@/modules/object/domain/object-page.types';
 
 /** Search param for the object profile primary tab (Reviews, Updates, …). */
 export const OBJECT_PAGE_PRIMARY_TAB_PARAM = 'tab';
@@ -51,6 +52,27 @@ export function parseViewPathParam(
   sp: Record<string, string | string[] | undefined>,
 ): string[] {
   return parseViewPathFromSearchParam(firstSearchParam(sp, OBJECT_PAGE_VIEW_PATH_PARAM));
+}
+
+/**
+ * Keeps SSR nested stack aligned with requested path ids.
+ * Returns an empty stack when the path could not be resolved (avoids client crash / stale URL).
+ */
+export function sanitizeNestedStack(
+  pathIds: string[],
+  stack: ObjectNestedViewResolved[],
+): ObjectNestedViewResolved[] {
+  if (pathIds.length === 0) {
+    return stack;
+  }
+  if (stack.length === 0) {
+    return [];
+  }
+  const matchesPrefix = stack.every((entry, index) => entry.objectId === pathIds[index]);
+  if (!matchesPrefix) {
+    return [];
+  }
+  return stack;
 }
 
 const PATH_TAB_SEGMENTS = OBJECT_PAGE_PATH_TAB_SEGMENTS;
