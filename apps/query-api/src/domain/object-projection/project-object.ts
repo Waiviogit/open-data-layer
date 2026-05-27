@@ -176,6 +176,14 @@ export function projectObjectCore(input: ProjectObjectInput): ProjectedObjectCor
     }
   }
 
+  if (!fields[UPDATE_TYPES.IMAGE]) {
+    const parentRef = fields[UPDATE_TYPES.PARENT] as RefSummary | null | undefined;
+    const parentImage = parentRef?.fields?.[UPDATE_TYPES.IMAGE] as string | null | undefined;
+    if (parentImage) {
+      fields[UPDATE_TYPES.IMAGE] = parentImage;
+    }
+  }
+
   const gallery = buildGalleryAlbums({
     imageGallery: fields.imageGallery,
     imageGalleryItem: fields.imageGalleryItem,

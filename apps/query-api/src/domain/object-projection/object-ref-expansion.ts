@@ -14,6 +14,7 @@ import type { ListItemsRecursiveCountService } from './list-items-recursive-coun
 export const REF_SUMMARY_UPDATE_TYPES: readonly string[] = [
   UPDATE_TYPES.NAME,
   UPDATE_TYPES.IMAGE,
+  UPDATE_TYPES.PARENT,
   UPDATE_TYPES.DESCRIPTION,
   UPDATE_TYPES.TAG_CATEGORY_ITEM,
   UPDATE_TYPES.AGGREGATE_RATING,
@@ -100,6 +101,57 @@ export async function expandObjectRefs(
       summary.listItemsCount = listItemCountsById.get(id) ?? 0;
     }
     out.set(id, summary);
+  }
+
+  const toResolve: Array<{ refId: string; parentId: string }> = [];
+  for (const [refId, summary] of out) {
+    if (!summary.fields[UPDATE_TYPES.IMAGE]) {
+      const view = byId.get(refId)?.view;
+      const parentField = view?.fields[UPDATE_TYPES.PARENT];
+      const parentId = parentField?.values
+        .find((u) => u.validity_status === 'VALID')
+        ?.value_text?.trim();
+      if (parentId) {
+        toResolve.push({ refId, parentId });
+      }
+    }
+  }
+
+  if (toResolve.length > 0) {
+    const uniqueParentIds = [...new Set(toResolve.map((e) => e.parentId))];
+    const { objects: parentObjs, voterWaivPowers: parentPowers } =
+      await aggregatedObjectRepo.loadByObjectIds(uniqueParentIds, {
+        viewerAccount,
+        includeRankVoteProjection: false,
+      });
+    const parentViews = objectViewService.resolve(parentObjs, parentPowers, {
+      update_types: [UPDATE_TYPES.IMAGE],
+      locale,
+      include_rejected: false,
+      governance,
+    });
+    const parentImageById = new Map<string, string>();
+    for (let i = 0; i < parentObjs.length; i++) {
+      const pid = parentObjs[i]!.core.object_id;
+      const imgField = parentViews[i]?.fields[UPDATE_TYPES.IMAGE];
+      if (imgField) {
+        const url = projectFieldValue(imgField, UPDATE_TYPES.IMAGE, ipfsGatewayBaseUrl) as
+          | string
+          | null;
+        if (url) {
+          parentImageById.set(pid, url);
+        }
+      }
+    }
+    for (const { refId, parentId } of toResolve) {
+      const url = parentImageById.get(parentId);
+      if (url) {
+        const summary = out.get(refId);
+        if (summary) {
+          summary.fields[UPDATE_TYPES.IMAGE] = url;
+        }
+      }
+    }
   }
 
   return out;

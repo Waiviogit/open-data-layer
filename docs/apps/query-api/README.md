@@ -22,6 +22,7 @@ Read-path API — governance masking, object resolution (via shared domain libra
 | [User post drafts](spec/user-post-drafts-endpoint.md) | `GET|POST|PATCH|PUT|DELETE /query/v1/users/:author/drafts` (Bearer JWT, same `JWT_SECRET` as auth-api) |
 | [Search](spec/search.md) | `GET /query/v1/search`, `GET /query/v1/search/counts` (global tab counts) |
 | [Objects resolve — aggregateRating](spec/objects-resolve.md) | `POST /query/v1/objects/resolve` (`fields.aggregateRating` array semantics) |
+| [Object avatar fallback to parent](spec/object-avatar-fallback.md) | `fields.image` from parent when child has no `image` |
 | [Object ref lists](spec/object-ref-list-endpoints.md) | `GET /query/v1/objects/:id/related`, `/similar`, `/add-on` (RefSummary pagination) |
 
 ## App code

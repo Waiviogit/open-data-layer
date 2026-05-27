@@ -205,3 +205,93 @@ describe('projectObjectCore listItem', () => {
     expect(listItem.map((s) => s.addedAtUnix)).toEqual([100, 200]);
   });
 });
+
+describe('projectObjectCore avatar fallback', () => {
+  it('uses parent image when object has no image', () => {
+    const refMap = new Map<string, RefSummary>([
+      [
+        'parent-1',
+        {
+          object_id: 'parent-1',
+          object_type: 'business',
+          fields: {
+            name: 'Sushi Mura',
+            image: 'https://cdn.example/parent.png',
+          },
+          weight: null,
+        },
+      ],
+    ]);
+
+    const view = baseView({
+      parent: {
+        update_type: UPDATE_TYPES.PARENT,
+        cardinality: 'single',
+        values: [
+          resolvedUpdate({
+            update_type: UPDATE_TYPES.PARENT,
+            value_text: 'parent-1',
+          }),
+        ],
+      },
+    });
+
+    const core = projectObjectCore({
+      view,
+      ipfsGatewayBaseUrl: 'https://ipfs.io',
+      refSummariesById: refMap,
+      rankVoteProjection: emptyRankVoteProjection(),
+    });
+
+    expect(core.fields.image).toBe('https://cdn.example/parent.png');
+  });
+
+  it('keeps own image when present', () => {
+    const refMap = new Map<string, RefSummary>([
+      [
+        'parent-1',
+        {
+          object_id: 'parent-1',
+          object_type: 'business',
+          fields: {
+            name: 'Sushi Mura',
+            image: 'https://cdn.example/parent.png',
+          },
+          weight: null,
+        },
+      ],
+    ]);
+
+    const view = baseView({
+      image: {
+        update_type: UPDATE_TYPES.IMAGE,
+        cardinality: 'single',
+        values: [
+          resolvedUpdate({
+            update_type: UPDATE_TYPES.IMAGE,
+            value_text: 'https://cdn.example/own.png',
+          }),
+        ],
+      },
+      parent: {
+        update_type: UPDATE_TYPES.PARENT,
+        cardinality: 'single',
+        values: [
+          resolvedUpdate({
+            update_type: UPDATE_TYPES.PARENT,
+            value_text: 'parent-1',
+          }),
+        ],
+      },
+    });
+
+    const core = projectObjectCore({
+      view,
+      ipfsGatewayBaseUrl: 'https://ipfs.io',
+      refSummariesById: refMap,
+      rankVoteProjection: emptyRankVoteProjection(),
+    });
+
+    expect(core.fields.image).toBe('https://cdn.example/own.png');
+  });
+});
