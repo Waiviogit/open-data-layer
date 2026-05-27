@@ -1,6 +1,6 @@
 # Object page — navigation & transitions
 
-**Back:** [web overview](../overview.md) · **Related:** [object-updates-feed.md](../object-updates-feed.md), [object-followers-feed.md](../object-followers-feed.md), [object-authority-feed.md](../object-authority-feed.md), [gallery.md](gallery.md)
+**Back:** [web overview](../overview.md) · **Related:** [navigation.md](navigation.md), [right-rail.md](right-rail.md), [object-updates-feed.md](../object-updates-feed.md), [object-followers-feed.md](../object-followers-feed.md), [object-authority-feed.md](../object-authority-feed.md), [gallery.md](gallery.md)
 
 ## Scope
 
@@ -22,6 +22,11 @@ Covers all navigation behaviour on the object detail page (`/object/[object-id]`
 | `/object/:id/gallery` | Gallery tab — albums grid | Gallery |
 | `/object/:id/gallery/album/:name` | Gallery tab — album photo grid | Gallery |
 | `/object/:id/experts` | Experts tab | Experts |
+| `/object/:id/related` | Related objects feed | Related |
+| `/object/:id/similar` | Similar objects feed | Similar |
+| `/object/:id/add-on` | Add-on objects feed | Add-On |
+
+**Right rail:** preview blocks for Related, Similar, Add-On, and Followers (when data exists) — see [right-rail.md](right-rail.md). Show more on each block opens the matching row above.
 
 **Proxy rewrites** (`apps/web/src/proxy.ts`):
 
@@ -35,7 +40,7 @@ All `/object/:id/<tab>` paths are rewritten server-side to `/object/:id` with `?
 
 On every URL change (including browser back/forward), `ObjectPageClient` calls `resolvePrimarySegmentForObjectPage` in `apps/web/src/app/(app)/object/[object-id]/object-page-search.ts`:
 
-1. `resolvePrimarySegmentFromObjectUrl` — check `pathname` for `/object/:id/reviews|updates|followers|authority|description|gallery|gallery/album/:name|experts`, then legacy `?tab=`.
+1. `resolvePrimarySegmentFromObjectUrl` — check `pathname` for `/object/:id/reviews|updates|followers|authority|description|gallery|gallery/album/:name|experts|related|similar|add-on`, then legacy `?tab=`.
 2. If that returns a segment, use it (explicit tab in URL).
 3. If `?path=` is present, use `''` (menu landing with user-driven nested stack).
 4. Otherwise keep the SSR default tab from default landing (`initialPrimarySegment`) — e.g. Reviews on clean `/object/:id` without requiring `/reviews` in the path.
@@ -106,7 +111,7 @@ Proxy rewrites to `?tab=description`. Center column uses `ObjectDescriptionBody`
 - Up to **15** photos from `model.previewGallery` (query-api `buildGalleryAlbums` — legacy `getGallery.js` / `preview_gallery`) interleaved after each paragraph; leftover photos appended at the bottom (legacy `DescriptionPage.js` #5485).
 - Typography matches `ObjectPageBody` (page content styles).
 
-Left rail **Description** button links here when description text or gallery preview exists. Gallery block shows `ObjectGalleryCarousel` (looped prev/next) fed by the same `previewGallery`.
+Left rail **Description** button links here when description text or gallery preview exists. Gallery block shows `ObjectGalleryCarousel` (looped prev/next) from `previewGallery` **excluding avatar-only rows** — hidden when every preview photo is the object avatar.
 
 **TODO:** related album photos from posts (legacy separate API — not in v1).
 

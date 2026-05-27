@@ -29,6 +29,7 @@ import {
   projectedEmail,
   projectedGalleryAlbums,
   projectedPreviewGallery,
+  projectedLeftRailPreviewGallery,
   projectedGalleryImageUrls,
   projectedIdentifierRows,
   projectedGeoLatLon,
@@ -265,7 +266,7 @@ function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock
         break;
       }
       case 'gallery': {
-        const photos = projectedPreviewGallery(viewLike);
+        const photos = projectedLeftRailPreviewGallery(viewLike);
         if (photos.length > 0) {
           blocks.push({
             kind: 'gallery',

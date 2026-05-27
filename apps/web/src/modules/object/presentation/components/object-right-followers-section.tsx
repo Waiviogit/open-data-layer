@@ -43,6 +43,9 @@ export function ObjectRightFollowersSection({
               <p className="min-w-0 flex-1 truncate text-sm font-medium leading-snug text-fg">
                 {row.name}
               </p>
+              <span className="shrink-0 rounded-md border border-border bg-surface-control px-2 py-0.5 font-mono text-body-sm tabular-nums text-fg">
+                {row.wobjectsWeight.toFixed(2)}
+              </span>
             </Link>
           </li>
         ))}

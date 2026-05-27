@@ -1162,6 +1162,13 @@ export function projectedPreviewGallery(o: ProjectedObjectView): ProjectedGaller
   }));
 }
 
+/** Left-rail gallery carousel: omit avatar-only preview (hero already shows avatar). */
+export function projectedLeftRailPreviewGallery(
+  o: ProjectedObjectView,
+): ProjectedGalleryPhotoView[] {
+  return projectedPreviewGallery(o).filter((photo) => !photo.isAvatar);
+}
+
 function projectedGalleryImageUrlsFromFields(o: ProjectedObjectView, max = 8): string[] {
   const raw = o.fields.imageGalleryItem;
   if (!Array.isArray(raw)) {

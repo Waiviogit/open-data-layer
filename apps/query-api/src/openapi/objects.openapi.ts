@@ -230,13 +230,13 @@ const objectRefListQueryOpenApi = z.object({
 function registerObjectRefListPath(
   pathSuffix: 'related' | 'similar' | 'add-on',
   summary: string,
-  updateTypeLabel: string,
+  description: string,
 ): void {
   registry.registerPath({
     method: 'get',
     path: `/query/v1/objects/{objectId}/${pathSuffix}`,
     summary,
-    description: `Lists referenced objects from VALID \`${updateTypeLabel}\` updates on the source object, then backfills from shared shop categories (\`object_categories\`) using legacy close-products rules where applicable. Returns compact \`RefSummary\` rows for card display. Pagination uses numeric offset \`cursor\`.`,
+    description,
     request: {
       params: z.object({
         objectId: z
@@ -246,10 +246,20 @@ function registerObjectRefListPath(
       }),
       query: objectRefListQueryOpenApi,
       headers: z.object({
-        'accept-language': z.string().optional(),
-        'x-locale': z.string().optional(),
-        'x-governance-object-id': z.string().optional(),
-        'x-viewer': z.string().optional(),
+        'accept-language': z.string().optional().openapi({
+          description: 'Preferred locale (first BCP-47 tag is used).',
+        }),
+        'x-locale': z.string().optional().openapi({
+          description: 'When valid, overrides `Accept-Language`.',
+        }),
+        'x-governance-object-id': z.string().optional().openapi({
+          description:
+            'Optional governance object ID; merged with platform governance from `GOVERNANCE_OBJECT_ID`.',
+        }),
+        'x-viewer': z.string().optional().openapi({
+          description:
+            'Optional Hive account; sets `hasAdministrativeAuthority` on each ref when the viewer has administrative authority on that object.',
+        }),
       }),
     },
     responses: {
@@ -273,6 +283,18 @@ function registerObjectRefListPath(
   });
 }
 
-registerObjectRefListPath('related', 'List related objects', 'isRelatedTo');
-registerObjectRefListPath('similar', 'List similar objects', 'isSimilarTo');
-registerObjectRefListPath('add-on', 'List add-on objects', 'addOn');
+registerObjectRefListPath(
+  'related',
+  'List related objects',
+  'Returns VALID `isRelatedTo` refs on the source object first, then backfills from `object_categories` using legacy close-products **related** rules: categories whose global count is ≥ the average across the source object’s categories; matches objects in any of those categories. Response rows are compact `RefSummary` projections. Pagination: numeric offset `cursor` (default page size 20, max 50).',
+);
+registerObjectRefListPath(
+  'similar',
+  'List similar objects',
+  'Returns VALID `isSimilarTo` refs first, then backfills from `object_categories` using legacy **similar** rules: iterate source categories sorted by global count ascending; one category at a time, excluding objects that share already-used categories. Response rows are compact `RefSummary` projections. Pagination: numeric offset `cursor`.',
+);
+registerObjectRefListPath(
+  'add-on',
+  'List add-on objects',
+  'Returns VALID `addOn` refs on the source object first, then backfills with objects that have an `addOn` update pointing at the source object id (reverse add-on). Response rows are compact `RefSummary` projections. Pagination: numeric offset `cursor`.',
+);

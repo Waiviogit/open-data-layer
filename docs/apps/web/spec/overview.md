@@ -37,6 +37,7 @@ The **web** application is the Next.js **App Router** frontend for the Open Data
 | [components/avatar.md](components/avatar.md) | Shared `UserAvatar`, `resolveAvatarUrl` (profile + feed) |
 | [pages/index.md](pages/index.md) | Page-level specs directory (user profile, ...) |
 | [object/navigation.md](object/navigation.md) | Object detail: URL routing, primary tabs, nested `?path=`, breadcrumbs, browser history |
+| [object/right-rail.md](object/right-rail.md) | Object detail: right column (Related, Similar, Add-On, Followers previews) |
 | [object/gallery.md](object/gallery.md) | Object detail: Gallery tab, album drill-down, add album/image modals |
 | [object-updates-feed.md](object-updates-feed.md) | Object detail: `/object/.../updates` feed (filters, cards, query-api) |
 | [object-edit.md](object-edit.md) | Object detail: edit mode, left-rail `+` add update modal, ODL `update_create` broadcast |

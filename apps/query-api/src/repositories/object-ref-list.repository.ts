@@ -151,17 +151,22 @@ export class ObjectRefListRepository {
       const excludeFilter =
         excludeList.length === 0
           ? sql`TRUE`
-          : sql`ou.object_id NOT IN (${sql.join(excludeList.map((id) => sql`${id}`), sql`, `)})`;
+          : sql`oc.object_id NOT IN (${sql.join(excludeList.map((id) => sql`${id}`), sql`, `)})`;
 
       const rows = await sql<{ object_id: string }>`
-        SELECT DISTINCT ou.object_id
-        FROM object_updates ou
-        INNER JOIN objects_core oc ON oc.object_id = ou.object_id AND oc.status = 'active'
-        WHERE ou.update_type = 'addOn'
-          AND ou.value_text = ${params.sourceId}
+        SELECT oc.object_id
+        FROM objects_core oc
+        WHERE oc.status = 'active'
           AND (${typeFilter})
           AND (${excludeFilter})
-        ORDER BY oc.weight DESC NULLS LAST, ou.object_id ASC
+          AND EXISTS (
+            SELECT 1
+            FROM object_updates ou
+            WHERE ou.object_id = oc.object_id
+              AND ou.update_type = 'addOn'
+              AND ou.value_text = ${params.sourceId}
+          )
+        ORDER BY oc.weight DESC NULLS LAST, oc.object_id ASC
         OFFSET ${params.skip}
         LIMIT ${take}
       `.execute(this.db);
