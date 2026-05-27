@@ -2,6 +2,12 @@ import type { UpdateDefinition } from '@opden-data-layer/core/update-registry';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 import { z } from 'zod';
 
+import { sanitizeGalleryItemFormValue } from './gallery-form-value';
+import {
+  coerceImageCidOrUrlPrefill,
+  isImageCidOrUrlUpdateType,
+  sanitizeImageCidOrUrlFormValue,
+} from './image-form-value';
 import { sanitizeMenuItemFormValue } from './menu-item-form-value';
 import { sanitizeWalletAddressFormValue } from './wallet-address-form-value';
 
@@ -144,6 +150,12 @@ export function coerceFormValueForValidation(
       if (definition.update_type === UPDATE_TYPES.WALLET_ADDRESS) {
         return sanitizeWalletAddressFormValue(raw as Record<string, unknown>);
       }
+      if (definition.update_type === UPDATE_TYPES.IMAGE_GALLERY_ITEM) {
+        return sanitizeGalleryItemFormValue(raw as Record<string, unknown>);
+      }
+      if (isImageCidOrUrlUpdateType(definition.update_type)) {
+        return sanitizeImageCidOrUrlFormValue(raw as Record<string, unknown>);
+      }
     }
     const fields = getJsonFieldDescriptors(definition.schema);
     if (fields && fields.length > 0 && raw && typeof raw === 'object') {
@@ -180,6 +192,9 @@ export function coerceFormValueForValidation(
       return out;
     }
     if (typeof raw === 'string') {
+      if (isImageCidOrUrlUpdateType(definition.update_type)) {
+        return coerceImageCidOrUrlPrefill(raw);
+      }
       return parseJsonValue(raw);
     }
     return raw;
@@ -192,7 +207,11 @@ function parseJsonValue(text: string): unknown {
   if (!trimmed) {
     return undefined;
   }
-  return JSON.parse(trimmed) as unknown;
+  try {
+    return JSON.parse(trimmed) as unknown;
+  } catch {
+    return undefined;
+  }
 }
 
 export function validateUpdateValue(

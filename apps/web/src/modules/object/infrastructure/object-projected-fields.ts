@@ -1,5 +1,9 @@
 import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
 
+import type {
+  ProjectedGalleryAlbumView,
+  ProjectedGalleryPhotoView,
+} from '../domain/object-page.types';
 import type { ProjectedMenuItem, ProjectedMenuItemObject } from '../domain/projected-menu-item.types';
 import type {
   CatalogListSortType,
@@ -8,6 +12,7 @@ import type {
   ProjectedSortCustom,
 } from '../domain/projected-list-item.types';
 
+export type { ProjectedGalleryAlbumView, ProjectedGalleryPhotoView } from '../domain/object-page.types';
 export type { ProjectedMenuItem } from '../domain/projected-menu-item.types';
 export type {
   CatalogListSortType,
@@ -469,12 +474,23 @@ export function applySortCustomToListItems(
   const ordered =
     sortMode === 'custom' && sort
       ? applySortCustomIncludeOrder(base, sort)
-      : sortListItemsByCatalogType(base, sortMode);
+      : sortListItemsByCatalogType(
+          base,
+          sortMode === 'custom' ? 'rank' : sortMode,
+        );
   return sortListItemsListsFirst(ordered);
 }
 
 export function projectedPageContent(o: ProjectedObjectView): string | null {
   const raw = o.fields.pageContent;
+  if (typeof raw === 'string' && raw.trim().length > 0) {
+    return raw.trim();
+  }
+  return null;
+}
+
+export function projectedDescriptionContent(o: ProjectedObjectView): string | null {
+  const raw = o.fields.description;
   if (typeof raw === 'string' && raw.trim().length > 0) {
     return raw.trim();
   }
@@ -1056,8 +1072,97 @@ export function projectedWalletAddressRows(o: ProjectedObjectView): ProjectedWal
   return rows;
 }
 
-/** HTTPS URLs from projected gallery items (resolved `url` when present). */
-export function projectedGalleryImageUrls(o: ProjectedObjectView, max = 8): string[] {
+function readPreviewGalleryFromApi(o: ProjectedObjectView): ProjectedGalleryPhotoView[] {
+  const raw = (o as ProjectedObjectView & { previewGallery?: unknown }).previewGallery;
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  const photos: ProjectedGalleryPhotoView[] = [];
+  for (const row of raw) {
+    if (!isRecord(row)) {
+      continue;
+    }
+    const url = readString(row.url);
+    if (!url) {
+      continue;
+    }
+    const rankScore =
+      typeof row.rankScore === 'number' && Number.isFinite(row.rankScore)
+        ? row.rankScore
+        : null;
+    const updateId = readString(row.update_id) ?? undefined;
+    photos.push({
+      url,
+      rankScore,
+      isAvatar: row.isAvatar === true,
+      ...(updateId ? { update_id: updateId } : {}),
+    });
+  }
+  return photos;
+}
+
+function readGalleryAlbumsFromApi(o: ProjectedObjectView): ProjectedGalleryAlbumView[] {
+  const raw = (o as ProjectedObjectView & { galleryAlbums?: unknown }).galleryAlbums;
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  const albums: ProjectedGalleryAlbumView[] = [];
+  for (const row of raw) {
+    if (!isRecord(row)) {
+      continue;
+    }
+    const name = readString(row.name);
+    if (!name) {
+      continue;
+    }
+    const itemsRaw = row.items;
+    const items: ProjectedGalleryPhotoView[] = [];
+    if (Array.isArray(itemsRaw)) {
+      for (const item of itemsRaw) {
+        if (!isRecord(item)) {
+          continue;
+        }
+        const url = readString(item.url);
+        if (!url) {
+          continue;
+        }
+        const rankScore =
+          typeof item.rankScore === 'number' && Number.isFinite(item.rankScore)
+            ? item.rankScore
+            : null;
+        const updateId = readString(item.update_id) ?? undefined;
+        items.push({
+          url,
+          rankScore,
+          isAvatar: item.isAvatar === true,
+          ...(updateId ? { update_id: updateId } : {}),
+        });
+      }
+    }
+    albums.push({ name, items });
+  }
+  return albums;
+}
+
+/** Grouped gallery albums from resolve (`galleryAlbums`). */
+export function projectedGalleryAlbums(o: ProjectedObjectView): ProjectedGalleryAlbumView[] {
+  return readGalleryAlbumsFromApi(o);
+}
+
+/** Photos-album preview from resolve (`previewGallery`) with legacy field fallback. */
+export function projectedPreviewGallery(o: ProjectedObjectView): ProjectedGalleryPhotoView[] {
+  const fromApi = readPreviewGalleryFromApi(o);
+  if (fromApi.length > 0) {
+    return fromApi;
+  }
+  return projectedGalleryImageUrlsFromFields(o).map((url) => ({
+    url,
+    rankScore: null,
+    isAvatar: false,
+  }));
+}
+
+function projectedGalleryImageUrlsFromFields(o: ProjectedObjectView, max = 8): string[] {
   const raw = o.fields.imageGalleryItem;
   if (!Array.isArray(raw)) {
     return [];
@@ -1076,4 +1181,13 @@ export function projectedGalleryImageUrls(o: ProjectedObjectView, max = 8): stri
     }
   }
   return urls;
+}
+
+/** HTTPS URLs from projected gallery (preview or raw fields). */
+export function projectedGalleryImageUrls(o: ProjectedObjectView, max = 8): string[] {
+  const preview = readPreviewGalleryFromApi(o);
+  if (preview.length > 0) {
+    return preview.slice(0, max).map((p) => p.url);
+  }
+  return projectedGalleryImageUrlsFromFields(o, max);
 }

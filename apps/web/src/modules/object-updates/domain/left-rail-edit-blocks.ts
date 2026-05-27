@@ -42,7 +42,7 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
     case 'tags':
       return { kind: 'tags', headingLabel, sections: [] };
     case 'gallery':
-      return { kind: 'gallery', headingLabel, urls: [] };
+      return { kind: 'gallery', headingLabel, photos: [] };
     case 'price':
       return { kind: 'price', headingLabel, text: '' };
     case 'workHours':

@@ -4,6 +4,7 @@ import { AggregatedObjectRepository } from '../../repositories';
 import type { ObjectUpdatesRepository } from '../../repositories/object-updates.repository';
 import type { ObjectAuthorityRepository } from '../../repositories/object-authority.repository';
 import type { UserObjectFollowsRepository } from '../../repositories/user-object-follows.repository';
+import type { PostsRepository } from '../../repositories/posts.repository';
 import { GovernanceResolverService } from '../governance';
 import { ObjectProjectionService } from '../object-projection/object-projection.service';
 import { emptyRankVoteProjection, type ProjectedObject } from '../object-projection/projected-object.types';
@@ -30,6 +31,12 @@ function projectedFixture(objectId: string): ProjectedObject {
     hasAdministrativeAuthority: false,
     hasOwnershipAuthority: false,
   };
+}
+
+function createPostsRepo(postsCount = 0): PostsRepository {
+  return {
+    countPostObjectsByObjectId: jest.fn().mockResolvedValue(postsCount),
+  } as unknown as PostsRepository;
 }
 
 describe('GetObjectByIdEndpoint', () => {
@@ -66,6 +73,7 @@ describe('GetObjectByIdEndpoint', () => {
       followsRepo,
       updatesRepo,
       authorityRepo,
+      createPostsRepo(),
     );
     const result = await endpoint.execute({
       objectId: 'missing',
@@ -131,6 +139,7 @@ describe('GetObjectByIdEndpoint', () => {
             Promise.resolve(authorityType === 'administrative' ? 2 : 3),
         ),
     } as unknown as ObjectAuthorityRepository;
+    const postsRepo = createPostsRepo(4);
     const { governanceResolver } = createEndpointDeps();
 
     const endpoint = new GetObjectByIdEndpoint(
@@ -141,6 +150,7 @@ describe('GetObjectByIdEndpoint', () => {
       followsRepo,
       updatesRepo,
       authorityRepo,
+      postsRepo,
     );
     const result = await endpoint.execute({
       objectId: 'o1',
@@ -153,6 +163,7 @@ describe('GetObjectByIdEndpoint', () => {
     expect(result).toEqual({
       ...projected,
       followers_count: 7,
+      posts_count: 4,
       updates_count: 25,
       administrative_count: 2,
       ownership_count: 3,
@@ -185,6 +196,7 @@ describe('GetObjectByIdEndpoint', () => {
     expect(updatesRepo.countByObjectIdGroupByUpdateType).toHaveBeenCalledWith('o1');
     expect(authorityRepo.countByObjectIdAndType).toHaveBeenCalledWith('o1', 'administrative');
     expect(authorityRepo.countByObjectIdAndType).toHaveBeenCalledWith('o1', 'ownership');
+    expect(postsRepo.countPostObjectsByObjectId).toHaveBeenCalledWith('o1');
   });
 
   it('when updateTypes is empty, resolves all distinct update types from aggregated updates', async () => {
@@ -259,6 +271,7 @@ describe('GetObjectByIdEndpoint', () => {
       followsRepo,
       updatesRepo,
       authorityRepo,
+      createPostsRepo(),
     );
     await endpoint.execute({
       objectId: 'o1',
@@ -333,6 +346,7 @@ describe('GetObjectByIdEndpoint', () => {
       followsRepo,
       updatesRepo,
       authorityRepo,
+      createPostsRepo(),
     );
     await endpoint.execute({
       objectId: 'o1',
@@ -399,6 +413,7 @@ describe('GetObjectByIdEndpoint', () => {
       followsRepo,
       updatesRepo,
       authorityRepo,
+      createPostsRepo(),
     );
     await endpoint.execute({
       objectId: 'o1',
@@ -457,6 +472,7 @@ describe('GetObjectByIdEndpoint', () => {
       followsRepo,
       updatesRepo,
       authorityRepo,
+      createPostsRepo(),
     );
     const result = await endpoint.execute({
       objectId: 'o1',

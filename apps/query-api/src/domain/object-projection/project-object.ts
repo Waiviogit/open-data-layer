@@ -2,6 +2,7 @@ import type { UpdateDefinition } from '@opden-data-layer/core';
 import { UPDATE_REGISTRY, UPDATE_TYPES } from '@opden-data-layer/core';
 import type { ResolvedField, ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { GOVERNANCE_UPDATE_TYPES } from '../governance/governance.constants';
+import { buildGalleryAlbums, pickAvatarUrlFromProjectedImage } from './build-gallery-albums';
 import { projectFieldValue } from './project-field';
 import type { ProjectObjectInput, ProjectedObject, RefSummary } from './projected-object.types';
 import { SEMANTIC_TYPE_BY_OBJECT_TYPE } from './semantic-types';
@@ -175,11 +176,19 @@ export function projectObjectCore(input: ProjectObjectInput): ProjectedObjectCor
     }
   }
 
+  const gallery = buildGalleryAlbums({
+    imageGallery: fields.imageGallery,
+    imageGalleryItem: fields.imageGalleryItem,
+    avatarUrl: pickAvatarUrlFromProjectedImage(fields.image),
+  });
+
   return {
     object_id: view.object_id,
     object_type: view.object_type,
     semantic_type: SEMANTIC_TYPE_BY_OBJECT_TYPE[view.object_type] ?? null,
     weight: view.weight,
     fields,
+    previewGallery: gallery.previewGallery,
+    galleryAlbums: gallery.albums,
   };
 }

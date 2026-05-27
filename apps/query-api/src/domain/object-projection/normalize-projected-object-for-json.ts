@@ -23,6 +23,8 @@ export function normalizeProjectedObjectForJson(input: ProjectedObject): Project
     fields,
     hasAdministrativeAuthority: input.hasAdministrativeAuthority ?? false,
     hasOwnershipAuthority: input.hasOwnershipAuthority ?? false,
+    previewGallery: input.previewGallery ?? [],
+    galleryAlbums: input.galleryAlbums ?? [],
   };
 
   const seo = input.seo;

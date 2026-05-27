@@ -6,6 +6,7 @@ import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
 
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
 import { ObjectPageBody } from '@/modules/object/presentation/components/object-page-body';
+import { ObjectDescriptionBody } from '@/modules/object/presentation/components/object-description-body';
 import {
   resolveNestedObjectContent,
   resolveNestedObjectPath,
@@ -29,6 +30,8 @@ import {
 import { loadObjectPageModel } from './object-page-model.server';
 import {
   firstSearchParam,
+  OBJECT_PAGE_DESCRIPTION_SEGMENT,
+  OBJECT_PAGE_GALLERY_ALBUM_PARAM,
   OBJECT_PAGE_PRIMARY_TAB_PARAM,
   parseAuthoritySubTypeParam,
   parseViewPathParam,
@@ -73,6 +76,20 @@ export async function generateMetadata({
     const authorityLabel =
       typeof messages.authority === 'string' ? messages.authority : 'Authority';
     title = `${baseTitle} · ${authorityLabel}`;
+  } else if (tab === OBJECT_PAGE_DESCRIPTION_SEGMENT) {
+    const descriptionLabel =
+      typeof messages.object_detail_description_button === 'string'
+        ? messages.object_detail_description_button
+        : 'Description';
+    title = `${baseTitle} · ${descriptionLabel}`;
+  } else if (tab === 'gallery') {
+    const galleryLabel =
+      typeof messages.gallery === 'string' ? messages.gallery : 'Gallery';
+    title = `${baseTitle} · ${galleryLabel}`;
+  } else if (tab === 'experts') {
+    const expertsLabel =
+      typeof messages.experts === 'string' ? messages.experts : 'Experts';
+    title = `${baseTitle} · ${expertsLabel}`;
   }
 
   return buildObjectMetadata({
@@ -106,8 +123,33 @@ export default async function ObjectDetailPage({
 
   const allowed = new Set(model.primaryTabs.map((t) => t.segment));
   const tabRaw = firstSearchParam(sp, OBJECT_PAGE_PRIMARY_TAB_PARAM)?.trim();
-  const initialPrimarySegment =
-    tabRaw && allowed.has(tabRaw) ? tabRaw : '';
+  const pathIds = parseViewPathParam(sp);
+
+  let initialPrimarySegment = '';
+  if (tabRaw === OBJECT_PAGE_DESCRIPTION_SEGMENT) {
+    initialPrimarySegment = OBJECT_PAGE_DESCRIPTION_SEGMENT;
+  } else if (tabRaw && allowed.has(tabRaw)) {
+    initialPrimarySegment = tabRaw;
+  } else if (!tabRaw && pathIds.length === 0) {
+    switch (model.defaultLanding.kind) {
+      case 'primaryTab':
+        if (model.defaultLanding.segment === OBJECT_PAGE_DESCRIPTION_SEGMENT) {
+          initialPrimarySegment = OBJECT_PAGE_DESCRIPTION_SEGMENT;
+        } else if (allowed.has(model.defaultLanding.segment)) {
+          initialPrimarySegment = model.defaultLanding.segment;
+        }
+        break;
+      case 'routeStub':
+        if (allowed.has('reviews')) {
+          initialPrimarySegment = 'reviews';
+        }
+        break;
+      case 'nestedInHost':
+      case 'hostContent':
+        initialPrimarySegment = '';
+        break;
+    }
+  }
 
   const auth = createCookieAuthContextProvider();
   const user = await auth.getUser();
@@ -165,19 +207,42 @@ export default async function ObjectDetailPage({
         )
       : null;
 
-  const pathIds = parseViewPathParam(sp);
   const nestedResolveInit = { locale, viewer: user?.username ?? null };
   const initialNestedStack = await resolveNestedObjectPath(pathIds, nestedResolveInit);
 
   const defaultNestedContent =
-    pathIds.length === 0 && model.defaultMenuObjectId
-      ? await resolveNestedObjectContent(model.defaultMenuObjectId, nestedResolveInit)
+    pathIds.length === 0 && model.defaultLanding.kind === 'nestedInHost'
+      ? await resolveNestedObjectContent(
+          model.defaultLanding.targetObjectId,
+          nestedResolveInit,
+        )
       : null;
 
   const objectPageBody =
     model.objectType === 'page' && model.pageContent
       ? <ObjectPageBody rawContent={model.pageContent} />
       : undefined;
+
+  const objectDescriptionBody =
+    initialPrimarySegment === OBJECT_PAGE_DESCRIPTION_SEGMENT
+      ? (
+          <ObjectDescriptionBody
+            descriptionContent={model.descriptionContent}
+            galleryPhotos={model.previewGallery}
+          />
+        )
+      : undefined;
+
+  const galleryAlbumRaw = firstSearchParam(sp, OBJECT_PAGE_GALLERY_ALBUM_PARAM)?.trim();
+  const initialGalleryAlbum = galleryAlbumRaw
+    ? (() => {
+        try {
+          return decodeURIComponent(galleryAlbumRaw);
+        } catch {
+          return galleryAlbumRaw;
+        }
+      })()
+    : null;
 
   return (
     <>
@@ -192,9 +257,11 @@ export default async function ObjectDetailPage({
         authoritySort={authoritySort}
         viewerUsername={user?.username ?? null}
         initialPrimarySegment={initialPrimarySegment}
+        initialGalleryAlbum={initialGalleryAlbum}
         initialNestedStack={initialNestedStack}
         defaultNestedContent={defaultNestedContent}
         objectPageBody={objectPageBody}
+        objectDescriptionBody={objectDescriptionBody}
       />
     </>
   );

@@ -51,6 +51,8 @@ The winning fields are spread directly onto the object as top-level properties (
 
 When no field filter is requested (i.e., you want the full object), album and photo counts are computed, a sorted `preview_gallery` is built from gallery items, and the avatar is prepended to it.
 
+**ODL implementation:** query-api [`buildGalleryAlbums`](../../apps/query-api/src/domain/object-projection/build-gallery-albums.ts) ports legacy waivio-api [`getGallery.js`](../../tmp/waivio-api-legacy/utilities/operations/wobject/getGallery.js). Object resolve JSON exposes `previewGallery` (Photos album, rank-sorted) and `galleryAlbums`. Web left-rail carousel and `/description` interleave consume `previewGallery`. Related album from posts is **not** included in v1.
+
 ### Step F — Product options / variants (when applicable)
 
 If the object belongs to a **product group** (e.g., a T-shirt that comes in different sizes/colors), the processor fetches all sibling objects in the group, runs field enrichment + winning-field selection on each of them (focused on price, avatar, and options), then collects all their option entries and groups them by category. The result is a structured options map like `{ Size: [S, M, L], Color: [Red, Blue] }`.

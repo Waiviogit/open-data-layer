@@ -6,6 +6,7 @@ import { projectedObjectViewSchema } from '@/modules/feed/application/dto/feed-s
 export const projectedObjectWithCountsSchema = projectedObjectViewSchema
   .extend({
     followers_count: z.number().int(),
+    posts_count: z.number().int().default(0),
     updates_count: z.number().int(),
     administrative_count: z.number().int().default(0),
     ownership_count: z.number().int().default(0),

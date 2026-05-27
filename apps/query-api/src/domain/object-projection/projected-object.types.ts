@@ -65,6 +65,24 @@ export interface ProjectedObject {
   /** True when `viewerAccount` has an `ownership` row for this object. */
   hasOwnershipAuthority: boolean;
   seo?: ProjectedObjectSeo;
+  /** Flat Photos-album list for sidebar carousel and description page (legacy `preview_gallery`). */
+  previewGallery?: ProjectedGalleryPhoto[];
+  /** Grouped gallery albums (legacy `galleryAlbum`). */
+  galleryAlbums?: ProjectedGalleryAlbum[];
+}
+
+/** One resolved gallery image with vote rank for sort order. */
+export interface ProjectedGalleryPhoto {
+  url: string;
+  rankScore: number | null;
+  isAvatar: boolean;
+  /** Source `imageGalleryItem` update id (omitted for synthetic avatar row). */
+  update_id?: string;
+}
+
+export interface ProjectedGalleryAlbum {
+  name: string;
+  items: ProjectedGalleryPhoto[];
 }
 
 export interface ProjectObjectInput {

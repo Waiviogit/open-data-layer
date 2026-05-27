@@ -2,6 +2,11 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { env } from '@/config/env';
+import {
+  OBJECT_PAGE_GALLERY_ALBUM_PARAM,
+  OBJECT_PAGE_GALLERY_ALBUM_PATH_SEGMENT,
+  OBJECT_PAGE_PATH_TAB_SEGMENTS,
+} from '@/modules/object/domain/object-page-url.constants';
 import { isUserProfileReservedFirstSegment } from '@/modules/user-profile/presentation/components/profile-path';
 import {
   applyProxySessionRefreshToResponse,
@@ -52,43 +57,39 @@ export async function proxy(request: NextRequest) {
   }
 
   /**
-   * Public `/object/:id/reviews` stays in the address bar; App Router serves
-   * `object/[object-id]/page.tsx` with `?tab=reviews` injected (plus any existing query).
+   * Gallery album drill-down: `/object/:id/gallery/album/:name` → `?tab=gallery&gallery_album=:name`.
+   * Must run before the plain `/gallery` rewrite.
    */
-  const objectReviewsMatch = pathname.match(/^\/object\/([^/]+)\/reviews\/?$/);
-  if (objectReviewsMatch) {
-    const id = objectReviewsMatch[1];
+  const galleryAlbumMatch = pathname.match(
+    new RegExp(
+      `^/object/([^/]+)/gallery/${OBJECT_PAGE_GALLERY_ALBUM_PATH_SEGMENT}/(.+)$`,
+    ),
+  );
+  if (galleryAlbumMatch) {
+    const id = galleryAlbumMatch[1];
+    const albumEncoded = galleryAlbumMatch[2];
     const url = request.nextUrl.clone();
     url.pathname = `/object/${id}`;
-    url.searchParams.set('tab', 'reviews');
+    url.searchParams.set('tab', 'gallery');
+    url.searchParams.set(OBJECT_PAGE_GALLERY_ALBUM_PARAM, albumEncoded);
     return finish(NextResponse.rewrite(url));
   }
 
-  const objectUpdatesMatch = pathname.match(/^\/object\/([^/]+)\/updates\/?$/);
-  if (objectUpdatesMatch) {
-    const id = objectUpdatesMatch[1];
-    const url = request.nextUrl.clone();
-    url.pathname = `/object/${id}`;
-    url.searchParams.set('tab', 'updates');
-    return finish(NextResponse.rewrite(url));
-  }
-
-  const objectFollowersMatch = pathname.match(/^\/object\/([^/]+)\/followers\/?$/);
-  if (objectFollowersMatch) {
-    const id = objectFollowersMatch[1];
-    const url = request.nextUrl.clone();
-    url.pathname = `/object/${id}`;
-    url.searchParams.set('tab', 'followers');
-    return finish(NextResponse.rewrite(url));
-  }
-
-  const objectAuthorityMatch = pathname.match(/^\/object\/([^/]+)\/authority\/?$/);
-  if (objectAuthorityMatch) {
-    const id = objectAuthorityMatch[1];
-    const url = request.nextUrl.clone();
-    url.pathname = `/object/${id}`;
-    url.searchParams.set('tab', 'authority');
-    return finish(NextResponse.rewrite(url));
+  /**
+   * Public `/object/:id/<tab>` stays in the address bar; App Router serves
+   * `object/[object-id]/page.tsx` with `?tab=<tab>` injected (plus any existing query).
+   */
+  for (const tab of OBJECT_PAGE_PATH_TAB_SEGMENTS) {
+    const objectTabMatch = pathname.match(
+      new RegExp(`^/object/([^/]+)/${tab}/?$`),
+    );
+    if (objectTabMatch) {
+      const id = objectTabMatch[1];
+      const url = request.nextUrl.clone();
+      url.pathname = `/object/${id}`;
+      url.searchParams.set('tab', tab);
+      return finish(NextResponse.rewrite(url));
+    }
   }
 
   if (!pathname.startsWith('/@')) {

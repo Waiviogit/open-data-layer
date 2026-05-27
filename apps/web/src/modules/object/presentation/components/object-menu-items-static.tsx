@@ -5,25 +5,20 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import type { ProjectedMenuItem } from '../../domain/projected-menu-item.types';
+import { isMenuInHostTargetType } from '../../domain/object-menu.constants';
 import { OBJECT_PAGE_VIEW_PATH_PARAM } from '../../domain/object-page-url.constants';
 
 import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
-
-/** Object types that open in the host object's center column (legacy menuList/menuPage). */
-const MENU_IN_HOST_TYPES = new Set([
-  'list',
-  'page',
-  'html',
-  'newsfeed',
-  'widget',
-  'webpage',
-  'map',
-]);
 
 export type ObjectMenuItemsStaticProps = {
   items: ProjectedMenuItem[];
   /** Current object page id — menu targets open under this host via `?path=`. */
   hostObjectId: string;
+  /**
+   * When set, in-host menu link for this target uses clean `/object/:host` (SSR default nested)
+   * instead of `?path=` — matches default landing without changing the URL.
+   */
+  defaultNestedTargetId?: string | null;
 };
 
 function itemKey(item: ProjectedMenuItem, index: number): string {
@@ -34,13 +29,20 @@ function objectHref(objectId: string): string {
   return `/object/${encodeURIComponent(objectId)}`;
 }
 
-function menuObjectHref(item: ProjectedMenuItem, hostObjectId: string): string {
+function menuObjectHref(
+  item: ProjectedMenuItem,
+  hostObjectId: string,
+  defaultNestedTargetId?: string | null,
+): string {
   const targetId = item.link_to_object?.trim();
   if (!targetId) {
     return objectHref(hostObjectId);
   }
-  const type = (item.object_type ?? item.object?.object_type ?? '').trim();
-  if (MENU_IN_HOST_TYPES.has(type) && targetId !== hostObjectId) {
+  const type = item.object_type ?? item.object?.object_type;
+  if (isMenuInHostTargetType(type) && targetId !== hostObjectId) {
+    if (defaultNestedTargetId && targetId === defaultNestedTargetId) {
+      return objectHref(hostObjectId);
+    }
     const u = new URLSearchParams();
     u.set(OBJECT_PAGE_VIEW_PATH_PARAM, targetId);
     return `${objectHref(hostObjectId)}?${u.toString()}`;
@@ -52,12 +54,20 @@ function menuObjectHref(item: ProjectedMenuItem, hostObjectId: string): string {
  * Waivio-style menu rows with navigation.
  * @see tmp/waivio-frontend-legacy/src/client/app/Sidebar/MenuItemButtons/MenuItemButton.js
  */
-export function ObjectMenuItemsStatic({ items, hostObjectId }: ObjectMenuItemsStaticProps) {
+export function ObjectMenuItemsStatic({
+  items,
+  hostObjectId,
+  defaultNestedTargetId = null,
+}: ObjectMenuItemsStaticProps) {
   return (
     <div className="flex flex-col gap-2">
       {items.map((item, index) => (
         <div key={itemKey(item, index)} className="min-w-0">
-          <MenuItemNavWrapper item={item} hostObjectId={hostObjectId}>
+          <MenuItemNavWrapper
+            item={item}
+            hostObjectId={hostObjectId}
+            defaultNestedTargetId={defaultNestedTargetId}
+          >
             <MenuItemVisual item={item} />
           </MenuItemNavWrapper>
         </div>
@@ -69,17 +79,21 @@ export function ObjectMenuItemsStatic({ items, hostObjectId }: ObjectMenuItemsSt
 function MenuItemNavWrapper({
   item,
   hostObjectId,
+  defaultNestedTargetId,
   children,
 }: {
   item: ProjectedMenuItem;
   hostObjectId: string;
+  defaultNestedTargetId?: string | null;
   children: ReactNode;
 }) {
   if (item.link_to_object) {
     return (
       <Link
-        href={menuObjectHref(item, hostObjectId)}
+        href={menuObjectHref(item, hostObjectId, defaultNestedTargetId)}
         className="block min-w-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        // Wallet extensions may inject classes on anchors before hydration completes.
+        suppressHydrationWarning
       >
         {children}
       </Link>
@@ -93,6 +107,7 @@ function MenuItemNavWrapper({
         target="_blank"
         rel="noopener noreferrer"
         className="block min-w-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        suppressHydrationWarning
       >
         {children}
       </a>

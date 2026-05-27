@@ -96,6 +96,12 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
   const typePicker = isTypePickerModalProps(props);
   const candidateUpdateTypes = typePicker ? props.candidateUpdateTypes : [];
   const genericUpdateType = props.mode === 'generic' ? props.updateType : '';
+  const genericInitialValue =
+    props.mode === 'generic' ? props.initialValue : undefined;
+  const galleryAlbumNames =
+    props.mode === 'generic' ? (props.galleryAlbumNames ?? []) : [];
+  const lockGalleryAlbum =
+    props.mode === 'generic' ? (props.lockGalleryAlbum ?? false) : false;
   const pickerInitialType = typePicker ? props.initialUpdateType : undefined;
   const feedInitialLocale = feedAdd ? props.initialLocale : undefined;
 
@@ -114,13 +120,28 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
   const { t } = useI18n();
   const router = useRouter();
 
+  const resolveFormValue = (type: string): unknown => {
+    if (props.mode === 'generic' && genericInitialValue !== undefined) {
+      return genericInitialValue;
+    }
+    if (type && UPDATE_REGISTRY[type]) {
+      const presetAlbum =
+        props.mode === 'generic' && lockGalleryAlbum && typeof genericInitialValue === 'object'
+          && genericInitialValue !== null
+          && typeof (genericInitialValue as Record<string, unknown>).album === 'string'
+          ? String((genericInitialValue as Record<string, unknown>).album)
+          : undefined;
+      return initialFormValueForUpdateTypeWithContext(
+        type,
+        tagCategoryNames,
+        presetAlbum,
+      );
+    }
+    return null;
+  };
+
   const [selectedType, setSelectedType] = useState(() => resolveType());
-  const [value, setValue] = useState<unknown>(() => {
-    const type = resolveType();
-    return type && UPDATE_REGISTRY[type]
-      ? initialFormValueForUpdateTypeWithContext(type, tagCategoryNames)
-      : null;
-  });
+  const [value, setValue] = useState<unknown>(() => resolveFormValue(resolveType()));
   const [locale, setLocale] = useState(() =>
     resolveInitialLocale(resolveType(), feedInitialLocale),
   );
@@ -143,7 +164,7 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
     setLikeChecked(true);
     setLocale(resolveInitialLocale(type, feedInitialLocale));
     if (type && UPDATE_REGISTRY[type]) {
-      setValue(initialFormValueForUpdateTypeWithContext(type, tagCategoryNames));
+      setValue(resolveFormValue(type));
     } else {
       setValue(null);
     }
@@ -151,6 +172,8 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
     open,
     typePicker,
     genericUpdateType,
+    genericInitialValue,
+    lockGalleryAlbum,
     candidateUpdateTypes,
     tagCategoryNames,
     pickerInitialType,
@@ -244,7 +267,7 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
 
   const dialog = (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-overlay p-4"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-overlay p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="add-update-dialog-title"
@@ -285,6 +308,8 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
               onChange={setValue}
               onValidityChange={setIsValid}
               tagCategoryNames={tagCategoryNames}
+              galleryAlbumNames={galleryAlbumNames}
+              lockGalleryAlbum={lockGalleryAlbum}
               hideUpdateTypeHeading={hideUpdateTypeHeading}
             />
             {definition.localizable ? (

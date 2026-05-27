@@ -1,5 +1,6 @@
 import type { ProjectedMenuItem } from './projected-menu-item.types';
 import type { ProjectedListItem, ProjectedSortCustom } from './projected-list-item.types';
+import type { ObjectDefaultLanding } from './resolve-object-default-landing';
 
 /** Logical switcher kinds aligned with legacy `wobj-switcher-by-type.md`. */
 export type ObjectSwitcherKind =
@@ -53,6 +54,20 @@ export type ObjectNestedViewEntry = {
 /** Resolved nested entry without pending flag (SSR / server action). */
 export type ObjectNestedViewResolved = Omit<ObjectNestedViewEntry, 'pending'>;
 
+/** Resolved gallery photo for carousel and description page. */
+export type ProjectedGalleryPhotoView = {
+  url: string;
+  rankScore: number | null;
+  isAvatar: boolean;
+  update_id?: string;
+};
+
+/** Grouped gallery album (legacy `galleryAlbum` + items). */
+export type ProjectedGalleryAlbumView = {
+  name: string;
+  items: ProjectedGalleryPhotoView[];
+};
+
 /** Ordered blocks for the left rail (legacy `ObjectInfo` stack). */
 export type ObjectLeftRailBlock =
   | {
@@ -102,7 +117,7 @@ export type ObjectLeftRailBlock =
   | {
       kind: 'gallery';
       headingLabel: string;
-      urls: string[];
+      photos: ProjectedGalleryPhotoView[];
     }
   | {
       kind: 'price';
@@ -184,14 +199,20 @@ export type ObjectPageViewModel = {
   /** Raw `object_type` from query-api / registry key (e.g. `shop`, `place`). */
   objectTypeKey: string;
   objectType: ObjectSwitcherKind;
-  /** First menu item target for business-like objects; shown in center when URL has no `?path=`. */
-  defaultMenuObjectId: string | null;
+  /** Default tab/center column on clean `/object/:id` (legacy `defaultShowLink` logic). */
+  defaultLanding: ObjectDefaultLanding;
   /** List catalog rows (`listItem` updates), order from `sortCustom` when present. */
   listItems: ProjectedListItem[];
   /** Raw `sortCustom` for client-side catalog sort override. */
   listItemsSortCustom: ProjectedSortCustom | null;
   /** Raw page body (`pageContent` update) for page-type objects. */
   pageContent: string | null;
+  /** Raw description body (`description` update) for center-column `/description` route. */
+  descriptionContent: string | null;
+  /** Photos-album preview from query-api (legacy `preview_gallery`). */
+  previewGallery: ProjectedGalleryPhotoView[];
+  /** Grouped gallery albums for Gallery tab (legacy `galleryAlbum`). */
+  galleryAlbums: ProjectedGalleryAlbumView[];
   rating01To5: number | null;
   primaryTabs: ObjectPrimaryTabView[];
   feedSubTabs: ObjectFeedSubTabView[];

@@ -17,8 +17,10 @@ import {
 import { mergeLeftRailBlocksForEditMode } from '@/modules/object-updates/domain/left-rail-edit-blocks';
 import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 
-import type { ObjectLeftRailBlock } from '../../domain/object-page.types';
+import type { ObjectLeftRailBlock, ProjectedGalleryAlbumView } from '../../domain/object-page.types';
 
+import { ObjectGalleryCarousel } from './object-gallery-carousel';
+import { ObjectGalleryViewer } from './object-gallery-viewer';
 import { LeftRailUpdateCountBadge } from './left-rail-update-count-badge';
 import { ObjectGeoPreview } from './object-geo-preview';
 import { ObjectMenuItemsStatic } from './object-menu-items-static';
@@ -52,6 +54,15 @@ export type ObjectLeftRailPanelProps = {
   objectTypeKey: string;
   editContext?: ObjectLeftRailEditContext;
   objectId: string;
+  /** SSR default nested target — menu link stays on clean `/object/:id`. */
+  defaultNestedTargetId?: string | null;
+  /** Show Description link when text or gallery preview exists. */
+  canOpenDescriptionPage?: boolean;
+  objectName?: string;
+  /** Photos album for left-rail carousel full-screen viewer. */
+  galleryPhotosAlbum?: ProjectedGalleryAlbumView | null;
+  supportedUpdateTypes?: readonly string[];
+  updateTypeCounts?: Record<string, number>;
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
 };
@@ -224,11 +235,18 @@ export function ObjectLeftRailPanel({
   objectTypeKey,
   editContext,
   objectId,
+  defaultNestedTargetId = null,
+  canOpenDescriptionPage = false,
+  objectName = '',
+  galleryPhotosAlbum = null,
+  supportedUpdateTypes = [],
+  updateTypeCounts,
   viewerUsername,
   onRequireLogin,
 }: ObjectLeftRailPanelProps) {
   const { t } = useI18n();
   const [addModal, setAddModal] = useState<AddUpdateModalState | null>(null);
+  const [galleryViewerIndex, setGalleryViewerIndex] = useState<number | null>(null);
 
   const displayBlocks = useMemo(() => {
     if (!editContext) {
@@ -301,7 +319,11 @@ export function ObjectLeftRailPanel({
                   count={railBlockCount('menuItems')}
                 />
                 <div className="mt-3">
-                  <ObjectMenuItemsStatic items={block.items} hostObjectId={objectId} />
+                  <ObjectMenuItemsStatic
+                    items={block.items}
+                    hostObjectId={objectId}
+                    defaultNestedTargetId={defaultNestedTargetId}
+                  />
                 </div>
               </aside>
             );
@@ -392,12 +414,21 @@ export function ObjectLeftRailPanel({
                   </p>
                 ) : null}
                 {intro.display ? (
-                  <button
-                    type="button"
-                    className="mt-3 rounded-btn border border-border px-3 py-2 text-sm font-medium text-fg hover:bg-surface"
+                  <Link
+                    href={`/object/${encodeURIComponent(objectId)}/description`}
+                    className="mt-3 inline-block rounded-btn border border-border px-3 py-2 text-sm font-medium text-fg hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    suppressHydrationWarning
                   >
                     {t('object_detail_description_button')}
-                  </button>
+                  </Link>
+                ) : canOpenDescriptionPage ? (
+                  <Link
+                    href={`/object/${encodeURIComponent(objectId)}/description`}
+                    className="mt-3 inline-block rounded-btn border border-border px-3 py-2 text-sm font-medium text-fg hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    suppressHydrationWarning
+                  >
+                    {t('object_detail_description_button')}
+                  </Link>
                 ) : null}
               </aside>
             );
@@ -466,6 +497,7 @@ export function ObjectLeftRailPanel({
                             aria-label={t('object_tag_discover_aria')
                               .replace('{category}', section.categoryTitle)
                               .replace('{tag}', tag)}
+                            suppressHydrationWarning
                           >
                             {tag}
                           </Link>
@@ -485,23 +517,21 @@ export function ObjectLeftRailPanel({
                   addLabel={addLabel}
                   count={railBlockCount('gallery')}
                 />
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  {block.urls.slice(0, 4).map((src, i) => (
-                    <div
-                      key={`${src}-${i}`}
-                      className="relative aspect-square overflow-hidden rounded-btn border border-border"
-                    >
-                      <Image
-                        src={src}
-                        alt=""
-                        fill
-                        className="object-cover"
-                        sizes="120px"
-                        unoptimized={shouldUnoptimizeRemoteImage(src)}
-                      />
-                    </div>
-                  ))}
-                </div>
+                <ObjectGalleryCarousel
+                  photos={block.photos}
+                  onPhotoClick={
+                    galleryPhotosAlbum && galleryPhotosAlbum.items.length > 0
+                      ? (index) => {
+                          const url = block.photos[index]?.url;
+                          const albumIndex =
+                            url != null
+                              ? galleryPhotosAlbum.items.findIndex((item) => item.url === url)
+                              : -1;
+                          setGalleryViewerIndex(albumIndex >= 0 ? albumIndex : index);
+                        }
+                      : undefined
+                  }
+                />
               </aside>
             );
           case 'price':
@@ -708,6 +738,19 @@ export function ObjectLeftRailPanel({
           }
         }
       })}
+      {galleryPhotosAlbum && galleryViewerIndex != null ? (
+        <ObjectGalleryViewer
+          objectId={objectId}
+          objectName={objectName}
+          album={galleryPhotosAlbum}
+          initialIndex={galleryViewerIndex}
+          onClose={() => setGalleryViewerIndex(null)}
+          viewerUsername={viewerUsername ?? null}
+          onRequireLogin={() => onRequireLogin?.()}
+          supportedUpdateTypes={supportedUpdateTypes}
+          updateTypeCounts={updateTypeCounts}
+        />
+      ) : null}
     </div>
   );
 }

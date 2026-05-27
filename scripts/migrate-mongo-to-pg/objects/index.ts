@@ -38,7 +38,9 @@ import {
 import type { MongoRatingVote, MongoWObject, MongoWObjectField } from './types';
 import { createdAtUnixFromObjectId, mongoIdToString } from './utils';
 import {
+  buildLegacyGalleryAlbumIdToNameMap,
   migrateObjectRefBodyToText,
+  transformImageGalleryItemFromField,
   transformJsonBody,
   transformJsonBodyMulti,
   transformPromotionSaleFromField,
@@ -450,8 +452,16 @@ class MongoToPgMigrator {
     });
 
     const fields = doc.fields ?? [];
+    const galleryAlbumIdToName = buildLegacyGalleryAlbumIdToNameMap(fields);
     for (const field of fields) {
-      this.processField(doc, authorPermlink, creator, author, field);
+      this.processField(
+        doc,
+        authorPermlink,
+        creator,
+        author,
+        field,
+        galleryAlbumIdToName,
+      );
     }
   }
 
@@ -461,6 +471,7 @@ class MongoToPgMigrator {
     objectCreator: string,
     objectAuthor: string,
     field: MongoWObjectField,
+    galleryAlbumIdToName: Map<string, string>,
   ): void {
     const legacyName = field.name?.trim();
     if (!legacyName) {
@@ -529,6 +540,11 @@ class MongoToPgMigrator {
     } else {
       const promoSale = transformPromotionSaleFromField(updateType, field);
       const tagCategoryItem = transformTagCategoryItemFromField(updateType, field);
+      const imageGalleryItem = transformImageGalleryItemFromField(
+        updateType,
+        field,
+        galleryAlbumIdToName,
+      );
       if (promoSale !== null) {
         if (!promoSale.ok) {
           this.stats.fieldsSkippedBadPayload += 1;
@@ -541,6 +557,12 @@ class MongoToPgMigrator {
           return;
         }
         value_json = tagCategoryItem.value;
+      } else if (imageGalleryItem !== null) {
+        if (!imageGalleryItem.ok) {
+          this.stats.fieldsSkippedBadPayload += 1;
+          return;
+        }
+        value_json = imageGalleryItem.value;
       } else {
         const multi = transformJsonBodyMulti(
           legacyName,

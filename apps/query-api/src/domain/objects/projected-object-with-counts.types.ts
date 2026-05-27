@@ -2,6 +2,8 @@ import type { ProjectedObject } from '../object-projection/projected-object.type
 
 export type ProjectedObjectWithCounts = ProjectedObject & {
   followers_count: number;
+  /** Linked Hive posts for Reviews (`post_objects`). */
+  posts_count: number;
   updates_count: number;
   administrative_count: number;
   ownership_count: number;

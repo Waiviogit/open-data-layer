@@ -1,0 +1,244 @@
+'use client';
+
+import Image from 'next/image';
+import { useMemo, useState } from 'react';
+
+import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
+
+import { useI18n } from '@/i18n/providers/i18n-provider';
+import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
+import { initialGalleryItemFormValue } from '@/modules/object-updates/application/gallery-form-value';
+import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
+
+import type { ProjectedGalleryAlbumView } from '../../domain/object-page.types';
+import { ObjectGalleryViewer } from './object-gallery-viewer';
+
+export type ObjectGalleryTabContentProps = {
+  objectId: string;
+  objectName: string;
+  galleryAlbums: ProjectedGalleryAlbumView[];
+  activeAlbumName: string | null;
+  viewerUsername: string | null;
+  onRequireLogin: () => void;
+  supportedUpdateTypes: readonly string[];
+  updateTypeCounts?: Record<string, number>;
+  onOpenAlbum: (albumName: string) => void;
+  onBackToAlbums: () => void;
+};
+
+function albumCoverUrl(album: ProjectedGalleryAlbumView): string | null {
+  return album.items[0]?.url ?? null;
+}
+
+export function ObjectGalleryTabContent({
+  objectId,
+  objectName,
+  galleryAlbums,
+  activeAlbumName,
+  viewerUsername,
+  onRequireLogin,
+  supportedUpdateTypes,
+  updateTypeCounts,
+  onOpenAlbum,
+  onBackToAlbums,
+}: ObjectGalleryTabContentProps) {
+  const { t } = useI18n();
+  const [addAlbumOpen, setAddAlbumOpen] = useState(false);
+  const [addImageOpen, setAddImageOpen] = useState(false);
+  const [viewerState, setViewerState] = useState<{
+    albumName: string;
+    photoIndex: number;
+  } | null>(null);
+
+  const canAddAlbum = supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE_GALLERY);
+  const canAddImage = supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE_GALLERY_ITEM);
+  const albumNames = useMemo(
+    () => galleryAlbums.map((album) => album.name),
+    [galleryAlbums],
+  );
+
+  const requireLoginOr = (action: () => void) => {
+    if (!viewerUsername?.trim()) {
+      onRequireLogin();
+      return;
+    }
+    action();
+  };
+
+  if (activeAlbumName) {
+    const album = galleryAlbums.find((entry) => entry.name === activeAlbumName);
+    const viewerAlbum =
+      viewerState != null
+        ? galleryAlbums.find((entry) => entry.name === viewerState.albumName)
+        : null;
+
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <button
+            type="button"
+            className="text-sm font-medium text-accent hover:underline"
+            onClick={onBackToAlbums}
+          >
+            {t('back_to_albums')}
+          </button>
+          {canAddImage ? (
+            <button
+              type="button"
+              className="rounded-btn border border-border bg-bg px-3 py-1.5 text-sm font-medium text-fg hover:bg-surface"
+              onClick={() => requireLoginOr(() => setAddImageOpen(true))}
+            >
+              {t('add_new_image')}
+            </button>
+          ) : null}
+        </div>
+
+        {!album ? (
+          <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
+            <p className="text-fg">{t('gallery_list_empty')}</p>
+            <button
+              type="button"
+              className="mt-3 text-sm font-medium text-accent hover:underline"
+              onClick={onBackToAlbums}
+            >
+              {t('back_to_albums')}
+            </button>
+          </div>
+        ) : (
+          <>
+            <h2 className="text-section font-display text-heading">{album.name}</h2>
+            {album.items.length === 0 ? (
+              <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
+                <p>{t('gallery_list_empty')}</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
+                {album.items.map((photo, index) => (
+                  <button
+                    key={`${photo.url}-${index}`}
+                    type="button"
+                    className="relative aspect-square overflow-hidden rounded-btn border border-border bg-surface/60 hover:border-accent/40"
+                    onClick={() =>
+                      setViewerState({ albumName: activeAlbumName, photoIndex: index })
+                    }
+                  >
+                    <Image
+                      src={photo.url}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 50vw, 320px"
+                      unoptimized={shouldUnoptimizeRemoteImage(photo.url)}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {canAddImage && viewerUsername ? (
+          <AddUpdateModal
+            mode="generic"
+            open={addImageOpen}
+            onClose={() => setAddImageOpen(false)}
+            objectId={objectId}
+            viewerUsername={viewerUsername}
+            updateType={UPDATE_TYPES.IMAGE_GALLERY_ITEM}
+            initialValue={initialGalleryItemFormValue(activeAlbumName ?? undefined)}
+            galleryAlbumNames={albumNames}
+            lockGalleryAlbum={Boolean(activeAlbumName)}
+            updateTypeCounts={updateTypeCounts}
+          />
+        ) : null}
+
+        {viewerAlbum && viewerState ? (
+          <ObjectGalleryViewer
+            objectId={objectId}
+            objectName={objectName}
+            album={viewerAlbum}
+            initialIndex={viewerState.photoIndex}
+            onClose={() => setViewerState(null)}
+            viewerUsername={viewerUsername}
+            onRequireLogin={onRequireLogin}
+            supportedUpdateTypes={supportedUpdateTypes}
+            updateTypeCounts={updateTypeCounts}
+          />
+        ) : null}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex justify-end">
+        {canAddAlbum ? (
+          <button
+            type="button"
+            className="rounded-btn border border-border bg-bg px-3 py-1.5 text-sm font-medium text-fg hover:bg-surface"
+            onClick={() => requireLoginOr(() => setAddAlbumOpen(true))}
+          >
+            {t('add_new_album')}
+          </button>
+        ) : null}
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {galleryAlbums.map((album) => {
+          const cover = albumCoverUrl(album);
+          return (
+            <button
+              key={album.name}
+              type="button"
+              className="group flex flex-col overflow-hidden rounded-btn border border-border bg-surface/60 text-left hover:border-accent/40"
+              onClick={() => onOpenAlbum(album.name)}
+            >
+              <div className="relative aspect-square w-full bg-surface">
+                {cover ? (
+                  <Image
+                    src={cover}
+                    alt=""
+                    fill
+                    className="object-cover transition group-hover:opacity-95"
+                    sizes="(max-width: 768px) 50vw, 200px"
+                    unoptimized={shouldUnoptimizeRemoteImage(cover)}
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-xs text-muted">
+                    {t('gallery')}
+                  </div>
+                )}
+              </div>
+              <span className="px-2 py-2 text-sm font-medium text-fg">
+                {album.name} ({album.items.length})
+              </span>
+            </button>
+          );
+        })}
+
+        <div
+          className="flex flex-col overflow-hidden rounded-btn border border-border bg-surface/40 opacity-70"
+          aria-hidden
+        >
+          <div className="relative aspect-square w-full bg-surface/80" />
+          <span className="px-2 py-2 text-sm font-medium text-muted">
+            {t('related')} (0)
+          </span>
+        </div>
+      </div>
+
+      {canAddAlbum && viewerUsername ? (
+        <AddUpdateModal
+          mode="generic"
+          open={addAlbumOpen}
+          onClose={() => setAddAlbumOpen(false)}
+          objectId={objectId}
+          viewerUsername={viewerUsername}
+          updateType={UPDATE_TYPES.IMAGE_GALLERY}
+          initialValue=""
+          updateTypeCounts={updateTypeCounts}
+        />
+      ) : null}
+    </div>
+  );
+}

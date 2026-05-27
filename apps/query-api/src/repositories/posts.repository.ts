@@ -199,6 +199,16 @@ export class PostsRepository {
       .execute();
   }
 
+  /** Linked posts for object Reviews tab (`post_objects` rows). */
+  async countPostObjectsByObjectId(objectId: string): Promise<number> {
+    const row = await this.db
+      .selectFrom('post_objects')
+      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .where('object_id', '=', objectId)
+      .executeTakeFirst();
+    return Number(row?.count ?? 0);
+  }
+
   async findPostObjectsByKeys(keys: { author: string; permlink: string }[]): Promise<PostObject[]> {
     if (keys.length === 0) {
       return [];

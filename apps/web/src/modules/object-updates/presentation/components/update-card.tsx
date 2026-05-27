@@ -157,6 +157,7 @@ export function UpdateCard({
           href={creatorProfileHref}
           className="inline-flex shrink-0 self-start rounded-circle focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           aria-label={`View profile: ${item.creator}`}
+          suppressHydrationWarning
         >
           <UserAvatar
             username={item.creator}
@@ -169,6 +170,7 @@ export function UpdateCard({
           <Link
             href={creatorProfileHref}
             className="truncate font-medium text-fg-secondary hover:underline focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            suppressHydrationWarning
           >
             {item.creator}
           </Link>

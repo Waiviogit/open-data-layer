@@ -1,6 +1,7 @@
 import {
   UPDATE_ADDRESS,
   UPDATE_GEO,
+  UPDATE_IMAGE,
   UPDATE_MENU_ITEM,
   UPDATE_NAME,
   UPDATE_PARENT,
@@ -173,6 +174,26 @@ describe('update-value-form.utils', () => {
     expect(
       validateUpdateValue(UPDATE_MENU_ITEM, { style: 'standard' }).success,
     ).toBe(false);
+  });
+
+  it('validateUpdateValue accepts image update prefilled with plain URL string', () => {
+    const result = validateUpdateValue(
+      UPDATE_IMAGE,
+      'https://waivio.nyc3.digitaloceanspaces.com/demo.jpg',
+    );
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.value).toEqual({
+        url: 'https://waivio.nyc3.digitaloceanspaces.com/demo.jpg',
+      });
+    }
+  });
+
+  it('validateUpdateValue accepts image update prefilled with url object', () => {
+    const result = validateUpdateValue(UPDATE_IMAGE, {
+      url: 'https://example.com/avatar.png',
+    });
+    expect(result.success).toBe(true);
   });
 
   it('validateUpdateValue accepts valid address json fields', () => {

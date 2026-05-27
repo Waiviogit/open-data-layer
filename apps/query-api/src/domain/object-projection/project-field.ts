@@ -131,15 +131,23 @@ function resolveDisplayUrlFromImageJson(value: JsonValue | null, ipfsGatewayBase
   return null;
 }
 
-/** Project gallery item JSON to `{ ...rest, url: displayUrl }` when cid/url present. */
-function projectImageGalleryItemJson(value: JsonValue | null, ipfsGatewayBaseUrl: string): JsonValue | null {
+/** Project gallery item JSON to `{ ...rest, url, rank_score, update_id }` when cid/url present. */
+function projectImageGalleryItemJson(
+  value: JsonValue | null,
+  ipfsGatewayBaseUrl: string,
+  rankScore: number | null,
+  updateId: string,
+): JsonValue | null {
   if (value == null || typeof value !== 'object' || Array.isArray(value)) {
     return null;
   }
   const o = value as Record<string, JsonValue>;
   const display = resolveDisplayUrlFromImageJson(value, ipfsGatewayBaseUrl);
   const url: JsonValue = (display ?? o.url ?? null) as JsonValue;
-  return { ...o, url };
+  if (url == null || typeof url !== 'string' || url.trim().length === 0) {
+    return null;
+  }
+  return { ...o, url, rank_score: rankScore, update_id: updateId };
 }
 
 function coerceRankScore(raw: unknown): number | null {
@@ -236,7 +244,14 @@ export function projectFieldValue(
       }
       if (updateType === UPDATE_TYPES.IMAGE_GALLERY_ITEM) {
         return valid
-          .map((u) => projectImageGalleryItemJson(u.value_json, ipfsGatewayBaseUrl))
+          .map((u) =>
+            projectImageGalleryItemJson(
+              u.value_json,
+              ipfsGatewayBaseUrl,
+              coerceRankScore(u.rank_score),
+              u.update_id,
+            ),
+          )
           .filter((x) => x != null);
       }
       return valid.map((u) => u.value_json ?? null);

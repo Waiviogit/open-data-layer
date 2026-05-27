@@ -375,45 +375,93 @@ export const legacyImageCidOrUrlStrategy: JsonValueStrategy = {
   },
 };
 
+/** Legacy default album for gallery items whose `id` does not match a `galleryAlbum.id`. */
+export const LEGACY_DEFAULT_PHOTOS_ALBUM_NAME = 'Photos';
+
 /**
- * Legacy gallery item `{ album, value }` → `{ album, url }`; or `{ album, cid }` / `{ album, url }` if present.
+ * Legacy `galleryAlbum.id` → album name (`body`) for resolving `galleryItem.id` references.
+ * @see tmp/waivio-api-legacy/utilities/operations/wobject/getGallery.js
  */
-export const legacyImageGalleryItemStrategy: JsonValueStrategy = {
-  supports(_legacyFieldName: string, updateType: string): boolean {
-    void _legacyFieldName;
-    return updateType === 'imageGalleryItem';
-  },
-  transform(rawBody: string): JsonTransformResult {
-    const parsed = parseJson(rawBody);
-    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return { ok: false, reason: 'imageGalleryItem: body is not a JSON object' };
+export function buildLegacyGalleryAlbumIdToNameMap(
+  fields: MongoWObjectField[],
+): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const field of fields) {
+    if (field.name?.trim() !== 'galleryAlbum') {
+      continue;
     }
-    const o = parsed as Record<string, unknown>;
-    const album = trimStr(o.album);
-    if (!album.length) {
-      return { ok: false, reason: 'imageGalleryItem: missing album' };
+    const id = typeof field.id === 'string' ? field.id.trim() : '';
+    const name = typeof field.body === 'string' ? field.body.trim() : '';
+    if (id.length > 0 && name.length > 0) {
+      map.set(id, name);
     }
-    const cid = trimStr(o.cid);
-    const url = trimStr(o.url);
-    const legacyValue = trimStr(o.value);
-    if (cid.length > 0 && url.length > 0) {
-      return { ok: false, reason: 'imageGalleryItem: both cid and url' };
-    }
-    if (cid.length > 0) {
-      return { ok: true, value: { album, cid } as JsonValue };
-    }
-    if (url.length > 0) {
-      return { ok: true, value: { album, url } as JsonValue };
-    }
-    if (legacyValue.length > 0) {
-      return { ok: true, value: { album, url: legacyValue } as JsonValue };
-    }
-    return {
-      ok: false,
-      reason: 'imageGalleryItem: need cid, url, or legacy value',
-    };
-  },
-};
+  }
+  return map;
+}
+
+function transformImageGalleryItemJsonBody(rawBody: string): JsonTransformResult | null {
+  const parsed = parseJson(rawBody);
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    return null;
+  }
+  const o = parsed as Record<string, unknown>;
+  const album = trimStr(o.album);
+  if (!album.length) {
+    return null;
+  }
+  const cid = trimStr(o.cid);
+  const url = trimStr(o.url);
+  const legacyValue = trimStr(o.value);
+  if (cid.length > 0 && url.length > 0) {
+    return { ok: false, reason: 'imageGalleryItem: both cid and url' };
+  }
+  if (cid.length > 0) {
+    return { ok: true, value: { album, cid } as JsonValue };
+  }
+  if (url.length > 0) {
+    return { ok: true, value: { album, url } as JsonValue };
+  }
+  if (legacyValue.length > 0) {
+    return { ok: true, value: { album, url: legacyValue } as JsonValue };
+  }
+  return {
+    ok: false,
+    reason: 'imageGalleryItem: need cid, url, or legacy value',
+  };
+}
+
+/**
+ * Legacy `galleryItem`: `body` is image URL (or JSON `{ album, url|cid|value }`);
+ * `id` references `galleryAlbum.id` — resolved to album name, else {@link LEGACY_DEFAULT_PHOTOS_ALBUM_NAME}.
+ */
+export function transformImageGalleryItemFromField(
+  updateType: string,
+  field: MongoWObjectField,
+  albumIdToName: Map<string, string>,
+): JsonTransformResult | null {
+  if (updateType !== 'imageGalleryItem') {
+    return null;
+  }
+
+  const rawBody = field.body ?? '';
+  const jsonResult = transformImageGalleryItemJsonBody(rawBody);
+  if (jsonResult !== null) {
+    return jsonResult;
+  }
+
+  const url = rawBody.trim();
+  if (!url.length) {
+    return { ok: false, reason: 'imageGalleryItem: empty body (url)' };
+  }
+
+  const albumRefId = typeof field.id === 'string' ? field.id.trim() : '';
+  const album =
+    albumRefId.length > 0 && albumIdToName.has(albumRefId)
+      ? (albumIdToName.get(albumRefId) as string)
+      : LEGACY_DEFAULT_PHOTOS_ALBUM_NAME;
+
+  return { ok: true, value: { album, url } as JsonValue };
+}
 
 export const defaultJsonStrategy: JsonValueStrategy = {
   supports(legacyFieldName: string, updateType: string): boolean {
@@ -432,7 +480,6 @@ export const defaultJsonStrategy: JsonValueStrategy = {
 
 const STRATEGIES_ORDERED: JsonValueStrategy[] = [
   legacyImageCidOrUrlStrategy,
-  legacyImageGalleryItemStrategy,
   identifierStrategy,
   addressStrategy,
   defaultJsonStrategy,

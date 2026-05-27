@@ -4,6 +4,7 @@ import {
   AggregatedObjectRepository,
   ObjectAuthorityRepository,
   ObjectUpdatesRepository,
+  PostsRepository,
   UserObjectFollowsRepository,
 } from '../../repositories';
 import { GovernanceResolverService } from '../governance';
@@ -31,6 +32,7 @@ export class GetObjectByIdEndpoint {
     private readonly userObjectFollowsRepo: UserObjectFollowsRepository,
     private readonly objectUpdatesRepo: ObjectUpdatesRepository,
     private readonly objectAuthorityRepo: ObjectAuthorityRepository,
+    private readonly postsRepo: PostsRepository,
   ) {}
 
   async execute(input: GetObjectByIdInput): Promise<ProjectedObjectWithCounts | null> {
@@ -70,6 +72,7 @@ export class GetObjectByIdEndpoint {
       projected,
       update_type_counts,
       followers_count,
+      posts_count,
       administrative_count,
       ownership_count,
       viewerFollow,
@@ -84,6 +87,7 @@ export class GetObjectByIdEndpoint {
       }),
       this.objectUpdatesRepo.countByObjectIdGroupByUpdateType(objectId),
       this.userObjectFollowsRepo.countByObjectId(objectId),
+      this.postsRepo.countPostObjectsByObjectId(objectId),
       this.objectAuthorityRepo.countByObjectIdAndType(objectId, 'administrative'),
       this.objectAuthorityRepo.countByObjectIdAndType(objectId, 'ownership'),
       input.viewerAccount
@@ -96,6 +100,7 @@ export class GetObjectByIdEndpoint {
     return {
       ...projected,
       followers_count,
+      posts_count,
       updates_count,
       administrative_count,
       ownership_count,

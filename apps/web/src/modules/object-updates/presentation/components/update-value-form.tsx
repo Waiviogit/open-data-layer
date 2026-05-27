@@ -8,6 +8,8 @@ import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
 
+import { useI18n } from '@/i18n/providers/i18n-provider';
+
 import {
   coerceFormValueForValidation,
   geoFormValueFromRaw,
@@ -18,6 +20,7 @@ import {
   type JsonFieldDescriptor,
 } from '../../application/update-value-form.utils';
 import { GeoUpdateForm } from './geo-update-form';
+import { ImageGalleryItemForm } from './image-gallery-item-form';
 import { MenuItemForm } from './menu-item-form';
 import { ObjectRefSearchField } from './object-ref-search-field';
 import { TagCategoryItemForm } from './tag-category-item-form';
@@ -31,6 +34,10 @@ export type UpdateValueFormProps = {
   onValidityChange: (valid: boolean) => void;
   /** Existing `tagCategory` names (for `tagCategoryItem` category picker). */
   tagCategoryNames?: readonly string[];
+  /** Existing gallery album names (for `imageGalleryItem` album picker). */
+  galleryAlbumNames?: readonly string[];
+  /** When true, `imageGalleryItem` album field is read-only. */
+  lockGalleryAlbum?: boolean;
   /** When true (left-rail modal), omit update-type title — type is chosen in the suggest-field select. */
   hideUpdateTypeHeading?: boolean;
 };
@@ -41,6 +48,8 @@ export function UpdateValueForm({
   onChange,
   onValidityChange,
   tagCategoryNames = [],
+  galleryAlbumNames = [],
+  lockGalleryAlbum = false,
   hideUpdateTypeHeading = false,
 }: UpdateValueFormProps) {
   const definition = UPDATE_REGISTRY[updateType];
@@ -67,6 +76,8 @@ export function UpdateValueForm({
       value={value}
       onChange={onChange}
       tagCategoryNames={tagCategoryNames}
+      galleryAlbumNames={galleryAlbumNames}
+      lockGalleryAlbum={lockGalleryAlbum}
       hideUpdateTypeHeading={hideUpdateTypeHeading}
     />
   );
@@ -78,6 +89,8 @@ type UpdateValueFieldsProps = {
   value: unknown;
   onChange: (value: unknown) => void;
   tagCategoryNames: readonly string[];
+  galleryAlbumNames: readonly string[];
+  lockGalleryAlbum: boolean;
   hideUpdateTypeHeading: boolean;
 };
 
@@ -87,8 +100,11 @@ function UpdateValueFields({
   value,
   onChange,
   tagCategoryNames,
+  galleryAlbumNames,
+  lockGalleryAlbum,
   hideUpdateTypeHeading,
 }: UpdateValueFieldsProps) {
+  const { t } = useI18n();
   const label = hideUpdateTypeHeading ? undefined : labelForUpdateType(updateType);
 
   if (updateType === UPDATE_TYPES.DELEGATION) {
@@ -118,6 +134,8 @@ function UpdateValueFields({
     const text = typeof value === 'string' ? value : '';
     const inputType =
       updateType === 'email' ? 'email' : updateType === 'url' ? 'url' : 'text';
+    const placeholder =
+      updateType === UPDATE_TYPES.IMAGE_GALLERY ? t('add_new_album_placeholder') : undefined;
 
     return (
       <label className="block text-sm">
@@ -127,6 +145,7 @@ function UpdateValueFields({
             className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-sm text-fg"
             rows={4}
             value={text}
+            placeholder={placeholder}
             onChange={(e) => onChange(e.target.value)}
           />
         ) : (
@@ -134,6 +153,7 @@ function UpdateValueFields({
             type={inputType}
             className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-sm text-fg"
             value={text}
+            placeholder={placeholder}
             onChange={(e) => onChange(e.target.value)}
           />
         )}
@@ -167,6 +187,16 @@ function UpdateValueFields({
     }
     if (updateType === UPDATE_TYPES.WALLET_ADDRESS) {
       return <WalletAddressForm value={value} onChange={onChange} />;
+    }
+    if (updateType === UPDATE_TYPES.IMAGE_GALLERY_ITEM) {
+      return (
+        <ImageGalleryItemForm
+          value={value}
+          onChange={onChange}
+          albumNames={galleryAlbumNames}
+          lockAlbum={lockGalleryAlbum}
+        />
+      );
     }
     return (
       <JsonValueFields

@@ -31,6 +31,10 @@ import { getWalletFacade, useHydrateWalletProvider, useLoginModal } from '@/modu
 import { awaitTrxConfirmation } from '@/modules/notifications';
 import { buildOdlObjectAuthorityOp, buildOdlObjectFollowOp } from '@opden-data-layer/hive-broadcast';
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
+import {
+  buildObjectGalleryAlbumPath,
+  buildObjectGalleryPath,
+} from '@/modules/object/domain/object-page-url.constants';
 
 import { loadMoreObjectAuthorityAction } from './authority/object-authority.actions';
 import { loadMoreObjectFollowersAction } from './followers/object-followers.actions';
@@ -38,7 +42,8 @@ import {
   OBJECT_PAGE_AUTHORITY_SUB_PARAM,
   OBJECT_PAGE_PRIMARY_TAB_PARAM,
   OBJECT_PAGE_VIEW_PATH_PARAM,
-  resolvePrimarySegmentFromObjectUrl,
+  resolveGalleryAlbumForObjectPage,
+  resolvePrimarySegmentForObjectPage,
 } from './object-page-search';
 import { loadMoreObjectUpdatesFeedAction } from './updates/updates-feed.actions';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
@@ -59,12 +64,16 @@ export type ObjectPageClientProps = {
   viewerUsername: string | null;
   /** Primary tab from `?tab=` (server-validated). Empty when URL has no tab (menu landing). */
   initialPrimarySegment: string;
+  /** SSR-restored active gallery album from proxy `?gallery_album=` or path. */
+  initialGalleryAlbum: string | null;
   /** SSR-restored nested stack from `?path=`. */
   initialNestedStack: ObjectNestedViewResolved[];
   /** SSR-resolved first menu item content when URL has no `?path=` (business-like objects). */
   defaultNestedContent: ObjectNestedViewResolved | null;
   /** Server-rendered page body for top-level page-type objects. */
   objectPageBody?: ReactNode;
+  /** Server-rendered description body when `/object/:id/description` is active. */
+  objectDescriptionBody?: ReactNode;
 };
 
 export function ObjectPageClient({
@@ -77,9 +86,11 @@ export function ObjectPageClient({
   authoritySort,
   viewerUsername,
   initialPrimarySegment,
+  initialGalleryAlbum,
   initialNestedStack,
   defaultNestedContent,
   objectPageBody,
+  objectDescriptionBody,
 }: ObjectPageClientProps) {
   const defaultFeedSub = model.feedSubTabs[0]?.segment ?? 'posts';
 
@@ -99,14 +110,24 @@ export function ObjectPageClient({
   const [favoritePending, setFavoritePending] = useState(false);
   const [activePrimarySegment, setActivePrimarySegment] =
     useState(initialPrimarySegment);
+  const [activeGalleryAlbum, setActiveGalleryAlbum] =
+    useState(initialGalleryAlbum);
   const [activeFeedSubSegment, setActiveFeedSubSegment] =
     useState(defaultFeedSub);
 
   useEffect(() => {
     setActivePrimarySegment(
-      resolvePrimarySegmentFromObjectUrl(model.objectId, pathname, searchParams),
+      resolvePrimarySegmentForObjectPage(
+        model.objectId,
+        pathname,
+        searchParams,
+        initialPrimarySegment,
+      ),
     );
-  }, [model.objectId, pathname, searchParams]);
+    setActiveGalleryAlbum(
+      resolveGalleryAlbumForObjectPage(model.objectId, pathname, searchParams),
+    );
+  }, [initialPrimarySegment, model.objectId, pathname, searchParams]);
 
   useEffect(() => {
     setFavorite(model.hasAdministrativeAuthority);
@@ -158,6 +179,27 @@ export function ObjectPageClient({
         u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
         const qs = u.toString();
         router.replace(qs ? `${base}/authority?${qs}` : `${base}/authority`, {
+          scroll: false,
+        });
+        return;
+      }
+
+      if (segment === 'gallery' || segment === 'experts') {
+        u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
+        u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+        u.delete('sort');
+        u.delete('update_type');
+        u.delete('locale');
+        const qs = u.toString();
+        if (segment === 'gallery') {
+          setActiveGalleryAlbum(null);
+          router.replace(
+            qs ? `${base}/gallery?${qs}` : `${base}/gallery`,
+            { scroll: false },
+          );
+          return;
+        }
+        router.replace(qs ? `${base}/${segment}?${qs}` : `${base}/${segment}`, {
           scroll: false,
         });
         return;
@@ -451,6 +493,32 @@ export function ObjectPageClient({
     [embeddedUpdatesFeed.typeOptions],
   );
 
+  const onOpenGalleryAlbum = useCallback(
+    (albumName: string) => {
+      setActiveGalleryAlbum(albumName);
+      router.push(buildObjectGalleryAlbumPath(model.objectId, albumName), {
+        scroll: false,
+      });
+    },
+    [model.objectId, router],
+  );
+
+  const onBackToGalleryAlbums = useCallback(() => {
+    setActiveGalleryAlbum(null);
+    router.replace(buildObjectGalleryPath(model.objectId), { scroll: false });
+  }, [model.objectId, router]);
+
+  const galleryPhotosAlbum = useMemo(() => {
+    const photosAlbum = model.galleryAlbums.find((album) => album.name === 'Photos');
+    if (photosAlbum) {
+      return photosAlbum;
+    }
+    if (model.previewGallery.length > 0) {
+      return { name: 'Photos', items: model.previewGallery };
+    }
+    return null;
+  }, [model.galleryAlbums, model.previewGallery]);
+
   const leftRailEditContext =
     isEditMode && viewerUsername
       ? {
@@ -462,6 +530,14 @@ export function ObjectPageClient({
         }
       : undefined;
 
+  const defaultNestedTargetId =
+    model.defaultLanding.kind === 'nestedInHost'
+      ? model.defaultLanding.targetObjectId
+      : null;
+
+  const canOpenDescriptionPage =
+    Boolean(model.descriptionContent?.trim()) || model.previewGallery.length > 0;
+
   const leftRail = (
     <LeftObjectProfileSidebar>
       <ObjectLeftRailPanel
@@ -469,6 +545,12 @@ export function ObjectPageClient({
         objectTypeKey={model.objectTypeKey}
         editContext={leftRailEditContext}
         objectId={model.objectId}
+        defaultNestedTargetId={defaultNestedTargetId}
+        canOpenDescriptionPage={canOpenDescriptionPage}
+        objectName={model.title}
+        galleryPhotosAlbum={galleryPhotosAlbum}
+        supportedUpdateTypes={supportedUpdateTypes}
+        updateTypeCounts={model.updateTypeCounts}
         viewerUsername={viewerUsername}
         onRequireLogin={openLogin}
       />
@@ -515,6 +597,13 @@ export function ObjectPageClient({
           objectFollowersFeed={objectFollowersFeed}
           objectAuthorityFeed={objectAuthorityFeed}
           objectPageBody={objectPageBody}
+          objectDescriptionBody={objectDescriptionBody}
+          galleryAlbums={model.galleryAlbums}
+          activeGalleryAlbum={activeGalleryAlbum}
+          onOpenGalleryAlbum={onOpenGalleryAlbum}
+          onBackToGalleryAlbums={onBackToGalleryAlbums}
+          supportedUpdateTypes={supportedUpdateTypes}
+          updateTypeCounts={model.updateTypeCounts}
           viewerUsername={viewerUsername}
           onRequireLogin={openLogin}
         />

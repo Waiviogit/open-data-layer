@@ -8,6 +8,10 @@ import {
   HEADER_BLOCK_ORDER,
   MENU_BLOCK_ID,
 } from '../domain/object-left-rail-order';
+import {
+  applyDescriptionFallbackToDefaultLanding,
+  resolveObjectDefaultLanding,
+} from '../domain/resolve-object-default-landing';
 import type {
   ObjectFeedSubTabView,
   ObjectLeftRailBlock,
@@ -24,11 +28,15 @@ import {
   applySortCustomToListItems,
   projectedAddressDisplayLine,
   projectedEmail,
+  projectedGalleryAlbums,
+  projectedPreviewGallery,
   projectedGalleryImageUrls,
   projectedIdentifierRows,
   projectedGeoLatLon,
   projectedListItems,
+  projectedMenuItems,
   projectedObjectLinkRows,
+  projectedDescriptionContent,
   projectedPageContent,
   projectedParentRow,
   resolveMenuItemsForView,
@@ -70,22 +78,12 @@ function toSwitcherKind(objectType: string): ObjectSwitcherKind {
     : 'default';
 }
 
-/** First navigable menu target for business-like objects (legacy `getDefaultLink`). */
-function computeDefaultMenuObjectId(
-  viewLike: ProjectedObjectView,
-  switcherKind: ObjectSwitcherKind,
-): string | null {
-  if (switcherKind !== 'default') {
-    return null;
-  }
-  for (const item of resolveMenuItemsForView(viewLike)) {
-    const targetId = item.link_to_object?.trim();
-    if (targetId) {
-      return targetId;
-    }
-  }
-  return null;
-}
+const DEFAULT_LANDING_DEPS = {
+  projectedMenuItems,
+  projectedSortCustom,
+  resolveMenuItemsForView,
+  projectedListItems,
+} as const;
 
 /** Fallback label when `object_type` from API is empty. */
 function kindLabelFallback(switcher: ObjectSwitcherKind): string {
@@ -272,12 +270,12 @@ function buildLeftRailBlocks(viewLike: ProjectedObjectView): ObjectLeftRailBlock
         break;
       }
       case 'gallery': {
-        const urls = projectedGalleryImageUrls(viewLike);
-        if (urls.length > 0) {
+        const photos = projectedPreviewGallery(viewLike);
+        if (photos.length > 0) {
           blocks.push({
             kind: 'gallery',
             headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.gallery,
-            urls,
+            photos,
           });
         }
         break;
@@ -424,6 +422,8 @@ export function projectedObjectWithCountsToPageModel(
     fields,
     hasAdministrativeAuthority: api.hasAdministrativeAuthority ?? false,
     hasOwnershipAuthority: api.hasOwnershipAuthority ?? false,
+    previewGallery: api.previewGallery,
+    galleryAlbums: api.galleryAlbums,
     ...parentHoist,
   } as ProjectedObjectView;
 
@@ -449,6 +449,23 @@ export function projectedObjectWithCountsToPageModel(
     sortCustom,
   );
   const pageContent = projectedPageContent(viewLike);
+  const descriptionContent = projectedDescriptionContent(viewLike);
+  const previewGallery = projectedPreviewGallery(viewLike);
+  const galleryAlbums = projectedGalleryAlbums(viewLike);
+  const hasDescriptionPageContent =
+    Boolean(descriptionContent?.trim()) || previewGallery.length > 0;
+  const defaultLanding = applyDescriptionFallbackToDefaultLanding(
+    resolveObjectDefaultLanding(
+      viewLike,
+      switcher,
+      objectTypeRaw,
+      DEFAULT_LANDING_DEPS,
+    ),
+    {
+      postsCount: api.posts_count ?? 0,
+      hasDescriptionPageContent,
+    },
+  );
 
   return {
     objectId: api.object_id,
@@ -464,10 +481,13 @@ export function projectedObjectWithCountsToPageModel(
         : null,
     objectTypeKey: objectTypeRaw,
     objectType: switcher,
-    defaultMenuObjectId: computeDefaultMenuObjectId(viewLike, switcher),
+    defaultLanding,
     listItems,
     listItemsSortCustom: sortCustom,
     pageContent,
+    descriptionContent,
+    previewGallery,
+    galleryAlbums,
     rating01To5: objectFields.ratingStars01To5(viewLike),
     primaryTabs: primaryTabs(api.updates_count, api.followers_count),
     feedSubTabs: FEED_SUB_TABS,

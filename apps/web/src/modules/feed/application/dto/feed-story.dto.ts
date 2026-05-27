@@ -12,6 +12,31 @@ export const projectedObjectViewSchema = z.object({
   hasAdministrativeAuthority: z.boolean().optional().default(false),
   hasOwnershipAuthority: z.boolean().optional().default(false),
   seo: z.record(z.string(), z.unknown()).optional(),
+  previewGallery: z
+    .array(
+      z.object({
+        url: z.string(),
+        rankScore: z.number().nullable(),
+        isAvatar: z.boolean(),
+        update_id: z.string().optional(),
+      }),
+    )
+    .optional(),
+  galleryAlbums: z
+    .array(
+      z.object({
+        name: z.string(),
+        items: z.array(
+          z.object({
+            url: z.string(),
+            rankScore: z.number().nullable(),
+            isAvatar: z.boolean(),
+            update_id: z.string().optional(),
+          }),
+        ),
+      }),
+    )
+    .optional(),
 });
 
 const feedVoteSummarySchema = z.object({

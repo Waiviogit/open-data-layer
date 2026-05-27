@@ -13,11 +13,15 @@ import type {
   ObjectNestedViewEntry,
   ObjectNestedViewResolved,
   ObjectSwitcherKind,
+  ProjectedGalleryAlbumView,
 } from '../../domain/object-page.types';
 
 import { resolveNestedObjectContentAction } from '../../application/actions/resolve-nested-object-content.action';
 import { resolveNestedObjectPathAction } from '../../application/actions/resolve-nested-object-path.action';
-import { OBJECT_PAGE_VIEW_PATH_PARAM } from '../../domain/object-page-url.constants';
+import {
+  OBJECT_PAGE_DESCRIPTION_SEGMENT,
+  OBJECT_PAGE_VIEW_PATH_PARAM,
+} from '../../domain/object-page-url.constants';
 import { parseViewPathFromUrlSearchParams } from '../../domain/object-page-path';
 import {
   applySortCustomToListItems,
@@ -26,6 +30,7 @@ import {
 
 import { ObjectCenterBreadcrumbs } from './object-center-breadcrumbs';
 import { ObjectFeedSubNav } from './object-feed-sub-nav';
+import { ObjectGalleryTabContent } from './object-gallery-tab-content';
 import { ObjectListContent } from './object-list-content';
 import { ObjectNestedPageBody } from './object-nested-page-body';
 import { ObjectWriteReviewPrompt } from './object-write-review-prompt';
@@ -133,6 +138,14 @@ export type ObjectPrimaryContentProps = {
   objectAuthorityFeed?: ReactNode | null;
   /** Server-rendered page body for top-level page-type object. */
   objectPageBody?: ReactNode;
+  /** Server-rendered description body for `/object/:id/description`. */
+  objectDescriptionBody?: ReactNode;
+  galleryAlbums?: ProjectedGalleryAlbumView[];
+  activeGalleryAlbum?: string | null;
+  onOpenGalleryAlbum?: (albumName: string) => void;
+  onBackToGalleryAlbums?: () => void;
+  supportedUpdateTypes?: readonly string[];
+  updateTypeCounts?: Record<string, number>;
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
 };
@@ -153,6 +166,13 @@ export function ObjectPrimaryContent({
   objectFollowersFeed,
   objectAuthorityFeed,
   objectPageBody,
+  objectDescriptionBody,
+  galleryAlbums = [],
+  activeGalleryAlbum = null,
+  onOpenGalleryAlbum,
+  onBackToGalleryAlbums,
+  supportedUpdateTypes = [],
+  updateTypeCounts,
   viewerUsername,
   onRequireLogin,
 }: ObjectPrimaryContentProps) {
@@ -419,6 +439,18 @@ export function ObjectPrimaryContent({
     onRequireLogin,
   ]);
 
+  if (activePrimarySegment === OBJECT_PAGE_DESCRIPTION_SEGMENT) {
+    return (
+      <FeedColumn>
+        {objectDescriptionBody ?? (
+          <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
+            <p className="text-fg">This object has no description yet.</p>
+          </div>
+        )}
+      </FeedColumn>
+    );
+  }
+
   if (activePrimarySegment !== MENU_LANDING_SEGMENT && activePrimarySegment !== REVIEWS_SEGMENT) {
     if (activePrimarySegment === 'authority' && objectAuthorityFeed != null) {
       return (
@@ -473,6 +505,25 @@ export function ObjectPrimaryContent({
             <p className="font-medium text-fg">{stubPrimaryCopy(activePrimarySegment)}</p>
             <p className="mt-2 text-muted">{MOCK_STUB_HINT}</p>
           </div>
+        </FeedColumn>
+      );
+    }
+
+    if (activePrimarySegment === 'gallery') {
+      return (
+        <FeedColumn>
+          <ObjectGalleryTabContent
+            objectId={objectId}
+            objectName={title}
+            galleryAlbums={galleryAlbums}
+            activeAlbumName={activeGalleryAlbum}
+            viewerUsername={viewerUsername ?? null}
+            onRequireLogin={onRequireLogin ?? (() => undefined)}
+            supportedUpdateTypes={supportedUpdateTypes}
+            updateTypeCounts={updateTypeCounts}
+            onOpenAlbum={onOpenGalleryAlbum ?? (() => undefined)}
+            onBackToAlbums={onBackToGalleryAlbums ?? (() => undefined)}
+          />
         </FeedColumn>
       );
     }
