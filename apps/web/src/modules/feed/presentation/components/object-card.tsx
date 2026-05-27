@@ -14,6 +14,15 @@ import { AdministrativeHeartButton } from '@/modules/object/presentation/compone
 import { objectPagePath } from '@/shared/routes/object-page-path';
 
 const THUMB_SIZE = 120;
+const DESCRIPTION_MAX_LENGTH = 300;
+
+function truncateDescription(text: string): string {
+  const trimmed = text.trim();
+  if (trimmed.length <= DESCRIPTION_MAX_LENGTH) {
+    return trimmed;
+  }
+  return `${trimmed.slice(0, DESCRIPTION_MAX_LENGTH)}…`;
+}
 
 function formatLinkedObjectTypeLabel(type: string | null): string {
   if (type == null || type.trim() === '') {
@@ -89,7 +98,8 @@ export function ObjectCard({
   const subtitle = subtitleParts.join(' · ');
   const thumbUrl = objectFields.image(o);
   const name = objectFields.name(o);
-  const description = objectFields.description(o);
+  const descriptionRaw = objectFields.description(o);
+  const description = descriptionRaw ? truncateDescription(descriptionRaw) : undefined;
   const href = objectPagePath(o.object_id);
   const titleLabel = name ?? o.object_id;
   const objectTypeKey = o.object_type?.trim() ?? '';
@@ -161,7 +171,7 @@ export function ObjectCard({
             onRequireLogin={onRequireLogin}
           />
           {description ? (
-            <p className="mt-2 text-body-sm leading-body text-muted line-clamp-4">{description}</p>
+            <p className="mt-2 text-body-sm leading-body text-muted">{description}</p>
           ) : null}
         </div>
       </div>

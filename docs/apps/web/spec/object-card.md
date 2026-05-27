@@ -16,7 +16,7 @@ Single component: [`apps/web/src/modules/feed/presentation/components/object-car
 
 - Thumbnail (120×120), title link, subtitle (`object_type` · tag categories).
 - **Rating grid** — 2 columns (`grid-cols-2`), fill order left→right, top→bottom (1→left, 2→left+right, 3→+bottom-left, 4→full 2×2).
-- Description excerpt (plain text, not italic), max 4 lines.
+- Description excerpt (plain text, not italic), max **300 characters** (ellipsis when truncated).
 - **Administrative heart** (top-right).
 
 ## Rating grid
