@@ -110,7 +110,14 @@ export function ObjectCard({
 
   return (
     <li className="relative list-none rounded-card border border-border bg-surface-control/40 p-card-padding shadow-whisper">
-      <div className="absolute end-3 top-3">
+      <Link
+        href={href}
+        replace={linkReplace}
+        prefetch={false}
+        className="absolute inset-0 z-[1] rounded-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+        aria-label={`View object: ${titleLabel}`}
+      />
+      <div className="absolute end-3 top-3 z-[3]">
         <AdministrativeHeartButton
           objectId={o.object_id}
           initialActive={o.hasAdministrativeAuthority ?? false}
@@ -118,58 +125,45 @@ export function ObjectCard({
           onRequireLogin={onRequireLogin}
         />
       </div>
-      <div className="flex gap-3 pe-8">
-        <div className="shrink-0">
-          <Link
-            href={href}
-            replace={linkReplace}
-            prefetch={false}
-            className="inline-flex rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-            aria-label={`View object: ${titleLabel}`}
+      <div className="relative z-[2] flex gap-3 pe-8">
+        <div className="pointer-events-none shrink-0">
+          <span
+            className="flex shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-surface ring-1 ring-border/60"
+            style={{ width: THUMB_SIZE, height: THUMB_SIZE }}
           >
-            <span
-              className="flex shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-surface ring-1 ring-border/60"
-              style={{ width: THUMB_SIZE, height: THUMB_SIZE }}
-            >
-              {thumbUrl ? (
-                <Image
-                  src={thumbUrl}
-                  alt=""
-                  className="size-full object-cover"
-                  width={THUMB_SIZE}
-                  height={THUMB_SIZE}
-                  sizes={`${THUMB_SIZE}px`}
-                  unoptimized={shouldUnoptimizeRemoteImage(thumbUrl)}
-                />
-              ) : (
-                <Image
-                  src={AVATAR_PLACEHOLDER_SRC}
-                  alt=""
-                  className="size-full object-cover"
-                  width={THUMB_SIZE}
-                  height={THUMB_SIZE}
-                  sizes={`${THUMB_SIZE}px`}
-                />
-              )}
-            </span>
-          </Link>
+            {thumbUrl ? (
+              <Image
+                src={thumbUrl}
+                alt=""
+                className="size-full object-cover"
+                width={THUMB_SIZE}
+                height={THUMB_SIZE}
+                sizes={`${THUMB_SIZE}px`}
+                unoptimized={shouldUnoptimizeRemoteImage(thumbUrl)}
+              />
+            ) : (
+              <Image
+                src={AVATAR_PLACEHOLDER_SRC}
+                alt=""
+                className="size-full object-cover"
+                width={THUMB_SIZE}
+                height={THUMB_SIZE}
+                sizes={`${THUMB_SIZE}px`}
+              />
+            )}
+          </span>
         </div>
-        <div className="min-w-0 flex-1">
-          <Link
-            href={href}
-            replace={linkReplace}
-            prefetch={false}
-            className="inline-block max-w-full rounded-sm font-weight-label text-body text-heading underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-          >
-            {titleLabel}
-          </Link>
+        <div className="pointer-events-none min-w-0 flex-1">
+          <p className="max-w-full font-weight-label text-body text-heading">{titleLabel}</p>
           {subtitle ? <p className="mt-0.5 text-caption text-fg-secondary">{subtitle}</p> : null}
-          <RatingsGrid
-            dims={ratingDims}
-            objectId={o.object_id}
-            viewerUsername={viewerUsername}
-            onRequireLogin={onRequireLogin}
-          />
+          <div className="pointer-events-auto">
+            <RatingsGrid
+              dims={ratingDims}
+              objectId={o.object_id}
+              viewerUsername={viewerUsername}
+              onRequireLogin={onRequireLogin}
+            />
+          </div>
           {description ? (
             <p className="mt-2 text-body-sm leading-body text-muted">{description}</p>
           ) : null}

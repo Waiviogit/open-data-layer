@@ -187,7 +187,10 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
   }, [pushTags]);
 
   return (
-    <aside className="min-w-0">
+    <aside
+      className="relative z-0 min-w-0 w-full self-start overflow-hidden"
+      aria-busy={loading}
+    >
       <h2 className="mb-3 text-caption font-medium uppercase tracking-wide text-fg-tertiary">
         {t('discover_filters_title')}
       </h2>

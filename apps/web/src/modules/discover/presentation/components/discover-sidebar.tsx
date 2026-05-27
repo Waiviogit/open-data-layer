@@ -44,7 +44,7 @@ export function DiscoverSidebar({
     hiddenCount > 0 && !showAllTypes && !activeBeyondInitial;
 
   return (
-    <aside className="space-y-6">
+    <aside className="min-w-0 self-start space-y-6">
       <section>
         <h2 className="mb-2 text-caption font-medium uppercase tracking-wide text-fg-tertiary">
           {t('discover_objects_menu')}

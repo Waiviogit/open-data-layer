@@ -35,22 +35,24 @@ export function DiscoverPageClient({ viewerUsername = null }: DiscoverPageClient
     !usersMode && objectType != null && objectTypeHasTagCategoryFilters(objectType);
 
   return (
-    <div className="mx-auto w-full max-w-[var(--layout-max-width)] px-page-x">
-      <div className="grid gap-4 lg:grid-cols-[minmax(10rem,12rem)_minmax(0,1fr)_minmax(12rem,15rem)]">
+    <div className="mx-auto w-full max-w-container-page px-gutter sm:px-gutter-sm">
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(10rem,12rem)_minmax(0,1fr)_minmax(12rem,15rem)]">
         <DiscoverSidebar usersMode={usersMode} objectType={objectType} q={q} sort={sort} />
-        <DiscoverFeed
-          usersMode={usersMode}
-          objectType={objectType}
-          q={q}
-          tags={tags}
-          sort={sort}
-          viewerUsername={viewerUsername}
-          onRequireLogin={openLogin}
-        />
+        <div className="relative z-10 min-w-0">
+          <DiscoverFeed
+            usersMode={usersMode}
+            objectType={objectType}
+            q={q}
+            tags={tags}
+            sort={sort}
+            viewerUsername={viewerUsername}
+            onRequireLogin={openLogin}
+          />
+        </div>
         {showFilters && objectType ? (
           <DiscoverFilters objectType={objectType} q={q} tags={tags} sort={sort} />
         ) : (
-          <div className="hidden lg:block" aria-hidden />
+          <div className="hidden min-w-0 self-start lg:block" aria-hidden />
         )}
       </div>
     </div>
