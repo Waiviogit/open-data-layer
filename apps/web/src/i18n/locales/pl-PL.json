@@ -1908,5 +1908,10 @@
   "your_reward": "Twoja nagroda",
   "your_vote": "Twój głos",
   "your_vote_placeholder": "Twój głos (opcjonalnie)",
-  "СЃommunity_actions": "Działania społecznościowe"
+  "СЃommunity_actions": "Działania społecznościowe",
+  "object_right_related": "Related",
+  "object_right_similar": "Similar",
+  "object_right_add_on": "Add-On",
+  "object_right_show_more": "Show more",
+  "object_ref_list_empty": "No objects to show."
 }

@@ -2754,5 +2754,10 @@
   "your_vote": "Ваш голос ",
   "your_vote_placeholder": "Ваш голос (необязательно)",
   "zoom": "Увеличить",
-  "СЃommunity_actions": "Действия сообщества"
+  "СЃommunity_actions": "Действия сообщества",
+  "object_right_related": "Связанные",
+  "object_right_similar": "Похожие",
+  "object_right_add_on": "Дополнения",
+  "object_right_show_more": "Показать ещё",
+  "object_ref_list_empty": "Нет объектов для отображения."
 }

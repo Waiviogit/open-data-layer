@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 
 import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
 import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
+import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
 import { ObjectPageBody } from '@/modules/object/presentation/components/object-page-body';
@@ -23,6 +24,14 @@ import { buildObjectMetadata, JsonLdScript } from '@/seo';
 import { getObjectAuthorityPageQuery } from '@/modules/object/application/queries/get-object-authority-page.query';
 import { getObjectFollowersPageQuery } from '@/modules/object/application/queries/get-object-followers-page.query';
 import {
+  fetchObjectRefList,
+  projectedObjectToRefCard,
+  REF_LIST_PAGE_SIZE,
+  RIGHT_RAIL_REF_FETCH_LIMIT,
+  type ObjectRefListPageView,
+} from '@/modules/object/infrastructure/object-ref-list.client';
+import type { ObjectPageViewModel } from '@/modules/object';
+import {
   parseSubscriptionSortParam,
   USER_SOCIAL_PAGE_SIZE,
 } from '@/modules/user-social';
@@ -37,6 +46,34 @@ import {
   parseViewPathParam,
 } from './object-page-search';
 import { ObjectPageClient } from './object-page-client';
+
+const REF_LIST_PRIMARY_SEGMENTS = ['related', 'similar', 'add-on'] as const;
+
+function objectTypeSupportsRefList(
+  objectTypeKey: string,
+  updateType: string,
+): boolean {
+  const registryEntry =
+    OBJECT_TYPE_REGISTRY[objectTypeKey as keyof typeof OBJECT_TYPE_REGISTRY];
+  return registryEntry?.supported_updates.includes(updateType) ?? false;
+}
+
+function mergeRightRailIntoModel(
+  model: ObjectPageViewModel,
+  related: ObjectRefListPageView | null,
+  similar: ObjectRefListPageView | null,
+  addOn: ObjectRefListPageView | null,
+): ObjectPageViewModel {
+  return {
+    ...model,
+    rightRelated: related?.items.slice(0, 5).map(projectedObjectToRefCard) ?? [],
+    rightSimilar: similar?.items.slice(0, 5).map(projectedObjectToRefCard) ?? [],
+    rightAddOn: addOn?.items.slice(0, 5).map(projectedObjectToRefCard) ?? [],
+    rightRelatedHasMore: related?.hasMore ?? false,
+    rightSimilarHasMore: similar?.hasMore ?? false,
+    rightAddOnHasMore: addOn?.hasMore ?? false,
+  };
+}
 
 export async function generateMetadata({
   params,
@@ -90,6 +127,24 @@ export async function generateMetadata({
     const expertsLabel =
       typeof messages.experts === 'string' ? messages.experts : 'Experts';
     title = `${baseTitle} · ${expertsLabel}`;
+  } else if (tab === 'related') {
+    const relatedLabel =
+      typeof messages.object_right_related === 'string'
+        ? messages.object_right_related
+        : 'Related';
+    title = `${baseTitle} · ${relatedLabel}`;
+  } else if (tab === 'similar') {
+    const similarLabel =
+      typeof messages.object_right_similar === 'string'
+        ? messages.object_right_similar
+        : 'Similar';
+    title = `${baseTitle} · ${similarLabel}`;
+  } else if (tab === 'add-on') {
+    const addOnLabel =
+      typeof messages.object_right_add_on === 'string'
+        ? messages.object_right_add_on
+        : 'Add-On';
+    title = `${baseTitle} · ${addOnLabel}`;
   }
 
   return buildObjectMetadata({
@@ -122,13 +177,14 @@ export default async function ObjectDetailPage({
   }
 
   const allowed = new Set(model.primaryTabs.map((t) => t.segment));
+  const refListSegments = new Set<string>(REF_LIST_PRIMARY_SEGMENTS);
   const tabRaw = firstSearchParam(sp, OBJECT_PAGE_PRIMARY_TAB_PARAM)?.trim();
   const pathIds = parseViewPathParam(sp);
 
   let initialPrimarySegment = '';
   if (tabRaw === OBJECT_PAGE_DESCRIPTION_SEGMENT) {
     initialPrimarySegment = OBJECT_PAGE_DESCRIPTION_SEGMENT;
-  } else if (tabRaw && allowed.has(tabRaw)) {
+  } else if (tabRaw && (allowed.has(tabRaw) || refListSegments.has(tabRaw))) {
     initialPrimarySegment = tabRaw;
   } else if (!tabRaw && pathIds.length === 0) {
     switch (model.defaultLanding.kind) {
@@ -153,6 +209,54 @@ export default async function ObjectDetailPage({
 
   const auth = createCookieAuthContextProvider();
   const user = await auth.getUser();
+  const refFetchInit = { locale, viewer: user?.username ?? null };
+
+  const supportsRelated = objectTypeSupportsRefList(
+    model.objectTypeKey,
+    UPDATE_TYPES.IS_RELATED_TO,
+  );
+  const supportsSimilar = objectTypeSupportsRefList(
+    model.objectTypeKey,
+    UPDATE_TYPES.IS_SIMILAR_TO,
+  );
+  const supportsAddOn = objectTypeSupportsRefList(
+    model.objectTypeKey,
+    UPDATE_TYPES.ADD_ON,
+  );
+
+  const [relatedRailPage, similarRailPage, addOnRailPage] = await Promise.all([
+    supportsRelated
+      ? fetchObjectRefList(
+          objectId,
+          'related',
+          { limit: RIGHT_RAIL_REF_FETCH_LIMIT },
+          refFetchInit,
+        )
+      : Promise.resolve(null),
+    supportsSimilar
+      ? fetchObjectRefList(
+          objectId,
+          'similar',
+          { limit: RIGHT_RAIL_REF_FETCH_LIMIT },
+          refFetchInit,
+        )
+      : Promise.resolve(null),
+    supportsAddOn
+      ? fetchObjectRefList(
+          objectId,
+          'add-on',
+          { limit: RIGHT_RAIL_REF_FETCH_LIMIT },
+          refFetchInit,
+        )
+      : Promise.resolve(null),
+  ]);
+
+  const clientModel = mergeRightRailIntoModel(
+    model,
+    relatedRailPage,
+    similarRailPage,
+    addOnRailPage,
+  );
 
   const filters = parseObjectUpdatesSearchParams(sp);
   const initialUpdatesPage = await getObjectUpdatesFeedPageQuery(
@@ -207,6 +311,36 @@ export default async function ObjectDetailPage({
         )
       : null;
 
+  const embeddedRelatedPage =
+    initialPrimarySegment === 'related' && supportsRelated
+      ? await fetchObjectRefList(
+          objectId,
+          'related',
+          { limit: REF_LIST_PAGE_SIZE },
+          refFetchInit,
+        )
+      : null;
+
+  const embeddedSimilarPage =
+    initialPrimarySegment === 'similar' && supportsSimilar
+      ? await fetchObjectRefList(
+          objectId,
+          'similar',
+          { limit: REF_LIST_PAGE_SIZE },
+          refFetchInit,
+        )
+      : null;
+
+  const embeddedAddOnPage =
+    initialPrimarySegment === 'add-on' && supportsAddOn
+      ? await fetchObjectRefList(
+          objectId,
+          'add-on',
+          { limit: REF_LIST_PAGE_SIZE },
+          refFetchInit,
+        )
+      : null;
+
   const nestedResolveInit = { locale, viewer: user?.username ?? null };
   const initialNestedStack = await resolveNestedObjectPath(pathIds, nestedResolveInit);
 
@@ -248,13 +382,16 @@ export default async function ObjectDetailPage({
     <>
       <JsonLdScript data={model.seo?.json_ld} />
       <ObjectPageClient
-        model={model}
+        model={clientModel}
         embeddedUpdatesFeed={embeddedUpdatesFeed}
         embeddedFollowersPage={embeddedFollowersPage}
         followersSort={followersSort}
         embeddedAuthorityPage={embeddedAuthorityPage}
         authoritySubType={authoritySubType}
         authoritySort={authoritySort}
+        embeddedRelatedPage={embeddedRelatedPage}
+        embeddedSimilarPage={embeddedSimilarPage}
+        embeddedAddOnPage={embeddedAddOnPage}
         viewerUsername={user?.username ?? null}
         initialPrimarySegment={initialPrimarySegment}
         initialGalleryAlbum={initialGalleryAlbum}

@@ -1909,5 +1909,10 @@
   "your_reward": "귀하의 보상",
   "your_vote": "귀하의 투표는",
   "your_vote_placeholder": "투표 (선택 사항)",
-  "СЃommunity_actions": "커뮤니티 활동"
+  "СЃommunity_actions": "커뮤니티 활동",
+  "object_right_related": "Related",
+  "object_right_similar": "Similar",
+  "object_right_add_on": "Add-On",
+  "object_right_show_more": "Show more",
+  "object_ref_list_empty": "No objects to show."
 }

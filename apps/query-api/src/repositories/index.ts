@@ -25,6 +25,7 @@ export { UpdatesFeedRepository } from './updates-feed.repository';
 export { SearchRepository } from './search.repository';
 export type { SearchObjectCandidateRow, SearchUserRow } from './search.repository';
 export { DiscoverRepository } from './discover.repository';
+export { ObjectRefListRepository } from './object-ref-list.repository';
 export type {
   DiscoverObjectCandidateRow,
   DiscoverTagCategoryRow,

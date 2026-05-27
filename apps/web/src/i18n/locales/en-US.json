@@ -2891,5 +2891,10 @@
   "your_vote": "Your vote",
   "your_vote_placeholder": "Your vote(optional)",
   "zoom": "Zoom",
-  "СЃommunity_actions": "Community actions"
+  "СЃommunity_actions": "Community actions",
+  "object_right_related": "Related",
+  "object_right_similar": "Similar",
+  "object_right_add_on": "Add-On",
+  "object_right_show_more": "Show more",
+  "object_ref_list_empty": "No objects to show."
 }

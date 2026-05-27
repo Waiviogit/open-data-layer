@@ -17,8 +17,10 @@ import {
   ObjectPrimaryNav,
   ObjectAuthoritySubNav,
   ObjectRightSidebar,
+  ObjectRefListFeed,
   ObjectViewShell,
 } from '@/modules/object';
+import type { ObjectRefListPageView } from '@/modules/object/infrastructure/object-ref-list.client';
 import { AuthorityActionButton } from '@/modules/object/presentation/components/authority-action-button';
 import type { ObjectEmbeddedUpdatesFeedModel } from '@/modules/object-updates/embedded-updates-feed.model';
 import { ObjectUpdatesFeed } from '@/modules/object-updates/presentation/components/object-updates-feed';
@@ -32,8 +34,11 @@ import { awaitTrxConfirmation } from '@/modules/notifications';
 import { buildOdlObjectAuthorityOp, buildOdlObjectFollowOp } from '@opden-data-layer/hive-broadcast';
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import {
+  buildObjectAddOnPath,
   buildObjectGalleryAlbumPath,
   buildObjectGalleryPath,
+  buildObjectRelatedPath,
+  buildObjectSimilarPath,
 } from '@/modules/object/domain/object-page-url.constants';
 
 import { loadMoreObjectAuthorityAction } from './authority/object-authority.actions';
@@ -46,6 +51,7 @@ import {
   resolvePrimarySegmentForObjectPage,
 } from './object-page-search';
 import { loadMoreObjectUpdatesFeedAction } from './updates/updates-feed.actions';
+import { loadMoreObjectRefListAction } from './related/load-more-ref-list.actions';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
@@ -61,6 +67,9 @@ export type ObjectPageClientProps = {
   /** `?sub=administrative|ownership` — validated on the server for the initial authority payload. */
   authoritySubType: AuthoritySubType;
   authoritySort: UserSubscriptionSort;
+  embeddedRelatedPage: ObjectRefListPageView | null;
+  embeddedSimilarPage: ObjectRefListPageView | null;
+  embeddedAddOnPage: ObjectRefListPageView | null;
   viewerUsername: string | null;
   /** Primary tab from `?tab=` (server-validated). Empty when URL has no tab (menu landing). */
   initialPrimarySegment: string;
@@ -84,6 +93,9 @@ export function ObjectPageClient({
   embeddedAuthorityPage,
   authoritySubType,
   authoritySort,
+  embeddedRelatedPage,
+  embeddedSimilarPage,
+  embeddedAddOnPage,
   viewerUsername,
   initialPrimarySegment,
   initialGalleryAlbum,
@@ -202,6 +214,39 @@ export function ObjectPageClient({
         router.replace(qs ? `${base}/${segment}?${qs}` : `${base}/${segment}`, {
           scroll: false,
         });
+        return;
+      }
+
+      if (segment === 'related') {
+        u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
+        u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+        const qs = u.toString();
+        router.replace(
+          qs ? `${buildObjectRelatedPath(model.objectId)}?${qs}` : buildObjectRelatedPath(model.objectId),
+          { scroll: false },
+        );
+        return;
+      }
+
+      if (segment === 'similar') {
+        u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
+        u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+        const qs = u.toString();
+        router.replace(
+          qs ? `${buildObjectSimilarPath(model.objectId)}?${qs}` : buildObjectSimilarPath(model.objectId),
+          { scroll: false },
+        );
+        return;
+      }
+
+      if (segment === 'add-on') {
+        u.delete(OBJECT_PAGE_PRIMARY_TAB_PARAM);
+        u.delete(OBJECT_PAGE_AUTHORITY_SUB_PARAM);
+        const qs = u.toString();
+        router.replace(
+          qs ? `${buildObjectAddOnPath(model.objectId)}?${qs}` : buildObjectAddOnPath(model.objectId),
+          { scroll: false },
+        );
         return;
       }
 
@@ -411,6 +456,63 @@ export function ObjectPageClient({
     );
   }, [embeddedFollowersPage, followersSort, model.objectId, viewerUsername]);
 
+  const objectRelatedFeed = useMemo(() => {
+    if (embeddedRelatedPage == null) {
+      return null;
+    }
+    return (
+      <ObjectRefListFeed
+        key={`${model.objectId}-related`}
+        objectId={model.objectId}
+        relation="related"
+        initialItems={embeddedRelatedPage.items}
+        initialCursor={embeddedRelatedPage.cursor}
+        initialHasMore={embeddedRelatedPage.hasMore}
+        viewerUsername={viewerUsername}
+        onRequireLogin={openLogin}
+        loadMoreAction={loadMoreObjectRefListAction}
+      />
+    );
+  }, [embeddedRelatedPage, model.objectId, openLogin, viewerUsername]);
+
+  const objectSimilarFeed = useMemo(() => {
+    if (embeddedSimilarPage == null) {
+      return null;
+    }
+    return (
+      <ObjectRefListFeed
+        key={`${model.objectId}-similar`}
+        objectId={model.objectId}
+        relation="similar"
+        initialItems={embeddedSimilarPage.items}
+        initialCursor={embeddedSimilarPage.cursor}
+        initialHasMore={embeddedSimilarPage.hasMore}
+        viewerUsername={viewerUsername}
+        onRequireLogin={openLogin}
+        loadMoreAction={loadMoreObjectRefListAction}
+      />
+    );
+  }, [embeddedSimilarPage, model.objectId, openLogin, viewerUsername]);
+
+  const objectAddOnFeed = useMemo(() => {
+    if (embeddedAddOnPage == null) {
+      return null;
+    }
+    return (
+      <ObjectRefListFeed
+        key={`${model.objectId}-add-on`}
+        objectId={model.objectId}
+        relation="add-on"
+        initialItems={embeddedAddOnPage.items}
+        initialCursor={embeddedAddOnPage.cursor}
+        initialHasMore={embeddedAddOnPage.hasMore}
+        viewerUsername={viewerUsername}
+        onRequireLogin={openLogin}
+        loadMoreAction={loadMoreObjectRefListAction}
+      />
+    );
+  }, [embeddedAddOnPage, model.objectId, openLogin, viewerUsername]);
+
   const onAuthoritySubSelect = useCallback(
     (sub: AuthoritySubType) => {
       const id = encodeURIComponent(model.objectId);
@@ -596,6 +698,9 @@ export function ObjectPageClient({
           objectUpdatesFeed={objectUpdatesFeed}
           objectFollowersFeed={objectFollowersFeed}
           objectAuthorityFeed={objectAuthorityFeed}
+          objectRelatedFeed={objectRelatedFeed}
+          objectSimilarFeed={objectSimilarFeed}
+          objectAddOnFeed={objectAddOnFeed}
           objectPageBody={objectPageBody}
           objectDescriptionBody={objectDescriptionBody}
           galleryAlbums={model.galleryAlbums}
@@ -610,9 +715,13 @@ export function ObjectPageClient({
       }
       rightRail={
         <ObjectRightSidebar
-          featured={model.rightFeatured}
+          objectId={model.objectId}
           related={model.rightRelated}
           similar={model.rightSimilar}
+          addOn={model.rightAddOn}
+          relatedHasMore={model.rightRelatedHasMore}
+          similarHasMore={model.rightSimilarHasMore}
+          addOnHasMore={model.rightAddOnHasMore}
         />
       }
     />

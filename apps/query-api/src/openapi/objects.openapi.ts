@@ -195,3 +195,84 @@ registry.registerPath({
     },
   },
 });
+
+const refSummaryOpenApiSchema = registry.register(
+  'RefSummary',
+  z.object({
+    object_id: z.string(),
+    object_type: z.string(),
+    fields: z.record(z.string(), z.unknown()),
+    weight: z.number().nullable(),
+    addedAtUnix: z.number().optional(),
+    listItemsCount: z.number().int().optional(),
+    hasAdministrativeAuthority: z.boolean().optional(),
+  }),
+);
+
+const objectRefListResponseSchema = registry.register(
+  'ObjectRefListResponse',
+  z.object({
+    items: z.array(refSummaryOpenApiSchema),
+    hasMore: z.boolean(),
+    cursor: z.string().nullable(),
+  }),
+);
+
+const objectRefListQueryOpenApi = z.object({
+  limit: z.coerce.number().int().min(1).max(50).optional().openapi({
+    description: 'Page size (default 20, max 50).',
+  }),
+  cursor: z.string().optional().openapi({
+    description: 'Offset cursor (numeric string) for the next page.',
+  }),
+});
+
+function registerObjectRefListPath(
+  pathSuffix: 'related' | 'similar' | 'add-on',
+  summary: string,
+  updateTypeLabel: string,
+): void {
+  registry.registerPath({
+    method: 'get',
+    path: `/query/v1/objects/{objectId}/${pathSuffix}`,
+    summary,
+    description: `Lists referenced objects from VALID \`${updateTypeLabel}\` updates on the source object, then backfills from shared shop categories (\`object_categories\`) using legacy close-products rules where applicable. Returns compact \`RefSummary\` rows for card display. Pagination uses numeric offset \`cursor\`.`,
+    request: {
+      params: z.object({
+        objectId: z
+          .string()
+          .min(1)
+          .openapi({ param: { name: 'objectId', in: 'path', required: true } }),
+      }),
+      query: objectRefListQueryOpenApi,
+      headers: z.object({
+        'accept-language': z.string().optional(),
+        'x-locale': z.string().optional(),
+        'x-governance-object-id': z.string().optional(),
+        'x-viewer': z.string().optional(),
+      }),
+    },
+    responses: {
+      200: {
+        description: 'Paginated referenced objects.',
+        content: {
+          'application/json': {
+            schema: objectRefListResponseSchema,
+          },
+        },
+      },
+      404: {
+        description: 'Object not found or not active.',
+        content: {
+          'application/json': {
+            schema: notFoundSchema,
+          },
+        },
+      },
+    },
+  });
+}
+
+registerObjectRefListPath('related', 'List related objects', 'isRelatedTo');
+registerObjectRefListPath('similar', 'List similar objects', 'isSimilarTo');
+registerObjectRefListPath('add-on', 'List add-on objects', 'addOn');

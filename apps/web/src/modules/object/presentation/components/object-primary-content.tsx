@@ -52,6 +52,12 @@ function stubPrimaryCopy(primarySegment: string): string {
       return 'Followers';
     case 'experts':
       return 'Experts';
+    case 'related':
+      return 'Related';
+    case 'similar':
+      return 'Similar';
+    case 'add-on':
+      return 'Add-On';
     default:
       return 'This section';
   }
@@ -136,6 +142,9 @@ export type ObjectPrimaryContentProps = {
   objectFollowersFeed?: ReactNode | null;
   /** Injected feed (client) when the Authority tab is active. */
   objectAuthorityFeed?: ReactNode | null;
+  objectRelatedFeed?: ReactNode | null;
+  objectSimilarFeed?: ReactNode | null;
+  objectAddOnFeed?: ReactNode | null;
   /** Server-rendered page body for top-level page-type object. */
   objectPageBody?: ReactNode;
   /** Server-rendered description body for `/object/:id/description`. */
@@ -165,6 +174,9 @@ export function ObjectPrimaryContent({
   objectUpdatesFeed,
   objectFollowersFeed,
   objectAuthorityFeed,
+  objectRelatedFeed,
+  objectSimilarFeed,
+  objectAddOnFeed,
   objectPageBody,
   objectDescriptionBody,
   galleryAlbums = [],
@@ -524,6 +536,30 @@ export function ObjectPrimaryContent({
             onOpenAlbum={onOpenGalleryAlbum ?? (() => undefined)}
             onBackToAlbums={onBackToGalleryAlbums ?? (() => undefined)}
           />
+        </FeedColumn>
+      );
+    }
+
+    if (activePrimarySegment === 'related' && objectRelatedFeed != null) {
+      return (
+        <FeedColumn>
+          {objectRelatedFeed}
+        </FeedColumn>
+      );
+    }
+
+    if (activePrimarySegment === 'similar' && objectSimilarFeed != null) {
+      return (
+        <FeedColumn>
+          {objectSimilarFeed}
+        </FeedColumn>
+      );
+    }
+
+    if (activePrimarySegment === 'add-on' && objectAddOnFeed != null) {
+      return (
+        <FeedColumn>
+          {objectAddOnFeed}
         </FeedColumn>
       );
     }

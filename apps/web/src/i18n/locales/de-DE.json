@@ -2647,5 +2647,10 @@
   "your_reward_new": "deine Belohnung",
   "your_vote": "Ihr Vote",
   "your_vote_placeholder": "Ihr Vote (optional)",
-  "zoom": "Zoom"
+  "zoom": "Zoom",
+  "object_right_related": "Verwandt",
+  "object_right_similar": "Aehnlich",
+  "object_right_add_on": "Add-On",
+  "object_right_show_more": "Mehr anzeigen",
+  "object_ref_list_empty": "Keine Objekte vorhanden."
 }

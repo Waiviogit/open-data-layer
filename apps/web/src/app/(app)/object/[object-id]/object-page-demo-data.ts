@@ -3,7 +3,7 @@ import {
   type ObjectFeedSubTabView,
   type ObjectPageViewModel,
   type ObjectPrimaryTabView,
-  type ObjectSidebarMiniCardView,
+  type ObjectRefCardView,
   type ProjectedObjectWithCountsView,
 } from '@/modules/object';
 
@@ -23,22 +23,26 @@ const MOCK_FEED_SUB_TABS: ObjectFeedSubTabView[] = [
   { segment: 'threads', label: 'Threads' },
 ];
 
-function miniCard(id: string, title: string): ObjectSidebarMiniCardView {
-  return { id, title, imageSrc: null };
+function refCard(objectId: string, title: string): ObjectRefCardView {
+  return { objectId, title, imageSrc: null, objectType: 'product' };
 }
 
 function stubRights(): Pick<
   ObjectPageViewModel,
-  'rightFeatured' | 'rightRelated' | 'rightSimilar'
+  | 'rightRelated'
+  | 'rightSimilar'
+  | 'rightAddOn'
+  | 'rightRelatedHasMore'
+  | 'rightSimilarHasMore'
+  | 'rightAddOnHasMore'
 > {
   return {
-    rightFeatured: [
-      miniCard('e1', 'Expert One'),
-      miniCard('e2', 'Expert Two'),
-      miniCard('e3', 'Expert Three'),
-    ],
-    rightRelated: [miniCard('n1', 'Nearby Shop A'), miniCard('n2', 'Nearby Shop B')],
-    rightSimilar: [miniCard('s1', 'Similar venue')],
+    rightRelated: [refCard('n1', 'Nearby Shop A'), refCard('n2', 'Nearby Shop B')],
+    rightSimilar: [refCard('s1', 'Similar venue')],
+    rightAddOn: [],
+    rightRelatedHasMore: false,
+    rightSimilarHasMore: false,
+    rightAddOnHasMore: false,
   };
 }
 
@@ -201,9 +205,12 @@ export function mockModelFromDemoPreset(objectId: string): ObjectPageViewModel |
     ...(objectId === 'demo-shop'
       ? stubRights()
       : {
-          rightFeatured: [miniCard('nf-1', 'Breaking digest')],
-          rightRelated: [miniCard('nf-2', 'Metro newsletter')],
+          rightRelated: [refCard('nf-2', 'Metro newsletter')],
           rightSimilar: [],
+          rightAddOn: [],
+          rightRelatedHasMore: false,
+          rightSimilarHasMore: false,
+          rightAddOnHasMore: false,
         }),
   };
 }

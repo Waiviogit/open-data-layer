@@ -31,8 +31,6 @@ export type { ObjectAuthoritySubNavProps } from './components/object-authority-s
 export { ObjectWriteReviewPrompt } from './components/object-write-review-prompt';
 export type { ObjectWriteReviewPromptProps } from './components/object-write-review-prompt';
 export { ObjectRightSidebar } from './components/object-right-sidebar';
-export type {
-  ObjectRightSidebarProps,
-  ObjectSidebarMiniCardProps,
-} from './components/object-right-sidebar';
-export { ObjectSidebarMiniCard } from './components/object-right-sidebar';
+export type { ObjectRightSidebarProps } from './components/object-right-sidebar';
+export { ObjectRefCard, ObjectRefListFeed } from './components/object-ref-list-feed';
+export type { ObjectRefCardProps, ObjectRefListFeedProps } from './components/object-ref-list-feed';

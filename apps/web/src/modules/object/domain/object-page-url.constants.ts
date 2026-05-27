@@ -16,6 +16,9 @@ export const OBJECT_PAGE_PATH_TAB_SEGMENTS = [
   OBJECT_PAGE_DESCRIPTION_SEGMENT,
   'gallery',
   'experts',
+  'related',
+  'similar',
+  'add-on',
 ] as const;
 
 export type ObjectPagePathTabSegment = (typeof OBJECT_PAGE_PATH_TAB_SEGMENTS)[number];
@@ -35,4 +38,16 @@ export function buildObjectGalleryAlbumPath(
 
 export function buildObjectGalleryPath(objectId: string): string {
   return `/object/${encodeURIComponent(objectId)}/gallery`;
+}
+
+export function buildObjectRelatedPath(objectId: string): string {
+  return `/object/${encodeURIComponent(objectId)}/related`;
+}
+
+export function buildObjectSimilarPath(objectId: string): string {
+  return `/object/${encodeURIComponent(objectId)}/similar`;
+}
+
+export function buildObjectAddOnPath(objectId: string): string {
+  return `/object/${encodeURIComponent(objectId)}/add-on`;
 }

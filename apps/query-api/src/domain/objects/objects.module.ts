@@ -7,6 +7,7 @@ import { GetObjectByIdEndpoint } from './get-object-by-id.endpoint';
 import { GetNestedObjectsEndpoint } from './get-nested-objects.endpoint';
 import { GetObjectFollowersEndpoint } from './get-object-followers.endpoint';
 import { GetObjectAuthorityEndpoint } from './get-object-authority.endpoint';
+import { GetObjectRefListEndpoint } from './get-object-ref-list.endpoint';
 
 @Module({
   imports: [
@@ -20,12 +21,14 @@ import { GetObjectAuthorityEndpoint } from './get-object-authority.endpoint';
     GetNestedObjectsEndpoint,
     GetObjectFollowersEndpoint,
     GetObjectAuthorityEndpoint,
+    GetObjectRefListEndpoint,
   ],
   exports: [
     GetObjectByIdEndpoint,
     GetNestedObjectsEndpoint,
     GetObjectFollowersEndpoint,
     GetObjectAuthorityEndpoint,
+    GetObjectRefListEndpoint,
   ],
 })
 export class ObjectsModule {}

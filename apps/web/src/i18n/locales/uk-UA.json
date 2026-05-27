@@ -2647,5 +2647,10 @@
   "your_vote": "Ваш голос",
   "your_vote_placeholder": "Ваш голос (необов'язково)",
   "zoom": "Збільшити",
-  "СЃommunity_actions": "Дії спільноти"
+  "СЃommunity_actions": "Дії спільноти",
+  "object_right_related": "Пов'язані",
+  "object_right_similar": "Схожі",
+  "object_right_add_on": "Додатково",
+  "object_right_show_more": "Показати більше",
+  "object_ref_list_empty": "Немає об'єктів для відображення."
 }

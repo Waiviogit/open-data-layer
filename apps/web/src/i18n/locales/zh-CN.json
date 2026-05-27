@@ -2628,5 +2628,10 @@
   "your_vote": "您的投票",
   "your_vote_placeholder": "您的投票（可选）",
   "zoom": "缩放",
-  "СЃommunity_actions": "社区活动"
+  "СЃommunity_actions": "社区活动",
+  "object_right_related": "Related",
+  "object_right_similar": "Similar",
+  "object_right_add_on": "Add-On",
+  "object_right_show_more": "Show more",
+  "object_ref_list_empty": "No objects to show."
 }

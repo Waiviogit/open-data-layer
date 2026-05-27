@@ -2740,5 +2740,10 @@
   "your_vote": "Tu voto",
   "your_vote_placeholder": "Tu voto (opcional)",
   "zoom": "Zoom",
-  "СЃommunity_actions": "Acciones de la comunidad"
+  "СЃommunity_actions": "Acciones de la comunidad",
+  "object_right_related": "Relacionados",
+  "object_right_similar": "Similares",
+  "object_right_add_on": "Complementos",
+  "object_right_show_more": "Mostrar mas",
+  "object_ref_list_empty": "No hay objetos para mostrar."
 }

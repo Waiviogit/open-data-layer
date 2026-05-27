@@ -2647,5 +2647,10 @@
   "your_vote": "Suara Anda",
   "your_vote_placeholder": "Suara Anda (opsional)",
   "zoom": "Perbesar",
-  "СЃommunity_actions": "Tindakan Komunitas"
+  "СЃommunity_actions": "Tindakan Komunitas",
+  "object_right_related": "Related",
+  "object_right_similar": "Similar",
+  "object_right_add_on": "Add-On",
+  "object_right_show_more": "Show more",
+  "object_ref_list_empty": "No objects to show."
 }

@@ -2647,5 +2647,10 @@
   "your_vote": "あなたの投票",
   "your_vote_placeholder": "あなたの投票（オプション）",
   "zoom": "ズーム",
-  "СЃommunity_actions": "コミュニティのアクション"
+  "СЃommunity_actions": "コミュニティのアクション",
+  "object_right_related": "Related",
+  "object_right_similar": "Similar",
+  "object_right_add_on": "Add-On",
+  "object_right_show_more": "Show more",
+  "object_ref_list_empty": "No objects to show."
 }

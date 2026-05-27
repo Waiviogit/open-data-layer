@@ -7,18 +7,22 @@ import {
   Query,
   Param,
 } from '@nestjs/common';
-import { ReqLocale } from '@opden-data-layer/core';
+import { ReqLocale, UPDATE_TYPES } from '@opden-data-layer/core';
 import {
   GetObjectByIdEndpoint,
   GetNestedObjectsEndpoint,
   GetObjectFollowersEndpoint,
   GetObjectAuthorityEndpoint,
+  GetObjectRefListEndpoint,
+  objectRefListQuerySchema,
   resolveObjectBodySchema,
   resolveNestedObjectsBodySchema,
   type ProjectedObjectWithCounts,
   type ResolveObjectBody,
   type ResolveNestedObjectsBody,
   type ResolveNestedObjectsResponse,
+  type ObjectRefListQuery,
+  type ObjectRefListResponseDto,
 } from '../domain/objects';
 import {
   userSocialListQuerySchema,
@@ -45,7 +49,67 @@ export class ObjectsController {
     private readonly getObjectUpdatesFeed: GetObjectUpdatesFeedEndpoint,
     private readonly getObjectFollowersEndpoint: GetObjectFollowersEndpoint,
     private readonly getObjectAuthorityEndpoint: GetObjectAuthorityEndpoint,
+    private readonly getObjectRefListEndpoint: GetObjectRefListEndpoint,
   ) {}
+
+  @Get(':objectId/related')
+  async getObjectRelatedList(
+    @Param('objectId') objectId: string,
+    @Query(new ZodQueryPipe(objectRefListQuerySchema)) query: ObjectRefListQuery,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<ObjectRefListResponseDto> {
+    return this.getObjectRefList(objectId, UPDATE_TYPES.IS_RELATED_TO, query, locale, governanceObjectIdFromHeader, viewer);
+  }
+
+  @Get(':objectId/similar')
+  async getObjectSimilarList(
+    @Param('objectId') objectId: string,
+    @Query(new ZodQueryPipe(objectRefListQuerySchema)) query: ObjectRefListQuery,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<ObjectRefListResponseDto> {
+    return this.getObjectRefList(objectId, UPDATE_TYPES.IS_SIMILAR_TO, query, locale, governanceObjectIdFromHeader, viewer);
+  }
+
+  @Get(':objectId/add-on')
+  async getObjectAddOnList(
+    @Param('objectId') objectId: string,
+    @Query(new ZodQueryPipe(objectRefListQuerySchema)) query: ObjectRefListQuery,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<ObjectRefListResponseDto> {
+    return this.getObjectRefList(objectId, UPDATE_TYPES.ADD_ON, query, locale, governanceObjectIdFromHeader, viewer);
+  }
+
+  private async getObjectRefList(
+    objectId: string,
+    updateType:
+      | typeof UPDATE_TYPES.IS_RELATED_TO
+      | typeof UPDATE_TYPES.IS_SIMILAR_TO
+      | typeof UPDATE_TYPES.ADD_ON,
+    query: ObjectRefListQuery,
+    locale: string,
+    governanceObjectIdFromHeader: string | undefined,
+    viewer: string | undefined,
+  ): Promise<ObjectRefListResponseDto> {
+    const decodedId = decodeURIComponent(objectId);
+    const result = await this.getObjectRefListEndpoint.execute(
+      decodedId,
+      updateType,
+      query,
+      locale,
+      governanceObjectIdFromHeader,
+      viewer,
+    );
+    if (!result) {
+      throw new NotFoundException(`Object not found: ${decodedId}`);
+    }
+    return result;
+  }
 
   @Get(':objectId/authority')
   async getObjectAuthorityList(

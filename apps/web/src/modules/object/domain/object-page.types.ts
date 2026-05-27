@@ -14,6 +14,14 @@ export type ObjectSwitcherKind =
   | 'group'
   | 'default';
 
+export type ObjectRefCardView = {
+  objectId: string;
+  title: string;
+  imageSrc: string | null;
+  objectType: string;
+};
+
+/** @deprecated Use {@link ObjectRefCardView} for related/similar/add-on rails. */
 export type ObjectSidebarMiniCardView = {
   id: string;
   title: string;
@@ -220,9 +228,12 @@ export type ObjectPageViewModel = {
   leftRailBlocks: ObjectLeftRailBlock[];
   /** Existing `tagCategory` values on this object (for tag item edit picker). */
   tagCategoryNames: string[];
-  rightFeatured: ObjectSidebarMiniCardView[];
-  rightRelated: ObjectSidebarMiniCardView[];
-  rightSimilar: ObjectSidebarMiniCardView[];
+  rightRelated: ObjectRefCardView[];
+  rightSimilar: ObjectRefCardView[];
+  rightAddOn: ObjectRefCardView[];
+  rightRelatedHasMore: boolean;
+  rightSimilarHasMore: boolean;
+  rightAddOnHasMore: boolean;
   /** Viewer has administrative authority on this object (favorites heart). */
   hasAdministrativeAuthority: boolean;
   /** Viewer has ownership authority on this object. */

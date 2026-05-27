@@ -6,7 +6,7 @@ export type {
   ObjectNestedViewResolved,
   ObjectPageViewModel,
   ObjectPrimaryTabView,
-  ObjectSidebarMiniCardView,
+  ObjectRefCardView,
   ObjectSwitcherKind,
 } from './domain/object-page.types';
 export { AUTHORITY_SUB_VALUES } from './domain/object-page.types';
@@ -26,7 +26,7 @@ export {
   ObjectPrimaryNav,
   ObjectAuthoritySubNav,
   ObjectRightSidebar,
-  ObjectSidebarMiniCard,
+  ObjectRefListFeed,
   ObjectViewShell,
   ObjectMenuItemsStatic,
   ObjectListContent,
@@ -43,7 +43,6 @@ export type {
   ObjectPrimaryNavProps,
   ObjectAuthoritySubNavProps,
   ObjectRightSidebarProps,
-  ObjectSidebarMiniCardProps,
   ObjectViewShellProps,
   ObjectMenuItemsStaticProps,
   ObjectListContentProps,

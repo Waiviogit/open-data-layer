@@ -1909,5 +1909,10 @@
   "your_reward": "Ang Iyong Gantimpala",
   "your_vote": "Ang iyong boto",
   "your_vote_placeholder": "Ang iyong boto (opsyonal)",
-  "СЃommunity_actions": "Mga aksyon sa pamayanan"
+  "СЃommunity_actions": "Mga aksyon sa pamayanan",
+  "object_right_related": "Related",
+  "object_right_similar": "Similar",
+  "object_right_add_on": "Add-On",
+  "object_right_show_more": "Show more",
+  "object_ref_list_empty": "No objects to show."
 }

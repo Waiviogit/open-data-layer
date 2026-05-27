@@ -18,7 +18,6 @@ import type {
   ObjectPageSeoView,
   ObjectPageViewModel,
   ObjectPrimaryTabView,
-  ObjectSidebarMiniCardView,
   ObjectSwitcherKind,
 } from '../domain/object-page.types';
 import { OBJECT_LEFT_RAIL_BLOCK_LABEL } from '../domain/object-update-labels';
@@ -131,10 +130,6 @@ const FEED_SUB_TABS: ObjectFeedSubTabView[] = [
   { segment: 'posts', label: 'Posts' },
   { segment: 'threads', label: 'Threads' },
 ];
-
-function miniCard(id: string, title: string): ObjectSidebarMiniCardView {
-  return { id, title, imageSrc: null };
-}
 
 function coverImageUrl(fields: Record<string, unknown>): string | null {
   const v = fields.imageBackground;
@@ -500,9 +495,12 @@ export function projectedObjectWithCountsToPageModel(
     ownershipAuthorityCount: api.ownership_count ?? 0,
     leftRailBlocks,
     tagCategoryNames,
-    rightFeatured: [miniCard('ex-f1', 'Experts')],
-    rightRelated: [miniCard('nr-f1', 'Nearby')],
-    rightSimilar: [miniCard('sm-f1', 'Similar')],
+    rightRelated: [],
+    rightSimilar: [],
+    rightAddOn: [],
+    rightRelatedHasMore: false,
+    rightSimilarHasMore: false,
+    rightAddOnHasMore: false,
     seo: parseSeo(api),
   };
 }

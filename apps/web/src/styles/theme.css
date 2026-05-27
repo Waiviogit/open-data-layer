@@ -709,6 +709,23 @@ html[data-shell-mode='instagram'] .shell-profile-grid {
   grid-template-columns: minmax(0, 1fr);
 }
 
+/* Object page: wider right rail for related/similar/add-on mini cards */
+@media (min-width: 1024px) {
+  html .shell-object-page-grid {
+    grid-template-columns:
+      minmax(0, var(--shell-left-width))
+      minmax(0, 1fr)
+      minmax(0, 18rem);
+  }
+
+  html[data-shell-mode='twitter'] .shell-object-page-grid {
+    grid-template-columns:
+      minmax(0, var(--shell-left-width))
+      minmax(0, 1fr)
+      minmax(0, 22rem);
+  }
+}
+
 html[data-shell-mode='instagram'] .shell-hide-instagram {
   display: none;
 }

@@ -2647,5 +2647,10 @@
   "your_vote": "Votre vote",
   "your_vote_placeholder": "Votre vote (facultatif)",
   "zoom": "Zoom",
-  "СЃommunity_actions": "Actions communautaires"
+  "СЃommunity_actions": "Actions communautaires",
+  "object_right_related": "Associes",
+  "object_right_similar": "Similaires",
+  "object_right_add_on": "Ajouts",
+  "object_right_show_more": "Afficher plus",
+  "object_ref_list_empty": "Aucun objet a afficher."
 }

@@ -2647,5 +2647,10 @@
   "your_vote": "Váš hlas",
   "your_vote_placeholder": "Váš hlas (volitelný)",
   "zoom": "Přiblížit",
-  "СЃommunity_actions": "Akce komunity"
+  "СЃommunity_actions": "Akce komunity",
+  "object_right_related": "Related",
+  "object_right_similar": "Similar",
+  "object_right_add_on": "Add-On",
+  "object_right_show_more": "Show more",
+  "object_ref_list_empty": "No objects to show."
 }

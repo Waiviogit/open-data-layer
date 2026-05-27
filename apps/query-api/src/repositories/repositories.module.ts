@@ -19,6 +19,7 @@ import { UserObjectFollowsRepository } from './user-object-follows.repository';
 import { UpdatesFeedRepository } from './updates-feed.repository';
 import { SearchRepository } from './search.repository';
 import { DiscoverRepository } from './discover.repository';
+import { ObjectRefListRepository } from './object-ref-list.repository';
 
 @Module({
   providers: [
@@ -42,6 +43,7 @@ import { DiscoverRepository } from './discover.repository';
     UpdatesFeedRepository,
     SearchRepository,
     DiscoverRepository,
+    ObjectRefListRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -64,6 +66,7 @@ import { DiscoverRepository } from './discover.repository';
     UpdatesFeedRepository,
     SearchRepository,
     DiscoverRepository,
+    ObjectRefListRepository,
   ],
 })
 export class RepositoriesModule {}

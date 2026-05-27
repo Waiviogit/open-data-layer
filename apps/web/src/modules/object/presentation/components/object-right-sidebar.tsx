@@ -1,72 +1,106 @@
 'use client';
 
-import Image from 'next/image';
+import Link from 'next/link';
+
+import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import {
-  AVATAR_PLACEHOLDER_SRC,
-  shouldUnoptimizeRemoteImage,
-} from '@/shared/presentation';
+  buildObjectAddOnPath,
+  buildObjectRelatedPath,
+  buildObjectSimilarPath,
+} from '../../domain/object-page-url.constants';
+import type { ObjectRefCardView } from '../../domain/object-page.types';
 
-import type { ObjectSidebarMiniCardView } from '../../domain/object-page.types';
+import { ObjectRefCard } from './object-ref-list-feed';
 
-export type ObjectSidebarMiniCardProps = {
-  item: ObjectSidebarMiniCardView;
-};
-
-export function ObjectSidebarMiniCard({ item }: ObjectSidebarMiniCardProps) {
-  const src = item.imageSrc?.trim() ? item.imageSrc : AVATAR_PLACEHOLDER_SRC;
-
-  return (
-    <div className="flex gap-2 rounded-btn border border-border bg-bg p-2">
-      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-btn border border-border">
-        <Image
-          src={src}
-          alt=""
-          fill
-          className="object-cover"
-          sizes="48px"
-          unoptimized={
-            src === AVATAR_PLACEHOLDER_SRC ? true : shouldUnoptimizeRemoteImage(src)
-          }
-        />
-      </div>
-      <p className="min-w-0 flex-1 self-center text-sm font-medium leading-snug text-fg">
-        {item.title}
-      </p>
-    </div>
-  );
-}
+const RIGHT_RAIL_MAX_ITEMS = 5;
 
 export type ObjectRightSidebarProps = {
-  featured: ObjectSidebarMiniCardView[];
-  related: ObjectSidebarMiniCardView[];
-  similar: ObjectSidebarMiniCardView[];
+  objectId: string;
+  related: ObjectRefCardView[];
+  similar: ObjectRefCardView[];
+  addOn: ObjectRefCardView[];
+  relatedHasMore: boolean;
+  similarHasMore: boolean;
+  addOnHasMore: boolean;
 };
 
-/** Matches profile `RightSidebar` surface tokens (`rounded-card`, `border-border`, `bg-surface/60`). */
-export function ObjectRightSidebar({
-  featured,
-  related,
-  similar,
-}: ObjectRightSidebarProps) {
-  const block = (sectionTitle: string, items: ObjectSidebarMiniCardView[]) => (
-    <aside className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
-      <p className="font-medium text-fg">{sectionTitle}</p>
-      <ul className="mt-3 space-y-2">
-        {items.map((item) => (
-          <li key={item.id}>
-            <ObjectSidebarMiniCard item={item} />
+function ObjectRefSection({
+  title,
+  items,
+  hasMore,
+  showMoreHref,
+}: {
+  title: string;
+  items: ObjectRefCardView[];
+  hasMore: boolean;
+  showMoreHref: string;
+}) {
+  const { t } = useI18n();
+  if (items.length === 0) {
+    return null;
+  }
+
+  const visible = items.slice(0, RIGHT_RAIL_MAX_ITEMS);
+
+  return (
+    <aside className="w-full rounded-card border border-border bg-surface/60 px-3 py-card-padding text-sm text-muted">
+      <p className="font-medium text-fg">{title}</p>
+      <ul className="mt-3 w-full space-y-2">
+        {visible.map((item) => (
+          <li key={item.objectId} className="w-full">
+            <ObjectRefCard
+              item={item}
+              href={`/object/${encodeURIComponent(item.objectId)}`}
+            />
           </li>
         ))}
       </ul>
+      {hasMore ? (
+        <Link
+          href={showMoreHref}
+          className="mt-3 inline-block text-sm font-medium text-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          suppressHydrationWarning
+        >
+          {t('object_right_show_more')}
+        </Link>
+      ) : null}
     </aside>
   );
+}
+
+/** Matches profile `RightSidebar` surface tokens (`rounded-card`, `border-border`, `bg-surface/60`). */
+export function ObjectRightSidebar({
+  objectId,
+  related,
+  similar,
+  addOn,
+  relatedHasMore,
+  similarHasMore,
+  addOnHasMore,
+}: ObjectRightSidebarProps) {
+  const { t } = useI18n();
 
   return (
-    <div className="flex min-w-0 flex-col gap-card-padding">
-      {block('Experts', featured)}
-      {block('Nearby', related)}
-      {block('Similar', similar)}
+    <div className="flex w-full min-w-0 flex-col gap-card-padding">
+      <ObjectRefSection
+        title={t('object_right_related')}
+        items={related}
+        hasMore={relatedHasMore}
+        showMoreHref={buildObjectRelatedPath(objectId)}
+      />
+      <ObjectRefSection
+        title={t('object_right_similar')}
+        items={similar}
+        hasMore={similarHasMore}
+        showMoreHref={buildObjectSimilarPath(objectId)}
+      />
+      <ObjectRefSection
+        title={t('object_right_add_on')}
+        items={addOn}
+        hasMore={addOnHasMore}
+        showMoreHref={buildObjectAddOnPath(objectId)}
+      />
     </div>
   );
 }

@@ -2,6 +2,8 @@ export * from './get-object-by-id.endpoint';
 export * from './get-nested-objects.endpoint';
 export * from './get-object-followers.endpoint';
 export * from './get-object-authority.endpoint';
+export * from './get-object-ref-list.endpoint';
+export * from './schemas/object-ref-list.schema';
 export * from './objects.module';
 export * from './projected-object-with-counts.types';
 export * from './schemas/resolve-object.schema';

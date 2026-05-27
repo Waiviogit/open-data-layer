@@ -30,7 +30,7 @@ export function ObjectViewShell({
       {hero}
       <div
         className={[
-          'shell-profile-grid mt-card-padding grid grid-cols-1 gap-card-padding',
+          'shell-profile-grid shell-object-page-grid mt-card-padding grid grid-cols-1 gap-card-padding',
           'lg:grid-cols-[minmax(0,var(--shell-left-width))_minmax(0,1fr)_minmax(0,var(--shell-right-width))]',
         ].join(' ')}
       >
