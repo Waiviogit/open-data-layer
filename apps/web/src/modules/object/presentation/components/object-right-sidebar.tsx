@@ -10,8 +10,10 @@ import {
   buildObjectSimilarPath,
 } from '../../domain/object-page-url.constants';
 import type { ObjectRefCardView } from '../../domain/object-page.types';
+import type { PaginatedUserFollowListView } from '@/modules/user-social/application/dto/user-social.dto';
 
 import { ObjectRefCard } from './object-ref-list-feed';
+import { ObjectRightFollowersSection } from './object-right-followers-section';
 
 const RIGHT_RAIL_MAX_ITEMS = 5;
 
@@ -23,6 +25,7 @@ export type ObjectRightSidebarProps = {
   relatedHasMore: boolean;
   similarHasMore: boolean;
   addOnHasMore: boolean;
+  rightRailFollowersPage: PaginatedUserFollowListView | null;
 };
 
 function ObjectRefSection({
@@ -78,6 +81,7 @@ export function ObjectRightSidebar({
   relatedHasMore,
   similarHasMore,
   addOnHasMore,
+  rightRailFollowersPage,
 }: ObjectRightSidebarProps) {
   const { t } = useI18n();
 
@@ -101,6 +105,9 @@ export function ObjectRightSidebar({
         hasMore={addOnHasMore}
         showMoreHref={buildObjectAddOnPath(objectId)}
       />
+      {rightRailFollowersPage != null ? (
+        <ObjectRightFollowersSection objectId={objectId} page={rightRailFollowersPage} />
+      ) : null}
     </div>
   );
 }

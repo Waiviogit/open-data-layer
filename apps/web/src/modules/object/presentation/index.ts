@@ -32,5 +32,7 @@ export { ObjectWriteReviewPrompt } from './components/object-write-review-prompt
 export type { ObjectWriteReviewPromptProps } from './components/object-write-review-prompt';
 export { ObjectRightSidebar } from './components/object-right-sidebar';
 export type { ObjectRightSidebarProps } from './components/object-right-sidebar';
+export { ObjectRightFollowersSection } from './components/object-right-followers-section';
+export type { ObjectRightFollowersSectionProps } from './components/object-right-followers-section';
 export { ObjectRefCard, ObjectRefListFeed } from './components/object-ref-list-feed';
 export type { ObjectRefCardProps, ObjectRefListFeedProps } from './components/object-ref-list-feed';

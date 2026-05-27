@@ -561,8 +561,8 @@ export function ObjectLeftRailPanel({
                   count={railBlockCount('workHours')}
                 />
                 <ul className="mt-2 space-y-1">
-                  {block.lines.map((line) => (
-                    <li key={line}>{line}</li>
+                  {block.lines.map((line, lineIndex) => (
+                    <li key={`${index}-${lineIndex}`}>{line}</li>
                   ))}
                 </ul>
               </aside>

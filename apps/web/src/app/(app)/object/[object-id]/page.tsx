@@ -23,6 +23,7 @@ import { buildObjectMetadata, JsonLdScript } from '@/seo';
 
 import { getObjectAuthorityPageQuery } from '@/modules/object/application/queries/get-object-authority-page.query';
 import { getObjectFollowersPageQuery } from '@/modules/object/application/queries/get-object-followers-page.query';
+import { RIGHT_RAIL_FOLLOWERS_FETCH_LIMIT } from '@/modules/object/infrastructure/clients/object-social.client';
 import {
   fetchObjectRefList,
   projectedObjectToRefCard,
@@ -56,6 +57,10 @@ function objectTypeSupportsRefList(
   const registryEntry =
     OBJECT_TYPE_REGISTRY[objectTypeKey as keyof typeof OBJECT_TYPE_REGISTRY];
   return registryEntry?.supported_updates.includes(updateType) ?? false;
+}
+
+function objectFollowersCount(model: ObjectPageViewModel): number {
+  return model.primaryTabs.find((tab) => tab.segment === 'followers')?.count ?? 0;
 }
 
 function mergeRightRailIntoModel(
@@ -258,6 +263,19 @@ export default async function ObjectDetailPage({
     addOnRailPage,
   );
 
+  const rightRailFollowersPage =
+    objectFollowersCount(model) > 0
+      ? await getObjectFollowersPageQuery(
+          objectId,
+          { sort: 'rank', skip: 0, limit: RIGHT_RAIL_FOLLOWERS_FETCH_LIMIT },
+          user?.username ?? null,
+        )
+      : null;
+  const rightRailFollowersPreview =
+    rightRailFollowersPage != null && rightRailFollowersPage.items.length > 0
+      ? rightRailFollowersPage
+      : null;
+
   const filters = parseObjectUpdatesSearchParams(sp);
   const initialUpdatesPage = await getObjectUpdatesFeedPageQuery(
     objectId,
@@ -392,6 +410,7 @@ export default async function ObjectDetailPage({
         embeddedRelatedPage={embeddedRelatedPage}
         embeddedSimilarPage={embeddedSimilarPage}
         embeddedAddOnPage={embeddedAddOnPage}
+        rightRailFollowersPage={rightRailFollowersPreview}
         viewerUsername={user?.username ?? null}
         initialPrimarySegment={initialPrimarySegment}
         initialGalleryAlbum={initialGalleryAlbum}

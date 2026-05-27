@@ -51,3 +51,7 @@ export function buildObjectSimilarPath(objectId: string): string {
 export function buildObjectAddOnPath(objectId: string): string {
   return `/object/${encodeURIComponent(objectId)}/add-on`;
 }
+
+export function buildObjectFollowersPath(objectId: string): string {
+  return `/object/${encodeURIComponent(objectId)}/followers`;
+}

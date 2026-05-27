@@ -18,3 +18,11 @@
 
 - **Sort** is driven by `?sort=` and {@link apps/web/src/modules/user-social/presentation/components/user-social-subscription-sort.tsx} (`router.replace` on the current pathname).
 - **Load more:** server action accumulates pages with {@link apps/web/src/modules/user-social/constants}.
+
+## Right rail preview
+
+When `followers_count > 0` on the object resolve payload, {@link apps/web/src/app/(app)/object/[object-id]/page.tsx} SSR-fetches the first page (`sort=rank`, `limit=6`) via {@link apps/web/src/modules/object/application/queries/get-object-followers-page.query.ts} and passes it to {@link apps/web/src/modules/object/presentation/components/object-right-sidebar.tsx}.
+
+- **Visibility:** hidden when count is 0 or the followers request returns no rows.
+- **UI:** {@link apps/web/src/modules/object/presentation/components/object-right-followers-section.tsx} — up to 5 compact account rows (avatar + username), no sort or follow controls.
+- **Show more:** links to `/object/[object-id]/followers` ({@link apps/web/src/modules/object/domain/object-page-url.constants.ts} `buildObjectFollowersPath`).

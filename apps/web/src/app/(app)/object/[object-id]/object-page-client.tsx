@@ -70,6 +70,8 @@ export type ObjectPageClientProps = {
   embeddedRelatedPage: ObjectRefListPageView | null;
   embeddedSimilarPage: ObjectRefListPageView | null;
   embeddedAddOnPage: ObjectRefListPageView | null;
+  /** SSR followers preview for right rail when `followers_count > 0`. */
+  rightRailFollowersPage: PaginatedUserFollowListView | null;
   viewerUsername: string | null;
   /** Primary tab from `?tab=` (server-validated). Empty when URL has no tab (menu landing). */
   initialPrimarySegment: string;
@@ -96,6 +98,7 @@ export function ObjectPageClient({
   embeddedRelatedPage,
   embeddedSimilarPage,
   embeddedAddOnPage,
+  rightRailFollowersPage,
   viewerUsername,
   initialPrimarySegment,
   initialGalleryAlbum,
@@ -722,6 +725,7 @@ export function ObjectPageClient({
           relatedHasMore={model.rightRelatedHasMore}
           similarHasMore={model.rightSimilarHasMore}
           addOnHasMore={model.rightAddOnHasMore}
+          rightRailFollowersPage={rightRailFollowersPage}
         />
       }
     />
