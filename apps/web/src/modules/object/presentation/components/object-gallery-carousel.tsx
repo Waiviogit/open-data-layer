@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type MouseEvent, type SyntheticEvent } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
@@ -24,29 +24,67 @@ export function ObjectGalleryCarousel({ photos, onPhotoClick }: ObjectGalleryCar
   const { t } = useI18n();
   const [activeIndex, setActiveIndex] = useState(0);
   const [frameAspect, setFrameAspect] = useState(GALLERY_CAROUSEL_PORTRAIT_FRAME_ASPECT);
+  const aspectByUrlRef = useRef<Map<string, number>>(new Map());
+  const activeUrlRef = useRef<string | undefined>(undefined);
 
   const count = photos.length;
   const active = photos[activeIndex];
+  const activeUrl = active?.url;
+
+  activeUrlRef.current = activeUrl;
 
   useEffect(() => {
-    setFrameAspect(GALLERY_CAROUSEL_PORTRAIT_FRAME_ASPECT);
-  }, [active?.url]);
+    if (activeIndex >= count) {
+      setActiveIndex(0);
+    }
+  }, [activeIndex, count]);
 
-  const goPrev = useCallback(() => {
-    if (count <= 1) {
+  useEffect(() => {
+    if (!activeUrl) {
       return;
     }
-    setActiveIndex((i) => (i - 1 + count) % count);
-  }, [count]);
-
-  const goNext = useCallback(() => {
-    if (count <= 1) {
-      return;
+    const cached = aspectByUrlRef.current.get(activeUrl);
+    if (cached != null) {
+      setFrameAspect(cached);
     }
-    setActiveIndex((i) => (i + 1) % count);
-  }, [count]);
+  }, [activeUrl]);
 
-  if (!active) {
+  const handleImageLoad = useCallback(
+    (loadedUrl: string) => (event: SyntheticEvent<HTMLImageElement>) => {
+      if (activeUrlRef.current !== loadedUrl) {
+        return;
+      }
+      const img = event.currentTarget;
+      const aspect = resolveGalleryCarouselAspectRatio(img.naturalWidth, img.naturalHeight);
+      aspectByUrlRef.current.set(loadedUrl, aspect);
+      setFrameAspect(aspect);
+    },
+    [],
+  );
+
+  const goPrev = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      event.stopPropagation();
+      if (count <= 1) {
+        return;
+      }
+      setActiveIndex((i) => (i - 1 + count) % count);
+    },
+    [count],
+  );
+
+  const goNext = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      event.stopPropagation();
+      if (count <= 1) {
+        return;
+      }
+      setActiveIndex((i) => (i + 1) % count);
+    },
+    [count],
+  );
+
+  if (!active || !activeUrl) {
     return null;
   }
 
@@ -61,18 +99,14 @@ export function ObjectGalleryCarousel({ photos, onPhotoClick }: ObjectGalleryCar
   const photoFrame = (
     <div className="relative w-full" style={{ aspectRatio: frameAspect }}>
       <Image
-        src={active.url}
+        key={activeUrl}
+        src={activeUrl}
         alt=""
         fill
         className="object-cover"
         sizes="(max-width: 768px) 100vw, 320px"
-        unoptimized={shouldUnoptimizeRemoteImage(active.url)}
-        onLoad={(event) => {
-          const img = event.currentTarget;
-          setFrameAspect(
-            resolveGalleryCarouselAspectRatio(img.naturalWidth, img.naturalHeight),
-          );
-        }}
+        unoptimized={shouldUnoptimizeRemoteImage(activeUrl)}
+        onLoad={handleImageLoad(activeUrl)}
       />
     </div>
   );
