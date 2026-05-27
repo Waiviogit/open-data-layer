@@ -2,6 +2,7 @@
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
+import { DiscoverActiveChips } from './discover-active-chips';
 import { DiscoverObjectFeed } from './discover-object-feed';
 import { DiscoverSortSelect } from './discover-sort-select';
 import { DiscoverUserFeed } from './discover-user-feed';
@@ -41,6 +42,13 @@ export function DiscoverFeed({
           />
         ) : null}
       </div>
+      <DiscoverActiveChips
+        usersMode={usersMode}
+        objectType={objectType}
+        q={q}
+        tags={tags}
+        sort={sort}
+      />
       {usersMode ? (
         <DiscoverUserFeed q={q} />
       ) : objectType ? (

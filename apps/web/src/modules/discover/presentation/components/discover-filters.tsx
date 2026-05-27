@@ -9,6 +9,7 @@ import { buildDiscoverHref, decodeTagFilter, encodeTagFilter } from '../../domai
 import { getTagCategoryNamesForObjectType } from '../../domain/discover-registry';
 import { fetchDiscoverTagCategories } from '../../infrastructure/discover.client';
 import type { DiscoverTagCategoriesResponse } from '../../domain/discover-response.schema';
+import { ChipRemoveIcon } from './discover-chip-icons';
 
 const FILTER_DEBOUNCE_MS = 300;
 const DEFAULT_OPEN_CATEGORIES = 2;
@@ -74,25 +75,6 @@ function ChevronIcon({ className }: { className?: string }) {
       aria-hidden
     >
       <path d="M2 4l4 4 4-4" />
-    </svg>
-  );
-}
-
-function ChipRemoveIcon() {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
     </svg>
   );
 }
