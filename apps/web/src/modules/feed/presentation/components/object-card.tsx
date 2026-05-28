@@ -162,7 +162,7 @@ export function ObjectCard({
           className="shrink-0 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
           <span
-            className="flex items-center justify-center overflow-hidden rounded-md border border-border bg-surface ring-1 ring-border/60"
+            className="flex items-center justify-center overflow-hidden rounded-md bg-surface"
             style={{ width: THUMB_SIZE, height: THUMB_SIZE }}
           >
             {thumbUrl ? (
