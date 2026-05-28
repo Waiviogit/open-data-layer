@@ -144,7 +144,7 @@ export function ObjectCard({
   );
 
   return (
-    <Root className="relative list-none rounded-card border border-border bg-surface-control/40 p-card-padding shadow-whisper">
+    <Root className="relative list-none rounded-card border-[0.5px] border-border bg-surface-control/40 p-card-padding shadow-whisper">
       <div className="absolute end-3 top-3">
         <AdministrativeHeartButton
           objectId={o.object_id}
@@ -162,7 +162,7 @@ export function ObjectCard({
           className="shrink-0 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
           <span
-            className="flex items-center justify-center overflow-hidden rounded-md bg-surface"
+            className="flex items-center justify-center overflow-hidden rounded-md border-[0.5px] border-border bg-surface-alt"
             style={{ width: THUMB_SIZE, height: THUMB_SIZE }}
           >
             {thumbUrl ? (

@@ -6,6 +6,60 @@ export type DiscoverUrlParams = {
   sort?: 'newest' | 'oldest' | 'rank';
 };
 
+export type DiscoverPageState = {
+  usersMode: boolean;
+  objectType: string | null;
+  q: string;
+  tags: string[];
+  sort: 'newest' | 'oldest' | 'rank';
+};
+
+export const DEFAULT_DISCOVER_OBJECT_TYPE = 'product';
+
+type DiscoverSearchParamsSource =
+  | Record<string, string | string[] | undefined>
+  | URLSearchParams;
+
+function readSearchParam(source: DiscoverSearchParamsSource, key: string): string | null {
+  if (source instanceof URLSearchParams) {
+    return source.get(key);
+  }
+  const value = source[key];
+  if (value == null) {
+    return null;
+  }
+  return Array.isArray(value) ? (value[0] ?? null) : value;
+}
+
+function readSearchParamAll(source: DiscoverSearchParamsSource, key: string): string[] {
+  if (source instanceof URLSearchParams) {
+    return source.getAll(key);
+  }
+  const value = source[key];
+  if (value == null) {
+    return [];
+  }
+  return Array.isArray(value) ? value : [value];
+}
+
+/** Parse `/discover` query state from RSC `searchParams` or client `URLSearchParams`. */
+export function parseDiscoverPageState(source: DiscoverSearchParamsSource): DiscoverPageState {
+  const usersMode = readSearchParam(source, 'users') === '1';
+  const objectType = usersMode
+    ? null
+    : (readSearchParam(source, 'type')?.trim() || DEFAULT_DISCOVER_OBJECT_TYPE);
+  const q = readSearchParam(source, 'q')?.trim() ?? '';
+  const tagsRaw = readSearchParamAll(source, 'tags');
+  const tags = parseDiscoverTagsParam(
+    tagsRaw.length > 0 ? tagsRaw : (readSearchParam(source, 'tags') ?? undefined),
+  );
+  const sortRaw = readSearchParam(source, 'sort');
+  const sort =
+    sortRaw === 'oldest' || sortRaw === 'rank' || sortRaw === 'newest' ? sortRaw : 'newest';
+
+  return { usersMode, objectType, q, tags, sort };
+}
+
 /** Encodes tag filter for URL/API: `category:value` (split on first `:`). */
 export function encodeTagFilter(category: string, value: string): string {
   return `${category}:${value}`;

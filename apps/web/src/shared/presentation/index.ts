@@ -5,7 +5,12 @@ export {
 } from './hooks/use-synced-paginated-list';
 export { useLockBodyScroll } from './hooks/use-lock-body-scroll';
 export { shouldUnoptimizeRemoteImage } from './image/should-unoptimize-remote-image';
-export { AVATAR_PLACEHOLDER_SRC, resolveAvatarUrl } from './avatar';
+export {
+  AVATAR_PLACEHOLDER_SRC,
+  OBJECT_LOGO_FRAME_CLASS,
+  OBJECT_LOGO_IMAGE_CLASS,
+  resolveAvatarUrl,
+} from './avatar';
 export type { ResolveAvatarUrlInput, UserAvatarProps } from './avatar';
 export { UserAvatar } from './avatar';
 

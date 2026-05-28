@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
 
 import { shouldUnoptimizeRemoteImage } from '../image/should-unoptimize-remote-image';
+import { OBJECT_LOGO_FRAME_CLASS } from './object-logo-frame.class';
 import { AVATAR_PLACEHOLDER_SRC, resolveAvatarUrl } from './resolve-avatar-url';
 
 export type UserAvatarProps = {
@@ -41,6 +42,10 @@ export function UserAvatar({
 
   const shapeClass = isSquare ? 'rounded-btn' : 'rounded-circle';
 
+  const frameClass = isSquare
+    ? 'self-start shrink-0 object-contain shadow-card'
+    : 'self-start shrink-0 border-4 border-bg object-cover shadow-card';
+
   /** Locks the box in flex layouts: default `align-items: stretch` would vertically stretch the avatar row. */
   const dimensionStyle = {
     width: size,
@@ -49,13 +54,7 @@ export function UserAvatar({
     minHeight: size,
   } as const;
 
-  const commonClassName = [
-    'self-start shrink-0 border-4 border-bg object-cover shadow-card',
-    shapeClass,
-    className,
-  ]
-    .filter(Boolean)
-    .join(' ');
+  const commonClassName = [frameClass, shapeClass, className].filter(Boolean).join(' ');
 
   if (showFallback) {
     return (

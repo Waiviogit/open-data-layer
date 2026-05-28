@@ -56,6 +56,7 @@ export function DiscoverSidebar({
               <li key={type}>
                 <Link
                   href={buildDiscoverHref({ type, q, sort })}
+                  suppressHydrationWarning
                   className={[
                     'block rounded-md px-2 py-1.5 text-body-sm transition-colors',
                     active
@@ -88,6 +89,7 @@ export function DiscoverSidebar({
           <li>
             <Link
               href={buildDiscoverHref({ users: true, q, sort })}
+              suppressHydrationWarning
               className={[
                 'block rounded-md px-2 py-1.5 text-body-sm transition-colors',
                 usersMode

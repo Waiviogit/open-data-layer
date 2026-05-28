@@ -1,35 +1,26 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-
 import { useLoginModal } from '@/modules/auth';
 
-import { parseDiscoverTagsParam } from '../../domain/discover-url';
+import type { DiscoverPageState } from '../../domain/discover-url';
 import { objectTypeHasTagCategoryFilters } from '../../domain/discover-registry';
 import { DiscoverFeed } from './discover-feed';
 import { DiscoverFilters } from './discover-filters';
 import { DiscoverSidebar } from './discover-sidebar';
 
-const DEFAULT_OBJECT_TYPE = 'product';
-
-export type DiscoverPageClientProps = {
+export type DiscoverPageClientProps = DiscoverPageState & {
   viewerUsername?: string | null;
 };
 
-export function DiscoverPageClient({ viewerUsername = null }: DiscoverPageClientProps) {
+export function DiscoverPageClient({
+  usersMode,
+  objectType,
+  q,
+  tags,
+  sort,
+  viewerUsername = null,
+}: DiscoverPageClientProps) {
   const { openLogin } = useLoginModal();
-  const searchParams = useSearchParams();
-  const usersMode = searchParams.get('users') === '1';
-  const objectType = usersMode ? null : (searchParams.get('type')?.trim() || DEFAULT_OBJECT_TYPE);
-  const q = searchParams.get('q')?.trim() ?? '';
-  const tags = parseDiscoverTagsParam(
-    searchParams.getAll('tags').length > 0
-      ? searchParams.getAll('tags')
-      : searchParams.get('tags') ?? undefined,
-  );
-  const sortRaw = searchParams.get('sort');
-  const sort =
-    sortRaw === 'oldest' || sortRaw === 'rank' || sortRaw === 'newest' ? sortRaw : 'newest';
 
   const showFilters =
     !usersMode && objectType != null && objectTypeHasTagCategoryFilters(objectType);

@@ -62,6 +62,7 @@ module.exports = {
         'accent-hover': 'var(--color-accent-hover)',
         /** Tile behind PNG/SVG social & wallet marks for contrast across themes */
         'external-brand-well': 'var(--color-external-brand-well)',
+        'object-logo-well': 'var(--color-object-logo-well)',
       },
       fontFamily: {
         display: ['var(--font-display)'],

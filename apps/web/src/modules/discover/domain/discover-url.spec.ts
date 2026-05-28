@@ -2,6 +2,8 @@ import {
   buildDiscoverHref,
   decodeTagFilter,
   encodeTagFilter,
+  DEFAULT_DISCOVER_OBJECT_TYPE,
+  parseDiscoverPageState,
   parseDiscoverTagsParam,
 } from './discover-url';
 
@@ -50,5 +52,45 @@ describe('buildDiscoverHref', () => {
 describe('parseDiscoverTagsParam', () => {
   it('parses array and dedupes empty', () => {
     expect(parseDiscoverTagsParam(['a', '', 'b'])).toEqual(['a', 'b']);
+  });
+});
+
+describe('parseDiscoverPageState', () => {
+  it('defaults object type when type param is missing', () => {
+    expect(parseDiscoverPageState({})).toEqual({
+      usersMode: false,
+      objectType: DEFAULT_DISCOVER_OBJECT_TYPE,
+      q: '',
+      tags: [],
+      sort: 'newest',
+    });
+  });
+
+  it('parses object type, query, tags, and sort from RSC searchParams', () => {
+    expect(
+      parseDiscoverPageState({
+        type: 'restaurant',
+        q: ' pizza ',
+        tags: ['Cuisine:asian', 'Meal Type:breakfast'],
+        sort: 'rank',
+      }),
+    ).toEqual({
+      usersMode: false,
+      objectType: 'restaurant',
+      q: 'pizza',
+      tags: ['Cuisine:asian', 'Meal Type:breakfast'],
+      sort: 'rank',
+    });
+  });
+
+  it('parses users mode from URLSearchParams', () => {
+    const params = new URLSearchParams('users=1&q=alice&sort=oldest');
+    expect(parseDiscoverPageState(params)).toEqual({
+      usersMode: true,
+      objectType: null,
+      q: 'alice',
+      tags: [],
+      sort: 'oldest',
+    });
   });
 });

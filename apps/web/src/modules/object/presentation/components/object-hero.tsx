@@ -129,7 +129,7 @@ export function ObjectHero({
               displayName={title}
               size={96}
               isSquare
-              className="border-white/25 bg-white/10 shadow-card"
+              className="border border-white/25 bg-white/10 p-1.5 backdrop-blur-sm"
             />
 
             <div className="min-w-0 flex-1 pb-1">

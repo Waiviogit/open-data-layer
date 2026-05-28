@@ -41,6 +41,8 @@
 
   /** Tinted frost for bundled brand marks; alpha blends with sidebar surface (opaque logos). */
   --color-external-brand-well: rgb(255 255 255 / 0.42);
+  /** Opaque plate behind object logos (white-on-transparent PNGs). */
+  --color-object-logo-well: #2e333a;
 
   --font-display:
     Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
