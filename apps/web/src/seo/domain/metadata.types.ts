@@ -7,6 +7,8 @@ export type ObjectSeoInput = {
   coverImageUrl: string | null;
   objectTypeKey: string;
   jsonLd: Record<string, unknown> | null;
+  /** From `tagCategoryItem` values; omitted when empty. */
+  keywords: string[] | null;
 };
 
 export type PostSeoInput = {

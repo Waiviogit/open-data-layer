@@ -14,6 +14,7 @@ const baseInput: ObjectSeoInput = {
   coverImageUrl: 'https://cdn.example/cover.jpg',
   objectTypeKey: 'product',
   jsonLd: null,
+  keywords: ['italian', 'pizza'],
 };
 
 describe('buildObjectMetadata', () => {
@@ -24,6 +25,7 @@ describe('buildObjectMetadata', () => {
       { url: 'https://cdn.example/cover.jpg' },
     ]);
     expect(meta.alternates?.canonical).toBe('https://custom.example/object/obj-1');
+    expect(meta.keywords).toBe('italian, pizza');
   });
 
   it('uses default OG image when no cover or avatar', () => {
@@ -32,6 +34,7 @@ describe('buildObjectMetadata', () => {
       coverImageUrl: null,
       avatarUrl: null,
       canonicalUrl: null,
+      keywords: null,
     });
     expect(meta.twitter?.card).toBe('summary_large_image');
     expect(meta.openGraph?.images).toEqual([

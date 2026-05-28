@@ -35,6 +35,22 @@ export type JsonFieldDescriptor = {
   enumValues?: readonly string[];
 };
 
+export function unwrapRootStringArraySchema(
+  schema: z.ZodType,
+): z.ZodArray<z.ZodString> | null {
+  let inner: z.ZodType = schema;
+  if (inner instanceof z.ZodOptional) {
+    inner = inner.unwrap() as z.ZodType;
+  }
+  if (inner instanceof z.ZodDefault) {
+    inner = inner.removeDefault() as z.ZodType;
+  }
+  if (inner instanceof z.ZodArray && inner.element instanceof z.ZodString) {
+    return inner as z.ZodArray<z.ZodString>;
+  }
+  return null;
+}
+
 export function initialValueForDefinition(definition: UpdateDefinition): unknown {
   switch (definition.value_kind) {
     case 'text':
@@ -43,6 +59,9 @@ export function initialValueForDefinition(definition: UpdateDefinition): unknown
     case 'geo':
       return { latitude: '', longitude: '' } satisfies GeoFormValue;
     case 'json': {
+      if (unwrapRootStringArraySchema(definition.schema)) {
+        return '';
+      }
       const fields = getJsonFieldDescriptors(definition.schema);
       if (fields && fields.length > 0) {
         const obj: Record<string, unknown> = {};
@@ -143,6 +162,21 @@ export function coerceFormValueForValidation(
     };
   }
   if (definition.value_kind === 'json') {
+    if (unwrapRootStringArraySchema(definition.schema)) {
+      if (Array.isArray(raw)) {
+        return raw
+          .filter((v): v is string => typeof v === 'string')
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0);
+      }
+      if (typeof raw === 'string') {
+        return raw
+          .split('\n')
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0);
+      }
+      return [];
+    }
     if (raw && typeof raw === 'object') {
       if (definition.update_type === UPDATE_TYPES.MENU_ITEM) {
         return sanitizeMenuItemFormValue(raw as Record<string, unknown>);

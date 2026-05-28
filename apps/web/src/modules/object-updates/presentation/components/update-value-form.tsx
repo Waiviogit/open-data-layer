@@ -15,12 +15,15 @@ import {
   geoFormValueFromRaw,
   getJsonFieldDescriptors,
   initialValueForDefinition,
+  unwrapRootStringArraySchema,
   validateUpdateValue,
   type GeoFormValue,
   type JsonFieldDescriptor,
 } from '../../application/update-value-form.utils';
 import { GeoUpdateForm } from './geo-update-form';
+import { ImageCidOrUrlForm } from './image-cid-or-url-form';
 import { ImageGalleryItemForm } from './image-gallery-item-form';
+import { isImageCidOrUrlUpdateType } from '../../application/image-form-value';
 import { MenuItemForm } from './menu-item-form';
 import { ObjectRefSearchField } from './object-ref-search-field';
 import { TagCategoryItemForm } from './tag-category-item-form';
@@ -40,6 +43,8 @@ export type UpdateValueFormProps = {
   lockGalleryAlbum?: boolean;
   /** When true (left-rail modal), omit update-type title — type is chosen in the suggest-field select. */
   hideUpdateTypeHeading?: boolean;
+  /** Focus tag value input when adding a new `tagCategoryItem` row. */
+  autoFocusTagValue?: boolean;
 };
 
 export function UpdateValueForm({
@@ -51,6 +56,7 @@ export function UpdateValueForm({
   galleryAlbumNames = [],
   lockGalleryAlbum = false,
   hideUpdateTypeHeading = false,
+  autoFocusTagValue = false,
 }: UpdateValueFormProps) {
   const definition = UPDATE_REGISTRY[updateType];
 
@@ -79,6 +85,7 @@ export function UpdateValueForm({
       galleryAlbumNames={galleryAlbumNames}
       lockGalleryAlbum={lockGalleryAlbum}
       hideUpdateTypeHeading={hideUpdateTypeHeading}
+      autoFocusTagValue={autoFocusTagValue}
     />
   );
 }
@@ -92,6 +99,7 @@ type UpdateValueFieldsProps = {
   galleryAlbumNames: readonly string[];
   lockGalleryAlbum: boolean;
   hideUpdateTypeHeading: boolean;
+  autoFocusTagValue: boolean;
 };
 
 function UpdateValueFields({
@@ -103,6 +111,7 @@ function UpdateValueFields({
   galleryAlbumNames,
   lockGalleryAlbum,
   hideUpdateTypeHeading,
+  autoFocusTagValue,
 }: UpdateValueFieldsProps) {
   const { t } = useI18n();
   const label = hideUpdateTypeHeading ? undefined : labelForUpdateType(updateType);
@@ -173,6 +182,16 @@ function UpdateValueFields({
   }
 
   if (definition.value_kind === 'json') {
+    if (isImageCidOrUrlUpdateType(updateType)) {
+      return (
+        <ImageCidOrUrlForm
+          value={value}
+          onChange={onChange}
+          label={label}
+          hideLegend={hideUpdateTypeHeading}
+        />
+      );
+    }
     if (updateType === UPDATE_TYPES.MENU_ITEM) {
       return <MenuItemForm value={value} onChange={onChange} />;
     }
@@ -182,6 +201,7 @@ function UpdateValueFields({
           value={value}
           onChange={onChange}
           categories={tagCategoryNames}
+          autoFocus={autoFocusTagValue}
         />
       );
     }
@@ -225,10 +245,47 @@ function JsonValueFields({
   onChange: (value: unknown) => void;
   hideLegend?: boolean;
 }) {
+  const rootStringArray = useMemo(
+    () => unwrapRootStringArraySchema(definition.schema),
+    [definition.schema],
+  );
   const fields = useMemo(
     () => getJsonFieldDescriptors(definition.schema),
     [definition.schema],
   );
+
+  if (rootStringArray) {
+    const text = Array.isArray(value)
+      ? value.join('\n')
+      : typeof value === 'string'
+        ? value
+        : '';
+    const validation = validateUpdateValue(definition, text);
+    const fieldLabel = label ?? definition.update_type;
+    return (
+      <label className="block text-sm">
+        {hideLegend ? (
+          <span className="sr-only">{fieldLabel}</span>
+        ) : (
+          <span className="font-medium text-fg">{fieldLabel}</span>
+        )}
+        <span className={hideLegend ? 'block text-muted' : 'mt-1 block text-muted'}>
+          (one per line)
+        </span>
+        <textarea
+          className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-fg"
+          rows={5}
+          value={text}
+          onChange={(e) => onChange(e.target.value)}
+        />
+        {!validation.success ? (
+          <p className="mt-1 text-caption text-accent">
+            Add at least one non-empty line
+          </p>
+        ) : null}
+      </label>
+    );
+  }
 
   if (!fields || fields.length === 0) {
     const text = typeof value === 'string' ? value : JSON.stringify(value, null, 2);

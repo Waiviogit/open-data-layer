@@ -3,7 +3,10 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { fetchSearchResults } from '@/modules/app-header/infrastructure/search.client';
+import {
+  fetchSearchObjectById,
+  fetchSearchResults,
+} from '@/modules/app-header/infrastructure/search.client';
 import type { SearchObjectResult } from '@/modules/app-header/domain/search-response.schema';
 import { formatObjectTypeLabel } from '@/modules/app-header/domain/search-nav-list';
 import { useI18n } from '@/i18n/providers/i18n-provider';
@@ -137,6 +140,7 @@ export function ObjectRefSearchField({
   const { t } = useI18n();
   const listId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
+  const skipResolveForPickerRef = useRef<string | null>(null);
   const objectId = value.trim();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -145,6 +149,7 @@ export function ObjectRefSearchField({
   const [selectedObject, setSelectedObject] = useState<SearchObjectResult | null>(
     null,
   );
+  const [resolvingObject, setResolvingObject] = useState(false);
   const [dropdownRect, setDropdownRect] = useState<DropdownRect | null>(null);
   const [portalReady, setPortalReady] = useState(false);
 
@@ -155,19 +160,39 @@ export function ObjectRefSearchField({
   useEffect(() => {
     if (!objectId) {
       setSelectedObject(null);
+      setResolvingObject(false);
       return;
     }
-    if (selectedObject?.object_id === objectId) {
+    if (skipResolveForPickerRef.current === objectId) {
+      skipResolveForPickerRef.current = null;
       return;
     }
-    setSelectedObject({
-      object_id: objectId,
-      object_type: '',
-      name: objectId,
-      image_url: null,
-      parent_name: null,
+
+    const controller = new AbortController();
+    setResolvingObject(true);
+    void fetchSearchObjectById(objectId, {
+      signal: controller.signal,
+      appliesTo,
+    }).then((result) => {
+      if (controller.signal.aborted) {
+        return;
+      }
+      setSelectedObject(
+        result ?? {
+          object_id: objectId,
+          object_type: '',
+          name: objectId,
+          image_url: null,
+          parent_name: null,
+        },
+      );
+      setResolvingObject(false);
     });
-  }, [objectId, selectedObject?.object_id]);
+
+    return () => {
+      controller.abort();
+    };
+  }, [objectId, appliesTo]);
 
   useEffect(() => {
     if (objectId) {
@@ -224,6 +249,7 @@ export function ObjectRefSearchField({
   }, [showDropdown, searchQuery, searchResults.length]);
 
   function onSelectObject(result: SearchObjectResult) {
+    skipResolveForPickerRef.current = result.object_id;
     setSelectedObject(result);
     setSearchQuery('');
     setSearchResults([]);
@@ -270,7 +296,11 @@ export function ObjectRefSearchField({
       {selectedObject && objectId ? (
         <div className="relative mt-2 flex items-start gap-2 rounded-btn border border-border bg-bg p-2">
           <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md border border-border bg-surface">
-            {selectedObject.image_url ? (
+            {resolvingObject ? (
+              <span className="flex h-full w-full animate-pulse items-center justify-center bg-surface-control text-caption text-muted">
+                …
+              </span>
+            ) : selectedObject.image_url ? (
               <img
                 src={selectedObject.image_url}
                 alt=""
@@ -284,8 +314,15 @@ export function ObjectRefSearchField({
             )}
           </span>
           <span className="min-w-0 flex-1 pr-8">
-            <span className="block truncate font-medium text-fg">
-              {selectedObject.name?.trim() || selectedObject.object_id}
+            <span
+              className={[
+                'block truncate font-medium',
+                resolvingObject ? 'text-muted' : 'text-fg',
+              ].join(' ')}
+            >
+              {resolvingObject
+                ? t('object_edit_menu_item_searching')
+                : selectedObject.name?.trim() || selectedObject.object_id}
             </span>
             {selectedObject.parent_name ? (
               <span className="block truncate text-body-sm text-muted">

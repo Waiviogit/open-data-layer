@@ -154,7 +154,16 @@ function parseSeo(api: ProjectedObjectWithCountsView): ObjectPageSeoView | null 
       jsonLdRaw && typeof jsonLdRaw === 'object' && !Array.isArray(jsonLdRaw)
         ? { ...(jsonLdRaw as Record<string, unknown>) }
         : {},
+    keywords: parseSeoKeywords(record.keywords),
   };
+}
+
+function parseSeoKeywords(raw: unknown): string[] | null {
+  if (!Array.isArray(raw)) {
+    return null;
+  }
+  const out = raw.filter((v): v is string => typeof v === 'string' && v.trim().length > 0);
+  return out.length > 0 ? out : null;
 }
 
 function workHoursLines(raw: string): string[] {

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { ProjectedObject, ProjectedObjectSeo } from './projected-object.types';
 import { buildObjectCanonicalUrl } from './build-object-canonical-url';
+import { extractSeoKeywordsFromFields } from './extract-seo-keywords';
 import { buildObjectJsonLd } from './jsonld';
 
 @Injectable()
@@ -32,6 +33,7 @@ export class ObjectSeoService {
         obj,
         buildObjectCanonicalUrl(viewCanonical, obj.object_id, fallbackOrigin),
       ),
+      keywords: extractSeoKeywordsFromFields(obj.fields),
     };
   }
 }

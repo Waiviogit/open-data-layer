@@ -2,6 +2,7 @@ import {
   UPDATE_ADDRESS,
   UPDATE_GEO,
   UPDATE_IMAGE,
+  UPDATE_INGREDIENTS,
   UPDATE_MENU_ITEM,
   UPDATE_NAME,
   UPDATE_PARENT,
@@ -207,5 +208,27 @@ describe('update-value-form.utils', () => {
     };
     const result = validateUpdateValue(UPDATE_ADDRESS, raw);
     expect(result.success).toBe(true);
+  });
+
+  it('initialValueForDefinition returns empty string for root string array json', () => {
+    expect(initialValueForDefinition(UPDATE_INGREDIENTS)).toBe('');
+  });
+
+  it('validateUpdateValue accepts ingredients from newline text', () => {
+    const result = validateUpdateValue(
+      UPDATE_INGREDIENTS,
+      'flour\nsugar\n',
+    );
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.value).toEqual(['flour', 'sugar']);
+    }
+  });
+
+  it('validateUpdateValue rejects empty ingredients', () => {
+    expect(validateUpdateValue(UPDATE_INGREDIENTS, '').success).toBe(false);
+    expect(validateUpdateValue(UPDATE_INGREDIENTS, '\n\n').success).toBe(
+      false,
+    );
   });
 });

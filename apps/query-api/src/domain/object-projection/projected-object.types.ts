@@ -24,6 +24,8 @@ export interface ProjectedObjectSeo {
   description: string | null;
   canonical_url: string | null;
   json_ld: Record<string, unknown>;
+  /** Tag values from `tagCategoryItem` updates; null when none. */
+  keywords: string[] | null;
 }
 
 /**

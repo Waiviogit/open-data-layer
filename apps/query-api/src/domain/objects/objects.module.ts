@@ -8,6 +8,7 @@ import { GetNestedObjectsEndpoint } from './get-nested-objects.endpoint';
 import { GetObjectFollowersEndpoint } from './get-object-followers.endpoint';
 import { GetObjectAuthorityEndpoint } from './get-object-authority.endpoint';
 import { GetObjectRefListEndpoint } from './get-object-ref-list.endpoint';
+import { CheckObjectExistsEndpoint } from './check-object-exists.endpoint';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { GetObjectRefListEndpoint } from './get-object-ref-list.endpoint';
     GetObjectFollowersEndpoint,
     GetObjectAuthorityEndpoint,
     GetObjectRefListEndpoint,
+    CheckObjectExistsEndpoint,
   ],
   exports: [
     GetObjectByIdEndpoint,
@@ -29,6 +31,7 @@ import { GetObjectRefListEndpoint } from './get-object-ref-list.endpoint';
     GetObjectFollowersEndpoint,
     GetObjectAuthorityEndpoint,
     GetObjectRefListEndpoint,
+    CheckObjectExistsEndpoint,
   ],
 })
 export class ObjectsModule {}

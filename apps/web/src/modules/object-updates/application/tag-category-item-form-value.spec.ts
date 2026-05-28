@@ -39,4 +39,25 @@ describe('tag-category-item-form-value', () => {
       ]),
     ).toEqual({ category: 'A', value: '' });
   });
+
+  it('initialFormValueForUpdateTypeWithContext seeds tag item with preset category', () => {
+    expect(
+      initialFormValueForUpdateTypeWithContext(
+        UPDATE_TYPES.TAG_CATEGORY_ITEM,
+        ['A', 'B'],
+        undefined,
+        'B',
+      ),
+    ).toEqual({ category: 'B', value: '' });
+  });
+
+  it('defaultUpdateTypeForCandidates prefers imageGalleryItem when albums exist', () => {
+    expect(
+      defaultUpdateTypeForCandidates(
+        [UPDATE_TYPES.IMAGE_GALLERY, UPDATE_TYPES.IMAGE_GALLERY_ITEM],
+        [],
+        ['photos'],
+      ),
+    ).toBe(UPDATE_TYPES.IMAGE_GALLERY_ITEM);
+  });
 });

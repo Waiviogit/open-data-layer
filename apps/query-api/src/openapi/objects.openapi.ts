@@ -95,6 +95,41 @@ registry.registerPath({
   },
 });
 
+const objectExistsResponseSchema = registry.register(
+  'ObjectExistsResponse',
+  z.object({
+    exists: z.boolean().openapi({
+      description: 'True when an active `objects_core` row exists for `object_id`.',
+    }),
+  }),
+);
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/objects/{objectId}/exists',
+  summary: 'Check whether an object id is already taken',
+  description:
+    'Returns `{ exists: true }` when `objects_core` has an active row for `object_id`; otherwise `{ exists: false }`. Used by the object-create workspace for availability checks.',
+  request: {
+    params: z.object({
+      objectId: z
+        .string()
+        .min(1)
+        .openapi({ param: { name: 'objectId', in: 'path', required: true } }),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Availability flag for the given object id.',
+      content: {
+        'application/json': {
+          schema: objectExistsResponseSchema,
+        },
+      },
+    },
+  },
+});
+
 registry.registerPath({
   method: 'get',
   path: '/query/v1/objects/{objectId}/followers',

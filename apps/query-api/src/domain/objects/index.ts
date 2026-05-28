@@ -1,3 +1,4 @@
+export * from './check-object-exists.endpoint';
 export * from './get-object-by-id.endpoint';
 export * from './get-nested-objects.endpoint';
 export * from './get-object-followers.endpoint';

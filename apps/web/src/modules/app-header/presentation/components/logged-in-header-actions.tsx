@@ -208,6 +208,16 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
             <MenuRowDisabled title={comingSoon}>{t('earn')}</MenuRowDisabled>
             <MenuRowDisabled title={comingSoon}>{t('tools')}</MenuRowDisabled>
             <Link
+              href="/object-create"
+              role="menuitem"
+              aria-current={pathname === '/object-create' ? 'page' : undefined}
+              className={menuNavLinkClassName(pathname === '/object-create')}
+              onClick={() => setMenuOpen(false)}
+              suppressHydrationWarning
+            >
+              {t('create_object')}
+            </Link>
+            <Link
               href="/drafts"
               role="menuitem"
               aria-current={pathname === '/drafts' ? 'page' : undefined}

@@ -20,12 +20,17 @@ export function initialFormValueForUpdateTypeWithContext(
   updateType: string,
   tagCategoryNames: readonly string[],
   presetGalleryAlbumName?: string,
+  presetTagCategory?: string,
 ): unknown {
   if (
     updateType === UPDATE_TYPES.TAG_CATEGORY_ITEM &&
     tagCategoryNames.length > 0
   ) {
-    return initialTagCategoryItemFormValue(tagCategoryNames);
+    const category =
+      presetTagCategory && tagCategoryNames.includes(presetTagCategory)
+        ? presetTagCategory
+        : (tagCategoryNames[0] ?? '');
+    return { category, value: '' };
   }
   if (updateType === UPDATE_TYPES.IMAGE_GALLERY) {
     return initialGalleryFormValue();
@@ -39,12 +44,19 @@ export function initialFormValueForUpdateTypeWithContext(
 export function defaultUpdateTypeForCandidates(
   candidateUpdateTypes: readonly string[],
   tagCategoryNames: readonly string[],
+  galleryAlbumNames: readonly string[] = [],
 ): string {
   if (
     tagCategoryNames.length > 0 &&
     candidateUpdateTypes.includes(UPDATE_TYPES.TAG_CATEGORY_ITEM)
   ) {
     return UPDATE_TYPES.TAG_CATEGORY_ITEM;
+  }
+  if (
+    galleryAlbumNames.length > 0 &&
+    candidateUpdateTypes.includes(UPDATE_TYPES.IMAGE_GALLERY_ITEM)
+  ) {
+    return UPDATE_TYPES.IMAGE_GALLERY_ITEM;
   }
   return candidateUpdateTypes[0] ?? '';
 }

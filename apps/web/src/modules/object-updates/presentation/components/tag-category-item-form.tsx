@@ -9,6 +9,8 @@ export type TagCategoryItemFormProps = {
   onChange: (value: unknown) => void;
   /** Existing `tagCategory` names on the object. */
   categories: readonly string[];
+  /** Focus tag value input when a new row is opened. */
+  autoFocus?: boolean;
 };
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -19,6 +21,7 @@ export function TagCategoryItemForm({
   value,
   onChange,
   categories,
+  autoFocus = false,
 }: TagCategoryItemFormProps) {
   const { t } = useI18n();
   const obj = asRecord(value);
@@ -76,6 +79,7 @@ export function TagCategoryItemForm({
           type="text"
           className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-fg"
           value={tagValue}
+          autoFocus={autoFocus}
           onChange={(e) => patch({ value: e.target.value, category: selectedCategory })}
         />
       </label>

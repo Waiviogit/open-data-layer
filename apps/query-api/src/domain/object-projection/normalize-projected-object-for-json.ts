@@ -37,6 +37,8 @@ export function normalizeProjectedObjectForJson(input: ProjectedObject): Project
         description: s.description ?? null,
         canonical_url: s.canonical_url ?? null,
         json_ld: isPlainRecord(s.json_ld) ? { ...s.json_ld } : {},
+        keywords:
+          Array.isArray(s.keywords) && s.keywords.length > 0 ? s.keywords : null,
       },
     };
   }

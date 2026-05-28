@@ -2,8 +2,41 @@ import {
   searchCountsResponseSchema,
   searchResponseSchema,
   type SearchCountsResponse,
+  type SearchObjectResult,
   type SearchResponse,
 } from '../domain/search-response.schema';
+
+function filterSearchObjectsByAppliesTo(
+  objects: SearchObjectResult[],
+  appliesTo?: readonly string[],
+): SearchObjectResult[] {
+  if (!appliesTo?.length) {
+    return objects;
+  }
+  const allowed = new Set(appliesTo);
+  return objects.filter((r) => allowed.has(r.object_type));
+}
+
+/** Picks the search hit for a known `object_id` (draft / prefilled refs). */
+export function pickSearchObjectById(
+  objects: readonly SearchObjectResult[],
+  objectId: string,
+  appliesTo?: readonly string[],
+): SearchObjectResult | null {
+  const id = objectId.trim();
+  if (!id) {
+    return null;
+  }
+  const filtered = filterSearchObjectsByAppliesTo([...objects], appliesTo);
+  const exact = filtered.find((o) => o.object_id === id);
+  if (exact) {
+    return exact;
+  }
+  if (filtered.length === 1) {
+    return filtered[0];
+  }
+  return null;
+}
 
 /**
  * Client-side fetch to the BFF search route (session viewer applied server-side).
@@ -42,6 +75,24 @@ export async function fetchSearchResults(
   }
 
   return parsed.data;
+}
+
+/**
+ * Resolves display fields for a stored object ref via the same search API as the picker.
+ */
+export async function fetchSearchObjectById(
+  objectId: string,
+  init?: { signal?: AbortSignal; appliesTo?: readonly string[] },
+): Promise<SearchObjectResult | null> {
+  const id = objectId.trim();
+  if (!id) {
+    return null;
+  }
+  const res = await fetchSearchResults(id, init);
+  if (!res) {
+    return null;
+  }
+  return pickSearchObjectById(res.objects, id, init?.appliesTo);
 }
 
 /**

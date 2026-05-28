@@ -186,6 +186,7 @@ export type ObjectPageSeoView = {
   description: string | null;
   canonical_url: string | null;
   json_ld: Record<string, unknown>;
+  keywords: string[] | null;
 };
 
 export type ObjectPageViewModel = {

@@ -11,10 +11,14 @@ function metadataWithImage(
   canonical: string | undefined,
   image: string | null,
   openGraphType: 'website' | 'article' | 'profile',
+  keywords: string[] | null | undefined,
 ): Metadata {
+  const keywordMeta =
+    keywords && keywords.length > 0 ? keywords.join(', ') : undefined;
   return {
     title,
     description,
+    keywords: keywordMeta,
     alternates: canonical ? { canonical } : undefined,
     openGraph: {
       title,
@@ -47,5 +51,6 @@ export function buildObjectMetadata(input: ObjectSeoInput): Metadata {
     canonical,
     image,
     'website',
+    input.keywords,
   );
 }

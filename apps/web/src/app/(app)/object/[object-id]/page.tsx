@@ -181,6 +181,7 @@ export async function generateMetadata({
     coverImageUrl: model.coverImageUrl,
     objectTypeKey: model.objectTypeKey,
     jsonLd: model.seo?.json_ld ?? null,
+    keywords: model.seo?.keywords ?? null,
   });
 }
 

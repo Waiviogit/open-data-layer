@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { ReqLocale, UPDATE_TYPES } from '@opden-data-layer/core';
 import {
+  CheckObjectExistsEndpoint,
   GetObjectByIdEndpoint,
   GetNestedObjectsEndpoint,
   GetObjectFollowersEndpoint,
@@ -50,7 +51,17 @@ export class ObjectsController {
     private readonly getObjectFollowersEndpoint: GetObjectFollowersEndpoint,
     private readonly getObjectAuthorityEndpoint: GetObjectAuthorityEndpoint,
     private readonly getObjectRefListEndpoint: GetObjectRefListEndpoint,
+    private readonly checkObjectExists: CheckObjectExistsEndpoint,
   ) {}
+
+  @Get(':objectId/exists')
+  async exists(
+    @Param('objectId') rawObjectId: string,
+  ): Promise<{ exists: boolean }> {
+    const objectId = decodeURIComponent(rawObjectId);
+    const exists = await this.checkObjectExists.execute(objectId);
+    return { exists };
+  }
 
   @Get(':objectId/related')
   async getObjectRelatedList(

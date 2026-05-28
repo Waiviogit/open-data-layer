@@ -39,6 +39,7 @@ describe('normalizeProjectedObjectForJson', () => {
         description: null,
         canonical_url: 'https://example.com/o/y',
         json_ld: undefined as unknown as Record<string, unknown>,
+        keywords: null,
       },
     });
 
@@ -47,6 +48,7 @@ describe('normalizeProjectedObjectForJson', () => {
       description: null,
       canonical_url: 'https://example.com/o/y',
       json_ld: {},
+      keywords: null,
     });
   });
 });
