@@ -32,6 +32,10 @@ import {
   CATEGORY_MUTATED_EVENT,
 } from '../category-mutated.event';
 import {
+  TagCategoryItemMutatedEvent,
+  TAG_CATEGORY_ITEM_MUTATED_EVENT,
+} from '../tag-category-item-mutated.event';
+import {
   OBJECT_STATUS_CREATED_EVENT,
   ObjectStatusCreatedEvent,
 } from '../object-status-created.event';
@@ -206,6 +210,15 @@ export class UpdateCreateHandler implements OdlActionHandler {
     }
     if (update_type === UPDATE_TYPES.CATEGORY) {
       this.eventEmitter.emit(CATEGORY_MUTATED_EVENT, new CategoryMutatedEvent(object_id));
+    }
+    if (
+      update_type === UPDATE_TYPES.TAG_CATEGORY ||
+      update_type === UPDATE_TYPES.TAG_CATEGORY_ITEM
+    ) {
+      this.eventEmitter.emit(
+        TAG_CATEGORY_ITEM_MUTATED_EVENT,
+        new TagCategoryItemMutatedEvent(object_id),
+      );
     }
     if (update_type === UPDATE_TYPES.PRODUCT_GROUP_ID) {
       this.eventEmitter.emit(GROUP_ID_MUTATED_EVENT, new GroupIdMutatedEvent(object_id));

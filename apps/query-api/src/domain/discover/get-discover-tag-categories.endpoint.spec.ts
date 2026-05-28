@@ -11,10 +11,24 @@ describe('GetDiscoverTagCategoriesEndpoint', () => {
     } as unknown as DiscoverRepository;
 
     const endpoint = new GetDiscoverTagCategoriesEndpoint(discoverRepo);
-    const result = await endpoint.execute({ query: { object_type: 'product' } });
+    const result = await endpoint.execute({ query: { object_type: 'product', tags: [] } });
 
     expect(result.categories[0]?.category).toBe('Category');
     expect(result.categories[0]?.items[0]).toEqual({ value: 'Backpack', count: 10 });
     expect(result.categories[1]?.category).toBe('Pros');
+  });
+
+  it('passes parsed tag filters to repository', async () => {
+    const getTagCategories = jest.fn().mockResolvedValue([]);
+    const discoverRepo = { getTagCategories } as unknown as DiscoverRepository;
+
+    const endpoint = new GetDiscoverTagCategoriesEndpoint(discoverRepo);
+    await endpoint.execute({
+      query: { object_type: 'restaurant', tags: ['Cuisine:Asian'] },
+    });
+
+    expect(getTagCategories).toHaveBeenCalledWith('restaurant', [
+      { category: 'Cuisine', value: 'Asian' },
+    ]);
   });
 });

@@ -99,11 +99,11 @@ export class DiscoverRepository {
     try {
       const tagExistsFragments = params.tags.map(
         ({ category, value }) => sql`EXISTS (
-          SELECT 1 FROM object_updates ou_tag
-          WHERE ou_tag.object_id = oc.object_id
-            AND ou_tag.update_type = ${UPDATE_TYPES.TAG_CATEGORY_ITEM}
-            AND ou_tag.value_json->>'value' = ${value}
-            AND ou_tag.value_json->>'category' = ${category}
+          SELECT 1 FROM object_tag_category_items tci
+          WHERE tci.object_id = oc.object_id
+            AND tci.category = ${category}
+            AND tci.value = ${value}
+            ${params.objectType ? sql`AND tci.object_type = ${params.objectType}` : sql``}
         )`,
       );
 
@@ -193,43 +193,78 @@ export class DiscoverRepository {
     });
   }
 
-  async getTagCategories(objectType: string): Promise<DiscoverTagCategoryRow[]> {
+  async getTagCategories(
+    objectType: string,
+    activeTags: DiscoverTagFilter[] = [],
+  ): Promise<DiscoverTagCategoryRow[]> {
     const trimmed = objectType.trim();
     if (!trimmed) {
       return [];
     }
 
+    const useCache = activeTags.length === 0;
     const redis = this.redisFactory.getClient(0);
     const key = redisKey.discoverTagCategories(trimmed);
-    const cached = await redis.get(key);
-    if (cached) {
-      try {
-        return JSON.parse(cached) as DiscoverTagCategoryRow[];
-      } catch {
-        this.logger.warn(`discover tag categories: corrupt cache for ${trimmed}`);
+    if (useCache) {
+      const cached = await redis.get(key);
+      if (cached) {
+        try {
+          return JSON.parse(cached) as DiscoverTagCategoryRow[];
+        } catch {
+          this.logger.warn(`discover tag categories: corrupt cache for ${trimmed}`);
+        }
       }
     }
 
     try {
-      const result = await sql<{
-        category: string;
-        tag_value: string;
-        object_count: number | string;
-      }>`
-        SELECT
-          ou.value_json->>'category' AS category,
-          ou.value_json->>'value' AS tag_value,
-          COUNT(DISTINCT ou.object_id)::int AS object_count
-        FROM object_updates ou
-        INNER JOIN objects_core oc ON oc.object_id = ou.object_id
-        WHERE ou.update_type = ${UPDATE_TYPES.TAG_CATEGORY_ITEM}
-          AND oc.object_type = ${trimmed}
-          AND oc.status = 'active'
-          AND ou.value_json->>'category' IS NOT NULL
-          AND ou.value_json->>'value' IS NOT NULL
-        GROUP BY 1, 2
-        ORDER BY 1 ASC, 3 DESC, 2 ASC
-      `.execute(this.db);
+      const filterTuples =
+        activeTags.length > 0
+          ? sql.join(
+              activeTags.map(
+                ({ category, value }) => sql`(${category}, ${value})`,
+              ),
+              sql`, `,
+            )
+          : null;
+
+      const result =
+        activeTags.length > 0 && filterTuples
+          ? await sql<{
+              category: string;
+              tag_value: string;
+              object_count: number | string;
+            }>`
+              SELECT
+                tci.category AS category,
+                tci.value AS tag_value,
+                COUNT(*)::int AS object_count
+              FROM object_tag_category_items tci
+              WHERE tci.object_type = ${trimmed}
+                AND tci.object_id IN (
+                  SELECT tci2.object_id
+                  FROM object_tag_category_items tci2
+                  WHERE tci2.object_type = ${trimmed}
+                    AND (tci2.category, tci2.value) IN (${filterTuples})
+                  GROUP BY tci2.object_id
+                  HAVING COUNT(*) = ${activeTags.length}
+                )
+              GROUP BY 1, 2
+              ORDER BY 1 ASC, 3 DESC, 2 ASC
+            `.execute(this.db)
+          : await sql<{
+              category: string;
+              tag_value: string;
+              object_count: number | string;
+            }>`
+              SELECT
+                tci.category AS category,
+                tci.value AS tag_value,
+                COUNT(*)::int AS object_count
+              FROM object_tag_category_items tci
+              WHERE tci.object_type = ${trimmed}
+              GROUP BY 1, 2
+              ORDER BY 1 ASC, 3 DESC, 2 ASC
+            `.execute(this.db);
 
       const rows: DiscoverTagCategoryRow[] = result.rows.map((r) => ({
         category: r.category,
@@ -240,11 +275,13 @@ export class DiscoverRepository {
             : Math.trunc(Number(r.object_count)),
       }));
 
-      await redis.set(
-        key,
-        JSON.stringify(rows),
-        DISCOVER_TAG_CATEGORIES_CACHE_TTL_SEC,
-      );
+      if (useCache) {
+        await redis.set(
+          key,
+          JSON.stringify(rows),
+          DISCOVER_TAG_CATEGORIES_CACHE_TTL_SEC,
+        );
+      }
       return rows;
     } catch (error) {
       this.logger.error(

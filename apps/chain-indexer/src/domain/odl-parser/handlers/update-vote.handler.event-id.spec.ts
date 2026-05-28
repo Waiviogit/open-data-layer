@@ -2,6 +2,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UPDATE_TYPES } from '@opden-data-layer/core';
 import type { OdlEventContext } from '../odl-action-handler';
 import { WriteGuardRunner } from '../guards';
+import { TAG_CATEGORY_ITEM_MUTATED_EVENT } from '../tag-category-item-mutated.event';
 import { UpdateVoteHandler } from './update-vote.handler';
 
 describe('UpdateVoteHandler create_event_id', () => {
@@ -81,6 +82,37 @@ describe('UpdateVoteHandler create_event_id', () => {
         vote: 'for',
         transaction_id: hiveTrxId,
       }),
+    );
+  });
+
+  it('emits TAG_CATEGORY_ITEM_MUTATED_EVENT for tagCategoryItem votes', async () => {
+    const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+    const votedUpdate = {
+      update_id: expectedUpdateId,
+      object_id: 'obj-1',
+      update_type: UPDATE_TYPES.TAG_CATEGORY_ITEM,
+    };
+    const handler = new UpdateVoteHandler(
+      {
+        create: jest.fn(),
+        delete: jest.fn(),
+        findByUpdateIdAndVoter: jest.fn().mockResolvedValue(undefined),
+        update: jest.fn(),
+      } as never,
+      { findByUpdateId: jest.fn().mockResolvedValue(votedUpdate) } as never,
+      { findByObjectId: jest.fn().mockResolvedValue(core) } as never,
+      { check: jest.fn().mockReturnValue(null) } as never,
+      eventEmitter,
+    );
+
+    await handler.handle(
+      { update_id: expectedUpdateId, voter: 'alice', vote: 'for' },
+      voteCtx,
+    );
+
+    expect(eventEmitter.emit).toHaveBeenCalledWith(
+      TAG_CATEGORY_ITEM_MUTATED_EVENT,
+      expect.objectContaining({ objectId: 'obj-1' }),
     );
   });
 });

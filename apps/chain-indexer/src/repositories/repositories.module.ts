@@ -17,6 +17,8 @@ import { ObjectCategoriesRepository } from './object-categories.repository';
 import { ObjectCategoriesSyncQueueRepository } from './object-categories-sync-queue.repository';
 import { ObjectCategoriesRelatedRepository } from './object-categories-related.repository';
 import { ObjectCategoriesRelatedSyncQueueRepository } from './object-categories-related-sync-queue.repository';
+import { ObjectTagCategoryItemsRepository } from './object-tag-category-items.repository';
+import { ObjectTagCategoriesSyncQueueRepository } from './object-tag-categories-sync-queue.repository';
 import { UserMetadataRepository } from './user-metadata.repository';
 import { UserShopDeselectRepository } from './user-shop-deselect.repository';
 import { UserObjectPowersRepository } from './user-object-powers.repository';
@@ -42,6 +44,8 @@ import { UserObjectFollowsRepository } from './user-object-follows.repository';
     ObjectCategoriesSyncQueueRepository,
     ObjectCategoriesRelatedRepository,
     ObjectCategoriesRelatedSyncQueueRepository,
+    ObjectTagCategoryItemsRepository,
+    ObjectTagCategoriesSyncQueueRepository,
     UserMetadataRepository,
     UserShopDeselectRepository,
     UserObjectPowersRepository,
@@ -66,6 +70,8 @@ import { UserObjectFollowsRepository } from './user-object-follows.repository';
     ObjectCategoriesSyncQueueRepository,
     ObjectCategoriesRelatedRepository,
     ObjectCategoriesRelatedSyncQueueRepository,
+    ObjectTagCategoryItemsRepository,
+    ObjectTagCategoriesSyncQueueRepository,
     UserMetadataRepository,
     UserShopDeselectRepository,
     UserObjectPowersRepository,

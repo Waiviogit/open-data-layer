@@ -104,14 +104,20 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
   );
 
   useEffect(() => {
+    setCollapsedCategories(new Set());
+  }, [objectType, registryOrder]);
+
+  useEffect(() => {
     const ac = new AbortController();
     setLoading(true);
-    setCollapsedCategories(new Set());
     void (async () => {
-      const res = await fetchDiscoverTagCategories(objectType, { signal: ac.signal });
+      const res = await fetchDiscoverTagCategories(objectType, {
+        tags,
+        signal: ac.signal,
+      });
       if (!ac.signal.aborted) {
         setData(res);
-        if (res) {
+        if (res && tags.length === 0) {
           setCollapsedCategories(
             buildDefaultCollapsed(orderTagSections(res.categories, registryOrder), tags),
           );
@@ -120,9 +126,7 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
       }
     })();
     return () => ac.abort();
-    // `tags` intentionally omitted — collapse resets on object type change (sidebar clears tags).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [objectType, registryOrder]);
+  }, [objectType, tags, registryOrder]);
 
   useEffect(() => {
     if (tags.length === 0 || !data?.categories) {

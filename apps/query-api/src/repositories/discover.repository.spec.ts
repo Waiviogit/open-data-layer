@@ -30,4 +30,20 @@ describe('DiscoverRepository', () => {
     expect(redisGet).toHaveBeenCalled();
   });
 
+  it('getTagCategories with active tags skips redis cache', async () => {
+    const redisGet = jest.fn().mockResolvedValue(null);
+    const redisSet = jest.fn().mockResolvedValue(undefined);
+    const redisFactory = {
+      getClient: () => ({ get: redisGet, set: redisSet }),
+    } as unknown as RedisClientFactory;
+
+    const execute = jest.fn().mockResolvedValue({ rows: [] });
+    const db = createMockDb(execute);
+    const repo = new DiscoverRepository(db as never, redisFactory);
+
+    await repo.getTagCategories('restaurant', [{ category: 'Cuisine', value: 'Asian' }]);
+
+    expect(redisGet).not.toHaveBeenCalled();
+    expect(redisSet).not.toHaveBeenCalled();
+  });
 });

@@ -47,5 +47,15 @@ export type DiscoverUsersQuery = z.infer<typeof discoverUsersQuerySchema>;
 
 export const discoverTagCategoriesQuerySchema = z.object({
   object_type: z.string().min(1),
+  tags: z
+    .union([z.string(), z.array(z.string())])
+    .optional()
+    .transform((v) => {
+      if (v == null) {
+        return [] as string[];
+      }
+      const arr = Array.isArray(v) ? v : [v];
+      return arr.map((s) => s.trim()).filter((s) => s.length > 0);
+    }),
 });
 export type DiscoverTagCategoriesQuery = z.infer<typeof discoverTagCategoriesQuerySchema>;

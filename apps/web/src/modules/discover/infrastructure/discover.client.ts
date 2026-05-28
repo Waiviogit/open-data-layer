@@ -100,11 +100,28 @@ export async function fetchDiscoverUsers(
   }
 }
 
+export function buildDiscoverTagCategoriesSearchParams(
+  objectType: string,
+  tags: readonly string[] = [],
+): URLSearchParams {
+  const sp = new URLSearchParams({ object_type: objectType.trim() });
+  for (const tag of tags) {
+    const trimmed = tag.trim();
+    if (trimmed) {
+      sp.append('tags', trimmed);
+    }
+  }
+  return sp;
+}
+
 export async function fetchDiscoverTagCategories(
   objectType: string,
-  init?: { signal?: AbortSignal },
+  init?: { tags?: readonly string[]; signal?: AbortSignal },
 ): Promise<DiscoverTagCategoriesResponse | null> {
-  const sp = new URLSearchParams({ object_type: objectType.trim() });
+  const sp = buildDiscoverTagCategoriesSearchParams(
+    objectType,
+    init?.tags ?? [],
+  );
   try {
     const res = await fetch(`/api/discover/tag-categories?${sp.toString()}`, {
       method: 'GET',

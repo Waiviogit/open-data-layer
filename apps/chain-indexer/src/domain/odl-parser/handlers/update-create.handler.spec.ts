@@ -8,6 +8,7 @@ import {
   OBJECT_STATUS_CREATED_EVENT,
   ObjectStatusCreatedEvent,
 } from '../object-status-created.event';
+import { TAG_CATEGORY_ITEM_MUTATED_EVENT } from '../tag-category-item-mutated.event';
 
 describe('UpdateCreateHandler write guard', () => {
   const baseCtx: OdlEventContext = {
@@ -241,4 +242,52 @@ describe('UpdateCreateHandler write guard', () => {
       );
       expect(statusEmit?.[1]).toBeInstanceOf(ObjectStatusCreatedEvent);
     });
+
+  it('emits TAG_CATEGORY_ITEM_MUTATED_EVENT after persisting tagCategoryItem', async () => {
+    const restaurantCore: ObjectsCore = {
+      object_id: 'rest1',
+      object_type: OBJECT_TYPES.RESTAURANT,
+      creator: 'alice',
+      weight: null,
+      meta_group_id: null,
+      canonical: null,
+      canonical_creator: null,
+      transaction_id: 'tx0',
+      status: 'active',
+      seq: 0,
+    };
+    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
+    const objectUpdatesRepository = {
+      createReplacingIfPresent,
+      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
+      existsByObjectAndValue: jest.fn().mockResolvedValue(false),
+    } as unknown as import('../../../repositories').ObjectUpdatesRepository;
+    const objectsCoreRepository = {
+      findByObjectId: jest.fn().mockResolvedValue(restaurantCore),
+    } as unknown as import('../../../repositories').ObjectsCoreRepository;
+    const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
+    const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+    const handler = new UpdateCreateHandler(
+      objectUpdatesRepository,
+      objectsCoreRepository,
+      runner,
+      eventEmitter,
+    );
+
+    await handler.handle(
+      {
+        object_id: 'rest1',
+        update_type: 'tagCategoryItem',
+        creator: 'alice',
+        value_json: { category: 'Cuisine', value: 'Asian' },
+      },
+      { ...baseCtx, creator: 'alice' },
+    );
+
+    expect(createReplacingIfPresent).toHaveBeenCalledTimes(1);
+    expect(eventEmitter.emit).toHaveBeenCalledWith(
+      TAG_CATEGORY_ITEM_MUTATED_EVENT,
+      expect.objectContaining({ objectId: 'rest1' }),
+    );
+  });
 });

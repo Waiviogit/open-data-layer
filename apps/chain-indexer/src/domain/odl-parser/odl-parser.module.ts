@@ -17,8 +17,10 @@ import { BatchImportWorker } from './batch-import.worker';
 import { OdlCustomJsonParser } from './odl-custom-json-parser';
 import { MetaGroupSyncHandler } from './handlers/meta-group-sync.handler';
 import { CategorySyncHandler } from './handlers/category-sync.handler';
+import { TagCategoryItemSyncHandler } from './handlers/tag-category-item-sync.handler';
 import { ObjectCategoriesWorker } from './object-categories.worker';
 import { ObjectCategoriesRelatedWorker } from './object-categories-related.worker';
+import { ObjectTagCategoriesWorker } from './object-tag-categories.worker';
 import { RankScoreModule } from '../rank-score/rank-score.module';
 import {
   GovernanceWriteGuard,
@@ -51,8 +53,10 @@ import {
     OdlCustomJsonParser,
     MetaGroupSyncHandler,
     CategorySyncHandler,
+    TagCategoryItemSyncHandler,
     ObjectCategoriesWorker,
     ObjectCategoriesRelatedWorker,
+    ObjectTagCategoriesWorker,
   ],
   exports: [OdlCustomJsonParser],
 })

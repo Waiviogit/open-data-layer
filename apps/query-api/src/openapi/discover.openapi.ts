@@ -31,6 +31,7 @@ registry.registerPath({
   request: {
     query: z.object({
       object_type: z.string().min(1),
+      tags: z.union([z.string(), z.array(z.string())]).optional(),
     }),
   },
   responses: {

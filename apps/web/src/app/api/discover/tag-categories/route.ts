@@ -13,6 +13,12 @@ export async function GET(request: NextRequest) {
   const base = env.QUERY_API_URL.replace(/\/$/, '');
   const url = new URL(`${base}/query/v1/discover/tag-categories`);
   url.searchParams.set('object_type', objectType);
+  for (const tag of request.nextUrl.searchParams.getAll('tags')) {
+    const trimmed = tag.trim();
+    if (trimmed) {
+      url.searchParams.append('tags', trimmed);
+    }
+  }
 
   const upstream = await fetch(url.toString(), {
     method: 'GET',

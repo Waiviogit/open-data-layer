@@ -11,6 +11,8 @@ import * as m00010 from './00010_currency_tables';
 import * as m00011 from './00011_object_status';
 import * as m00012 from './00012_object_authority_created_at';
 import * as m00013 from './00013_discover_indexes';
+import * as m00014 from './00014_object_tag_categories';
+import * as m00015 from './00015_object_tag_category_items_object_type';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/core OdlDatabase and docs/spec/data-model/schema.sql */
@@ -28,4 +30,9 @@ export const MIGRATIONS: Record<string, Migration> = {
   '00011_object_status': { up: m00011.up, down: m00011.down },
   '00012_object_authority_created_at': { up: m00012.up, down: m00012.down },
   '00013_discover_indexes': { up: m00013.up, down: m00013.down },
+  '00014_object_tag_categories': { up: m00014.up, down: m00014.down },
+  '00015_object_tag_category_items_object_type': {
+    up: m00015.up,
+    down: m00015.down,
+  },
 };

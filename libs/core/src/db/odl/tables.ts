@@ -63,6 +63,8 @@ export interface OdlDatabase {
   object_categories_sync_queue: ObjectCategoriesSyncQueueTable;
   object_categories_related: ObjectCategoriesRelatedTable;
   object_categories_related_sync_queue: ObjectCategoriesRelatedSyncQueueTable;
+  object_tag_category_items: ObjectTagCategoryItemsTable;
+  object_tag_categories_sync_queue: ObjectTagCategoriesSyncQueueTable;
   currency_rates: CurrencyRatesTable;
   currency_statistics: CurrencyStatisticsTable;
   hive_engine_rates: HiveEngineRatesTable;
@@ -759,6 +761,34 @@ export interface ObjectCategoriesRelatedSyncQueueTable {
 export type ObjectCategoriesRelatedSyncQueueRow = Selectable<ObjectCategoriesRelatedSyncQueueTable>;
 export type NewObjectCategoriesRelatedSyncQueueRow =
   Insertable<ObjectCategoriesRelatedSyncQueueTable>;
+
+// ---------------------------------------------------------------------------
+// object_tag_category_items (materialized tagCategoryItem; chain-indexer)
+// ---------------------------------------------------------------------------
+
+export interface ObjectTagCategoryItemsTable {
+  object_id: string;
+  object_type: string;
+  category: string;
+  value: string;
+}
+
+export type ObjectTagCategoryItemsRow = Selectable<ObjectTagCategoryItemsTable>;
+export type NewObjectTagCategoryItemsRow = Insertable<ObjectTagCategoryItemsTable>;
+
+// ---------------------------------------------------------------------------
+// object_tag_categories_sync_queue
+// ---------------------------------------------------------------------------
+
+export interface ObjectTagCategoriesSyncQueueTable {
+  object_id: string;
+  enqueued_at: number;
+  attempts: number;
+  last_attempt_at: number | null;
+}
+
+export type ObjectTagCategoriesSyncQueueRow = Selectable<ObjectTagCategoriesSyncQueueTable>;
+export type NewObjectTagCategoriesSyncQueueRow = Insertable<ObjectTagCategoriesSyncQueueTable>;
 
 // ---------------------------------------------------------------------------
 // user_post_drafts
