@@ -3,9 +3,19 @@ import { cookies } from 'next/headers';
 import {
   APP_THEME_COOKIE,
   COOKIE_MAX_AGE_SECONDS,
+  LEGACY_THEME_COOKIE_ALIASES,
   themePreferenceSchema,
 } from './theme-cookie.constants';
 import type { ThemePreference } from './types';
+
+function parseThemePreference(raw: string): ThemePreference | null {
+  const legacy = LEGACY_THEME_COOKIE_ALIASES[raw];
+  if (legacy !== undefined) {
+    return legacy;
+  }
+  const parsed = themePreferenceSchema.safeParse(raw);
+  return parsed.success ? parsed.data : null;
+}
 
 export async function getCookieTheme(): Promise<ThemePreference | null> {
   const store = await cookies();
@@ -13,8 +23,7 @@ export async function getCookieTheme(): Promise<ThemePreference | null> {
   if (raw === undefined) {
     return null;
   }
-  const parsed = themePreferenceSchema.safeParse(raw);
-  return parsed.success ? parsed.data : null;
+  return parseThemePreference(raw);
 }
 
 export async function setCookieTheme(

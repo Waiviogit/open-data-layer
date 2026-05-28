@@ -1,4 +1,11 @@
-export type ThemeId = 'light' | 'dark' | 'sepia' | 'apple' | 'airbnb' | 'waivio';
+export type ThemeId =
+  | 'light'
+  | 'dark'
+  | 'studio'
+  | 'midnight'
+  | 'sepia'
+  | 'apple'
+  | 'airbnb';
 
 export type ThemePreference = ThemeId | 'system';
 

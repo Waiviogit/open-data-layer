@@ -7,10 +7,11 @@ import type { ThemePreference } from '../../../theme/types';
 const OPTIONS: { id: ThemePreference; label: string }[] = [
   { id: 'light', label: themeRegistry.light.label },
   { id: 'dark', label: themeRegistry.dark.label },
+  { id: 'studio', label: themeRegistry.studio.label },
+  { id: 'midnight', label: themeRegistry.midnight.label },
   { id: 'sepia', label: themeRegistry.sepia.label },
   { id: 'apple', label: themeRegistry.apple.label },
   { id: 'airbnb', label: themeRegistry.airbnb.label },
-  { id: 'waivio', label: themeRegistry.waivio.label },
   { id: 'system', label: 'System' },
 ];
 

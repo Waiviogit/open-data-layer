@@ -53,15 +53,41 @@ describe('resolveTheme', () => {
     });
   });
 
-  it('resolves waivio from cookie', () => {
+  it('resolves light from cookie', () => {
     const r = resolveTheme({
       userPreference: null,
-      cookiePreference: 'waivio',
+      cookiePreference: 'light',
       systemPrefersDark: false,
     });
     expect(r).toEqual({
-      preference: 'waivio',
-      resolvedTheme: 'waivio',
+      preference: 'light',
+      resolvedTheme: 'light',
+      source: 'cookie',
+    });
+  });
+
+  it('resolves studio from cookie', () => {
+    const r = resolveTheme({
+      userPreference: null,
+      cookiePreference: 'studio',
+      systemPrefersDark: false,
+    });
+    expect(r).toEqual({
+      preference: 'studio',
+      resolvedTheme: 'studio',
+      source: 'cookie',
+    });
+  });
+
+  it('resolves midnight from cookie', () => {
+    const r = resolveTheme({
+      userPreference: null,
+      cookiePreference: 'midnight',
+      systemPrefersDark: true,
+    });
+    expect(r).toEqual({
+      preference: 'midnight',
+      resolvedTheme: 'midnight',
       source: 'cookie',
     });
   });

@@ -14,7 +14,7 @@ export const OBJECT_PAGE_CONTENT_BODY_CLASS = [
   '[&_h1]:mb-2 [&_h1]:mt-5 [&_h1]:text-xl [&_h1]:font-semibold [&_h1]:text-fg',
   '[&_h2]:mb-2 [&_h2]:mt-5 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-fg',
   '[&_h3]:mb-2 [&_h3]:mt-4 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-fg',
-  '[&_p]:mb-4 [&_p]:leading-body [&_p]:text-fg-secondary [&_p]:empty:hidden',
+  '[&_p]:mb-4 [&_p]:leading-body [&_p]:text-fg [&_p]:empty:hidden',
   '[&_strong]:font-semibold [&_strong]:text-fg',
   '[&_br]:block [&_br]:content-[""] [&_br]:mt-3',
   '[&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5',

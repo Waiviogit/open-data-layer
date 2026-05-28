@@ -64,7 +64,7 @@
   }
 
   .object-page-content-body td:last-child:not(:first-child) {
-    @apply text-fg-secondary;
+    @apply text-fg;
   }
 
   .object-page-content-body img[align='left'] {

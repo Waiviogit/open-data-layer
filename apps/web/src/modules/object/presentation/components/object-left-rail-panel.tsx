@@ -407,7 +407,7 @@ export function ObjectLeftRailPanel({
                 />
                 {intro.display ? (
                   <p
-                    className="mt-2 leading-relaxed"
+                    className="mt-2 leading-relaxed text-fg"
                     title={intro.isTruncated ? block.text.trim() : undefined}
                   >
                     {intro.display}

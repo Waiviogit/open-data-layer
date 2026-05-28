@@ -1,11 +1,19 @@
 export const themeRegistry = {
   light: {
     label: 'Light',
-    description: 'Clean light mode',
+    description: 'Default feed UI — orange accent, Inter, flat cards, gray chrome',
   },
   dark: {
     label: 'Dark',
-    description: 'Dark mode',
+    description: 'Dark feed UI — same orange accent and compact scale as Light',
+  },
+  studio: {
+    label: 'Studio',
+    description: 'Clean product UI — teal accent, system sans, generous type scale',
+  },
+  midnight: {
+    label: 'Midnight',
+    description: 'Zinc dark canvas — teal accent, system sans, generous type scale',
   },
   sepia: {
     label: 'Sepia',
@@ -18,9 +26,5 @@ export const themeRegistry = {
   airbnb: {
     label: 'Airbnb',
     description: 'White canvas, Rausch red accent, Cereal-style type, warm shadows',
-  },
-  waivio: {
-    label: 'Waivio',
-    description: 'Dense feed UI — orange accent, Inter, flat cards, gray chrome',
   },
 } as const;

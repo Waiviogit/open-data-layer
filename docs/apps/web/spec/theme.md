@@ -2,7 +2,7 @@
 
 **Back:** [web overview](overview.md) · **Related:** [i18n](i18n.md)
 
-Theming uses **`data-theme` on `<html>`** as the single source of truth for appearance. `apps/web/src/styles/theme.css` defines **design tokens** (CSS custom properties) per theme. Tailwind maps semantic utilities to those variables. Do **not** rely on `prefers-color-scheme` via `dark:` as the primary mechanism; use explicit themes (`light`, `dark`, `sepia`, `apple`, `airbnb`, `waivio`) or **`system`** (OS-driven light/dark).
+Theming uses **`data-theme` on `<html>`** as the single source of truth for appearance. `apps/web/src/styles/theme.css` defines **design tokens** (CSS custom properties) per theme. Tailwind maps semantic utilities to those variables. Do **not** rely on `prefers-color-scheme` via `dark:` as the primary mechanism; use explicit themes (`light`, `dark`, `studio`, `midnight`, `sepia`, `apple`, `airbnb`) or **`system`** (OS-driven light/dark).
 
 ## Normative goals
 
@@ -35,7 +35,7 @@ Theming uses **`data-theme` on `<html>`** as the single source of truth for appe
 Priority:
 
 1. **User** — `getUserThemePreference()` when it returns a value (auth + backend wired).
-2. **Cookie** — `app_theme` (`light` `dark` `sepia` `apple` `airbnb` `waivio` `system`), validated with Zod.
+2. **Cookie** — `app_theme` (`light` `dark` `studio` `midnight` `sepia` `apple` `airbnb` `system`), validated with Zod. Legacy value `waivio` is read as `light`.
 3. **Default** — typically `system`.
 
 When preference is `system`, **resolved** appearance is `dark` or `light` from the OS (`matchMedia` on the client; optional `Sec-CH-Prefers-Color-Scheme` on the server for consistency). **Sepia** is never chosen by the OS.
@@ -207,7 +207,13 @@ Do not scatter one-off hex values in components; extend tokens instead.
 
 **`airbnb`** — optional light preset: white `#ffffff` canvas, warm text `#222222` (not pure black), Rausch red `#ff385c` on `--color-accent` / focus ring via near-black `#222222` on `--color-focus`, Deep Rausch `#e00b41` hover, Airbnb Cereal–named stacks with Circular/system fallbacks, three-layer card shadow (`0.02` ring + `0.04`/`0.1` lifts), `rounded-card` 1.25rem and `rounded-card-lg` 2rem, Luxe purple `#460479` on `--color-secondary`, light gray `#f2f2f2` on `--color-tertiary` for chip-style surfaces (pairs with `#222222` on `--color-tertiary-fg`). Plus magenta `#92174d` is reserved for future tier-specific tokens if needed.
 
-**`waivio`** — optional light preset for dense social/marketplace UI: page `#f5f6f7`, cards `#ffffff`, text `#333333` / secondary `#8c8c8c` / muted `#bfbfbf`, borders `#e6e6e6`, accent orange `#ff7849` (`--color-accent`, `--color-link`, `--color-focus`), error `#f44336`. Inter stack, 14px base body (`0.875rem`), tight type scale (24px / 20px / 18px hero/display/section weights 600). Flat elevation: ring shadows only (`0 0 0 1px` border), 6px buttons / 8px cards, slightly tighter section spacing. Success `#4caf50` and warning `#ff9800` from the Waivio spec are not separate CSS variables yet — use sparingly in feature code or extend tokens if needed.
+**`light`** — default feed UI: page `#fafbfc`, cards `#ffffff`, text `rgba(0,0,0,0.84)` / secondary `#99aab5`, borders `#e9e7e7`, accent orange `#f87007` (`--color-accent`, `--color-link`, `--color-focus`) with alt `#fa9239` and hover `#d96205`, error `#f44336`. Inter stack, 14px base body (`0.875rem`), tight type scale (24px / 20px / 18px hero/display/section weights 600). Flat elevation: ring shadows only (`0 0 0 1px` border), 6px buttons / 8px cards, slightly tighter section spacing.
+
+**`dark`** — dark derivative of **`light`**: same `#f87007` accent family, Inter stack, compact type scale, and flat ring shadows on `#191e23` canvas with `#24292e` / `#353535` surfaces and `#4f545c` borders. Used by **`system`** when the OS prefers dark.
+
+**`studio`** — optional light preset: white canvas, gray text, teal accent `#0d9488`, system sans, generous marketing type scale, soft drop shadows.
+
+**`midnight`** — optional dark preset: zinc canvas `#0a0a0a`, teal/cyan accent `#2dd4bf`, system sans, generous type scale (former default dark look).
 
 ## `global.css` constraints
 

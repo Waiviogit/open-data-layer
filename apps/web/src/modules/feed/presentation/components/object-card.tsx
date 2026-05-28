@@ -206,7 +206,7 @@ export function ObjectCard({
             onRequireLogin={onRequireLogin}
           />
           {description ? (
-            <p className="mt-2 text-body-sm leading-body text-muted">{description}</p>
+            <p className="mt-2 text-body-sm leading-body text-fg">{description}</p>
           ) : null}
         </div>
       </div>
