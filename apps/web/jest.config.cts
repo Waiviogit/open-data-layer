@@ -4,6 +4,7 @@ module.exports = {
   ...nxPreset,
   displayName: 'web',
   testEnvironment: 'node',
+  setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
   coverageDirectory: '../../coverage/apps/web',
   moduleFileExtensions: [...nxPreset.moduleFileExtensions, 'tsx', 'jsx'],
   transform: {

@@ -58,6 +58,7 @@ export default async function RootLayout({
       suppressHydrationWarning
       data-theme={themeResolution.resolvedTheme}
       data-shell-mode={shellModeResolution.resolvedMode}
+      data-scroll-behavior="smooth"
     >
       <body className="min-h-screen bg-bg text-fg antialiased">
         <ThemeProvider initialResolution={themeResolution}>

@@ -5,7 +5,7 @@ import { useCallback, useState } from 'react';
 import { pushAccountHistory } from '../../domain/account-history';
 import {
   getWalletFacade,
-  ODL_WALLET_PROVIDER_SESSION_KEY,
+  ODL_KEYCHAIN_PERSISTENT_KEY,
 } from '../../infrastructure/wallet-facade.client';
 
 export type UseKeychainLoginOptions = {
@@ -27,7 +27,7 @@ export function useKeychainLogin({ onLoginSuccess }: UseKeychainLoginOptions = {
       try {
         await getWalletFacade().login('keychain', trimmed);
         try {
-          sessionStorage.setItem(ODL_WALLET_PROVIDER_SESSION_KEY, 'keychain');
+          localStorage.setItem(ODL_KEYCHAIN_PERSISTENT_KEY, '1');
         } catch {
           // ignore quota / private mode
         }

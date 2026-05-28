@@ -73,6 +73,7 @@ export function ShopSections({
               <h2 id={`shop-section-${sec.categoryName}`} className="text-heading font-label text-body-lg">
                 <Link
                   href={sectionHref(basePath, lineageSegments, sec.categoryName)}
+                  suppressHydrationWarning
                   className="text-fg underline-offset-2 hover:underline"
                 >
                   {sec.categoryName}

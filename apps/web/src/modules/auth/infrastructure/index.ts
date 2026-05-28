@@ -1,7 +1,9 @@
 export { createAuthBffClient } from './clients/auth-bff.client';
 export {
   getWalletFacade,
+  clearWalletSession,
   ODL_WALLET_PROVIDER_SESSION_KEY,
+  ODL_KEYCHAIN_PERSISTENT_KEY,
 } from './wallet-facade.client';
 export { createWalletFacade, DefaultWalletFacade } from './wallet-facade';
 export { signBufferWithKeychain } from './providers/keychain-provider';

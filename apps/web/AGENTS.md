@@ -225,6 +225,42 @@ Use **`router.refresh()`** from `next/navigation` when server-rendered data shou
 
 Primary pattern elsewhere in the app: **`awaitTrxConfirmation(trxId)` → `refreshAfterBroadcast(router, revalidate*)`**. Always refresh even on trx timeout so the UI eventually matches chain/indexer state.
 
+## Hydration warnings — browser extensions (Keychain, password managers)
+
+Browser extensions (primarily **Keychain Hive** and password managers) inject attributes or classes on `<a>` elements *after* SSR HTML is sent but *before* React hydrates. This produces a `className` mismatch warning that **cannot be reproduced without the extension** and is safe to suppress.
+
+### Rule
+
+**All `<Link>` (and plain `<a>`) elements that are navigation anchors must carry `suppressHydrationWarning`** to silence these false-positive mismatches.
+
+```tsx
+<Link href={href} suppressHydrationWarning …>
+  …
+</Link>
+```
+
+For raw `<a>` elements use the existing wrapper:
+
+```tsx
+import { HydrationSafeAnchor } from '@/shared/presentation/components/hydration-safe-anchor';
+
+<HydrationSafeAnchor href={href} …>…</HydrationSafeAnchor>
+```
+
+### When NOT to suppress
+
+Do **not** add `suppressHydrationWarning` to hide real mismatches caused by:
+- `typeof window !== 'undefined'` branches in initial render
+- `Date.now()`, `Math.random()`, or locale-formatted dates rendered server-side
+- Stale server cache diverging from client state
+
+Those must be **fixed** (use `useEffect`, `suppressHydrationWarning` on the specific element only after confirming the mismatch is extension-only).
+
+### How to tell the difference
+
+If the diff in the console shows only `keychainify-checked` added to `className` → Keychain extension, safe to suppress.
+If the diff shows data/content changes → real mismatch, fix the root cause.
+
 ## Maps (`src/modules/map/`)
 
 - **Public API:** `AppMap`, `AppMarker`, `AppPopup`, `MapProvider`, and types from `@/modules/map` — do **not** import `react-leaflet`, `leaflet`, or MapLibre directly in feature UIs.

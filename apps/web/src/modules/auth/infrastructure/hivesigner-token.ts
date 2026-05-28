@@ -30,11 +30,11 @@ function clearCookie(name: string): void {
 }
 
 export function getHivesignerToken(): string | null {
-  if (typeof sessionStorage === 'undefined') {
+  if (typeof localStorage === 'undefined') {
     return null;
   }
   try {
-    const token = sessionStorage.getItem(ODL_HS_TOKEN_STORAGE_KEY)?.trim();
+    const token = localStorage.getItem(ODL_HS_TOKEN_STORAGE_KEY)?.trim();
     return token && token.length > 0 ? token : null;
   } catch {
     return null;
@@ -42,28 +42,29 @@ export function getHivesignerToken(): string | null {
 }
 
 export function clearHivesignerToken(): void {
-  if (typeof sessionStorage === 'undefined') {
+  if (typeof localStorage === 'undefined') {
     return;
   }
   try {
-    sessionStorage.removeItem(ODL_HS_TOKEN_STORAGE_KEY);
+    localStorage.removeItem(ODL_HS_TOKEN_STORAGE_KEY);
+    localStorage.removeItem(ODL_WALLET_PROVIDER_SESSION_KEY);
   } catch {
     // ignore quota / private mode
   }
 }
 
-/** Move short-lived OAuth token from cookie (set by BFF callback) into sessionStorage. */
+/** Move short-lived OAuth token from cookie (set by BFF callback) into localStorage. */
 export function hydrateHivesignerTokenFromCookie(): boolean {
   const token = readCookie(ODL_HS_TOKEN_COOKIE);
   if (!token) {
     return false;
   }
-  if (typeof sessionStorage === 'undefined') {
+  if (typeof localStorage === 'undefined') {
     return false;
   }
   try {
-    sessionStorage.setItem(ODL_HS_TOKEN_STORAGE_KEY, token);
-    sessionStorage.setItem(ODL_WALLET_PROVIDER_SESSION_KEY, 'hivesigner');
+    localStorage.setItem(ODL_HS_TOKEN_STORAGE_KEY, token);
+    localStorage.setItem(ODL_WALLET_PROVIDER_SESSION_KEY, 'hivesigner');
   } catch {
     return false;
   }

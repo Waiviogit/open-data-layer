@@ -1,7 +1,7 @@
 const storage = new Map<string, string>();
 
 beforeAll(() => {
-  Object.defineProperty(globalThis, 'sessionStorage', {
+  Object.defineProperty(globalThis, 'localStorage', {
     value: {
       getItem: (key: string) => storage.get(key) ?? null,
       setItem: (key: string, value: string) => {
@@ -36,7 +36,7 @@ describe('hivesigner-token', () => {
     });
   });
 
-  it('hydrates token from cookie into sessionStorage', () => {
+  it('hydrates token from cookie into localStorage', () => {
     Object.defineProperty(globalThis, 'document', {
       value: { cookie: `${ODL_HS_TOKEN_COOKIE}=abc123` },
       configurable: true,
@@ -44,11 +44,11 @@ describe('hivesigner-token', () => {
 
     expect(hydrateHivesignerTokenFromCookie()).toBe(true);
     expect(getHivesignerToken()).toBe('abc123');
-    expect(sessionStorage.getItem(ODL_WALLET_PROVIDER_SESSION_KEY)).toBe('hivesigner');
+    expect(localStorage.getItem(ODL_WALLET_PROVIDER_SESSION_KEY)).toBe('hivesigner');
   });
 
   it('clears stored token', () => {
-    sessionStorage.setItem(ODL_HS_TOKEN_STORAGE_KEY, 'token');
+    localStorage.setItem(ODL_HS_TOKEN_STORAGE_KEY, 'token');
     clearHivesignerToken();
     expect(getHivesignerToken()).toBeNull();
   });

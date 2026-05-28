@@ -12,6 +12,7 @@ import {
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { NotificationBell } from '@/modules/notifications';
+import { clearWalletSession } from '@/modules/auth/infrastructure';
 import { UserAvatar } from '@/shared/presentation';
 
 import type { AppHeaderUser } from '../../domain/app-header-user';
@@ -128,6 +129,7 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
 
   async function onLogout() {
     setLogoutPending(true);
+    clearWalletSession();
     try {
       await fetch('/api/auth/logout', {
         method: 'POST',

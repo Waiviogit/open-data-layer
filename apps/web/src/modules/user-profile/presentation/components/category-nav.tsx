@@ -44,12 +44,14 @@ function NavChrome({
         <p className="mb-2 flex flex-wrap gap-x-3 gap-y-1 text-xs">
           <Link
             href={upHref}
+            suppressHydrationWarning
             className="text-muted underline-offset-2 hover:text-fg hover:underline"
           >
             ← Up
           </Link>
           <Link
             href={basePath}
+            suppressHydrationWarning
             className="text-muted underline-offset-2 hover:text-fg hover:underline"
           >
             All categories
@@ -64,6 +66,7 @@ function NavChrome({
       {data && data.uncategorized_count > 0 ? (
         <Link
           href={`${basePath}/${encodeURIComponent(UNCATEGORIZED_SHOP_PATH_SEGMENT)}`}
+          suppressHydrationWarning
           className={[
             'mt-3 block border-t border-border pt-2 text-xs underline-offset-2 hover:text-fg hover:underline',
             lineageSegments.length === 1 && lineageSegments[0] === UNCATEGORIZED_SHOP_PATH_SEGMENT
