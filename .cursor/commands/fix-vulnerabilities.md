@@ -38,6 +38,20 @@ Parse `osv-results.json` and summarize:
 - **Direct** deps (root `package.json` or `apps/*/package.json`)
 - **Transitive** deps (lockfile only)
 - Fix versions from OSV `affected[].ranges[].events[].fixed` where available
+- Note whether each affected package is **direct** (manifest) or **transitive only** (lockfile), and whether it already appears in `pnpm.overrides`
+
+### Direct vs override decision
+
+Many packages in this repo appear in both root `dependencies`/`devDependencies` and `pnpm.overrides` (e.g. `@nestjs/*`, `kysely`, `ws`, `vite`). Overrides here are workspace-wide pins — not a substitute for direct deps.
+
+| Scenario | Fix approach |
+|----------|--------------|
+| In root `dependencies`/`devDependencies` or `apps/*/package.json` | Step 3: `pnpm add` / `pnpm update` |
+| Same package also in `pnpm.overrides` | Step 3 **and** sync override to the same patched version (override alone is not enough; pnpm overrides take precedence) |
+| Transitive only (not in any manifest) | Step 4: add or extend `pnpm.overrides` |
+| Override fails to dedupe (e.g. `vite` via Nx) | Step 4: add direct devDependency **and** keep override in sync |
+
+**Do not fix a direct dep by changing `pnpm.overrides` only** — update the manifest via `pnpm add`, then align override and `apps/*/package.json` if present.
 
 ### 3. Fix direct dependencies
 
@@ -51,7 +65,11 @@ pnpm update @nestjs/common @nestjs/core ... --latest
 
 Also align matching versions in `apps/*/package.json` when the app lists the same package (Nest, kysely, ws, next). App manifests declare webpack externals for Docker `pnpm deploy --prod`; keep them in sync with root deps.
 
+If the same package is listed in `pnpm.overrides`, update the override to the same patched version after `pnpm add` (e.g. `pnpm add kysely@<patched>` then `pnpm pkg set pnpm.overrides.kysely=<same-range>` or re-run `pnpm add` with override-aware workflow). Never leave a stale override pinning an older vulnerable version.
+
 ### 4. Fix transitive dependencies
+
+Use this step only when the vulnerable package is **not** declared in root or app manifests (see **Direct vs override decision** above).
 
 Add or extend `pnpm.overrides` in root `package.json`:
 
@@ -121,8 +139,10 @@ node scripts/check-bundle-deps.cjs --app query-api
 
 ## Rules
 
-- Use `pnpm add` / `pnpm update` for versions; do not edit version strings by hand
-- `pnpm.overrides` at root is the correct tool for transitive fixes across all workspace packages
+- Use `pnpm add` / `pnpm update` for direct deps; do not edit version strings by hand
+- If a vulnerable package is in `dependencies`/`devDependencies` (or `apps/*/package.json`), fix via `pnpm add` — not by changing `pnpm.overrides` alone
+- When a package exists in both a manifest and `pnpm.overrides`, update both to the same patched version
+- `pnpm.overrides` is the correct tool for **transitive-only** fixes across the whole workspace
 - Do not commit `osv-results.json`
 - Do not commit unless the user explicitly asks
 - Keep suppressions minimal and time-bounded
