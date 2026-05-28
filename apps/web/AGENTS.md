@@ -66,7 +66,29 @@ index.ts         public barrel — other features import only from here
 - Inline SVG or **`<img>`** for icons and decorative graphics.
 - Markdown/HTML body images may use **`<img loading="lazy">`**.
 
-## Hydration
+## Object cards (`ObjectCard`)
+
+**One component for every object card in the UI** — do not add parallel card implementations per screen.
+
+| Canonical | Import |
+|-----------|--------|
+| **`ObjectCard`** | `@/modules/feed/presentation` (barrel) |
+| Card excerpt helper | `truncateObjectCardDescription` from `@/modules/feed/application/dto/object-card-description` (300 chars + `…`) |
+
+**Use `ObjectCard` for:** discover feed, user shop/recipe lists, post linked objects, object page menu catalog rows, and any future surface that shows a compact object preview (thumbnail, title, type · tags, ratings, description excerpt, admin heart).
+
+**Do not:**
+
+- Copy-paste card markup into feature modules (e.g. inline `ListItemCard`, bespoke `<article>` layouts).
+- Reimplement description truncation, rating grid, or navigation (avatar + title only) outside `ObjectCard`.
+- Add a second “object card” component when the layout is “close enough” — extend **`ObjectCard` props** instead (e.g. `linkReplace`, `onNavigateInColumn` if in-column navigation is needed).
+
+**Data shape:** `ObjectCard` expects **`ProjectedObjectView`** (`@/modules/feed/application/dto/object-fields`). Map list/API DTOs at the boundary with **`projectedListItemToObjectView`** (`@/modules/object/application/mappers/projected-list-item-to-object-view`) — do not fork the card because the source type differs.
+
+**In-column catalog nav:** pass **`onNavigate`** to `ObjectCard` (object page menu); omit for normal object-page links. List-type folder rows use **`ListCatalogRow`** in `object-list-content.tsx` only — not an object preview card.
+
+**Tests:** component tests in `object-card.spec.tsx`; Playwright smoke in `apps/web-e2e/src/object-card-navigation.spec.ts` (mocked API, no DB).
+
 
 - Server HTML for a Client Component’s first paint must **match** the client’s initial render.
 - Avoid in the initial render of hydrated subtrees: `Date.now()`, `Math.random()`, locale/time formatting that differs SSR vs client, `typeof window` branching.

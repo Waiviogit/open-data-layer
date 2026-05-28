@@ -900,6 +900,7 @@
   "gallery_add_album_failure": "Не удалось создать альбом.",
   "gallery_add_album_success": "Вы успешно создали альбом {albumName}.",
   "gallery_list_empty": "Нет альбомов. Будьте первым, кто создаст!",
+  "gallery_image_failed_to_load": "Не удалось загрузить изображение",
   "general": "общее",
   "geo_area": "Гео-область",
   "getSteemAccountNow": "и получите аккаунт Hive сейчас используя:",

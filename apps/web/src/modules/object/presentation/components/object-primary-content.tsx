@@ -153,6 +153,7 @@ export type ObjectPrimaryContentProps = {
   activeGalleryAlbum?: string | null;
   onOpenGalleryAlbum?: (albumName: string) => void;
   onBackToGalleryAlbums?: () => void;
+  onOpenGalleryPhoto?: (album: ProjectedGalleryAlbumView, photoIndex: number) => void;
   supportedUpdateTypes?: readonly string[];
   updateTypeCounts?: Record<string, number>;
   viewerUsername?: string | null;
@@ -183,6 +184,7 @@ export function ObjectPrimaryContent({
   activeGalleryAlbum = null,
   onOpenGalleryAlbum,
   onBackToGalleryAlbums,
+  onOpenGalleryPhoto,
   supportedUpdateTypes = [],
   updateTypeCounts,
   viewerUsername,
@@ -191,6 +193,10 @@ export function ObjectPrimaryContent({
   const router = useRouter();
   const searchParams = useSearchParams();
   const skipUrlSyncRef = useRef(false);
+  const pendingStackUrlSyncRef = useRef<{
+    stack: ObjectNestedViewEntry[];
+    mode: 'push' | 'replace';
+  } | null>(null);
 
   const [nestedStack, setNestedStack] = useState<ObjectNestedViewEntry[]>(() =>
     initialNestedStack.map(resolvedToEntry),
@@ -223,6 +229,30 @@ export function ObjectPrimaryContent({
     },
     [objectId, router, searchParams],
   );
+
+  /** Updates nested stack; URL sync runs in useEffect (never inside setState updaters). */
+  const commitNestedStack = useCallback(
+    (
+      computeNext: (prev: ObjectNestedViewEntry[]) => ObjectNestedViewEntry[],
+      mode: 'push' | 'replace' = 'push',
+    ) => {
+      setNestedStack((prev) => {
+        const next = computeNext(prev);
+        pendingStackUrlSyncRef.current = { stack: next, mode };
+        return next;
+      });
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const pending = pendingStackUrlSyncRef.current;
+    if (!pending) {
+      return;
+    }
+    pendingStackUrlSyncRef.current = null;
+    syncPathToUrl(pending.stack, pending.mode);
+  }, [nestedStack, syncPathToUrl]);
 
   useEffect(() => {
     if (skipUrlSyncRef.current) {
@@ -282,46 +312,38 @@ export function ObjectPrimaryContent({
 
   const navigateToDepth = useCallback(
     (depth: number) => {
-      setNestedStack((prev) => {
-        const next =
-          depth < 0 ? [] : prev.slice(0, Math.min(depth + 1, prev.length));
-        syncPathToUrl(next, 'push');
-        return next;
-      });
+      commitNestedStack(
+        (prev) =>
+          depth < 0 ? [] : prev.slice(0, Math.min(depth + 1, prev.length)),
+        'push',
+      );
     },
-    [syncPathToUrl],
+    [commitNestedStack],
   );
 
   const navigateInColumn = useCallback(
     async (item: ProjectedListItem) => {
       const optimistic = pendingEntryFromListItem(item);
-      setNestedStack((prev) => {
-        const next = [...prev, optimistic];
-        syncPathToUrl(next, 'push');
-        return next;
-      });
+      commitNestedStack((prev) => [...prev, optimistic], 'push');
 
       const resolved = await resolveNestedObjectContentAction(item.objectId);
       if (!resolved) {
-        setNestedStack((prev) => {
-          const next = prev.filter((e) => e.objectId !== item.objectId || !e.pending);
-          syncPathToUrl(next, 'replace');
-          return next;
-        });
+        commitNestedStack(
+          (prev) => prev.filter((e) => e.objectId !== item.objectId || !e.pending),
+          'replace',
+        );
         return;
       }
 
-      setNestedStack((prev) => {
+      commitNestedStack((prev) => {
         const withoutPending = prev.filter(
           (e) => !(e.objectId === item.objectId && e.pending),
         );
         const withoutDup = withoutPending.filter((e) => e.objectId !== item.objectId);
-        const next = [...withoutDup, resolvedToEntry(resolved)];
-        syncPathToUrl(next, 'replace');
-        return next;
-      });
+        return [...withoutDup, resolvedToEntry(resolved)];
+      }, 'replace');
     },
-    [syncPathToUrl],
+    [commitNestedStack],
   );
 
   const currentView = useMemo(() => {
@@ -540,6 +562,7 @@ export function ObjectPrimaryContent({
             updateTypeCounts={updateTypeCounts}
             onOpenAlbum={onOpenGalleryAlbum ?? (() => undefined)}
             onBackToAlbums={onBackToGalleryAlbums ?? (() => undefined)}
+            onOpenPhoto={onOpenGalleryPhoto}
           />
         </FeedColumn>
       );

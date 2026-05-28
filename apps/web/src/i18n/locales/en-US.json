@@ -922,6 +922,7 @@
   "gallery_add_album_failure": "Couldn't create the album.",
   "gallery_add_album_success": "You successfully have created the {albumName} album.",
   "gallery_list_empty": "There are no photos in this album. Be the first to add one!",
+  "gallery_image_failed_to_load": "This image failed to load",
   "object_gallery_set_as_avatar": "Set as avatar picture",
   "object_gallery_viewer_related_object": "Related object:",
   "object_gallery_zoom_in": "Zoom in",

@@ -9,6 +9,8 @@ import type {
   ObjectPageViewModel,
   AuthoritySubType,
 } from '@/modules/object';
+import type { ProjectedGalleryAlbumView } from '@/modules/object/domain/object-page.types';
+import { ObjectGalleryViewer } from '@/modules/object/presentation/components/object-gallery-viewer';
 import {
   LeftObjectProfileSidebar,
   ObjectHero,
@@ -128,6 +130,10 @@ export function ObjectPageClient({
     useState(initialPrimarySegment);
   const [activeGalleryAlbum, setActiveGalleryAlbum] =
     useState(initialGalleryAlbum);
+  const [galleryFullView, setGalleryFullView] = useState<{
+    album: ProjectedGalleryAlbumView;
+    initialIndex: number;
+  } | null>(null);
   const [activeFeedSubSegment, setActiveFeedSubSegment] =
     useState(defaultFeedSub);
 
@@ -605,6 +611,17 @@ export function ObjectPageClient({
     router.replace(buildObjectGalleryPath(model.objectId), { scroll: false });
   }, [model.objectId, router]);
 
+  const onOpenGalleryPhoto = useCallback(
+    (album: ProjectedGalleryAlbumView, photoIndex: number) => {
+      setGalleryFullView({ album, initialIndex: photoIndex });
+    },
+    [],
+  );
+
+  const onCloseGalleryFullView = useCallback(() => {
+    setGalleryFullView(null);
+  }, []);
+
   const galleryPhotosAlbum = useMemo(() => {
     const photosAlbum = model.galleryAlbums.find((album) => album.name === 'Photos');
     if (photosAlbum) {
@@ -646,6 +663,7 @@ export function ObjectPageClient({
         canOpenDescriptionPage={canOpenDescriptionPage}
         objectName={model.title}
         galleryPhotosAlbum={galleryPhotosAlbum}
+        onOpenGalleryPhoto={onOpenGalleryPhoto}
         supportedUpdateTypes={supportedUpdateTypes}
         updateTypeCounts={model.updateTypeCounts}
         viewerUsername={viewerUsername}
@@ -655,7 +673,8 @@ export function ObjectPageClient({
   );
 
   return (
-    <ObjectViewShell
+    <>
+      <ObjectViewShell
       hero={
         <ObjectHero
           title={model.title}
@@ -702,13 +721,28 @@ export function ObjectPageClient({
           activeGalleryAlbum={activeGalleryAlbum}
           onOpenGalleryAlbum={onOpenGalleryAlbum}
           onBackToGalleryAlbums={onBackToGalleryAlbums}
+          onOpenGalleryPhoto={onOpenGalleryPhoto}
           supportedUpdateTypes={supportedUpdateTypes}
           updateTypeCounts={model.updateTypeCounts}
           viewerUsername={viewerUsername}
           onRequireLogin={openLogin}
         />
       }
-      rightRail={rightRailSlot}
-    />
+        rightRail={rightRailSlot}
+      />
+      {galleryFullView ? (
+        <ObjectGalleryViewer
+          objectId={model.objectId}
+          objectName={model.title}
+          album={galleryFullView.album}
+          initialIndex={galleryFullView.initialIndex}
+          onClose={onCloseGalleryFullView}
+          viewerUsername={viewerUsername}
+          onRequireLogin={openLogin}
+          supportedUpdateTypes={supportedUpdateTypes}
+          updateTypeCounts={model.updateTypeCounts}
+        />
+      ) : null}
+    </>
   );
 }

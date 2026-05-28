@@ -98,4 +98,13 @@ describe('ObjectCard navigation', () => {
     expect(starRating).not.toBeNull();
     expect(starRating?.closest('a')).toBeNull();
   });
+
+  it('uses buttons instead of links when onNavigate is set', () => {
+    const onNavigate = jest.fn();
+    render(<ObjectCard object={sampleObject} onNavigate={onNavigate} as="div" />);
+
+    expect(screen.queryByRole('link')).toBeNull();
+    expect(screen.getByRole('button', { name: 'View object: Spicy Agedashi Tofu' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Spicy Agedashi Tofu' })).toBeInTheDocument();
+  });
 });

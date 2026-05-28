@@ -3,6 +3,7 @@ export {
   type SyncedPaginatedInitial,
   type SyncedPaginatedListState,
 } from './hooks/use-synced-paginated-list';
+export { useLockBodyScroll } from './hooks/use-lock-body-scroll';
 export { shouldUnoptimizeRemoteImage } from './image/should-unoptimize-remote-image';
 export { AVATAR_PLACEHOLDER_SRC, resolveAvatarUrl } from './avatar';
 export type { ResolveAvatarUrlInput, UserAvatarProps } from './avatar';

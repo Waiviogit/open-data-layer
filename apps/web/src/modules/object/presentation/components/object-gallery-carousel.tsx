@@ -1,16 +1,15 @@
 'use client';
 
-import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState, type MouseEvent, type SyntheticEvent } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 
 import type { ProjectedGalleryPhotoView } from '../../domain/object-page.types';
 import {
   GALLERY_CAROUSEL_PORTRAIT_FRAME_ASPECT,
   resolveGalleryCarouselAspectRatio,
 } from '../../domain/resolve-gallery-carousel-aspect-ratio';
+import { GalleryImage } from './gallery-image';
 
 export type ObjectGalleryCarouselProps = {
   photos: ProjectedGalleryPhotoView[];
@@ -98,14 +97,10 @@ export function ObjectGalleryCarousel({ photos, onPhotoClick }: ObjectGalleryCar
 
   const photoFrame = (
     <div className="relative w-full" style={{ aspectRatio: frameAspect }}>
-      <Image
+      <GalleryImage
         key={activeUrl}
         src={activeUrl}
-        alt=""
-        fill
-        className="object-cover"
         sizes="(max-width: 768px) 100vw, 320px"
-        unoptimized={shouldUnoptimizeRemoteImage(activeUrl)}
         onLoad={handleImageLoad(activeUrl)}
       />
     </div>

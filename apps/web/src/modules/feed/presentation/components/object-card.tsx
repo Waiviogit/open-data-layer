@@ -2,9 +2,11 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 
 import type { CardRatingDimension } from '../../application/dto/object-card-rating';
 import { mergeRatingDimensions } from '../../application/dto/object-card-rating';
+import { truncateObjectCardDescription } from '../../application/dto/object-card-description';
 import type { ProjectedObjectView } from '../../application/dto/object-fields';
 import { objectFields } from '../../application/dto/object-fields';
 import { getRatingDimensionNamesForObjectType } from '@/modules/discover/domain/discover-registry';
@@ -14,14 +16,41 @@ import { AdministrativeHeartButton } from '@/modules/object/presentation/compone
 import { objectPagePath } from '@/shared/routes/object-page-path';
 
 const THUMB_SIZE = 120;
-const DESCRIPTION_MAX_LENGTH = 300;
 
-function truncateDescription(text: string): string {
-  const trimmed = text.trim();
-  if (trimmed.length <= DESCRIPTION_MAX_LENGTH) {
-    return trimmed;
+function CardNavTarget({
+  href,
+  linkReplace,
+  onNavigate,
+  className,
+  ariaLabel,
+  children,
+}: {
+  href: string;
+  linkReplace: boolean;
+  onNavigate?: () => void;
+  className?: string;
+  ariaLabel?: string;
+  children: ReactNode;
+}) {
+  if (onNavigate) {
+    return (
+      <button type="button" className={className} aria-label={ariaLabel} onClick={onNavigate}>
+        {children}
+      </button>
+    );
   }
-  return `${trimmed.slice(0, DESCRIPTION_MAX_LENGTH)}…`;
+  return (
+    <Link
+      href={href}
+      replace={linkReplace}
+      prefetch={false}
+      suppressHydrationWarning
+      aria-label={ariaLabel}
+      className={className}
+    >
+      {children}
+    </Link>
+  );
 }
 
 function formatLinkedObjectTypeLabel(type: string | null): string {
@@ -79,6 +108,10 @@ export type ObjectCardProps = {
   object: ProjectedObjectView;
   /** When navigating from an intercepted-route modal (`@modal`), replaces the post URL so the modal slot resets. */
   linkReplace?: boolean;
+  /** When set, thumb/title use a button (in-column catalog nav) instead of object page links. */
+  onNavigate?: () => void;
+  /** Root element — `li` in feeds; `div` when mixed with non-list rows (object page catalog). */
+  as?: 'li' | 'div';
   viewerUsername?: string | null;
   onRequireLogin?: () => void;
 };
@@ -89,6 +122,8 @@ export type ObjectCardProps = {
 export function ObjectCard({
   object: o,
   linkReplace = false,
+  onNavigate,
+  as: Root = 'li',
   viewerUsername,
   onRequireLogin,
 }: ObjectCardProps) {
@@ -99,7 +134,7 @@ export function ObjectCard({
   const thumbUrl = objectFields.image(o);
   const name = objectFields.name(o);
   const descriptionRaw = objectFields.description(o);
-  const description = descriptionRaw ? truncateDescription(descriptionRaw) : undefined;
+  const description = descriptionRaw ? truncateObjectCardDescription(descriptionRaw) : undefined;
   const href = objectPagePath(o.object_id);
   const titleLabel = name ?? o.object_id;
   const objectTypeKey = o.object_type?.trim() ?? '';
@@ -109,7 +144,7 @@ export function ObjectCard({
   );
 
   return (
-    <li className="relative list-none rounded-card border border-border bg-surface-control/40 p-card-padding shadow-whisper">
+    <Root className="relative list-none rounded-card border border-border bg-surface-control/40 p-card-padding shadow-whisper">
       <div className="absolute end-3 top-3">
         <AdministrativeHeartButton
           objectId={o.object_id}
@@ -119,12 +154,11 @@ export function ObjectCard({
         />
       </div>
       <div className="flex gap-3 pe-8">
-        <Link
+        <CardNavTarget
           href={href}
-          replace={linkReplace}
-          prefetch={false}
-          suppressHydrationWarning
-          aria-label={`View object: ${titleLabel}`}
+          linkReplace={linkReplace}
+          onNavigate={onNavigate}
+          ariaLabel={`View object: ${titleLabel}`}
           className="shrink-0 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
           <span
@@ -154,17 +188,16 @@ export function ObjectCard({
               />
             )}
           </span>
-        </Link>
+        </CardNavTarget>
         <div className="min-w-0 flex-1">
-          <Link
+          <CardNavTarget
             href={href}
-            replace={linkReplace}
-            prefetch={false}
-            suppressHydrationWarning
-            className="max-w-full font-weight-label text-body text-heading hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            linkReplace={linkReplace}
+            onNavigate={onNavigate}
+            className="max-w-full text-left font-weight-label text-body text-heading hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           >
             {titleLabel}
-          </Link>
+          </CardNavTarget>
           {subtitle ? <p className="mt-0.5 text-caption text-fg-secondary">{subtitle}</p> : null}
           <RatingsGrid
             dims={ratingDims}
@@ -177,6 +210,6 @@ export function ObjectCard({
           ) : null}
         </div>
       </div>
-    </li>
+    </Root>
   );
 }

@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useMemo, useState } from 'react';
 
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
@@ -8,10 +7,9 @@ import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
 import { initialGalleryItemFormValue } from '@/modules/object-updates/application/gallery-form-value';
-import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 
 import type { ProjectedGalleryAlbumView } from '../../domain/object-page.types';
-import { ObjectGalleryViewer } from './object-gallery-viewer';
+import { GalleryImage } from './gallery-image';
 
 export type ObjectGalleryTabContentProps = {
   objectId: string;
@@ -24,6 +22,8 @@ export type ObjectGalleryTabContentProps = {
   updateTypeCounts?: Record<string, number>;
   onOpenAlbum: (albumName: string) => void;
   onBackToAlbums: () => void;
+  /** Opens full-screen viewer on the object page layer (outside scrollable gallery grid). */
+  onOpenPhoto?: (album: ProjectedGalleryAlbumView, photoIndex: number) => void;
 };
 
 function albumCoverUrl(album: ProjectedGalleryAlbumView): string | null {
@@ -41,14 +41,11 @@ export function ObjectGalleryTabContent({
   updateTypeCounts,
   onOpenAlbum,
   onBackToAlbums,
+  onOpenPhoto,
 }: ObjectGalleryTabContentProps) {
   const { t } = useI18n();
   const [addAlbumOpen, setAddAlbumOpen] = useState(false);
   const [addImageOpen, setAddImageOpen] = useState(false);
-  const [viewerState, setViewerState] = useState<{
-    albumName: string;
-    photoIndex: number;
-  } | null>(null);
 
   const canAddAlbum = supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE_GALLERY);
   const canAddImage = supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE_GALLERY_ITEM);
@@ -67,10 +64,6 @@ export function ObjectGalleryTabContent({
 
   if (activeAlbumName) {
     const album = galleryAlbums.find((entry) => entry.name === activeAlbumName);
-    const viewerAlbum =
-      viewerState != null
-        ? galleryAlbums.find((entry) => entry.name === viewerState.albumName)
-        : null;
 
     return (
       <div className="flex flex-col gap-4">
@@ -118,17 +111,11 @@ export function ObjectGalleryTabContent({
                     key={`${photo.url}-${index}`}
                     type="button"
                     className="relative aspect-square overflow-hidden rounded-btn border border-border bg-surface/60 hover:border-accent/40"
-                    onClick={() =>
-                      setViewerState({ albumName: activeAlbumName, photoIndex: index })
-                    }
+                    onClick={() => onOpenPhoto?.(album, index)}
                   >
-                    <Image
+                    <GalleryImage
                       src={photo.url}
-                      alt=""
-                      fill
-                      className="object-cover"
                       sizes="(max-width: 768px) 50vw, 320px"
-                      unoptimized={shouldUnoptimizeRemoteImage(photo.url)}
                     />
                   </button>
                 ))}
@@ -148,20 +135,6 @@ export function ObjectGalleryTabContent({
             initialValue={initialGalleryItemFormValue(activeAlbumName ?? undefined)}
             galleryAlbumNames={albumNames}
             lockGalleryAlbum={Boolean(activeAlbumName)}
-            updateTypeCounts={updateTypeCounts}
-          />
-        ) : null}
-
-        {viewerAlbum && viewerState ? (
-          <ObjectGalleryViewer
-            objectId={objectId}
-            objectName={objectName}
-            album={viewerAlbum}
-            initialIndex={viewerState.photoIndex}
-            onClose={() => setViewerState(null)}
-            viewerUsername={viewerUsername}
-            onRequireLogin={onRequireLogin}
-            supportedUpdateTypes={supportedUpdateTypes}
             updateTypeCounts={updateTypeCounts}
           />
         ) : null}
@@ -195,13 +168,10 @@ export function ObjectGalleryTabContent({
             >
               <div className="relative aspect-square w-full bg-surface">
                 {cover ? (
-                  <Image
+                  <GalleryImage
                     src={cover}
-                    alt=""
-                    fill
-                    className="object-cover transition group-hover:opacity-95"
                     sizes="(max-width: 768px) 50vw, 200px"
-                    unoptimized={shouldUnoptimizeRemoteImage(cover)}
+                    className="object-cover transition group-hover:opacity-95"
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center text-xs text-muted">

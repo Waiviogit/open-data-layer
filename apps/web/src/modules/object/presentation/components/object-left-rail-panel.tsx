@@ -20,7 +20,6 @@ import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 import type { ObjectLeftRailBlock, ProjectedGalleryAlbumView } from '../../domain/object-page.types';
 
 import { ObjectGalleryCarousel } from './object-gallery-carousel';
-import { ObjectGalleryViewer } from './object-gallery-viewer';
 import { LeftRailUpdateCountBadge } from './left-rail-update-count-badge';
 import { ObjectGeoPreview } from './object-geo-preview';
 import { ObjectMenuItemsStatic } from './object-menu-items-static';
@@ -61,6 +60,7 @@ export type ObjectLeftRailPanelProps = {
   objectName?: string;
   /** Photos album for left-rail carousel full-screen viewer. */
   galleryPhotosAlbum?: ProjectedGalleryAlbumView | null;
+  onOpenGalleryPhoto?: (album: ProjectedGalleryAlbumView, photoIndex: number) => void;
   supportedUpdateTypes?: readonly string[];
   updateTypeCounts?: Record<string, number>;
   viewerUsername?: string | null;
@@ -239,6 +239,7 @@ export function ObjectLeftRailPanel({
   canOpenDescriptionPage = false,
   objectName = '',
   galleryPhotosAlbum = null,
+  onOpenGalleryPhoto,
   supportedUpdateTypes = [],
   updateTypeCounts,
   viewerUsername,
@@ -246,7 +247,6 @@ export function ObjectLeftRailPanel({
 }: ObjectLeftRailPanelProps) {
   const { t } = useI18n();
   const [addModal, setAddModal] = useState<AddUpdateModalState | null>(null);
-  const [galleryViewerIndex, setGalleryViewerIndex] = useState<number | null>(null);
 
   const displayBlocks = useMemo(() => {
     if (!editContext) {
@@ -520,14 +520,17 @@ export function ObjectLeftRailPanel({
                 <ObjectGalleryCarousel
                   photos={block.photos}
                   onPhotoClick={
-                    galleryPhotosAlbum && galleryPhotosAlbum.items.length > 0
+                    galleryPhotosAlbum && onOpenGalleryPhoto
                       ? (index) => {
                           const url = block.photos[index]?.url;
                           const albumIndex =
                             url != null
                               ? galleryPhotosAlbum.items.findIndex((item) => item.url === url)
                               : -1;
-                          setGalleryViewerIndex(albumIndex >= 0 ? albumIndex : index);
+                          onOpenGalleryPhoto(
+                            galleryPhotosAlbum,
+                            albumIndex >= 0 ? albumIndex : index,
+                          );
                         }
                       : undefined
                   }
@@ -738,19 +741,6 @@ export function ObjectLeftRailPanel({
           }
         }
       })}
-      {galleryPhotosAlbum && galleryViewerIndex != null ? (
-        <ObjectGalleryViewer
-          objectId={objectId}
-          objectName={objectName}
-          album={galleryPhotosAlbum}
-          initialIndex={galleryViewerIndex}
-          onClose={() => setGalleryViewerIndex(null)}
-          viewerUsername={viewerUsername ?? null}
-          onRequireLogin={() => onRequireLogin?.()}
-          supportedUpdateTypes={supportedUpdateTypes}
-          updateTypeCounts={updateTypeCounts}
-        />
-      ) : null}
     </div>
   );
 }

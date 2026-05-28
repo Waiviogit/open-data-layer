@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -8,13 +7,14 @@ import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
-import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
+import { useLockBodyScroll } from '@/shared/presentation';
 
 import type { GalleryApprovalStatsIndex } from '@/modules/object/domain/gallery-approval-stats';
 import { resolveGalleryPhotoApprovalStat } from '@/modules/object/domain/gallery-approval-stats';
 import { fetchGalleryApprovalStatsAction } from '@/app/(app)/object/[object-id]/gallery/gallery-approval.actions';
 
 import type { ProjectedGalleryAlbumView } from '../../domain/object-page.types';
+import { GalleryImage } from './gallery-image';
 
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3;
@@ -59,6 +59,8 @@ export function ObjectGalleryViewer({
   const currentPhoto = photos[activeIndex];
   const displayName = objectName.trim() || objectId;
   const canSetAvatar = supportedUpdateTypes.includes(UPDATE_TYPES.IMAGE);
+
+  useLockBodyScroll(true);
 
   useEffect(() => {
     setActiveIndex(initialIndex);
@@ -147,7 +149,7 @@ export function ObjectGalleryViewer({
 
   const overlay = (
     <div
-      className="fixed inset-0 z-[150] flex flex-col bg-black/90 text-fg"
+      className="fixed inset-0 z-[150] flex h-dvh max-h-dvh flex-col overflow-hidden overscroll-none bg-black/90 text-fg"
       role="dialog"
       aria-modal="true"
       aria-label={t('gallery')}
@@ -239,14 +241,11 @@ export function ObjectGalleryViewer({
               transition: 'transform 0.15s ease',
             }}
           >
-            <Image
+            <GalleryImage
               src={currentPhoto.url}
-              alt=""
-              fill
               className="object-contain"
               sizes="(max-width: 1024px) 100vw, 1024px"
               priority
-              unoptimized={shouldUnoptimizeRemoteImage(currentPhoto.url)}
             />
           </div>
         </div>
