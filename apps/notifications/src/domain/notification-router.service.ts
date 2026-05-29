@@ -27,6 +27,9 @@ export class NotificationRouterService {
       case 'update_vote_cast':
         await this.routeVoteCast(event);
         return;
+      case 'batch_import_completed':
+        await this.routeBatchImportCompleted(event);
+        return;
       default:
         this.logger.warn(`Unknown notification event type: ${event.type}`);
     }
@@ -41,6 +44,15 @@ export class NotificationRouterService {
       blockNum: event.blockNum,
       occurredAt: event.occurredAt,
     });
+  }
+
+  private async routeBatchImportCompleted(event: NotificationEvent): Promise<void> {
+    const creator = event.actor;
+    if (!creator) {
+      return;
+    }
+    const item = this.feedService.buildItemFromEvent(event);
+    await this.feedService.addToFeed(creator, item);
   }
 
   private async routeFollow(event: NotificationEvent): Promise<void> {

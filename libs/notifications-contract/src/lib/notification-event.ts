@@ -6,7 +6,8 @@ export type NotificationEventType =
   | 'update_vote_cast'
   | 'object_created'
   | 'follow'
-  | 'trx_processed';
+  | 'trx_processed'
+  | 'batch_import_completed';
 
 export interface NotificationEvent {
   readonly type: NotificationEventType;

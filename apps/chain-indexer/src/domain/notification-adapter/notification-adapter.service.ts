@@ -2,6 +2,8 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import type { NotificationEvent } from '@opden-data-layer/notifications-contract';
 import {
+  BATCH_IMPORT_COMPLETED_NOTIFICATION_EVENT,
+  BatchImportCompletedNotificationPayload,
   FOLLOW_NOTIFICATION_EVENT,
   FollowNotificationPayload,
   OBJECT_CREATED_NOTIFICATION_EVENT,
@@ -85,6 +87,21 @@ export class NotificationAdapterService {
       objectId: null,
       actor: null,
       payload: {},
+    });
+  }
+
+  @OnEvent(BATCH_IMPORT_COMPLETED_NOTIFICATION_EVENT)
+  async onBatchImportCompleted(
+    payload: BatchImportCompletedNotificationPayload,
+  ): Promise<void> {
+    await this.publish({
+      type: 'batch_import_completed',
+      occurredAt: payload.occurredAt,
+      blockNum: payload.blockNum,
+      trxId: payload.trxId,
+      objectId: null,
+      actor: payload.creator,
+      payload: { cid: payload.cid },
     });
   }
 

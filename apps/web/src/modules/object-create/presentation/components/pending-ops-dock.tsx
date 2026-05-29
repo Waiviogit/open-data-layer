@@ -30,6 +30,9 @@ export type PendingOpsDockProps = {
   canPublish: boolean;
   submitting?: boolean;
   disabled?: boolean;
+  broadcastViaIpfs?: boolean;
+  onToggleBroadcastViaIpfs?: () => void;
+  publishPhase?: 'idle' | 'uploading' | 'signing' | 'confirming' | 'importing';
   onPublish: () => void;
 };
 
@@ -38,6 +41,9 @@ export function PendingOpsDock({
   canPublish,
   submitting = false,
   disabled = false,
+  broadcastViaIpfs = false,
+  onToggleBroadcastViaIpfs,
+  publishPhase = 'idle',
   onPublish,
 }: PendingOpsDockProps) {
   const { t } = useI18n();
@@ -64,6 +70,27 @@ export function PendingOpsDock({
     String(summary.total),
   );
 
+  const publishLabel = (() => {
+    if (!submitting) {
+      return t('object_create_publish');
+    }
+    if (!broadcastViaIpfs) {
+      return t('object_create_publishing');
+    }
+    switch (publishPhase) {
+      case 'uploading':
+        return t('object_create_uploading_to_ipfs');
+      case 'signing':
+        return t('object_create_awaiting_signature');
+      case 'confirming':
+        return t('object_create_confirming_on_chain');
+      case 'importing':
+        return t('object_create_importing_via_ipfs');
+      default:
+        return t('object_create_importing_via_ipfs');
+    }
+  })();
+
   return (
     <div
       className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-gutter sm:px-gutter-sm"
@@ -88,7 +115,19 @@ export function PendingOpsDock({
             <span className="min-w-0 flex-1" aria-hidden />
           )}
 
-          <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto">
+          <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto">
+            {onToggleBroadcastViaIpfs ? (
+              <label className="flex cursor-pointer items-center gap-1.5 text-caption text-muted">
+                <input
+                  type="checkbox"
+                  checked={broadcastViaIpfs}
+                  disabled={busy}
+                  onChange={onToggleBroadcastViaIpfs}
+                  className="rounded border-border"
+                />
+                {t('object_create_broadcast_via_ipfs')}
+              </label>
+            ) : null}
             <button
               type="button"
               disabled={busy}
@@ -107,9 +146,7 @@ export function PendingOpsDock({
               onClick={() => onPublish()}
               className="rounded-btn bg-accent px-3 py-1.5 font-label text-body-sm font-semibold text-accent-fg hover:opacity-90 disabled:opacity-50"
             >
-              {submitting
-                ? t('object_create_publishing')
-                : t('object_create_publish')}
+              {publishLabel}
             </button>
           </div>
         </div>

@@ -4,6 +4,8 @@ export const VOTE_CAST_NOTIFICATION_EVENT = 'notification.vote_cast';
 export const FOLLOW_NOTIFICATION_EVENT = 'notification.follow';
 export const OBJECT_CREATED_NOTIFICATION_EVENT = 'notification.object_created';
 export const TRX_PROCESSED_NOTIFICATION_EVENT = 'notification.trx_processed';
+export const BATCH_IMPORT_COMPLETED_NOTIFICATION_EVENT =
+  'notification.batch_import_completed';
 
 export class VoteCastNotificationPayload {
   constructor(
@@ -44,6 +46,16 @@ export class TrxProcessedNotificationPayload {
   constructor(
     public readonly trxId: string,
     public readonly blockNum: number,
+    public readonly occurredAt: string,
+  ) {}
+}
+
+export class BatchImportCompletedNotificationPayload {
+  constructor(
+    public readonly cid: string,
+    public readonly creator: string,
+    public readonly blockNum: number,
+    public readonly trxId: string,
     public readonly occurredAt: string,
   ) {}
 }

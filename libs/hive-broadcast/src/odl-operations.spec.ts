@@ -1,4 +1,5 @@
 import {
+  buildOdlBatchImportOp,
   buildOdlObjectAuthorityOp,
   buildOdlObjectFollowOp,
   buildOdlRankVoteOp,
@@ -328,5 +329,30 @@ describe('buildOdlObjectFollowOp', () => {
     const payload = JSON.parse(op.json).events[0].payload as Record<string, unknown>;
     expect(payload['method']).toBe('bell');
     expect(payload['bell']).toBe(true);
+  });
+});
+
+describe('buildOdlBatchImportOp', () => {
+  it('emits batch_import with ipfs ref and posting auths', () => {
+    const op = buildOdlBatchImportOp({
+      id: 'odl-testnet',
+      account: 'alice',
+      cid: 'bafyTestCid',
+    });
+    expect(op.type).toBe('custom_json');
+    expect(op.id).toBe('odl-testnet');
+    expect(op.required_posting_auths).toEqual(['alice']);
+    expect(op.required_auths).toEqual([]);
+
+    const parsed = JSON.parse(op.json) as {
+      events: { action: string; v: number; payload: Record<string, unknown> }[];
+    };
+    expect(parsed.events).toHaveLength(1);
+    expect(parsed.events[0]?.action).toBe('batch_import');
+    expect(parsed.events[0]?.v).toBe(1);
+    expect(parsed.events[0]?.payload).toEqual({
+      type: 'ipfs',
+      ref: 'bafyTestCid',
+    });
   });
 });

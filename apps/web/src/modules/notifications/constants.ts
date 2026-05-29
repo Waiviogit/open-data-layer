@@ -1,6 +1,9 @@
 /** Max wait for chain-indexer to process a broadcast trx before refreshing anyway. */
 export const TRX_CONFIRMATION_TIMEOUT_MS = 10_000;
 
+/** Max wait for IPFS batch_import to finish (WS + query-api object poll). */
+export const BATCH_IMPORT_COMPLETION_TIMEOUT_MS = 60_000;
+
 /** Max wait for get_notifications WebSocket response. */
 export const GET_NOTIFICATIONS_TIMEOUT_MS = 10_000;
 

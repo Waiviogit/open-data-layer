@@ -120,6 +120,11 @@ export function ObjectCreateClient({
       canPublish={form.canPublish}
       submitting={form.submitting}
       disabled={form.submitting}
+      broadcastViaIpfs={form.broadcastViaIpfs}
+      publishPhase={form.publishPhase}
+      onToggleBroadcastViaIpfs={() =>
+        form.setBroadcastViaIpfs((v) => !v)
+      }
       onPublish={() => void form.submit()}
     />
     </>

@@ -93,6 +93,22 @@ describe('NotificationRouterService', () => {
     );
   });
 
+  it('routes batch_import_completed to creator feed', async () => {
+    await router.route({
+      type: 'batch_import_completed',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: 'trx-b',
+      objectId: null,
+      actor: 'alice',
+      payload: { cid: 'bafyCid' },
+    });
+    expect(feedService.addToFeed).toHaveBeenCalledWith(
+      'alice',
+      expect.objectContaining({ type: 'batch_import_completed', trxId: 'trx-b' }),
+    );
+  });
+
   it('notifies trx subscribers', async () => {
     await router.route({
       type: 'trx_processed',

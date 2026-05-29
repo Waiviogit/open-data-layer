@@ -5,15 +5,20 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
+import { buildOdlBatchImportOp } from '@opden-data-layer/hive-broadcast';
 
 import { DEFAULT_LOCALE } from '@/i18n/config/default-locale';
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
-import { awaitTrxConfirmation } from '@/modules/notifications';
+import {
+  awaitBatchImportCompletion,
+  awaitTrxConfirmation,
+} from '@/modules/notifications';
 import { initialFormValueForUpdateTypeWithContext } from '@/modules/object-updates/application/tag-category-item-form-value';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
+import { uploadOdlToIpfs } from '../infrastructure/actions/upload-odl-to-ipfs.action';
 import { buildCreateOps } from './build-create-ops';
 import {
   clearObjectCreateDraft,
@@ -125,6 +130,10 @@ export function useObjectCreateForm({
     emptyObjectCreateState(initialObjectIdPrefix),
   );
   const [submitting, setSubmitting] = useState(false);
+  const [broadcastViaIpfs, setBroadcastViaIpfs] = useState(false);
+  const [publishPhase, setPublishPhase] = useState<
+    'idle' | 'uploading' | 'signing' | 'confirming' | 'importing'
+  >('idle');
   const [error, setError] = useState<string | null>(null);
   const [draftSavedAt, setDraftSavedAt] = useState<number | null>(null);
   const [idExists, setIdExists] = useState<boolean | null>(null);
@@ -375,32 +384,73 @@ export function useObjectCreateForm({
     }
 
     setSubmitting(true);
+    setPublishPhase(broadcastViaIpfs ? 'uploading' : 'signing');
     setError(null);
     try {
-      const op = buildCreateOps({
+      const createParams = {
         objectId: state.objectId,
         objectType: state.objectType,
         creator: username,
         odlCustomJsonId,
         fields: state.fields,
         language: state.language,
-      });
-      const { transactionId } = await getWalletFacade().broadcast({
-        operations: [op],
-      });
+      };
+
+      let transactionId: string;
+
+      if (broadcastViaIpfs) {
+        const createOp = buildCreateOps(createParams);
+        const ipfsResult = await uploadOdlToIpfs(createOp.json);
+        if ('error' in ipfsResult) {
+          throw new Error(ipfsResult.error);
+        }
+        setPublishPhase('signing');
+        const batchOp = buildOdlBatchImportOp({
+          id: odlCustomJsonId,
+          account: username,
+          cid: ipfsResult.cid,
+        });
+        ({ transactionId } = await getWalletFacade().broadcast({
+          operations: [batchOp],
+        }));
+        setPublishPhase('confirming');
+        await awaitTrxConfirmation(transactionId);
+        setPublishPhase('importing');
+        await awaitBatchImportCompletion(transactionId, state.objectId);
+      } else {
+        const op = buildCreateOps(createParams);
+        ({ transactionId } = await getWalletFacade().broadcast({
+          operations: [op],
+        }));
+        void awaitTrxConfirmation(transactionId).finally(() => {
+          void refreshAfterBroadcast(router, () =>
+            revalidateObjectAfterBroadcast(state.objectId),
+          );
+        });
+      }
+
       clearObjectCreateDraft(username);
       setDraftSavedAt(null);
-      void awaitTrxConfirmation(transactionId).finally(() => {
+      if (broadcastViaIpfs) {
         void refreshAfterBroadcast(router, () =>
           revalidateObjectAfterBroadcast(state.objectId),
         );
-      });
+      }
       router.push(`/object/${encodeURIComponent(state.objectId)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'publish_failed');
       setSubmitting(false);
+      setPublishPhase('idle');
     }
-  }, [state, submitting, idExists, username, odlCustomJsonId, router]);
+  }, [
+    state,
+    submitting,
+    idExists,
+    username,
+    odlCustomJsonId,
+    router,
+    broadcastViaIpfs,
+  ]);
 
   return {
     state,
@@ -421,5 +471,8 @@ export function useObjectCreateForm({
     addField,
     removeField,
     submit,
+    broadcastViaIpfs,
+    setBroadcastViaIpfs,
+    publishPhase,
   };
 }

@@ -347,3 +347,31 @@ export function buildOdlObjectFollowOp(input: BuildOdlObjectFollowOpInput): Cust
     json: JSON.stringify(envelope),
   });
 }
+
+export type BuildOdlBatchImportOpInput = {
+  readonly id: string;
+  readonly account: string;
+  readonly cid: string;
+};
+
+/**
+ * Builds a Hive `custom_json` op with one `batch_import` event referencing IPFS content by CID.
+ */
+export function buildOdlBatchImportOp(input: BuildOdlBatchImportOpInput): CustomJsonOp {
+  const envelope = {
+    events: [
+      {
+        action: 'batch_import' as const,
+        v: 1,
+        payload: { type: 'ipfs' as const, ref: input.cid },
+      },
+    ],
+  };
+
+  return buildCustomJsonOp({
+    required_auths: [],
+    required_posting_auths: [input.account],
+    id: input.id,
+    json: JSON.stringify(envelope),
+  });
+}

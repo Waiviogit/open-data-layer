@@ -5,6 +5,7 @@ const EVENT_TYPES: NotificationEventType[] = [
   'object_created',
   'follow',
   'trx_processed',
+  'batch_import_completed',
 ];
 
 describe('NotificationEvent contract', () => {
@@ -27,6 +28,7 @@ describe('NotificationEvent contract', () => {
       'object_created',
       'follow',
       'trx_processed',
+      'batch_import_completed',
     ]);
   });
 });

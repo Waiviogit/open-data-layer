@@ -1,5 +1,6 @@
 import { NotificationAdapterService } from './notification-adapter.service';
 import {
+  BatchImportCompletedNotificationPayload,
   FollowNotificationPayload,
   ObjectCreatedNotificationPayload,
   TrxProcessedNotificationPayload,
@@ -85,6 +86,28 @@ describe('NotificationAdapterService', () => {
       objectId: null,
       actor: null,
       payload: {},
+    });
+  });
+
+  it('maps batch import completed domain event to contract shape', async () => {
+    await service.onBatchImportCompleted(
+      new BatchImportCompletedNotificationPayload(
+        'bafyCid',
+        'alice',
+        3,
+        'trx-b',
+        '2026-01-01T00:00:00.000Z',
+      ),
+    );
+
+    expect(publisher.published[0]).toEqual({
+      type: 'batch_import_completed',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 3,
+      trxId: 'trx-b',
+      objectId: null,
+      actor: 'alice',
+      payload: { cid: 'bafyCid' },
     });
   });
 });
