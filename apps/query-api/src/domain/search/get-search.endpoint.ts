@@ -16,10 +16,13 @@ const SEARCH_UPDATE_TYPES = [UPDATE_TYPES.NAME, UPDATE_TYPES.IMAGE, UPDATE_TYPES
 /** Max user hits returned alongside object hits (profile list). */
 const USER_SEARCH_LIMIT = 5;
 
+export type SearchResultType = 'all' | 'objects' | 'users';
+
 export interface GetSearchInput {
   q: string;
   locale: string;
   limit: number;
+  type: SearchResultType;
   /** Optional `X-Viewer` for projection + follow status. */
   viewerAccount?: string;
   /** Optional `X-Governance-Object-Id` for governance merge in resolution/projection. */
@@ -63,9 +66,16 @@ export class GetSearchEndpoint {
 
   async execute(input: GetSearchInput): Promise<SearchResponseDto> {
     const objectLimit = input.limit;
+    const includeObjects = input.type !== 'users';
+    const includeUsers = input.type !== 'objects';
+
     const [candidates, userRows] = await Promise.all([
-      this.searchRepo.searchObjects(input.q, objectLimit),
-      this.searchRepo.searchUsers(input.q, USER_SEARCH_LIMIT, input.viewerAccount),
+      includeObjects
+        ? this.searchRepo.searchObjects(input.q, objectLimit)
+        : Promise.resolve([]),
+      includeUsers
+        ? this.searchRepo.searchUsers(input.q, USER_SEARCH_LIMIT, input.viewerAccount)
+        : Promise.resolve([]),
     ]);
 
     const objectIds = candidates.map((c) => c.object_id);

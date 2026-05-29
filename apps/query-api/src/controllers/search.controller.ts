@@ -32,6 +32,7 @@ export class SearchController {
       q: query.q,
       locale,
       limit: query.limit,
+      type: query.type,
       viewerAccount: viewer,
       governanceObjectIdFromHeader,
     });

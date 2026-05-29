@@ -3,7 +3,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { fetchSearchResults } from '@/modules/app-header/infrastructure/search.client';
+import { fetchUserSearchResults } from '@/modules/app-header/infrastructure/search.client';
 import type { SearchUserResult } from '@/modules/app-header/domain/search-response.schema';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
@@ -157,11 +157,11 @@ export function UserRefSearchField({
     const controller = new AbortController();
     setSearching(true);
     const timer = window.setTimeout(() => {
-      void fetchSearchResults(q, { signal: controller.signal }).then((res) => {
+      void fetchUserSearchResults(q, { signal: controller.signal }).then((users) => {
         if (controller.signal.aborted) {
           return;
         }
-        setSearchResults(res?.users ?? []);
+        setSearchResults(users ?? []);
         setSearching(false);
       });
     }, SEARCH_DEBOUNCE_MS);

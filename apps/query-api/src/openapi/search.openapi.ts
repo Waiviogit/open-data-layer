@@ -56,6 +56,10 @@ registry.registerPath({
       limit: z.coerce.number().int().min(1).max(20).default(10).openapi({
         description: 'Max object hits (users capped internally at 5).',
       }),
+      type: z.enum(['all', 'objects', 'users']).default('all').openapi({
+        description:
+          'Restrict results: `objects` skips user search; `users` skips object FTS/projection.',
+      }),
     }),
     headers: z.object({
       'x-viewer': z.string().optional().openapi({

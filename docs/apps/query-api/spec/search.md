@@ -15,6 +15,7 @@ Predictive search for the web shell header: ranked **objects** and **users**. Gl
 |------|------|----------|-------------|
 | `q` | string | yes | Search text, 1–100 chars after trim. |
 | `limit` | integer | no | Max **object** hits (default `10`, max `20`). User hits are capped at **5** regardless. |
+| `type` | `all` \| `objects` \| `users` | no | Default `all`. `objects` skips user search; `users` skips object FTS/projection. Web ref pickers use `users` / `objects` respectively. |
 
 ### Query parameters — `GET /search/counts`
 

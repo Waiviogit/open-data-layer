@@ -23,6 +23,11 @@ export async function GET(request: NextRequest) {
     url.searchParams.set('limit', limitRaw.trim());
   }
 
+  const typeRaw = request.nextUrl.searchParams.get('type');
+  if (typeRaw === 'users' || typeRaw === 'objects') {
+    url.searchParams.set('type', typeRaw);
+  }
+
   const [locale, user] = await Promise.all([
     getRequestLocale(),
     createCookieAuthContextProvider().getUser(),

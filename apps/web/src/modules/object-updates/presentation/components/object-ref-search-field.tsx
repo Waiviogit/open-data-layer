@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 
 import {
   fetchSearchObjectById,
-  fetchSearchResults,
+  fetchObjectSearchResults,
 } from '@/modules/app-header/infrastructure/search.client';
 import type { SearchObjectResult } from '@/modules/app-header/domain/search-response.schema';
 import { formatObjectTypeLabel } from '@/modules/app-header/domain/search-nav-list';
@@ -33,17 +33,6 @@ type DropdownRect = {
   width: number;
   maxHeight: number;
 };
-
-function filterByAppliesTo(
-  results: SearchObjectResult[],
-  appliesTo?: readonly string[],
-): SearchObjectResult[] {
-  if (!appliesTo?.length) {
-    return results;
-  }
-  const allowed = new Set(appliesTo);
-  return results.filter((r) => allowed.has(r.object_type));
-}
 
 function measureDropdownRect(input: HTMLInputElement): DropdownRect {
   const rect = input.getBoundingClientRect();
@@ -208,11 +197,14 @@ export function ObjectRefSearchField({
     const controller = new AbortController();
     setSearching(true);
     const timer = window.setTimeout(() => {
-      void fetchSearchResults(q, { signal: controller.signal }).then((res) => {
+      void fetchObjectSearchResults(q, {
+        signal: controller.signal,
+        appliesTo,
+      }).then((objects) => {
         if (controller.signal.aborted) {
           return;
         }
-        setSearchResults(filterByAppliesTo(res?.objects ?? [], appliesTo));
+        setSearchResults(objects ?? []);
         setSearching(false);
       });
     }, SEARCH_DEBOUNCE_MS);
