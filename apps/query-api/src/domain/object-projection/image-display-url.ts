@@ -2,16 +2,16 @@ import { UPDATE_TYPES } from '@opden-data-layer/core';
 import type { JsonValue } from '@opden-data-layer/core';
 import type { ResolvedUpdate } from '@opden-data-layer/objects-domain';
 
-/** Same pattern as ipfs-client: `{gateway}/ipfs/{cid}`. */
-export function ipfsGatewayUrlForCid(gatewayBaseUrl: string, cid: string): string {
-  const base = gatewayBaseUrl.replace(/\/+$/, '');
-  return `${base}/ipfs/${cid}`;
+/** `{IPFS_CONTENT_BASE_URL}/ipfs-gateway/content/image/{cid}` */
+export function imageContentUrlForCid(contentBaseUrl: string, cid: string): string {
+  const base = contentBaseUrl.replace(/\/+$/, '');
+  return `${base}/ipfs-gateway/content/image/${cid}`;
 }
 
 /** Single resolved row: JSON `{ url }` or `{ cid }`, or legacy `value_text` URL. */
 export function pickSingleImageDisplayUrlFromResolvedUpdate(
   row: ResolvedUpdate,
-  ipfsGatewayBaseUrl: string,
+  contentBaseUrl: string | undefined,
 ): string | null {
   const j = row?.value_json;
   if (j != null && typeof j === 'object' && !Array.isArray(j)) {
@@ -21,8 +21,8 @@ export function pickSingleImageDisplayUrlFromResolvedUpdate(
       return url;
     }
     const cid = typeof o.cid === 'string' && o.cid.trim().length > 0 ? o.cid.trim() : null;
-    if (cid) {
-      return ipfsGatewayUrlForCid(ipfsGatewayBaseUrl, cid);
+    if (cid && contentBaseUrl?.trim()) {
+      return imageContentUrlForCid(contentBaseUrl.trim(), cid);
     }
   }
   const fallback = row?.value_text;
@@ -30,17 +30,16 @@ export function pickSingleImageDisplayUrlFromResolvedUpdate(
 }
 
 /**
- * HTTPS URLs for feed card previews (IPFS CID → gateway URL on the server).
+ * HTTPS URLs for feed card previews (IPFS CID → content gateway URL on the server).
  * Covers avatar/cover/gallery-item JSON and optional legacy URL in `imageGallery` text.
  */
 export function feedItemImagePreviewUrls(
   updateType: string,
   valueText: string | null,
   valueJson: JsonValue | null,
-  ipfsGatewayBaseUrl: string,
+  contentBaseUrl: string | undefined,
 ): string[] {
-  const base =
-    ipfsGatewayBaseUrl.trim().length > 0 ? ipfsGatewayBaseUrl : 'https://ipfs.io';
+  const base = contentBaseUrl?.trim();
 
   if (updateType === UPDATE_TYPES.IMAGE || updateType === UPDATE_TYPES.IMAGE_BACKGROUND) {
     const url = pickSingleImageDisplayUrlFromResolvedUpdate(
@@ -58,8 +57,8 @@ export function feedItemImagePreviewUrls(
         return [url];
       }
       const cid = typeof o.cid === 'string' && o.cid.trim().length > 0 ? o.cid.trim() : null;
-      if (cid) {
-        return [ipfsGatewayUrlForCid(base, cid)];
+      if (cid && base) {
+        return [imageContentUrlForCid(base, cid)];
       }
     }
     return [];

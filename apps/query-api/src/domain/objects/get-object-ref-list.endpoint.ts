@@ -124,7 +124,7 @@ export class GetObjectRefListEndpoint {
       viewerAdminIds = new Set(refAdminIds);
     }
 
-    const ipfsGatewayBaseUrl = this.config.get<string>('ipfs.gatewayUrl') ?? 'https://ipfs.io';
+    const contentBaseUrl = this.config.get<string | undefined>('ipfs.contentBaseUrl');
     const refSummariesById = await expandObjectRefs(pageIds, {
       aggregatedObjectRepo: this.aggregatedObjectRepo,
       objectViewService: this.objectViewService,
@@ -132,7 +132,7 @@ export class GetObjectRefListEndpoint {
       parentObjectId: id,
       governance,
       locale,
-      ipfsGatewayBaseUrl,
+      contentBaseUrl,
       viewerAccount: viewer,
       viewerAdminIds,
     });

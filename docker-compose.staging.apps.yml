@@ -58,6 +58,7 @@ services:
     env_file:
       - .env
     environment:
+      IPFS_CONTENT_BASE_URL: ${IPFS_CONTENT_BASE_URL:-https://${DOMAIN}}
       PORT: ${QUERY_API_PORT:-7000}
       POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
       POSTGRES_PORT: ${POSTGRES_PORT:-5432}
@@ -140,6 +141,8 @@ services:
       - .env
     environment:
       PORT: ${WEB_PORT:-3000}
+      IPFS_GATEWAY_UPLOAD_URL: ${IPFS_GATEWAY_UPLOAD_URL:-http://ipfs-gateway:7300}
+      IPFS_CONTENT_BASE_URL: ${IPFS_CONTENT_BASE_URL:-https://${DOMAIN}}
       ODL_NETWORK: ${ODL_NETWORK:-testnet}
       QUERY_API_URL: ${QUERY_API_URL:-http://query-api:7000}
       AUTH_API_BASE_URL: ${AUTH_API_BASE_URL:-http://auth-api:7100}

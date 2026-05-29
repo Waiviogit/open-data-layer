@@ -29,7 +29,7 @@ export async function expandObjectRefs(
     parentObjectId: string;
     governance: GovernanceSnapshot;
     locale: string;
-    ipfsGatewayBaseUrl: string;
+    contentBaseUrl: string | undefined;
     viewerAccount?: string;
     viewerAdminIds?: Set<string>;
   },
@@ -41,7 +41,7 @@ export async function expandObjectRefs(
     parentObjectId,
     governance,
     locale,
-    ipfsGatewayBaseUrl,
+    contentBaseUrl,
     viewerAccount,
     viewerAdminIds,
   } = deps;
@@ -85,7 +85,7 @@ export async function expandObjectRefs(
       fields[updateType] = projectFieldValue(
         field,
         updateType,
-        ipfsGatewayBaseUrl,
+        contentBaseUrl,
         viewerAccount,
         rankVoteProjection,
       );
@@ -135,7 +135,7 @@ export async function expandObjectRefs(
       const pid = parentObjs[i]!.core.object_id;
       const imgField = parentViews[i]?.fields[UPDATE_TYPES.IMAGE];
       if (imgField) {
-        const url = projectFieldValue(imgField, UPDATE_TYPES.IMAGE, ipfsGatewayBaseUrl) as
+        const url = projectFieldValue(imgField, UPDATE_TYPES.IMAGE, contentBaseUrl) as
           | string
           | null;
         if (url) {

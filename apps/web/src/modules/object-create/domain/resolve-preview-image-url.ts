@@ -1,16 +1,15 @@
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
+import { imageContentUrlForCid } from '@/config/ipfs-content-url';
+
 import type { FieldEntry } from './object-create.types';
 
-const DEFAULT_IPFS_GATEWAY = 'https://ipfs.io';
-
-/** Same pattern as query-api `image-display-url`: `{gateway}/ipfs/{cid}`. */
-export function ipfsGatewayUrlForCid(
-  gatewayBaseUrl: string,
-  cid: string,
-): string {
-  const base = gatewayBaseUrl.replace(/\/+$/, '');
-  return `${base}/ipfs/${cid}`;
+function cidToPreviewUrl(cid: string, contentBaseUrl: string): string | null {
+  const base = contentBaseUrl.trim();
+  if (!base) {
+    return null;
+  }
+  return imageContentUrlForCid(base, cid);
 }
 
 /**
@@ -19,7 +18,7 @@ export function ipfsGatewayUrlForCid(
  */
 export function resolvePreviewImageUrl(
   value: unknown,
-  gatewayBaseUrl: string = DEFAULT_IPFS_GATEWAY,
+  contentBaseUrl: string,
 ): string | null {
   if (typeof value === 'string') {
     const trimmed = value.trim();
@@ -29,7 +28,7 @@ export function resolvePreviewImageUrl(
     if (/^https?:\/\//i.test(trimmed)) {
       return trimmed;
     }
-    return ipfsGatewayUrlForCid(gatewayBaseUrl, trimmed);
+    return cidToPreviewUrl(trimmed, contentBaseUrl);
   }
 
   if (value && typeof value === 'object' && !Array.isArray(value)) {
@@ -42,7 +41,7 @@ export function resolvePreviewImageUrl(
     const cid =
       typeof o.cid === 'string' && o.cid.trim().length > 0 ? o.cid.trim() : null;
     if (cid) {
-      return ipfsGatewayUrlForCid(gatewayBaseUrl, cid);
+      return cidToPreviewUrl(cid, contentBaseUrl);
     }
   }
 
@@ -52,6 +51,7 @@ export function resolvePreviewImageUrl(
 /** Picks the first usable preview image from core/media field rows. */
 export function previewImageFromFields(
   fields: readonly FieldEntry[],
+  contentBaseUrl: string,
 ): string | null {
   const types = [
     UPDATE_TYPES.IMAGE,
@@ -63,7 +63,7 @@ export function previewImageFromFields(
       if (entry.updateType !== type) {
         continue;
       }
-      const url = resolvePreviewImageUrl(entry.value);
+      const url = resolvePreviewImageUrl(entry.value, contentBaseUrl);
       if (url) {
         return url;
       }

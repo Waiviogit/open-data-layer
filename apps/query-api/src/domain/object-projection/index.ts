@@ -8,7 +8,7 @@ export { collectObjectRefIdsFromView, projectObjectCore } from './project-object
 export type { ProjectedObjectCore } from './project-object';
 export { projectFieldValue, geoJsonPointToLatLon } from './project-field';
 export {
-  ipfsGatewayUrlForCid,
+  imageContentUrlForCid,
   pickSingleImageDisplayUrlFromResolvedUpdate,
 } from './image-display-url';
 export { SEMANTIC_TYPE_BY_OBJECT_TYPE } from './semantic-types';

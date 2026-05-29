@@ -138,7 +138,7 @@ describe('projectObjectCore menuItem', () => {
 
     const core = projectObjectCore({
       view,
-      ipfsGatewayBaseUrl: 'https://ipfs.io',
+      contentBaseUrl: 'https://example.com',
       refSummariesById: refMap,
       rankVoteProjection: emptyRankVoteProjection(),
     });
@@ -195,7 +195,7 @@ describe('projectObjectCore listItem', () => {
 
     const core = projectObjectCore({
       view,
-      ipfsGatewayBaseUrl: 'https://ipfs.io',
+      contentBaseUrl: 'https://example.com',
       refSummariesById: refMap,
       rankVoteProjection: emptyRankVoteProjection(),
     });
@@ -238,7 +238,7 @@ describe('projectObjectCore avatar fallback', () => {
 
     const core = projectObjectCore({
       view,
-      ipfsGatewayBaseUrl: 'https://ipfs.io',
+      contentBaseUrl: 'https://example.com',
       refSummariesById: refMap,
       rankVoteProjection: emptyRankVoteProjection(),
     });
@@ -287,7 +287,7 @@ describe('projectObjectCore avatar fallback', () => {
 
     const core = projectObjectCore({
       view,
-      ipfsGatewayBaseUrl: 'https://ipfs.io',
+      contentBaseUrl: 'https://example.com',
       refSummariesById: refMap,
       rankVoteProjection: emptyRankVoteProjection(),
     });

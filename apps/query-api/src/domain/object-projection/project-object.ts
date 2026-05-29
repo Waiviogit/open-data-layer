@@ -138,7 +138,7 @@ function projectObjectRefField(
  * Builds the core projection (fields, ids, semantic type). Authority flags are added in {@link ObjectProjectionService}.
  */
 export function projectObjectCore(input: ProjectObjectInput): ProjectedObjectCore {
-  const { view, ipfsGatewayBaseUrl, refSummariesById, viewerAccount, rankVoteProjection } = input;
+  const { view, contentBaseUrl, refSummariesById, viewerAccount, rankVoteProjection } = input;
   const fields: Record<string, unknown> = {};
 
   for (const [updateType, field] of Object.entries(view.fields)) {
@@ -155,7 +155,7 @@ export function projectObjectCore(input: ProjectObjectInput): ProjectedObjectCor
       const projected = projectFieldValue(
         field,
         updateType,
-        ipfsGatewayBaseUrl,
+        contentBaseUrl,
         viewerAccount,
         rankVoteProjection,
       );
@@ -169,7 +169,7 @@ export function projectObjectCore(input: ProjectObjectInput): ProjectedObjectCor
       fields[key] = projectFieldValue(
         field,
         updateType,
-        ipfsGatewayBaseUrl,
+        contentBaseUrl,
         viewerAccount,
         rankVoteProjection,
       );

@@ -1,7 +1,7 @@
 import type { JsonValue } from '@opden-data-layer/core';
 import { UPDATE_REGISTRY, UPDATE_TYPES } from '@opden-data-layer/core';
 import type { ResolvedField } from '@opden-data-layer/objects-domain';
-import { ipfsGatewayUrlForCid, pickSingleImageDisplayUrlFromResolvedUpdate } from './image-display-url';
+import { imageContentUrlForCid, pickSingleImageDisplayUrlFromResolvedUpdate } from './image-display-url';
 import type { ProjectedAggregateRatingRow, RankVoteProjection } from './projected-object.types';
 import { emptyRankVoteProjection } from './projected-object.types';
 
@@ -115,7 +115,10 @@ export function geoJsonPointToLatLon(valueGeo: unknown): { latitude: number; lon
   return { latitude: lat, longitude: lng };
 }
 
-function resolveDisplayUrlFromImageJson(value: JsonValue | null, ipfsGatewayBaseUrl: string): string | null {
+function resolveDisplayUrlFromImageJson(
+  value: JsonValue | null,
+  contentBaseUrl: string | undefined,
+): string | null {
   if (value == null || typeof value !== 'object' || Array.isArray(value)) {
     return null;
   }
@@ -125,8 +128,8 @@ function resolveDisplayUrlFromImageJson(value: JsonValue | null, ipfsGatewayBase
     return url;
   }
   const cid = typeof o.cid === 'string' && o.cid.trim().length > 0 ? o.cid.trim() : null;
-  if (cid) {
-    return ipfsGatewayUrlForCid(ipfsGatewayBaseUrl, cid);
+  if (cid && contentBaseUrl?.trim()) {
+    return imageContentUrlForCid(contentBaseUrl.trim(), cid);
   }
   return null;
 }
@@ -134,7 +137,7 @@ function resolveDisplayUrlFromImageJson(value: JsonValue | null, ipfsGatewayBase
 /** Project gallery item JSON to `{ ...rest, url, rank_score, update_id }` when cid/url present. */
 function projectImageGalleryItemJson(
   value: JsonValue | null,
-  ipfsGatewayBaseUrl: string,
+  contentBaseUrl: string | undefined,
   rankScore: number | null,
   updateId: string,
 ): JsonValue | null {
@@ -142,7 +145,7 @@ function projectImageGalleryItemJson(
     return null;
   }
   const o = value as Record<string, JsonValue>;
-  const display = resolveDisplayUrlFromImageJson(value, ipfsGatewayBaseUrl);
+  const display = resolveDisplayUrlFromImageJson(value, contentBaseUrl);
   const url: JsonValue = (display ?? o.url ?? null) as JsonValue;
   if (url == null || typeof url !== 'string' || url.trim().length === 0) {
     return null;
@@ -206,7 +209,7 @@ function projectAggregateRatingField(
 export function projectFieldValue(
   field: ResolvedField,
   updateType: string,
-  ipfsGatewayBaseUrl: string,
+  contentBaseUrl: string | undefined,
   viewerAccount?: string | null,
   rankVoteProjection: RankVoteProjection = emptyRankVoteProjection(),
 ): unknown {
@@ -238,7 +241,7 @@ export function projectFieldValue(
           return null;
         }
         if (updateType === UPDATE_TYPES.IMAGE || updateType === UPDATE_TYPES.IMAGE_BACKGROUND) {
-          return pickSingleImageDisplayUrlFromResolvedUpdate(row, ipfsGatewayBaseUrl);
+          return pickSingleImageDisplayUrlFromResolvedUpdate(row, contentBaseUrl);
         }
         return row.value_json ?? null;
       }
@@ -247,7 +250,7 @@ export function projectFieldValue(
           .map((u) =>
             projectImageGalleryItemJson(
               u.value_json,
-              ipfsGatewayBaseUrl,
+              contentBaseUrl,
               coerceRankScore(u.rank_score),
               u.update_id,
             ),

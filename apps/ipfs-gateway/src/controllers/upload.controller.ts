@@ -50,8 +50,9 @@ export class UploadController {
     const webp = await this.imageProcessor.toWebp(file.buffer, mimetype);
     const filename = filenameFromBufferSha256(webp, 'webp');
     const result = await this.ipfsClient.add(webp, filename);
-    await this.ipfsClient.filesCp(result.cid, `${MFS_NAMESPACE.IMAGES}/${filename}`);
-    return result;
+    const mfsPath = `${MFS_NAMESPACE.IMAGES}/${filename}`;
+    const cid = await this.ipfsClient.filesCpResolveCid(result.cid, mfsPath);
+    return { cid, url: result.url };
   }
 
   /**
@@ -69,7 +70,8 @@ export class UploadController {
     const name = filename?.trim() || `upload-${Date.now()}.bin`;
     const result = await this.ipfsClient.addStream(req as unknown as Readable, name);
     const safeName = name.replace(/[^\w.-]/g, '_');
-    await this.ipfsClient.filesCp(result.cid, `${MFS_NAMESPACE.FILES}/${safeName}`);
-    return result;
+    const mfsPath = `${MFS_NAMESPACE.FILES}/${safeName}`;
+    const cid = await this.ipfsClient.filesCpResolveCid(result.cid, mfsPath);
+    return { cid, url: result.url };
   }
 }

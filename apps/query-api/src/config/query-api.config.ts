@@ -21,7 +21,7 @@ export default () => {
       objectId: env.GOVERNANCE_OBJECT_ID,
     },
     ipfs: {
-      gatewayUrl: env.IPFS_GATEWAY_URL,
+      contentBaseUrl: env.IPFS_CONTENT_BASE_URL,
     },
     siteCanonical: {
       fallbackOrigin: env.SITE_CANONICAL_FALLBACK_ORIGIN,

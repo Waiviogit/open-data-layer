@@ -241,7 +241,7 @@ export class GetObjectUpdatesFeedEndpoint {
         : null;
 
     const gateway =
-      this.config.get<string | undefined>('ipfs.gatewayUrl') ?? 'https://ipfs.io';
+      this.config.get<string | undefined>('ipfs.contentBaseUrl');
     const image_preview_urls = feedItemImagePreviewUrls(
       jr.row.update_type,
       jr.row.value_text,

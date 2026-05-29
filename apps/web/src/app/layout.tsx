@@ -7,7 +7,9 @@ import { I18nProvider } from '../i18n/providers/i18n-provider';
 import { getRequestLocale } from '../i18n/runtime/get-request-locale';
 import { loadMessages } from '../i18n/runtime/load-messages';
 import { env } from '@/config/env';
+import { getIpfsContentBaseUrl } from '@/config/get-ipfs-content-base-url';
 import { getNotificationsWsPublicUrl } from '@/config/get-notifications-ws-public-url';
+import { IpfsContentBaseProvider } from '@/config/ipfs-content-base-provider';
 import { OdlNetworkProvider } from '@/config/odl-network-provider';
 import { NotificationsWsConfigProvider } from '@/modules/notifications/presentation/notifications-ws-config-provider';
 import { ShellModeProvider } from '@/shell-mode';
@@ -50,6 +52,7 @@ export default async function RootLayout({
   const themeResolution = await getServerThemeResolution();
   const shellModeResolution = await getServerShellModeResolution();
   const notificationsWsUrl = getNotificationsWsPublicUrl();
+  const ipfsContentBaseUrl = getIpfsContentBaseUrl();
 
   return (
     <html
@@ -64,11 +67,13 @@ export default async function RootLayout({
         <ThemeProvider initialResolution={themeResolution}>
           <ShellModeProvider initialResolution={shellModeResolution}>
             <OdlNetworkProvider customJsonId={env.odlCustomJsonId}>
-              <NotificationsWsConfigProvider wsUrl={notificationsWsUrl}>
-                <I18nProvider locale={locale} messages={messages}>
-                  {children}
-                </I18nProvider>
-              </NotificationsWsConfigProvider>
+              <IpfsContentBaseProvider contentBaseUrl={ipfsContentBaseUrl}>
+                <NotificationsWsConfigProvider wsUrl={notificationsWsUrl}>
+                  <I18nProvider locale={locale} messages={messages}>
+                    {children}
+                  </I18nProvider>
+                </NotificationsWsConfigProvider>
+              </IpfsContentBaseProvider>
             </OdlNetworkProvider>
           </ShellModeProvider>
         </ThemeProvider>

@@ -72,7 +72,7 @@ export class GetNestedObjectsEndpoint {
       viewerAdminIds = new Set(refAdminIds);
     }
 
-    const ipfsGatewayBaseUrl = this.config.get<string>('ipfs.gatewayUrl') ?? 'https://ipfs.io';
+    const contentBaseUrl = this.config.get<string | undefined>('ipfs.contentBaseUrl');
     const byId = new Map<string, NestedObjectView>();
 
     for (const view of views) {
@@ -84,14 +84,14 @@ export class GetNestedObjectsEndpoint {
         parentObjectId: view.object_id,
         governance,
         locale: input.locale,
-        ipfsGatewayBaseUrl,
+        contentBaseUrl,
         viewerAccount,
         viewerAdminIds,
       });
 
       const projected = projectObjectCore({
         view,
-        ipfsGatewayBaseUrl,
+        contentBaseUrl,
         refSummariesById,
         viewerAccount,
         rankVoteProjection: emptyRankVoteProjection(),

@@ -12,11 +12,8 @@ export const queryApiConfigSchema = z.object({
   POSTGRES_PASSWORD: z.string().optional(),
   POSTGRES_POOL_MAX: z.coerce.number().optional().default(10),
   GOVERNANCE_OBJECT_ID: z.string().optional().default(''),
-  /** Public gateway origin (no path). URLs are built as `{origin}/ipfs/{cid}`. */
-  IPFS_GATEWAY_URL: z
-    .url()
-    .optional()
-    .default('https://ipfs.io'),
+  /** Public origin for ipfs-gateway content URLs (no trailing path). CID images: `{origin}/ipfs-gateway/content/image/{cid}`. */
+  IPFS_CONTENT_BASE_URL: z.string().url().optional(),
   /**
    * HTTPS origin for object canonical when `objects_core.canonical` is null;
    * must match chain-indexer / scheduler fallback.

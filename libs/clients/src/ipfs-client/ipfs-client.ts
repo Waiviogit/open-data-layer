@@ -4,6 +4,7 @@ import * as http from 'node:http';
 import * as https from 'node:https';
 import { Readable } from 'node:stream';
 import type { ReadableStream as WebReadableStream } from 'node:stream/web';
+import { isKuboMfsEntryAlreadyExists } from './kubo-mfs-errors';
 import { IPFS_CLIENT_MODULE_OPTIONS, type IpfsClientModuleOptions } from './ipfs-client.options';
 
 interface AddApiResponse {
@@ -189,6 +190,32 @@ export class IpfsClient {
       this.logger.error(`IPFS files/cp failed: ${res.status} ${text}`);
       throw new Error(`IPFS files/cp failed: ${res.status}`);
     }
+  }
+
+  /**
+   * Copies `sourceCid` into MFS. When `mfsPath` already exists (content-hash filename),
+   * returns the existing entry CID instead of failing.
+   */
+  async filesCpResolveCid(sourceCid: string, mfsPath: string): Promise<string> {
+    const url = new URL(`${this.apiUrl}/api/v0/files/cp`);
+    url.searchParams.append('arg', `/ipfs/${sourceCid}`);
+    url.searchParams.append('arg', mfsPath);
+
+    const res = await fetch(url, { method: 'POST' });
+    if (res.ok) {
+      return sourceCid;
+    }
+
+    const text = await res.text().catch(() => '');
+    if (isKuboMfsEntryAlreadyExists(res.status, text)) {
+      this.logger.warn(
+        `MFS entry already exists at ${mfsPath}, reusing existing CID`,
+      );
+      return this.filesStat(mfsPath);
+    }
+
+    this.logger.error(`IPFS files/cp failed: ${res.status} ${text}`);
+    throw new Error(`IPFS files/cp failed: ${res.status}`);
   }
 
   /**

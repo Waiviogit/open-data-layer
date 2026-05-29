@@ -6,6 +6,18 @@ Actionable rules for `apps/web`. Full layering: [architecture.md](architecture.m
 
 ## Env config
 
+### Runtime vs build (GHCR / compose)
+
+**Do not hardcode deployment-specific environment variables into the web image at Docker build time.** Values that differ per host (public origins, internal service URLs, `ODL_NETWORK`, notifications WebSocket URL, IPFS content base, JWT-related server secrets, etc.) must be supplied when the container runs — typically via compose `env_file` / `environment:` — not via `ARG` → `ENV` in the Dockerfile and not via `NEXT_PUBLIC_*` inlined at `next build`.
+
+- **Server:** read at runtime in [`src/config/env.ts`](../../../apps/web/src/config/env.ts) (`server-only` + Zod) or dedicated `get-*.ts` helpers used from the root layout and server actions.
+- **Client Components:** receive deploy-specific values from the **root layout** through context providers (e.g. `OdlNetworkProvider`, `NotificationsWsConfigProvider`, `IpfsContentBaseProvider`) or props from Server Components — **not** `process.env.NEXT_PUBLIC_*` for per-stack URLs.
+- **New variable checklist:** Zod or `get-*` on server → wire `app/layout.tsx` if the UI needs it → `apps/web/.env.example` + root `.env.example` → compose `environment` for `web` (and other services as needed). No new `NEXT_PUBLIC_*` for deployment-specific settings.
+
+Rare exception: static product defaults identical on every deployment (e.g. optional `NEXT_PUBLIC_HIVE_JSON_*` for local Hive `json_metadata`) — keep centralized and documented; not a substitute for runtime compose config.
+
+### Centralized server env
+
 - **`src/config/env.ts`** is the single place for server-side environment variables used by the web app. It uses **`import 'server-only'`** and **Zod** (`parse` at module load) so invalid configuration fails fast and Client Components cannot import it by accident.
 - To add a variable: extend the Zod schema, use `env` in infrastructure or server-only code, document it in `apps/web/.env.example`, and add a row to [getting started](../../../getting-started.md) if it matters for local dev.
 - Do not scatter `process.env` across `modules/` — keep discovery and validation centralized.

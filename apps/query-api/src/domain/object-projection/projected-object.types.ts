@@ -89,7 +89,7 @@ export interface ProjectedGalleryAlbum {
 
 export interface ProjectObjectInput {
   view: ResolvedObjectView;
-  ipfsGatewayBaseUrl: string;
+  contentBaseUrl: string | undefined;
   refSummariesById: Map<string, RefSummary>;
   /** Hive account from `X-Viewer` (or similar); used for aggregate rating and authority flags. */
   viewerAccount?: string | null;

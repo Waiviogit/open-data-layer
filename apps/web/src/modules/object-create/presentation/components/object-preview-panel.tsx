@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
+import { useIpfsContentBaseUrl } from '@/config/ipfs-content-base-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { objectCanonical } from '@/seo/domain/canonical';
 
@@ -78,6 +79,7 @@ export function ObjectPreviewPanel({
   fields,
 }: ObjectPreviewPanelProps) {
   const { t } = useI18n();
+  const contentBaseUrl = useIpfsContentBaseUrl();
   const [tab, setTab] = useState<PreviewTab>('preview');
   const [origin, setOrigin] = useState<string | null>(null);
 
@@ -91,7 +93,10 @@ export function ObjectPreviewPanel({
   const title = fieldText(fields, UPDATE_TYPES.TITLE);
   const description = fieldText(fields, UPDATE_TYPES.DESCRIPTION);
   const displayTitle = name || title || objectId;
-  const imageUrl = useMemo(() => previewImageFromFields(fields), [fields]);
+  const imageUrl = useMemo(
+    () => previewImageFromFields(fields, contentBaseUrl),
+    [fields, contentBaseUrl],
+  );
   const keywords = useMemo(() => extractSeoKeywords(fields), [fields]);
 
   const canonicalUrl = useMemo(() => {

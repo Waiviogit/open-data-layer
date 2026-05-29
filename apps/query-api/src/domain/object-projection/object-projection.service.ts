@@ -59,7 +59,7 @@ export class ObjectProjectionService {
   ) {}
 
   async project(view: ResolvedObjectView, options: ProjectOptions): Promise<ProjectedObject> {
-    const ipfsGatewayBaseUrl = this.config.get<string>('ipfs.gatewayUrl') ?? 'https://ipfs.io';
+    const contentBaseUrl = this.config.get<string | undefined>('ipfs.contentBaseUrl');
     const viewerAccount = options.viewerAccount?.trim() || undefined;
     const governance =
       options.governance ??
@@ -98,7 +98,7 @@ export class ObjectProjectionService {
         parentObjectId: view.object_id,
         governance,
         locale: options.locale,
-        ipfsGatewayBaseUrl,
+        contentBaseUrl,
         viewerAccount,
         viewerAdminIds,
       },
@@ -108,7 +108,7 @@ export class ObjectProjectionService {
 
     const projectedCore = projectObjectCore({
       view,
-      ipfsGatewayBaseUrl,
+      contentBaseUrl,
       refSummariesById,
       viewerAccount,
       rankVoteProjection: options.rankVoteProjection,
@@ -139,7 +139,7 @@ export class ObjectProjectionService {
       return [];
     }
 
-    const ipfsGatewayBaseUrl = this.config.get<string>('ipfs.gatewayUrl') ?? 'https://ipfs.io';
+    const contentBaseUrl = this.config.get<string | undefined>('ipfs.contentBaseUrl');
     const viewerAccount = options.viewerAccount?.trim() || undefined;
     const governance =
       options.governance ??
@@ -183,7 +183,7 @@ export class ObjectProjectionService {
           parentObjectId: view.object_id,
           governance,
           locale: options.locale,
-          ipfsGatewayBaseUrl,
+          contentBaseUrl,
           viewerAccount,
           viewerAdminIds,
         },
@@ -193,7 +193,7 @@ export class ObjectProjectionService {
 
       const projectedCore = projectObjectCore({
         view,
-        ipfsGatewayBaseUrl,
+        contentBaseUrl,
         refSummariesById,
         viewerAccount,
         rankVoteProjection: rankVp,

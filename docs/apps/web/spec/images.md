@@ -51,6 +51,23 @@ Use **`fill`** when the visual box is defined by a parent (`relative` + height/a
 
 When post bodies are rendered as Markdown/HTML, use normal **`<img>`** tags with **`loading="lazy"`** unless there is a dedicated pipeline that supplies dimensions and a single remote policy. Do not block Markdown on the default image optimizer.
 
+## IPFS object images (CID)
+
+Object `image` / `imageBackground` / gallery fields may store `{ cid }` (upload via ipfs-gateway). Display URLs are built as:
+
+`{IPFS_CONTENT_BASE_URL}/ipfs-gateway/content/image/{cid}`
+
+| Variable | Service | When read |
+|----------|---------|-----------|
+| `IPFS_CONTENT_BASE_URL` | query-api, web | **Runtime** (container / `nx serve` env) — same value on a stack |
+| `IPFS_GATEWAY_UPLOAD_URL` | web only | **Runtime**, server actions only; internal Docker URL (`http://ipfs-gateway:7300`) |
+
+Runtime configuration only — see [web conventions — Env config](web-conventions.md#runtime-vs-build-ghcr--compose). The root layout reads `IPFS_CONTENT_BASE_URL` and passes it to client UI via `IpfsContentBaseProvider` / `useIpfsContentBaseUrl()`.
+
+Upload (`POST /ipfs-gateway/upload/image`) is **not** proxied through nginx — only the Next.js server action calls it on the internal network.
+
+**Code:** `get-ipfs-content-base-url.ts`, `ipfs-content-base-provider.tsx`, `upload-image.action.ts`.
+
 ## Verification
 
 | Command | Purpose |

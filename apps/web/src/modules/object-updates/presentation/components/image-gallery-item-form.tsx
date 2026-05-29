@@ -1,6 +1,10 @@
 'use client';
 
+import { useCallback, useRef } from 'react';
+
 import { useI18n } from '@/i18n/providers/i18n-provider';
+
+import { ImageCidOrUrlForm } from './image-cid-or-url-form';
 
 export type ImageGalleryItemFormProps = {
   value: unknown;
@@ -24,12 +28,27 @@ export function ImageGalleryItemForm({
   const { t } = useI18n();
   const obj = asRecord(value);
   const album = typeof obj.album === 'string' ? obj.album : '';
-  const url = typeof obj.url === 'string' ? obj.url : '';
-  const cid = typeof obj.cid === 'string' ? obj.cid : '';
 
-  function patch(next: Record<string, unknown>) {
-    onChange({ ...obj, ...next });
-  }
+  const imageValue = {
+    url: typeof obj.url === 'string' ? obj.url : undefined,
+    cid: typeof obj.cid === 'string' ? obj.cid : undefined,
+  };
+
+  // Stable ref so handleImageChange always reads the latest obj without re-creating the callback.
+  const objRef = useRef(obj);
+  objRef.current = obj;
+
+  const handleImageChange = useCallback(
+    (imgValue: unknown) => {
+      const img = asRecord(imgValue);
+      onChange({
+        ...objRef.current,
+        cid: typeof img.cid === 'string' ? img.cid : '',
+        url: typeof img.url === 'string' ? img.url : '',
+      });
+    },
+    [onChange],
+  );
 
   if (albumNames.length === 0) {
     return (
@@ -40,7 +59,7 @@ export function ImageGalleryItemForm({
   }
 
   const albumField = lockAlbum ? (
-    <label className="block">
+    <label className="block text-sm">
       <span className="font-medium text-fg">{t('album')}</span>
       <input
         type="text"
@@ -50,12 +69,14 @@ export function ImageGalleryItemForm({
       />
     </label>
   ) : (
-    <label className="block">
+    <label className="block text-sm">
       <span className="font-medium text-fg">{t('album')}</span>
       <select
         className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-fg"
         value={album && albumNames.includes(album) ? album : albumNames[0] ?? ''}
-        onChange={(e) => patch({ album: e.target.value })}
+        onChange={(e) =>
+          onChange({ ...obj, album: e.target.value })
+        }
       >
         {albumNames.map((name) => (
           <option key={name} value={name}>
@@ -67,27 +88,13 @@ export function ImageGalleryItemForm({
   );
 
   return (
-    <fieldset className="space-y-3 text-sm">
+    <div className="space-y-3">
       {albumField}
-      <label className="block">
-        <span className="font-medium text-fg">{t('object_field_url')}</span>
-        <input
-          type="url"
-          className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-fg"
-          value={url}
-          onChange={(e) => patch({ url: e.target.value, cid: '' })}
-          placeholder="https://"
-        />
-      </label>
-      <label className="block">
-        <span className="font-medium text-fg">CID</span>
-        <input
-          type="text"
-          className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-fg"
-          value={cid}
-          onChange={(e) => patch({ cid: e.target.value, url: '' })}
-        />
-      </label>
-    </fieldset>
+      <ImageCidOrUrlForm
+        value={imageValue}
+        onChange={handleImageChange}
+        label={t('object_create_image_zone_title')}
+      />
+    </div>
   );
 }

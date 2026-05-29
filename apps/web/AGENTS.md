@@ -6,6 +6,20 @@ Specialization for this app. **Shared policy** (monorepo, docs standards, cross-
 
 - **Next.js App Router** (`src/app/`) — not NestJS.
 
+## Environment variables (runtime, not build)
+
+**Deployment-specific configuration is not baked into the web Docker image at build.** Staging, production, and custom hosts each set their own values in compose `.env` / `env_file` at container start. Operators can substitute URLs, secrets, and feature flags without rebuilding the image.
+
+| Do | Don't |
+|----|--------|
+| Read deploy-specific vars on the **server** (`src/config/env.ts`, `get-*.ts` with `server-only`) | Put stack URLs or origins in **Docker build-args** or **`NEXT_PUBLIC_*`** so they are frozen at `next build` |
+| Pass values into **Client Components** via root **layout providers** or server props | Read `process.env.NEXT_PUBLIC_*` in client code for per-deployment URLs (API bases, WS, IPFS content base, `ODL_NETWORK`, …) |
+| Document new keys in `apps/web/.env.example` and root `.env.example` | Scatter raw `process.env` across `modules/` |
+
+**Existing providers (copy this pattern):** `OdlNetworkProvider` (`ODL_NETWORK`), `NotificationsWsConfigProvider` (`NOTIFICATIONS_WS_PUBLIC_URL` via `getNotificationsWsPublicUrl()`), `IpfsContentBaseProvider` (`IPFS_CONTENT_BASE_URL` via `getIpfsContentBaseUrl()`).
+
+Full rules: [`docs/apps/web/spec/web-conventions.md`](../../docs/apps/web/spec/web-conventions.md#env-config).
+
 ## Route groups and layouts
 
 ```
@@ -65,6 +79,7 @@ index.ts         public barrel — other features import only from here
 - **`next/image`** for user-facing raster (avatars, feed thumbnails, covers).
 - Inline SVG or **`<img>`** for icons and decorative graphics.
 - Markdown/HTML body images may use **`<img loading="lazy">`**.
+- **IPFS CID previews:** **`useIpfsContentBaseUrl()`** — see [Environment variables (runtime, not build)](#environment-variables-runtime-not-build) and [`images.md`](../../docs/apps/web/spec/images.md#ipfs-object-images-cid).
 
 ## Object cards (`ObjectCard`)
 
@@ -222,7 +237,7 @@ After every successful **Hive wallet broadcast** that should update on-chain-bac
 6. **Paginated client lists** seeded from RSC (`initialPage` / `initialItems`) must re-sync after `router.refresh()` — use **`useSyncedPaginatedList`** from `@/shared/presentation` (or an equivalent `useEffect` on the server initial payload). Counts from parent props update automatically; `useState(initial*)` for list rows does not.
 7. **Query-api Data Cache:** page-load clients use **`queryApiFetch`** with **`cacheTags`** (60s GET cache). After broadcast, invalidate via **`updateTag`** in **`revalidateObjectAfterBroadcast`**, **`revalidateUserSocialAfterBroadcast`**, or **`revalidateUserFeedAfterBroadcast`** (`revalidate-after-broadcast.server.ts`) — **not** `queryApiFetchLive` on every page load. `queryApiFetchLive` is for post-broadcast server actions only. POST `/resolve` counts stay fresh; stale lists were from cached GETs without tag invalidation.
 
-Requires **`NEXT_PUBLIC_NOTIFICATIONS_WS_URL`** and a logged-in session (JWT via **`/api/auth/ws-token`**). If WS is unavailable, `awaitTrxConfirmation` waits the timeout then returns so step 4 still runs.
+Requires a notifications WebSocket URL (**`NOTIFICATIONS_WS_PUBLIC_URL`** at runtime in compose; see [Environment variables](#environment-variables-runtime-not-build)) and a logged-in session (JWT via **`/api/auth/ws-token`**). If WS is unavailable, `awaitTrxConfirmation` waits the timeout then returns so step 4 still runs.
 
 Implementation reference: `story-vote-button.tsx`, `story-comment-editor.tsx`, `modules/notifications/`. Server-side: [`docs/apps/notifications/spec/transport.md`](../../docs/apps/notifications/spec/transport.md).
 

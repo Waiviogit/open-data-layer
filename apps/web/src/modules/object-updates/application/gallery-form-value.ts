@@ -1,5 +1,7 @@
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
+import { normalizeImageCidOrUrlFormValue } from './image-form-value';
+
 /** Default form state for a new `imageGalleryItem` update. */
 export function initialGalleryItemFormValue(
   presetAlbumName?: string,
@@ -16,13 +18,16 @@ export function sanitizeGalleryItemFormValue(
   raw: Record<string, unknown>,
 ): Record<string, unknown> {
   const out: Record<string, unknown> = { ...raw };
-  if (typeof out.cid === 'string' && out.cid.trim() === '') {
-    delete out.cid;
+  if (typeof out.album === 'string') {
+    out.album = out.album.trim();
   }
-  if (typeof out.url === 'string' && out.url.trim() === '') {
-    delete out.url;
-  }
-  return out;
+  const image = normalizeImageCidOrUrlFormValue({
+    cid: out.cid,
+    url: out.url,
+  });
+  delete out.cid;
+  delete out.url;
+  return { ...out, ...image };
 }
 
 export function initialGalleryFormValue(): string {
