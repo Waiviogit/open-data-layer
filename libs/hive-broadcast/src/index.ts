@@ -1,4 +1,5 @@
 export * from './hive-operations';
+export { HIVE_CUSTOM_OP_DATA_MAX_LENGTH } from './constants';
 export {
   buildCommentOptionsBeneficiaryExtension,
   buildVoteOp,

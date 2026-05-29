@@ -1,6 +1,8 @@
 import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
 import {
   buildCustomJsonOp,
+  HIVE_CUSTOM_OP_DATA_MAX_LENGTH,
+  type CustomJsonOp,
   type OdlUpdateCreateValueKind,
 } from '@opden-data-layer/hive-broadcast';
 
@@ -9,6 +11,14 @@ import { validateUpdateValue } from '@/modules/object-updates/application/update
 import { groupFieldsByPriority } from '../domain/group-fields-by-priority';
 import { isEntryValid } from '../domain/object-health-score';
 import type { FieldEntry } from '../domain/object-create.types';
+
+export const OBJECT_CREATE_MAX_OPS_PER_TRX = 5;
+
+export type OdlCreateEvent = {
+  action: 'object_create' | 'update_create';
+  v: 1;
+  payload: Record<string, unknown>;
+};
 
 function resolveValueFieldKey(valueKind: OdlUpdateCreateValueKind): string {
   if (valueKind === 'object_ref') {
@@ -53,15 +63,19 @@ export type BuildCreateOpsInput = {
   language: string;
 };
 
+function jsonByteLength(json: string): number {
+  return new TextEncoder().encode(json).length;
+}
+
+function serializeEnvelope(events: readonly OdlCreateEvent[]): string {
+  return JSON.stringify({ events });
+}
+
 /**
- * One Hive `custom_json` op: `object_create` then each filled `update_create` in order.
+ * Builds all ODL create events (`object_create` + `update_create`) for publish.
  */
-export function buildCreateOps(input: BuildCreateOpsInput) {
-  const events: {
-    action: 'object_create' | 'update_create';
-    v: 1;
-    payload: Record<string, unknown>;
-  }[] = [
+export function buildAllCreateEvents(input: BuildCreateOpsInput): OdlCreateEvent[] {
+  const events: OdlCreateEvent[] = [
     {
       action: 'object_create',
       v: 1,
@@ -104,10 +118,77 @@ export function buildCreateOps(input: BuildCreateOpsInput) {
     }
   }
 
+  return events;
+}
+
+/**
+ * Full ODL envelope JSON (all events in one string). Used for IPFS upload.
+ */
+export function buildCreateOdlJson(input: BuildCreateOpsInput): string {
+  return serializeEnvelope(buildAllCreateEvents(input));
+}
+
+function buildCustomJsonOpFromEvents(
+  input: BuildCreateOpsInput,
+  events: readonly OdlCreateEvent[],
+): CustomJsonOp {
   return buildCustomJsonOp({
     required_auths: [],
     required_posting_auths: [input.creator],
     id: input.odlCustomJsonId,
-    json: JSON.stringify({ events }),
+    json: serializeEnvelope(events),
   });
+}
+
+/**
+ * Splits create events into one or more Hive `custom_json` ops (≤ 8 192 bytes each, max 5 per trx).
+ */
+export function buildCreateOps(input: BuildCreateOpsInput): CustomJsonOp[] {
+  const events = buildAllCreateEvents(input);
+  const chunks: OdlCreateEvent[][] = [];
+  let current: OdlCreateEvent[] = [];
+
+  for (const event of events) {
+    const candidate = [...current, event];
+    const candidateJson = serializeEnvelope(candidate);
+    const candidateBytes = jsonByteLength(candidateJson);
+
+    if (candidateBytes <= HIVE_CUSTOM_OP_DATA_MAX_LENGTH) {
+      current = candidate;
+      continue;
+    }
+
+    if (current.length > 0) {
+      chunks.push(current);
+      current = [event];
+      const singleJson = serializeEnvelope(current);
+      const singleBytes = jsonByteLength(singleJson);
+      if (singleBytes > HIVE_CUSTOM_OP_DATA_MAX_LENGTH) {
+        throw new Error(
+          `Single ODL event exceeds Hive custom_json limit (${HIVE_CUSTOM_OP_DATA_MAX_LENGTH} bytes)`,
+        );
+      }
+      continue;
+    }
+
+    throw new Error(
+      `Single ODL event exceeds Hive custom_json limit (${HIVE_CUSTOM_OP_DATA_MAX_LENGTH} bytes)`,
+    );
+  }
+
+  if (current.length > 0) {
+    chunks.push(current);
+  }
+
+  const ops = chunks.map((chunkEvents) =>
+    buildCustomJsonOpFromEvents(input, chunkEvents),
+  );
+
+  if (ops.length > OBJECT_CREATE_MAX_OPS_PER_TRX) {
+    throw new Error(
+      `Object create requires ${ops.length} custom_json operations; maximum is ${OBJECT_CREATE_MAX_OPS_PER_TRX} per transaction`,
+    );
+  }
+
+  return ops;
 }

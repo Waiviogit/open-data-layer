@@ -19,7 +19,7 @@ import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-aft
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
 import { uploadOdlToIpfs } from '../infrastructure/actions/upload-odl-to-ipfs.action';
-import { buildCreateOps } from './build-create-ops';
+import { buildCreateOdlJson, buildCreateOps } from './build-create-ops';
 import {
   clearObjectCreateDraft,
   loadObjectCreateDraft,
@@ -200,6 +200,35 @@ export function useObjectCreateForm({
     () => listGalleryAlbumNamesFromFields(state.fields),
     [state.fields],
   );
+
+  const broadcastSize = useMemo(() => {
+    if (!state.objectType) {
+      return null;
+    }
+    try {
+      const params = {
+        objectId: state.objectId,
+        objectType: state.objectType,
+        creator: username,
+        odlCustomJsonId,
+        fields: state.fields,
+        language: state.language,
+      };
+      const odlJson = buildCreateOdlJson(params);
+      const bytes = new TextEncoder().encode(odlJson).length;
+      const ops = buildCreateOps(params);
+      return { bytes, opCount: ops.length };
+    } catch {
+      return null;
+    }
+  }, [
+    state.objectId,
+    state.objectType,
+    state.fields,
+    state.language,
+    username,
+    odlCustomJsonId,
+  ]);
 
   useEffect(() => {
     const slugPart = state.objectId.slice(state.objectIdPrefix.length);
@@ -399,8 +428,8 @@ export function useObjectCreateForm({
       let transactionId: string;
 
       if (broadcastViaIpfs) {
-        const createOp = buildCreateOps(createParams);
-        const ipfsResult = await uploadOdlToIpfs(createOp.json);
+        const odlJson = buildCreateOdlJson(createParams);
+        const ipfsResult = await uploadOdlToIpfs(odlJson);
         if ('error' in ipfsResult) {
           throw new Error(ipfsResult.error);
         }
@@ -418,9 +447,9 @@ export function useObjectCreateForm({
         setPublishPhase('importing');
         await awaitBatchImportCompletion(transactionId, state.objectId);
       } else {
-        const op = buildCreateOps(createParams);
+        const ops = buildCreateOps(createParams);
         ({ transactionId } = await getWalletFacade().broadcast({
-          operations: [op],
+          operations: ops,
         }));
         void awaitTrxConfirmation(transactionId).finally(() => {
           void refreshAfterBroadcast(router, () =>
@@ -474,5 +503,6 @@ export function useObjectCreateForm({
     broadcastViaIpfs,
     setBroadcastViaIpfs,
     publishPhase,
+    broadcastSize,
   };
 }

@@ -122,6 +122,8 @@ export function ObjectCreateClient({
       disabled={form.submitting}
       broadcastViaIpfs={form.broadcastViaIpfs}
       publishPhase={form.publishPhase}
+      jsonBytes={form.broadcastSize?.bytes}
+      opCount={form.broadcastSize?.opCount}
       onToggleBroadcastViaIpfs={() =>
         form.setBroadcastViaIpfs((v) => !v)
       }

@@ -41,6 +41,7 @@ The **web** application is the Next.js **App Router** frontend for the Open Data
 | [object/gallery.md](object/gallery.md) | Object detail: Gallery tab, album drill-down, add album/image modals |
 | [object-updates-feed.md](object-updates-feed.md) | Object detail: `/object/.../updates` feed (filters, cards, query-api) |
 | [object-edit.md](object-edit.md) | Object detail: edit mode, left-rail `+` add update modal, ODL `update_create` broadcast |
+| [object-create-broadcast.md](object-create-broadcast.md) | Object create: `custom_json` 8 KB chunking, max 5 ops/trx, IPFS path, publish dock size |
 | [object-followers-feed.md](object-followers-feed.md) | Object detail: `/object/.../followers` list (reuses user social list UI, query-api) |
 | [object-authority-feed.md](object-authority-feed.md) | Object detail: `/object/.../authority` administrative & ownership lists |
 | [object-follow.md](object-follow.md) | Object detail: Follow/Unfollow + Bell button → ODL `object_follow` broadcast |

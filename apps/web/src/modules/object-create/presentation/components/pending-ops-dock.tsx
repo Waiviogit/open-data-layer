@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
+import { formatBroadcastJsonBytes } from '../../domain/format-broadcast-json-size';
 import {
   summarizePendingOps,
   type PendingOpsCategory,
@@ -33,6 +34,10 @@ export type PendingOpsDockProps = {
   broadcastViaIpfs?: boolean;
   onToggleBroadcastViaIpfs?: () => void;
   publishPhase?: 'idle' | 'uploading' | 'signing' | 'confirming' | 'importing';
+  /** Full ODL envelope size in UTF-8 bytes. */
+  jsonBytes?: number;
+  /** Number of `custom_json` ops for direct chain broadcast. */
+  opCount?: number;
   onPublish: () => void;
 };
 
@@ -44,6 +49,8 @@ export function PendingOpsDock({
   broadcastViaIpfs = false,
   onToggleBroadcastViaIpfs,
   publishPhase = 'idle',
+  jsonBytes,
+  opCount,
   onPublish,
 }: PendingOpsDockProps) {
   const { t } = useI18n();
@@ -69,6 +76,21 @@ export function PendingOpsDock({
     '{n}',
     String(summary.total),
   );
+
+  const broadcastSizeLine =
+    jsonBytes !== undefined
+      ? broadcastViaIpfs
+        ? t('object_create_broadcast_size_ipfs').replace(
+            '{size}',
+            formatBroadcastJsonBytes(jsonBytes),
+          )
+        : t('object_create_broadcast_size_direct')
+            .replace('{size}', formatBroadcastJsonBytes(jsonBytes))
+            .replace('{n}', String(opCount ?? 1))
+      : null;
+
+  const broadcastSizeNearLimit =
+    !broadcastViaIpfs && opCount !== undefined && opCount >= 4;
 
   const publishLabel = (() => {
     if (!submitting) {
@@ -104,16 +126,28 @@ export function PendingOpsDock({
         <div className="flex min-h-shell-header flex-wrap items-center gap-2 px-gutter py-2 sm:px-gutter-sm lg:flex-nowrap">
           <p className="shrink-0 text-body-sm font-medium text-fg">{readyLine}</p>
 
-          {categorySummary ? (
-            <p
-              className="min-w-0 flex-1 truncate text-caption text-fg-secondary"
-              title={categorySummary}
-            >
-              {categorySummary}
-            </p>
-          ) : (
-            <span className="min-w-0 flex-1" aria-hidden />
-          )}
+          <div className="min-w-0 flex-1 truncate text-caption text-fg-secondary">
+            {categorySummary ? (
+              <p className="truncate" title={categorySummary}>
+                {categorySummary}
+              </p>
+            ) : null}
+            {broadcastSizeLine ? (
+              <p
+                className={
+                  broadcastSizeNearLimit
+                    ? 'truncate text-warning'
+                    : 'truncate text-muted'
+                }
+                title={broadcastSizeLine}
+              >
+                {broadcastSizeLine}
+              </p>
+            ) : null}
+            {!categorySummary && !broadcastSizeLine ? (
+              <span className="sr-only" aria-hidden />
+            ) : null}
+          </div>
 
           <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto">
             {onToggleBroadcastViaIpfs ? (
