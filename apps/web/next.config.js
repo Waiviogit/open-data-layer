@@ -8,6 +8,12 @@ const { composePlugins, withNx } = require('@nx/next');
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
  **/
 const nextConfig = {
+  // Image paste/upload Server Actions (FormData); default Next limit is 1mb.
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '50mb',
+    },
+  },
   /**
    * `/@account/…` → `/user-profile/account/…` is handled in `src/proxy.ts` (Next.js 16 proxy).
    */
