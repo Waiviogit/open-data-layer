@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
-import { IpfsClientModule } from '@opden-data-layer/clients';
+import { IpfsClientModule, JwtAuthModule } from '@opden-data-layer/clients';
 import {
   ContentController,
   FilesController,
@@ -22,6 +22,7 @@ import ipfsGatewayConfig from './config/ipfs-gateway.config';
       load: [ipfsGatewayConfig],
     }),
     ScheduleModule.forRoot(),
+    JwtAuthModule,
     IpfsClientModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({

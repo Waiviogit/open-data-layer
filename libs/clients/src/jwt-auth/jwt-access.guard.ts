@@ -24,7 +24,11 @@ export class JwtAccessGuard implements CanActivate {
     }
     try {
       const payload = this.jwt.verify<{ sub: string; typ?: string }>(token);
-      if (payload.typ !== 'access' || typeof payload.sub !== 'string' || !payload.sub) {
+      if (
+        payload.typ !== 'access' ||
+        typeof payload.sub !== 'string' ||
+        !payload.sub
+      ) {
         throw new UnauthorizedException();
       }
       req.user = { sub: payload.sub };

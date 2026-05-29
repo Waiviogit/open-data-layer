@@ -47,6 +47,7 @@ services:
     environment:
       PORT: ${IPFS_GATEWAY_APP_PORT:-7300}
       IPFS_API_URL: ${IPFS_API_URL:-http://ipfs:5001}
+      JWT_SECRET: ${JWT_SECRET:-change-me-min-16-chars-for-dev}
     networks:
       - opden-data-layer-net
     restart: unless-stopped
@@ -141,7 +142,6 @@ services:
       - .env
     environment:
       PORT: ${WEB_PORT:-3000}
-      IPFS_GATEWAY_UPLOAD_URL: ${IPFS_GATEWAY_UPLOAD_URL:-http://ipfs-gateway:7300}
       IPFS_CONTENT_BASE_URL: ${IPFS_CONTENT_BASE_URL:-https://${DOMAIN}}
       ODL_NETWORK: ${ODL_NETWORK:-testnet}
       QUERY_API_URL: ${QUERY_API_URL:-http://query-api:7000}

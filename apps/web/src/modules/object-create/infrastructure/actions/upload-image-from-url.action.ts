@@ -1,6 +1,7 @@
 'use server';
 
-import { env } from '@/config/env';
+import { getIpfsContentBaseUrl } from '@/config/get-ipfs-content-base-url';
+import { getIpfsGatewayServerBaseUrl } from '@/config/get-ipfs-gateway-server-base-url';
 import {
   extractCidFromContentGatewayUrl,
   imageContentUrlForCid,
@@ -22,7 +23,7 @@ export async function uploadImageFromUrl(
 
   const gatewayCid = extractCidFromContentGatewayUrl(trimmed);
   if (gatewayCid) {
-    const contentBase = env.IPFS_CONTENT_BASE_URL ?? env.IPFS_GATEWAY_UPLOAD_URL;
+    const contentBase = getIpfsContentBaseUrl() || getIpfsGatewayServerBaseUrl();
     return {
       cid: gatewayCid,
       previewUrl: imageContentUrlForCid(contentBase, gatewayCid),

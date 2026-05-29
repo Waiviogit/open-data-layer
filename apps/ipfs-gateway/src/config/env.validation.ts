@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
 export const ipfsGatewayConfigSchema = z.object({
+  /** Must match auth-api JWT_SECRET for access token verification. */
+  JWT_SECRET: z.string().min(1),
   PORT: z.coerce.number().optional().default(7300),
   IPFS_API_URL: z.string().url().default('http://localhost:5001'),
   IPFS_GATEWAY_URL: z.string().url().optional(),

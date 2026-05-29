@@ -5,7 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import type { Request } from 'express';
-import type { JwtAccessUser } from './jwt-access.types';
+import type { JwtAccessUser } from '@opden-data-layer/clients';
 import { normalizeHiveAccount } from './normalize-hive-account';
 
 @Injectable()

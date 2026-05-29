@@ -49,13 +49,8 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((v) => v?.trim().toLowerCase() === 'true'),
-  /** Internal ipfs-gateway origin for server-side uploads (Docker: http://ipfs-gateway:7300). */
-  IPFS_GATEWAY_UPLOAD_URL: z
-    .string()
-    .optional()
-    .transform((v) => (v?.trim() ? v.trim().replace(/\/$/, '') : 'http://localhost:7300')),
   /**
-   * Public origin for ipfs-gateway content URLs (preview after upload). Falls back to upload URL in dev.
+   * Public origin for ipfs-gateway (content URLs and server-side uploads via nginx).
    */
   IPFS_CONTENT_BASE_URL: z
     .string()

@@ -10,6 +10,9 @@ export default () => {
       .filter(Boolean) ?? [];
 
   return {
+    jwt: {
+      secret: env.JWT_SECRET,
+    },
     port: env.PORT,
     ipfs: {
       apiUrl: env.IPFS_API_URL,

@@ -1,18 +1,27 @@
 'use server';
 
-import { env } from '@/config/env';
+import { getIpfsGatewayServerBaseUrl } from '@/config/get-ipfs-gateway-server-base-url';
+import { getBearerAccessToken } from '@/shared/infrastructure/auth/get-bearer-access-token.server';
 
 export type UploadOdlToIpfsResult = { cid: string } | { error: string };
 
 export async function uploadOdlToIpfs(
   odlJson: string,
 ): Promise<UploadOdlToIpfsResult> {
-  const uploadBase = env.IPFS_GATEWAY_UPLOAD_URL;
+  const token = await getBearerAccessToken();
+  if (!token) {
+    return { error: 'unauthorized' };
+  }
+
+  const uploadBase = getIpfsGatewayServerBaseUrl();
   const res = await fetch(
     `${uploadBase}/ipfs-gateway/upload/file?filename=odl-batch.json`,
     {
       method: 'POST',
-      headers: { 'Content-Type': 'application/octet-stream' },
+      headers: {
+        'Content-Type': 'application/octet-stream',
+        Authorization: `Bearer ${token}`,
+      },
       body: odlJson,
       signal: AbortSignal.timeout(60_000),
     },

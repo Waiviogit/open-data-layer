@@ -59,14 +59,13 @@ Object `image` / `imageBackground` / gallery fields may store `{ cid }` (upload 
 
 | Variable | Service | When read |
 |----------|---------|-----------|
-| `IPFS_CONTENT_BASE_URL` | query-api, web | **Runtime** (container / `nx serve` env) — same value on a stack |
-| `IPFS_GATEWAY_UPLOAD_URL` | web only | **Runtime**, server actions only; internal Docker URL (`http://ipfs-gateway:7300`) |
+| `IPFS_CONTENT_BASE_URL` | query-api, web | **Runtime** (container / `nx serve` env) — same value on a stack; web server actions use it for uploads via nginx |
 
 Runtime configuration only — see [web conventions — Env config](web-conventions.md#runtime-vs-build-ghcr--compose). The root layout reads `IPFS_CONTENT_BASE_URL` and passes it to client UI via `IpfsContentBaseProvider` / `useIpfsContentBaseUrl()`.
 
-Upload (`POST /ipfs-gateway/upload/image`) is **not** proxied through nginx — only the Next.js server action calls it on the internal network.
+Upload (`POST /ipfs-gateway/upload/image`, `/upload/file`) is proxied at **`/ipfs-gateway/`** through nginx and requires **`Authorization: Bearer`** (access JWT, same `JWT_SECRET` as auth-api). Server actions read `odl_access` and forward the token.
 
-**Code:** `get-ipfs-content-base-url.ts`, `ipfs-content-base-provider.tsx`, `upload-image.action.ts`.
+**Code:** `get-ipfs-content-base-url.ts`, `get-ipfs-gateway-server-base-url.ts`, `get-bearer-access-token.server.ts`, `upload-image.action.ts`.
 
 ## Verification
 

@@ -7,13 +7,14 @@ import {
   Query,
   Req,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { createHash } from 'node:crypto';
 import { Readable } from 'node:stream';
 import type { Request } from 'express';
-import { IpfsClient } from '@opden-data-layer/clients';
+import { IpfsClient, JwtAccessGuard } from '@opden-data-layer/clients';
 import { MFS_NAMESPACE } from '../constants/mfs-namespaces';
 import { UPLOAD_IMAGE_MAX_FILE_BYTES } from '../constants/upload.constants';
 import { ImageProcessorService } from '../domain/image-processor.service';
@@ -31,6 +32,7 @@ export class UploadController {
   ) {}
 
   @Post('image')
+  @UseGuards(JwtAccessGuard)
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(
     FileInterceptor('file', {
@@ -62,6 +64,7 @@ export class UploadController {
    * Supports files of any size (e.g. multi-GB).
    */
   @Post('file')
+  @UseGuards(JwtAccessGuard)
   @HttpCode(HttpStatus.CREATED)
   async uploadFile(
     @Req() req: Request,

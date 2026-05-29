@@ -61,6 +61,7 @@ No Redis or external load balancer is required for this fallback; it is sequenti
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `PORT` | No | `7300` | HTTP listen port for the Nest app |
+| `JWT_SECRET` | Yes | — | Same as auth-api; verifies `Authorization: Bearer` on upload routes |
 | `IPFS_API_URL` | No | `http://localhost:5001` | Kubo HTTP API base URL |
 | `IPFS_GATEWAY_URL` | No | — | Public URL of an IPFS **HTTP gateway** (e.g. for `url` fields in upload responses) |
 | `IPFS_PEER_URLS` | No | — | Comma-separated peer **ipfs-gateway** base URLs (include path prefix `/ipfs-gateway` if used) |
@@ -72,8 +73,8 @@ All routes are under the global prefix **`/ipfs-gateway`** (see `main.ts`).
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/upload/image` | Multipart field `file`; max **50 MiB** per file; image converted to WebP, pinned, copied into MFS `/images/` |
-| `POST` | `/upload/file` | Raw body `application/octet-stream`; streamed to IPFS (large files), optional `?filename=`; copied into MFS `/files/` |
+| `POST` | `/upload/image` | **Bearer JWT** (`typ: access`); multipart field `file`; max **50 MiB**; WebP, MFS `/images/` |
+| `POST` | `/upload/file` | **Bearer JWT**; raw `application/octet-stream`; streamed; optional `?filename=`; MFS `/files/` |
 | `GET` | `/files/{cid}` | Stream object by CID as octet-stream (local first, then peer fallback) |
 | `GET` | `/content/image/{cid}` | Same object as WebP with inline disposition (CDN-cacheable) |
 | `GET` | `/namespaces/{namespace}/cid` | `namespace` ∈ `images` \| `files`; returns directory CID for bulk pin |
