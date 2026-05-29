@@ -2,7 +2,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OBJECT_TYPES } from '@opden-data-layer/core';
 import type { ObjectsCore } from '@opden-data-layer/core';
 import { UpdateCreateHandler } from './update-create.handler';
-import { defaultUpdateCreateUserRefDeps } from './update-create.handler.test-deps';
+import { defaultUpdateCreateUserRefDeps } from './update-create.handler.spec-helpers';
 import type { OdlEventContext } from '../odl-action-handler';
 import { GovernanceWriteGuard, WriteGuardRunner } from '../guards';
 import {

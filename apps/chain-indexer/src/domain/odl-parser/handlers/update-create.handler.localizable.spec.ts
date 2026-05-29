@@ -32,7 +32,7 @@ jest.mock('@opden-data-layer/core', () => {
 });
 
 import { UpdateCreateHandler } from './update-create.handler';
-import { defaultUpdateCreateUserRefDeps } from './update-create.handler.test-deps';
+import { defaultUpdateCreateUserRefDeps } from './update-create.handler.spec-helpers';
 
 describe('UpdateCreateHandler localizable', () => {
   const baseCtx: OdlEventContext = {

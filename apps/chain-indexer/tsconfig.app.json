@@ -10,5 +10,11 @@
     "moduleResolution": "node"
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["**/*.spec.ts", "**/*.test.ts", "jest.config.cts", "jest.config.ts"]
+  "exclude": [
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/*.spec-helpers.ts",
+    "jest.config.cts",
+    "jest.config.ts"
+  ]
 }
