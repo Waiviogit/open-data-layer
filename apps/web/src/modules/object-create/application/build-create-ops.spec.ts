@@ -1,3 +1,4 @@
+import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 import { HIVE_CUSTOM_OP_DATA_MAX_LENGTH } from '@opden-data-layer/hive-broadcast';
 
 import {
@@ -95,6 +96,105 @@ describe('buildCreateOps', () => {
       object_id: 'abc12345',
       update_type: 'name',
       value_text: 'My Recipe',
+    });
+  });
+
+  it('omits duplicate user_ref rows for the same update type', () => {
+    const ops = buildCreateOps({
+      objectId: 'gov1',
+      objectType: 'governance',
+      creator: 'owner',
+      odlCustomJsonId: 'odl-testnet',
+      language: 'en-US',
+      fields: [
+        { entryKey: 'name', updateType: UPDATE_TYPES.NAME, value: 'Gov' },
+        { entryKey: 'admins:1', updateType: UPDATE_TYPES.ADMINS, value: 'alice' },
+        { entryKey: 'admins:2', updateType: UPDATE_TYPES.ADMINS, value: 'alice' },
+      ],
+    });
+
+    const envelope = JSON.parse(ops[0]!.json) as {
+      events: { action: string; payload: Record<string, unknown> }[];
+    };
+    const adminEvents = envelope.events.filter(
+      (e) =>
+        e.action === 'update_create' &&
+        e.payload.update_type === UPDATE_TYPES.ADMINS,
+    );
+    expect(adminEvents).toHaveLength(1);
+    expect(adminEvents[0]?.payload).toMatchObject({ value_text: 'alice' });
+  });
+
+  it('omits duplicate object_ref rows for the same update type', () => {
+    const ops = buildCreateOps({
+      objectId: 'prod1',
+      objectType: 'product',
+      creator: 'alice',
+      odlCustomJsonId: 'odl-testnet',
+      language: 'en-US',
+      fields: [
+        ...recipeRequiredFields(),
+        {
+          entryKey: 'rel:1',
+          updateType: UPDATE_TYPES.IS_RELATED_TO,
+          value: 'related-obj',
+        },
+        {
+          entryKey: 'rel:2',
+          updateType: UPDATE_TYPES.IS_RELATED_TO,
+          value: 'related-obj',
+        },
+      ],
+    });
+
+    const envelope = JSON.parse(ops[0]!.json) as {
+      events: { action: string; payload: Record<string, unknown> }[];
+    };
+    const relEvents = envelope.events.filter(
+      (e) =>
+        e.action === 'update_create' &&
+        e.payload.update_type === UPDATE_TYPES.IS_RELATED_TO,
+    );
+    expect(relEvents).toHaveLength(1);
+  });
+
+  it('maps user_ref update to value_text in update_create payload', () => {
+    const ops = buildCreateOps({
+      objectId: 'gov1',
+      objectType: 'governance',
+      creator: 'owner',
+      odlCustomJsonId: 'odl-testnet',
+      language: 'en-US',
+      fields: [
+        { entryKey: 'name', updateType: UPDATE_TYPES.NAME, value: 'Gov' },
+        {
+          entryKey: 'admins:alice',
+          updateType: UPDATE_TYPES.ADMINS,
+          value: 'alice',
+        },
+        {
+          entryKey: 'admins:bob',
+          updateType: UPDATE_TYPES.ADMINS,
+          value: 'bob',
+        },
+      ],
+    });
+
+    const envelope = JSON.parse(ops[0]!.json) as {
+      events: { action: string; payload: Record<string, unknown> }[];
+    };
+    const adminEvents = envelope.events.filter(
+      (e) =>
+        e.action === 'update_create' &&
+        e.payload.update_type === UPDATE_TYPES.ADMINS,
+    );
+    expect(adminEvents).toHaveLength(2);
+    expect(adminEvents[0]?.payload).toMatchObject({
+      value_text: 'alice',
+    });
+    expect(adminEvents[0]?.payload).not.toHaveProperty('value_user_ref');
+    expect(adminEvents[1]?.payload).toMatchObject({
+      value_text: 'bob',
     });
   });
 

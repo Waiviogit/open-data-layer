@@ -9,7 +9,7 @@ export const UPDATE_TRUSTED: UpdateDefinition = {
   namespace: 'odl',
   localizable: false,
   description: 'Governance: trusted account list.',
-  value_kind: 'text',
+  value_kind: 'user_ref',
   cardinality: 'multi',
   schema: z.string().min(1),
 };

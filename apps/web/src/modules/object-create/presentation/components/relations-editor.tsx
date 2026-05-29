@@ -1,15 +1,16 @@
 'use client';
 
-import { useMemo } from 'react';
-
-import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
-import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
+import { useMemo, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
-import { ObjectRefSearchField } from '@/modules/object-updates/presentation/components/object-ref-search-field';
-import { UserRefSearchField } from '@/modules/object-updates/presentation/components/user-ref-search-field';
+import { UpdateValueForm } from '@/modules/object-updates/presentation/components/update-value-form';
 
+import {
+  excludedRefValuesForEntry,
+  isDuplicateRefValue,
+} from '../../domain/duplicate-ref-field-values';
+import { formatDuplicateRefMessage } from '../../domain/format-duplicate-ref-message';
 import { relationTypesForObjectType } from '../../domain/group-fields-by-priority';
 import type { FieldEntry } from '../../domain/object-create.types';
 
@@ -33,6 +34,9 @@ export function RelationsEditor({
     () => relationTypesForObjectType(objectType),
     [objectType],
   );
+  const [refDuplicateByEntry, setRefDuplicateByEntry] = useState<
+    Record<string, string>
+  >({});
 
   if (relationTypes.length === 0) {
     return null;
@@ -50,8 +54,6 @@ export function RelationsEditor({
       <div className="mt-4 space-y-4">
         {relationTypes.map((updateType) => {
           const rows = fields.filter((f) => f.updateType === updateType);
-          const def = UPDATE_REGISTRY[updateType];
-          const appliesTo = def?.applies_to;
 
           if (rows.length === 0) {
             return (
@@ -68,27 +70,51 @@ export function RelationsEditor({
           }
 
           return rows.map((entry) => {
-            const value = typeof entry.value === 'string' ? entry.value : '';
-            if (updateType === UPDATE_TYPES.DELEGATION) {
-              return (
-                <UserRefSearchField
-                  key={entry.entryKey}
-                  label={labelForUpdateType(updateType)}
-                  value={value}
-                  onChange={(accountName) =>
-                    onUpdateField(entry.entryKey, accountName)
-                  }
-                />
-              );
-            }
+            const excludedRefValues = excludedRefValuesForEntry(
+              rows,
+              updateType,
+              entry.entryKey,
+            );
+            const duplicateMessage = refDuplicateByEntry[entry.entryKey];
+            const fieldLabel = labelForUpdateType(updateType);
+
             return (
-              <ObjectRefSearchField
-                key={entry.entryKey}
-                label={labelForUpdateType(updateType)}
-                value={value}
-                appliesTo={appliesTo}
-                onChange={(objectId) => onUpdateField(entry.entryKey, objectId)}
-              />
+              <div key={entry.entryKey}>
+                <UpdateValueForm
+                  updateType={updateType}
+                  value={entry.value}
+                  excludedRefValues={excludedRefValues}
+                  onChange={(v) => {
+                    if (
+                      isDuplicateRefValue(rows, updateType, entry.entryKey, v)
+                    ) {
+                      setRefDuplicateByEntry((prev) => ({
+                        ...prev,
+                        [entry.entryKey]: formatDuplicateRefMessage(
+                          t,
+                          updateType,
+                          fieldLabel,
+                          v,
+                        ),
+                      }));
+                      return;
+                    }
+                    setRefDuplicateByEntry((prev) => {
+                      const next = { ...prev };
+                      delete next[entry.entryKey];
+                      return next;
+                    });
+                    onUpdateField(entry.entryKey, v);
+                  }}
+                  onValidityChange={() => {}}
+                  hideUpdateTypeHeading={false}
+                />
+                {duplicateMessage ? (
+                  <p className="mt-1 text-caption text-accent" role="alert">
+                    {duplicateMessage}
+                  </p>
+                ) : null}
+              </div>
             );
           });
         })}

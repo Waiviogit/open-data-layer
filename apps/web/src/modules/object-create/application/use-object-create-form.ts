@@ -30,6 +30,7 @@ import {
   applyContentLocaleToFields,
   isLocalizableUpdateType,
 } from '../domain/field-content-locale';
+import { isDuplicateRefValue } from '../domain/duplicate-ref-field-values';
 import {
   buildObjectId,
   generatePrefix,
@@ -306,6 +307,16 @@ export function useObjectCreateForm({
         const next = [...prev.fields];
         const current = next[idx];
         if (!current) {
+          return prev;
+        }
+        if (
+          isDuplicateRefValue(
+            prev.fields,
+            current.updateType,
+            entryKey,
+            value,
+          )
+        ) {
           return prev;
         }
         next[idx] = {

@@ -2,6 +2,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OBJECT_TYPES } from '@opden-data-layer/core';
 import type { ObjectsCore } from '@opden-data-layer/core';
 import { UpdateCreateHandler } from './update-create.handler';
+import { defaultUpdateCreateUserRefDeps } from './update-create.handler.test-deps';
 import type { OdlEventContext } from '../odl-action-handler';
 import { GovernanceWriteGuard, WriteGuardRunner } from '../guards';
 import {
@@ -60,9 +61,13 @@ describe('UpdateCreateHandler write guard', () => {
     } as unknown as import('../../../repositories').ObjectsCoreRepository;
     const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
     const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+    const userRefDeps = defaultUpdateCreateUserRefDeps();
     const handler = new UpdateCreateHandler(
       objectUpdatesRepository,
       objectsCoreRepository,
+      userRefDeps.accountsCurrentRepository,
+      userRefDeps.accountSyncQueueRepository,
+      userRefDeps.hiveClient,
       runner,
       eventEmitter,
     );
@@ -92,9 +97,13 @@ describe('UpdateCreateHandler write guard', () => {
     } as unknown as import('../../../repositories').ObjectsCoreRepository;
     const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
     const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+    const userRefDeps = defaultUpdateCreateUserRefDeps();
     const handler = new UpdateCreateHandler(
       objectUpdatesRepository,
       objectsCoreRepository,
+      userRefDeps.accountsCurrentRepository,
+      userRefDeps.accountSyncQueueRepository,
+      userRefDeps.hiveClient,
       runner,
       eventEmitter,
     );
@@ -135,9 +144,13 @@ describe('UpdateCreateHandler write guard', () => {
     } as unknown as import('../../../repositories').ObjectsCoreRepository;
     const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
     const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+    const userRefDeps = defaultUpdateCreateUserRefDeps();
     const handler = new UpdateCreateHandler(
       objectUpdatesRepository,
       objectsCoreRepository,
+      userRefDeps.accountsCurrentRepository,
+      userRefDeps.accountSyncQueueRepository,
+      userRefDeps.hiveClient,
       runner,
       eventEmitter,
     );
@@ -171,9 +184,13 @@ describe('UpdateCreateHandler write guard', () => {
     } as unknown as import('../../../repositories').ObjectsCoreRepository;
     const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
     const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+    const userRefDeps = defaultUpdateCreateUserRefDeps();
     const handler = new UpdateCreateHandler(
       objectUpdatesRepository,
       objectsCoreRepository,
+      userRefDeps.accountsCurrentRepository,
+      userRefDeps.accountSyncQueueRepository,
+      userRefDeps.hiveClient,
       runner,
       eventEmitter,
     );
@@ -206,9 +223,13 @@ describe('UpdateCreateHandler write guard', () => {
       } as unknown as import('../../../repositories').ObjectsCoreRepository;
       const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
       const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+      const userRefDeps = defaultUpdateCreateUserRefDeps();
       const handler = new UpdateCreateHandler(
         objectUpdatesRepository,
         objectsCoreRepository,
+        userRefDeps.accountsCurrentRepository,
+        userRefDeps.accountSyncQueueRepository,
+        userRefDeps.hiveClient,
         runner,
         eventEmitter,
       );
@@ -267,9 +288,13 @@ describe('UpdateCreateHandler write guard', () => {
     } as unknown as import('../../../repositories').ObjectsCoreRepository;
     const runner = new WriteGuardRunner([new GovernanceWriteGuard()]);
     const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+    const userRefDeps = defaultUpdateCreateUserRefDeps();
     const handler = new UpdateCreateHandler(
       objectUpdatesRepository,
       objectsCoreRepository,
+      userRefDeps.accountsCurrentRepository,
+      userRefDeps.accountSyncQueueRepository,
+      userRefDeps.hiveClient,
       runner,
       eventEmitter,
     );

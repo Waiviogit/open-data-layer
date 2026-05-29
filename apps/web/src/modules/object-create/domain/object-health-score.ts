@@ -9,6 +9,7 @@ import {
   RELATION_UPDATE_TYPES,
 } from './group-fields-by-priority';
 import { supposedValueCountByType } from './supposed-update-seeds';
+import { findDuplicateRefUpdateTypes } from './duplicate-ref-field-values';
 import { isTagCategoryItemFilled } from './tag-category-item-value';
 import type { FieldEntry, HealthScore } from './object-create.types';
 
@@ -22,6 +23,8 @@ export type PublishReadiness = {
   incompleteTagItems: number;
   /** Object id has no name slug (`prefix` only). */
   missingObjectIdSlug: boolean;
+  /** `user_ref` / `object_ref` update types with duplicate values among rows. */
+  duplicateRefUpdateTypes: string[];
 };
 
 export function isFieldFilled(entry: FieldEntry): boolean {
@@ -36,7 +39,11 @@ export function isFieldFilled(entry: FieldEntry): boolean {
   if (raw === null || raw === undefined) {
     return false;
   }
-  if (def.value_kind === 'text' || def.value_kind === 'object_ref') {
+  if (
+    def.value_kind === 'text' ||
+    def.value_kind === 'object_ref' ||
+    def.value_kind === 'user_ref'
+  ) {
     return typeof raw === 'string' && raw.trim().length > 0;
   }
   if (def.value_kind === 'geo') {
@@ -166,6 +173,8 @@ export function validatePublishReadiness(
       !isTagCategoryItemFilled(f.value),
   ).length;
 
+  const duplicateRefUpdateTypes = findDuplicateRefUpdateTypes(fields);
+
   if (!objectType) {
     return {
       ready: false,
@@ -173,6 +182,7 @@ export function validatePublishReadiness(
       invalidRequired,
       incompleteTagItems,
       missingObjectIdSlug: true,
+      duplicateRefUpdateTypes,
     };
   }
 
@@ -197,7 +207,8 @@ export function validatePublishReadiness(
     !missingObjectIdSlug &&
     missingRequired.length === 0 &&
     invalidRequired.length === 0 &&
-    incompleteTagItems === 0;
+    incompleteTagItems === 0 &&
+    duplicateRefUpdateTypes.length === 0;
 
   return {
     ready,
@@ -205,6 +216,7 @@ export function validatePublishReadiness(
     invalidRequired,
     incompleteTagItems,
     missingObjectIdSlug,
+    duplicateRefUpdateTypes,
   };
 }
 

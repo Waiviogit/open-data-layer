@@ -8,7 +8,7 @@ export const UPDATE_BANNED: UpdateDefinition = {
   namespace: 'odl',
   localizable: false,
   description: 'Governance: platform-level ban; account excluded from resolved views.',
-  value_kind: 'text',
+  value_kind: 'user_ref',
   cardinality: 'multi',
   schema: z.string().min(1),
 };

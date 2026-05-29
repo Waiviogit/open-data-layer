@@ -1,5 +1,7 @@
 import {
   UPDATE_ADDRESS,
+  UPDATE_ADMINS,
+  UPDATE_DELEGATION,
   UPDATE_GEO,
   UPDATE_IMAGE,
   UPDATE_INGREDIENTS,
@@ -28,6 +30,11 @@ import {
 describe('update-value-form.utils', () => {
   it('initialValueForDefinition returns empty string for text updates', () => {
     expect(initialValueForDefinition(UPDATE_NAME)).toBe('');
+  });
+
+  it('initialValueForDefinition returns empty string for user_ref updates', () => {
+    expect(initialValueForDefinition(UPDATE_ADMINS)).toBe('');
+    expect(initialValueForDefinition(UPDATE_DELEGATION)).toBe('');
   });
 
   it('initialValueForDefinition returns geo form defaults', () => {
@@ -169,6 +176,23 @@ describe('update-value-form.utils', () => {
 
   it('validateUpdateValue rejects empty object_ref', () => {
     expect(validateUpdateValue(UPDATE_PARENT, '').success).toBe(false);
+  });
+
+  it('validateUpdateValue accepts user_ref with Hive account name', () => {
+    const result = validateUpdateValue(UPDATE_ADMINS, 'alice');
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.value).toBe('alice');
+    }
+  });
+
+  it('validateUpdateValue rejects empty user_ref', () => {
+    expect(validateUpdateValue(UPDATE_ADMINS, '').success).toBe(false);
+  });
+
+  it('coerceFormValueForValidation treats user_ref as string', () => {
+    expect(coerceFormValueForValidation(UPDATE_ADMINS, 'bob')).toBe('bob');
+    expect(coerceFormValueForValidation(UPDATE_ADMINS, 42)).toBe('');
   });
 
   it('validateUpdateValue rejects menu item without a link', () => {

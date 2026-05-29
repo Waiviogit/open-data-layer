@@ -7,7 +7,13 @@ import {
   UPDATE_TYPES,
 } from '@opden-data-layer/core';
 import type { JsonValue, NewObjectUpdate, ObjectStatus } from '@opden-data-layer/core';
-import { ObjectsCoreRepository, ObjectUpdatesRepository } from '../../../repositories';
+import { HiveClient } from '@opden-data-layer/clients';
+import {
+  AccountSyncQueueRepository,
+  AccountsCurrentRepository,
+  ObjectsCoreRepository,
+  ObjectUpdatesRepository,
+} from '../../../repositories';
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
 import { updateCreatePayloadSchema } from '../odl-envelope.schema';
 import { WriteGuardRunner } from '../guards';
@@ -54,6 +60,9 @@ export class UpdateCreateHandler implements OdlActionHandler {
   constructor(
     private readonly objectUpdatesRepository: ObjectUpdatesRepository,
     private readonly objectsCoreRepository: ObjectsCoreRepository,
+    private readonly accountsCurrentRepository: AccountsCurrentRepository,
+    private readonly accountSyncQueueRepository: AccountSyncQueueRepository,
+    private readonly hiveClient: HiveClient,
     private readonly writeGuardRunner: WriteGuardRunner,
     private readonly eventEmitter: EventEmitter2,
   ) {}
@@ -101,7 +110,7 @@ export class UpdateCreateHandler implements OdlActionHandler {
     }
 
     const valueField =
-      definition.value_kind === 'object_ref'
+      definition.value_kind === 'object_ref' || definition.value_kind === 'user_ref'
         ? 'value_text'
         : (`value_${definition.value_kind}` as const);
     const rawValue = payload[valueField];
@@ -131,6 +140,24 @@ export class UpdateCreateHandler implements OdlActionHandler {
       }
     }
 
+    if (definition.value_kind === 'user_ref') {
+      const username = String(valueResult.data);
+      const existing = await this.accountsCurrentRepository.findByName(username);
+      if (!existing) {
+        const hiveAccounts = await this.hiveClient.getAccounts([username]);
+        if (!hiveAccounts[0]?.name) {
+          this.logger.warn(
+            `update_create: user '${username}' not found for update_type '${update_type}'; skipping`,
+          );
+          return;
+        }
+        await this.accountSyncQueueRepository.enqueue(
+          username,
+          Math.floor(Date.now() / 1000),
+        );
+      }
+    }
+
     const effectiveLocale =
       definition.localizable === true ? (payloadLocale ?? null) : null;
 
@@ -153,7 +180,9 @@ export class UpdateCreateHandler implements OdlActionHandler {
       event_seq: ctx.eventSeq,
       transaction_id: ctx.transactionId,
       value_text:
-        definition.value_kind === 'text' || definition.value_kind === 'object_ref'
+        definition.value_kind === 'text' ||
+        definition.value_kind === 'object_ref' ||
+        definition.value_kind === 'user_ref'
           ? String(valueResult.data)
           : null,
       value_geo: geoForDb,

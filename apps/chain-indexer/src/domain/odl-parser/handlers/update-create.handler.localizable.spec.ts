@@ -32,6 +32,7 @@ jest.mock('@opden-data-layer/core', () => {
 });
 
 import { UpdateCreateHandler } from './update-create.handler';
+import { defaultUpdateCreateUserRefDeps } from './update-create.handler.test-deps';
 
 describe('UpdateCreateHandler localizable', () => {
   const baseCtx: OdlEventContext = {
@@ -72,9 +73,13 @@ describe('UpdateCreateHandler localizable', () => {
     } as unknown as import('../../../repositories').ObjectsCoreRepository;
     const runner = new WriteGuardRunner([]);
     const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+    const userRefDeps = defaultUpdateCreateUserRefDeps();
     const handler = new UpdateCreateHandler(
       objectUpdatesRepository,
       objectsCoreRepository,
+      userRefDeps.accountsCurrentRepository,
+      userRefDeps.accountSyncQueueRepository,
+      userRefDeps.hiveClient,
       runner,
       eventEmitter,
     );

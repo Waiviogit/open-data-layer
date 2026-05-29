@@ -20,6 +20,26 @@ function filterSearchObjectsByAppliesTo(
   return objects.filter((r) => allowed.has(r.object_type));
 }
 
+/** Picks the search hit for a known Hive account name (draft / prefilled user refs). */
+export function pickSearchUserByName(
+  users: readonly SearchUserResult[],
+  accountName: string,
+): SearchUserResult | null {
+  const name = accountName.trim();
+  if (!name) {
+    return null;
+  }
+  const lower = name.toLowerCase();
+  const exact = users.find((u) => u.name.toLowerCase() === lower);
+  if (exact) {
+    return exact;
+  }
+  if (users.length === 1) {
+    return users[0];
+  }
+  return null;
+}
+
 /** Picks the search hit for a known `object_id` (draft / prefilled refs). */
 export function pickSearchObjectById(
   objects: readonly SearchObjectResult[],
@@ -134,6 +154,24 @@ export async function fetchSearchObjectById(
     return null;
   }
   return pickSearchObjectById(objects, id, init?.appliesTo);
+}
+
+/**
+ * Resolves display fields for a stored user ref via the same search API as the picker.
+ */
+export async function fetchSearchUserByName(
+  accountName: string,
+  init?: { signal?: AbortSignal },
+): Promise<SearchUserResult | null> {
+  const name = accountName.trim();
+  if (!name) {
+    return null;
+  }
+  const users = await fetchUserSearchResults(name, init);
+  if (!users) {
+    return null;
+  }
+  return pickSearchUserByName(users, name);
 }
 
 /**

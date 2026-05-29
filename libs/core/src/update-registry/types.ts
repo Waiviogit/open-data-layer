@@ -12,7 +12,7 @@ export interface UpdateDefinition {
   /** Short purpose statement for spec/tooling. */
   description: string;
   /** Which value column holds the data for this update type. */
-  value_kind: 'text' | 'geo' | 'json' | 'object_ref';
+  value_kind: 'text' | 'geo' | 'json' | 'object_ref' | 'user_ref';
   /**
    * How the resolved view treats multiple rows for the same (object_id, update_type):
    *   - 'single' — pick one winning value (highest-precedence valid update).

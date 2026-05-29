@@ -55,6 +55,7 @@ export function initialValueForDefinition(definition: UpdateDefinition): unknown
   switch (definition.value_kind) {
     case 'text':
     case 'object_ref':
+    case 'user_ref':
       return '';
     case 'geo':
       return { latitude: '', longitude: '' } satisfies GeoFormValue;
@@ -151,7 +152,11 @@ export function coerceFormValueForValidation(
   definition: UpdateDefinition,
   raw: unknown,
 ): unknown {
-  if (definition.value_kind === 'text' || definition.value_kind === 'object_ref') {
+  if (
+    definition.value_kind === 'text' ||
+    definition.value_kind === 'object_ref' ||
+    definition.value_kind === 'user_ref'
+  ) {
     return typeof raw === 'string' ? raw : '';
   }
   if (definition.value_kind === 'geo') {

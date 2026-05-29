@@ -8,7 +8,7 @@ export const UPDATE_WHITELIST: UpdateDefinition = {
   namespace: 'odl',
   localizable: false,
   description: 'Governance: account protected from muted set.',
-  value_kind: 'text',
+  value_kind: 'user_ref',
   cardinality: 'multi',
   schema: z.string().min(1),
 };

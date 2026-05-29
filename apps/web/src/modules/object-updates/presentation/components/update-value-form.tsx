@@ -45,6 +45,8 @@ export type UpdateValueFormProps = {
   hideUpdateTypeHeading?: boolean;
   /** Focus tag value input when adding a new `tagCategoryItem` row. */
   autoFocusTagValue?: boolean;
+  /** Other rows' ref values to exclude from user/object search (same update type). */
+  excludedRefValues?: readonly string[];
 };
 
 export function UpdateValueForm({
@@ -57,6 +59,7 @@ export function UpdateValueForm({
   lockGalleryAlbum = false,
   hideUpdateTypeHeading = false,
   autoFocusTagValue = false,
+  excludedRefValues = [],
 }: UpdateValueFormProps) {
   const definition = UPDATE_REGISTRY[updateType];
 
@@ -86,6 +89,7 @@ export function UpdateValueForm({
       lockGalleryAlbum={lockGalleryAlbum}
       hideUpdateTypeHeading={hideUpdateTypeHeading}
       autoFocusTagValue={autoFocusTagValue}
+      excludedRefValues={excludedRefValues}
     />
   );
 }
@@ -100,6 +104,7 @@ type UpdateValueFieldsProps = {
   lockGalleryAlbum: boolean;
   hideUpdateTypeHeading: boolean;
   autoFocusTagValue: boolean;
+  excludedRefValues: readonly string[];
 };
 
 function UpdateValueFields({
@@ -112,16 +117,21 @@ function UpdateValueFields({
   lockGalleryAlbum,
   hideUpdateTypeHeading,
   autoFocusTagValue,
+  excludedRefValues,
 }: UpdateValueFieldsProps) {
   const { t } = useI18n();
   const label = hideUpdateTypeHeading ? undefined : labelForUpdateType(updateType);
+  const fieldLabel = labelForUpdateType(updateType);
 
-  if (updateType === UPDATE_TYPES.DELEGATION) {
+  if (definition.value_kind === 'user_ref') {
     const accountName = typeof value === 'string' ? value : '';
     return (
       <UserRefSearchField
         label={label}
+        fieldLabel={fieldLabel}
+        updateType={updateType}
         value={accountName}
+        excludeAccountNames={excludedRefValues}
         onChange={(name) => onChange(name)}
       />
     );
@@ -132,8 +142,11 @@ function UpdateValueFields({
     return (
       <ObjectRefSearchField
         label={label}
+        fieldLabel={fieldLabel}
+        updateType={updateType}
         value={objectId}
         appliesTo={definition.applies_to}
+        excludeObjectIds={excludedRefValues}
         onChange={(id) => onChange(id)}
       />
     );

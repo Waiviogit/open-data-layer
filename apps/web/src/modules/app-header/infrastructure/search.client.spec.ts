@@ -1,5 +1,6 @@
-import { pickSearchObjectById } from './search.client';
+import { pickSearchObjectById, pickSearchUserByName } from './search.client';
 import type { SearchObjectResult } from '../domain/search-response.schema';
+import type { SearchUserResult } from '../domain/search-response.schema';
 
 function obj(
   partial: Partial<SearchObjectResult> & Pick<SearchObjectResult, 'object_id'>,
@@ -12,6 +13,23 @@ function obj(
     ...partial,
   };
 }
+
+function user(partial: Partial<SearchUserResult> & Pick<SearchUserResult, 'name'>): SearchUserResult {
+  return {
+    profile_image: null,
+    reputation: 1,
+    followers_count: 0,
+    is_following: false,
+    ...partial,
+  };
+}
+
+describe('pickSearchUserByName', () => {
+  it('returns exact account match case-insensitively', () => {
+    const hit = user({ name: 'alice', profile_image: 'https://example.com/a.jpg' });
+    expect(pickSearchUserByName([user({ name: 'bob' }), hit], 'Alice')).toEqual(hit);
+  });
+});
 
 describe('pickSearchObjectById', () => {
   it('returns exact id match', () => {

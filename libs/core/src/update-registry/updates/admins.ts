@@ -9,7 +9,7 @@ export const UPDATE_ADMINS: UpdateDefinition = {
   namespace: 'odl',
   localizable: false,
   description: 'Governance: accounts responsible for object data curation.',
-  value_kind: 'text',
+  value_kind: 'user_ref',
   cardinality: 'multi',
   schema: z.string().min(1),
 };

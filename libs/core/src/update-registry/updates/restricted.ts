@@ -8,7 +8,7 @@ export const UPDATE_RESTRICTED: UpdateDefinition = {
   namespace: 'odl',
   localizable: false,
   description: 'Governance: restricted account list.',
-  value_kind: 'text',
+  value_kind: 'user_ref',
   cardinality: 'multi',
   schema: z.string().min(1),
 };

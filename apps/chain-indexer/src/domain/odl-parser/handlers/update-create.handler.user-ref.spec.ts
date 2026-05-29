@@ -12,29 +12,27 @@ jest.mock('@opden-data-layer/core', () => {
     ...actual,
     UPDATE_REGISTRY: {
       ...actual.UPDATE_REGISTRY,
-      test_object_ref: {
-        update_type: 'test_object_ref',
-        description: 'test object ref',
-        value_kind: 'object_ref' as const,
-        cardinality: 'single' as const,
-        applies_to: [actual.OBJECT_TYPES.PRODUCT],
-        schema: z.string().min(1).max(256),
+      test_user_ref: {
+        update_type: 'test_user_ref',
+        description: 'test user ref',
+        value_kind: 'user_ref' as const,
+        cardinality: 'multi' as const,
+        schema: z.string().min(1),
       },
     },
     OBJECT_TYPE_REGISTRY: {
       ...actual.OBJECT_TYPE_REGISTRY,
       [actual.OBJECT_TYPES.GOVERNANCE]: {
         ...gov,
-        supported_updates: [...gov.supported_updates, 'test_object_ref'],
+        supported_updates: [...gov.supported_updates, 'test_user_ref'],
       },
     },
   };
 });
 
 import { UpdateCreateHandler } from './update-create.handler';
-import { defaultUpdateCreateUserRefDeps } from './update-create.handler.test-deps';
 
-describe('UpdateCreateHandler object_ref', () => {
+describe('UpdateCreateHandler user_ref', () => {
   const baseCtx: OdlEventContext = {
     action: 'update_create',
     creator: 'owner',
@@ -61,19 +59,7 @@ describe('UpdateCreateHandler object_ref', () => {
     seq: 0,
   };
 
-  const referencedProduct: ObjectsCore = {
-    ...governanceCore,
-    object_id: 'ref-target',
-    object_type: OBJECT_TYPES.PRODUCT,
-  };
-
-  const referencedWrongType: ObjectsCore = {
-    ...governanceCore,
-    object_id: 'ref-wrong',
-    object_type: OBJECT_TYPES.GOVERNANCE,
-  };
-
-  it('skips when referenced object_id does not exist in objects_core', async () => {
+  it('skips when user not in DB and not found on Hive', async () => {
     const createReplacingIfPresent = jest.fn();
     const existsByObjectAndValue = jest.fn().mockResolvedValue(false);
     const objectUpdatesRepository = {
@@ -82,22 +68,28 @@ describe('UpdateCreateHandler object_ref', () => {
       existsByObjectAndValue,
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
-      findByObjectId: jest.fn().mockImplementation((id: string) => {
-        if (id === 'gov1') {
-          return Promise.resolve(governanceCore);
-        }
-        return Promise.resolve(undefined);
-      }),
+      findByObjectId: jest.fn().mockResolvedValue(governanceCore),
     } as unknown as import('../../../repositories').ObjectsCoreRepository;
+    const findByName = jest.fn().mockResolvedValue(undefined);
+    const enqueue = jest.fn().mockResolvedValue(undefined);
+    const getAccounts = jest.fn().mockResolvedValue([]);
+    const accountsCurrentRepository = {
+      findByName,
+    } as unknown as import('../../../repositories').AccountsCurrentRepository;
+    const accountSyncQueueRepository = {
+      enqueue,
+    } as unknown as import('../../../repositories').AccountSyncQueueRepository;
+    const hiveClient = {
+      getAccounts,
+    } as unknown as import('@opden-data-layer/clients').HiveClient;
     const runner = new WriteGuardRunner([]);
     const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
-    const userRefDeps = defaultUpdateCreateUserRefDeps();
     const handler = new UpdateCreateHandler(
       objectUpdatesRepository,
       objectsCoreRepository,
-      userRefDeps.accountsCurrentRepository,
-      userRefDeps.accountSyncQueueRepository,
-      userRefDeps.hiveClient,
+      accountsCurrentRepository,
+      accountSyncQueueRepository,
+      hiveClient,
       runner,
       eventEmitter,
     );
@@ -105,64 +97,21 @@ describe('UpdateCreateHandler object_ref', () => {
     await handler.handle(
       {
         object_id: 'gov1',
-        update_type: 'test_object_ref',
+        update_type: 'test_user_ref',
         creator: 'owner',
-        value_text: 'missing-ref',
+        value_text: 'ghostuser',
       },
       baseCtx,
     );
 
+    expect(findByName).toHaveBeenCalledWith('ghostuser');
+    expect(getAccounts).toHaveBeenCalledWith(['ghostuser']);
+    expect(enqueue).not.toHaveBeenCalled();
     expect(createReplacingIfPresent).not.toHaveBeenCalled();
     expect(existsByObjectAndValue).not.toHaveBeenCalled();
   });
 
-  it('skips when referenced object_type is not in applies_to', async () => {
-    const createReplacingIfPresent = jest.fn();
-    const existsByObjectAndValue = jest.fn().mockResolvedValue(false);
-    const objectUpdatesRepository = {
-      createReplacingIfPresent,
-      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
-      existsByObjectAndValue,
-    } as unknown as import('../../../repositories').ObjectUpdatesRepository;
-    const objectsCoreRepository = {
-      findByObjectId: jest.fn().mockImplementation((id: string) => {
-        if (id === 'gov1') {
-          return Promise.resolve(governanceCore);
-        }
-        if (id === 'ref-wrong') {
-          return Promise.resolve(referencedWrongType);
-        }
-        return Promise.resolve(undefined);
-      }),
-    } as unknown as import('../../../repositories').ObjectsCoreRepository;
-    const runner = new WriteGuardRunner([]);
-    const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
-    const userRefDeps = defaultUpdateCreateUserRefDeps();
-    const handler = new UpdateCreateHandler(
-      objectUpdatesRepository,
-      objectsCoreRepository,
-      userRefDeps.accountsCurrentRepository,
-      userRefDeps.accountSyncQueueRepository,
-      userRefDeps.hiveClient,
-      runner,
-      eventEmitter,
-    );
-
-    await handler.handle(
-      {
-        object_id: 'gov1',
-        update_type: 'test_object_ref',
-        creator: 'owner',
-        value_text: 'ref-wrong',
-      },
-      baseCtx,
-    );
-
-    expect(createReplacingIfPresent).not.toHaveBeenCalled();
-    expect(existsByObjectAndValue).not.toHaveBeenCalled();
-  });
-
-  it('persists value_text and calls existsByObjectAndValue with object_ref when referenced object exists', async () => {
+  it('persists and enqueues sync when user not in DB but found on Hive', async () => {
     const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
     const existsByObjectAndValue = jest.fn().mockResolvedValue(false);
     const objectUpdatesRepository = {
@@ -171,25 +120,28 @@ describe('UpdateCreateHandler object_ref', () => {
       existsByObjectAndValue,
     } as unknown as import('../../../repositories').ObjectUpdatesRepository;
     const objectsCoreRepository = {
-      findByObjectId: jest.fn().mockImplementation((id: string) => {
-        if (id === 'gov1') {
-          return Promise.resolve(governanceCore);
-        }
-        if (id === 'ref-target') {
-          return Promise.resolve(referencedProduct);
-        }
-        return Promise.resolve(undefined);
-      }),
+      findByObjectId: jest.fn().mockResolvedValue(governanceCore),
     } as unknown as import('../../../repositories').ObjectsCoreRepository;
+    const findByName = jest.fn().mockResolvedValue(undefined);
+    const enqueue = jest.fn().mockResolvedValue(undefined);
+    const getAccounts = jest.fn().mockResolvedValue([{ name: 'alice' }]);
+    const accountsCurrentRepository = {
+      findByName,
+    } as unknown as import('../../../repositories').AccountsCurrentRepository;
+    const accountSyncQueueRepository = {
+      enqueue,
+    } as unknown as import('../../../repositories').AccountSyncQueueRepository;
+    const hiveClient = {
+      getAccounts,
+    } as unknown as import('@opden-data-layer/clients').HiveClient;
     const runner = new WriteGuardRunner([]);
     const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
-    const userRefDeps = defaultUpdateCreateUserRefDeps();
     const handler = new UpdateCreateHandler(
       objectUpdatesRepository,
       objectsCoreRepository,
-      userRefDeps.accountsCurrentRepository,
-      userRefDeps.accountSyncQueueRepository,
-      userRefDeps.hiveClient,
+      accountsCurrentRepository,
+      accountSyncQueueRepository,
+      hiveClient,
       runner,
       eventEmitter,
     );
@@ -197,26 +149,82 @@ describe('UpdateCreateHandler object_ref', () => {
     await handler.handle(
       {
         object_id: 'gov1',
-        update_type: 'test_object_ref',
+        update_type: 'test_user_ref',
         creator: 'owner',
-        value_text: 'ref-target',
+        value_text: 'alice',
       },
       baseCtx,
     );
 
+    expect(getAccounts).toHaveBeenCalledWith(['alice']);
+    expect(enqueue).toHaveBeenCalledWith('alice', expect.any(Number));
     expect(existsByObjectAndValue).toHaveBeenCalledWith(
       'gov1',
-      'test_object_ref',
-      'object_ref',
-      'ref-target',
+      'test_user_ref',
+      'user_ref',
+      'alice',
     );
     expect(createReplacingIfPresent).toHaveBeenCalledWith(
       undefined,
       expect.objectContaining({
-        value_text: 'ref-target',
+        value_text: 'alice',
         value_geo: null,
         value_json: null,
       }),
+    );
+  });
+
+  it('persists when user already in DB without calling Hive', async () => {
+    const createReplacingIfPresent = jest.fn().mockResolvedValue(undefined);
+    const existsByObjectAndValue = jest.fn().mockResolvedValue(false);
+    const objectUpdatesRepository = {
+      createReplacingIfPresent,
+      findByObjectTypeAndCreator: jest.fn().mockResolvedValue(undefined),
+      existsByObjectAndValue,
+    } as unknown as import('../../../repositories').ObjectUpdatesRepository;
+    const objectsCoreRepository = {
+      findByObjectId: jest.fn().mockResolvedValue(governanceCore),
+    } as unknown as import('../../../repositories').ObjectsCoreRepository;
+    const findByName = jest.fn().mockResolvedValue({ name: 'bob' });
+    const enqueue = jest.fn().mockResolvedValue(undefined);
+    const getAccounts = jest.fn();
+    const accountsCurrentRepository = {
+      findByName,
+    } as unknown as import('../../../repositories').AccountsCurrentRepository;
+    const accountSyncQueueRepository = {
+      enqueue,
+    } as unknown as import('../../../repositories').AccountSyncQueueRepository;
+    const hiveClient = {
+      getAccounts,
+    } as unknown as import('@opden-data-layer/clients').HiveClient;
+    const runner = new WriteGuardRunner([]);
+    const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+    const handler = new UpdateCreateHandler(
+      objectUpdatesRepository,
+      objectsCoreRepository,
+      accountsCurrentRepository,
+      accountSyncQueueRepository,
+      hiveClient,
+      runner,
+      eventEmitter,
+    );
+
+    await handler.handle(
+      {
+        object_id: 'gov1',
+        update_type: 'test_user_ref',
+        creator: 'owner',
+        value_text: 'bob',
+      },
+      baseCtx,
+    );
+
+    expect(findByName).toHaveBeenCalledWith('bob');
+    expect(getAccounts).not.toHaveBeenCalled();
+    expect(enqueue).not.toHaveBeenCalled();
+    expect(createReplacingIfPresent).toHaveBeenCalledWith(
+      undefined,
+      expect.objectContaining({ value_text: 'bob' }),
     );
   });
 });

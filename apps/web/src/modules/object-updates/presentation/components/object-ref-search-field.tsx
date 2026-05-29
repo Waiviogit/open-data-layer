@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { isRefValueExcluded } from '@/modules/object-create/domain/duplicate-ref-field-values';
+import { formatDuplicateRefMessage } from '@/modules/object-create/domain/format-duplicate-ref-message';
 import {
   fetchSearchObjectById,
   fetchObjectSearchResults,
@@ -25,6 +27,12 @@ export type ObjectRefSearchFieldProps = {
   label?: string;
   /** When set, only search results with matching `object_type` are shown. */
   appliesTo?: readonly string[];
+  /** Object ids already used in sibling rows (shown in search, not selectable). */
+  excludeObjectIds?: readonly string[];
+  /** Update type id for duplicate messages (e.g. `parent`). */
+  updateType?: string;
+  /** Translated field name for duplicate messages when `label` is hidden. */
+  fieldLabel?: string;
 };
 
 type DropdownRect = {
@@ -68,24 +76,43 @@ function measureDropdownRect(input: HTMLInputElement): DropdownRect {
 
 function ObjectRefSearchResultsList({
   results,
+  excludeObjectIds,
+  duplicateHint,
   onSelect,
+  onSelectDuplicate,
 }: {
   results: SearchObjectResult[];
+  excludeObjectIds: readonly string[];
+  duplicateHint?: string | null;
   onSelect: (result: SearchObjectResult) => void;
+  onSelectDuplicate: (result: SearchObjectResult) => void;
 }) {
   return (
     <>
       {results.map((result) => {
         const title = result.name?.trim() || result.object_id;
         const img = result.image_url;
+        const isDuplicate = isRefValueExcluded(
+          'object_ref',
+          result.object_id,
+          excludeObjectIds,
+        );
         return (
           <li key={result.object_id}>
             <button
               type="button"
               role="option"
-              className="flex w-full items-center gap-2 px-2 py-2 text-start hover:bg-ghost-surface"
+              aria-disabled={isDuplicate}
+              className={[
+                'flex w-full items-center gap-2 px-2 py-2 text-start',
+                isDuplicate
+                  ? 'cursor-not-allowed opacity-60'
+                  : 'hover:bg-ghost-surface',
+              ].join(' ')}
               onMouseDown={(e) => e.preventDefault()}
-              onClick={() => onSelect(result)}
+              onClick={() =>
+                isDuplicate ? onSelectDuplicate(result) : onSelect(result)
+              }
             >
               <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md bg-surface-control">
                 {img ? (
@@ -103,7 +130,11 @@ function ObjectRefSearchResultsList({
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-medium text-fg">{title}</span>
-                {result.parent_name ? (
+                {isDuplicate && duplicateHint ? (
+                  <span className="block truncate text-body-sm text-warning">
+                    {duplicateHint}
+                  </span>
+                ) : result.parent_name ? (
                   <span className="block truncate text-body-sm text-muted">
                     {result.parent_name}
                   </span>
@@ -125,12 +156,16 @@ export function ObjectRefSearchField({
   onChange,
   label,
   appliesTo,
+  excludeObjectIds = [],
+  updateType = '',
+  fieldLabel: fieldLabelProp,
 }: ObjectRefSearchFieldProps) {
   const { t } = useI18n();
   const listId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const skipResolveForPickerRef = useRef<string | null>(null);
   const objectId = value.trim();
+  const fieldLabel = fieldLabelProp?.trim() ?? label?.trim() ?? updateType;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchObjectResult[]>([]);
@@ -141,6 +176,9 @@ export function ObjectRefSearchField({
   const [resolvingObject, setResolvingObject] = useState(false);
   const [dropdownRect, setDropdownRect] = useState<DropdownRect | null>(null);
   const [portalReady, setPortalReady] = useState(false);
+  const [duplicateAlertFromList, setDuplicateAlertFromList] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     setPortalReady(true);
@@ -215,7 +253,31 @@ export function ObjectRefSearchField({
     };
   }, [searchQuery, objectId, appliesTo]);
 
-  const showDropdown = searchResults.length > 0;
+  const showDropdown =
+    searchQuery.trim().length >= 2 && searchResults.length > 0 && !searching;
+
+  const searchDuplicateAlert = useMemo(() => {
+    if (objectId) {
+      return null;
+    }
+    const duplicateFor = (id: string): string | null => {
+      if (!isRefValueExcluded('object_ref', id, excludeObjectIds)) {
+        return null;
+      }
+      return formatDuplicateRefMessage(t, updateType, fieldLabel, id);
+    };
+
+    const q = searchQuery.trim();
+    if (q.length > 0) {
+      const direct = duplicateFor(q);
+      if (direct) {
+        return direct;
+      }
+    }
+    return null;
+  }, [objectId, searchQuery, excludeObjectIds, updateType, fieldLabel, t]);
+
+  const duplicateAlert = duplicateAlertFromList ?? searchDuplicateAlert;
 
   useLayoutEffect(() => {
     if (!showDropdown) {
@@ -240,7 +302,14 @@ export function ObjectRefSearchField({
     };
   }, [showDropdown, searchQuery, searchResults.length]);
 
+  function onSelectDuplicateObject(result: SearchObjectResult) {
+    setDuplicateAlertFromList(
+      formatDuplicateRefMessage(t, updateType, fieldLabel, result.object_id),
+    );
+  }
+
   function onSelectObject(result: SearchObjectResult) {
+    setDuplicateAlertFromList(null);
     skipResolveForPickerRef.current = result.object_id;
     setSelectedObject(result);
     setSearchQuery('');
@@ -252,6 +321,7 @@ export function ObjectRefSearchField({
   function onClearObject() {
     setSelectedObject(null);
     setSearchQuery('');
+    setDuplicateAlertFromList(null);
     onChange('');
   }
 
@@ -275,8 +345,19 @@ export function ObjectRefSearchField({
           >
             <ObjectRefSearchResultsList
               results={searchResults}
+              excludeObjectIds={excludeObjectIds}
+              duplicateHint={duplicateAlert}
               onSelect={onSelectObject}
+              onSelectDuplicate={onSelectDuplicateObject}
             />
+            {duplicateAlert ? (
+              <li
+                className="border-t border-border px-2 py-2 text-caption text-warning"
+                role="alert"
+              >
+                {duplicateAlert}
+              </li>
+            ) : null}
           </ul>,
           document.body,
         )
@@ -339,13 +420,21 @@ export function ObjectRefSearchField({
         </div>
       ) : (
         <div className="mt-2">
+          {duplicateAlert && !showDropdown ? (
+            <p className="mb-2 text-caption text-warning" role="alert">
+              {duplicateAlert}
+            </p>
+          ) : null}
           <input
             ref={inputRef}
             type="search"
             className="w-full rounded-btn border border-border bg-bg px-3 py-2 text-fg"
             placeholder={t('object_edit_menu_item_search_placeholder')}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setDuplicateAlertFromList(null);
+              setSearchQuery(e.target.value);
+            }}
             autoComplete="off"
             aria-controls={showDropdown ? listId : undefined}
             aria-expanded={showDropdown}
@@ -355,7 +444,10 @@ export function ObjectRefSearchField({
               {t('object_edit_menu_item_searching')}
             </p>
           ) : null}
-          {searchQuery.trim().length >= 2 && !searching && searchResults.length === 0 ? (
+          {searchQuery.trim().length >= 2 &&
+          !searching &&
+          searchResults.length === 0 &&
+          !duplicateAlert ? (
             <p className="mt-1 text-caption text-muted">
               {t('object_edit_menu_item_no_results')}
             </p>

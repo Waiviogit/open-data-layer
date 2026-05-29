@@ -1,9 +1,14 @@
 'use client';
 
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { fetchUserSearchResults } from '@/modules/app-header/infrastructure/search.client';
+import { isRefValueExcluded } from '@/modules/object-create/domain/duplicate-ref-field-values';
+import { formatDuplicateRefMessage } from '@/modules/object-create/domain/format-duplicate-ref-message';
+import {
+  fetchSearchUserByName,
+  fetchUserSearchResults,
+} from '@/modules/app-header/infrastructure/search.client';
 import type { SearchUserResult } from '@/modules/app-header/domain/search-response.schema';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
@@ -19,6 +24,12 @@ export type UserRefSearchFieldProps = {
   value: string;
   onChange: (accountName: string, result?: SearchUserResult) => void;
   label?: string;
+  /** Account names already used in sibling rows (shown in search, not selectable). */
+  excludeAccountNames?: readonly string[];
+  /** Update type id for duplicate messages (e.g. `admins`). */
+  updateType?: string;
+  /** Translated field name for duplicate messages when `label` is hidden. */
+  fieldLabel?: string;
 };
 
 type DropdownRect = {
@@ -62,45 +73,75 @@ function measureDropdownRect(input: HTMLInputElement): DropdownRect {
 
 function UserRefSearchResultsList({
   results,
+  excludeAccountNames,
+  duplicateHint,
   onSelect,
+  onSelectDuplicate,
 }: {
   results: SearchUserResult[];
+  excludeAccountNames: readonly string[];
+  duplicateHint?: string | null;
   onSelect: (result: SearchUserResult) => void;
+  onSelectDuplicate: (result: SearchUserResult) => void;
 }) {
   return (
     <>
-      {results.map((user) => (
-        <li key={user.name}>
-          <button
-            type="button"
-            role="option"
-            className="flex w-full items-center gap-2 px-2 py-2 text-start hover:bg-ghost-surface"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => onSelect(user)}
-          >
-            <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-surface-control">
-              {user.profile_image ? (
-                <img
-                  src={user.profile_image}
-                  alt=""
-                  className="h-10 w-10 object-cover"
-                  loading="lazy"
-                />
-              ) : (
-                <span className="flex h-full w-full items-center justify-center text-caption text-muted">
-                  —
-                </span>
-              )}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block truncate font-medium text-fg">{user.name}</span>
-              <span className="block truncate text-body-sm text-muted">
-                {user.reputation.toFixed(2)} · {user.followers_count}
+      {results.map((user) => {
+        const isDuplicate = isRefValueExcluded(
+          'user_ref',
+          user.name,
+          excludeAccountNames,
+        );
+        return (
+          <li key={user.name}>
+            <button
+              type="button"
+              role="option"
+              aria-disabled={isDuplicate}
+              className={[
+                'flex w-full items-center gap-2 px-2 py-2 text-start',
+                isDuplicate
+                  ? 'cursor-not-allowed opacity-60'
+                  : 'hover:bg-ghost-surface',
+              ].join(' ')}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() =>
+                isDuplicate ? onSelectDuplicate(user) : onSelect(user)
+              }
+            >
+              <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-surface-control">
+                {user.profile_image ? (
+                  <img
+                    src={user.profile_image}
+                    alt=""
+                    className="h-10 w-10 object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center text-caption text-muted">
+                    —
+                  </span>
+                )}
               </span>
-            </span>
-          </button>
-        </li>
-      ))}
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-medium text-fg">
+                  {user.name}
+                </span>
+                <span
+                  className={[
+                    'block truncate text-body-sm',
+                    isDuplicate ? 'text-warning' : 'text-muted',
+                  ].join(' ')}
+                >
+                  {isDuplicate
+                    ? (duplicateHint ?? '')
+                    : `${user.reputation.toFixed(2)} · ${user.followers_count}`}
+                </span>
+              </span>
+            </button>
+          </li>
+        );
+      })}
     </>
   );
 }
@@ -109,18 +150,27 @@ export function UserRefSearchField({
   value,
   onChange,
   label,
+  excludeAccountNames = [],
+  updateType = '',
+  fieldLabel: fieldLabelProp,
 }: UserRefSearchFieldProps) {
   const { t } = useI18n();
   const listId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
+  const skipResolveForPickerRef = useRef<string | null>(null);
   const accountName = value.trim();
+  const fieldLabel = fieldLabelProp?.trim() ?? label?.trim() ?? updateType;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchUserResult[]>([]);
   const [searching, setSearching] = useState(false);
+  const [resolvingUser, setResolvingUser] = useState(false);
   const [selectedUser, setSelectedUser] = useState<SearchUserResult | null>(null);
   const [dropdownRect, setDropdownRect] = useState<DropdownRect | null>(null);
   const [portalReady, setPortalReady] = useState(false);
+  const [duplicateAlertFromList, setDuplicateAlertFromList] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     setPortalReady(true);
@@ -129,19 +179,38 @@ export function UserRefSearchField({
   useEffect(() => {
     if (!accountName) {
       setSelectedUser(null);
+      setResolvingUser(false);
       return;
     }
-    if (selectedUser?.name === accountName) {
+    if (skipResolveForPickerRef.current === accountName) {
+      skipResolveForPickerRef.current = null;
       return;
     }
-    setSelectedUser({
-      name: accountName,
-      profile_image: null,
-      reputation: 0,
-      followers_count: 0,
-      is_following: false,
-    });
-  }, [accountName, selectedUser?.name]);
+
+    const controller = new AbortController();
+    setResolvingUser(true);
+    void fetchSearchUserByName(accountName, { signal: controller.signal }).then(
+      (user) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+        setSelectedUser(
+          user ?? {
+            name: accountName,
+            profile_image: null,
+            reputation: 0,
+            followers_count: 0,
+            is_following: false,
+          },
+        );
+        setResolvingUser(false);
+      },
+    );
+
+    return () => {
+      controller.abort();
+    };
+  }, [accountName]);
 
   useEffect(() => {
     if (accountName) {
@@ -172,7 +241,38 @@ export function UserRefSearchField({
     };
   }, [searchQuery, accountName]);
 
-  const showDropdown = searchResults.length > 0;
+  const showDropdown =
+    searchQuery.trim().length >= 2 && searchResults.length > 0 && !searching;
+
+  const searchDuplicateAlert = useMemo(() => {
+    if (accountName) {
+      return null;
+    }
+    const duplicateFor = (name: string): string | null => {
+      if (!isRefValueExcluded('user_ref', name, excludeAccountNames)) {
+        return null;
+      }
+      return formatDuplicateRefMessage(t, updateType, fieldLabel, name);
+    };
+
+    const q = searchQuery.trim();
+    if (q.length > 0) {
+      const direct = duplicateFor(q);
+      if (direct) {
+        return direct;
+      }
+    }
+    return null;
+  }, [
+    accountName,
+    searchQuery,
+    excludeAccountNames,
+    updateType,
+    fieldLabel,
+    t,
+  ]);
+
+  const duplicateAlert = duplicateAlertFromList ?? searchDuplicateAlert;
 
   useLayoutEffect(() => {
     if (!showDropdown) {
@@ -197,7 +297,15 @@ export function UserRefSearchField({
     };
   }, [showDropdown, searchQuery, searchResults.length]);
 
+  function onSelectDuplicateUser(result: SearchUserResult) {
+    setDuplicateAlertFromList(
+      formatDuplicateRefMessage(t, updateType, fieldLabel, result.name),
+    );
+  }
+
   function onSelectUser(result: SearchUserResult) {
+    skipResolveForPickerRef.current = result.name;
+    setDuplicateAlertFromList(null);
     setSelectedUser(result);
     setSearchQuery('');
     setSearchResults([]);
@@ -208,6 +316,7 @@ export function UserRefSearchField({
   function onClearUser() {
     setSelectedUser(null);
     setSearchQuery('');
+    setDuplicateAlertFromList(null);
     onChange('');
   }
 
@@ -231,8 +340,19 @@ export function UserRefSearchField({
           >
             <UserRefSearchResultsList
               results={searchResults}
+              excludeAccountNames={excludeAccountNames}
+              duplicateHint={duplicateAlert}
               onSelect={onSelectUser}
+              onSelectDuplicate={onSelectDuplicateUser}
             />
+            {duplicateAlert ? (
+              <li
+                className="border-t border-border px-2 py-2 text-caption text-warning"
+                role="alert"
+              >
+                {duplicateAlert}
+              </li>
+            ) : null}
           </ul>,
           document.body,
         )
@@ -261,7 +381,11 @@ export function UserRefSearchField({
             <span className="block truncate font-medium text-fg">
               {selectedUser.name}
             </span>
-            {selectedUser.reputation > 0 || selectedUser.followers_count > 0 ? (
+            {resolvingUser ? (
+              <span className="block truncate text-body-sm text-muted">
+                {t('object_edit_menu_item_searching')}
+              </span>
+            ) : selectedUser.reputation > 0 || selectedUser.followers_count > 0 ? (
               <span className="block truncate text-body-sm text-muted">
                 {selectedUser.reputation.toFixed(2)} · {selectedUser.followers_count}
               </span>
@@ -279,13 +403,21 @@ export function UserRefSearchField({
         </div>
       ) : (
         <div className="mt-2">
+          {duplicateAlert && !showDropdown ? (
+            <p className="mb-2 text-caption text-warning" role="alert">
+              {duplicateAlert}
+            </p>
+          ) : null}
           <input
             ref={inputRef}
             type="search"
             className="w-full rounded-btn border border-border bg-bg px-3 py-2 text-fg"
             placeholder={t('object_edit_delegation_search_placeholder')}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setDuplicateAlertFromList(null);
+              setSearchQuery(e.target.value);
+            }}
             autoComplete="off"
             aria-controls={showDropdown ? listId : undefined}
             aria-expanded={showDropdown}
@@ -295,7 +427,10 @@ export function UserRefSearchField({
               {t('object_edit_menu_item_searching')}
             </p>
           ) : null}
-          {searchQuery.trim().length >= 2 && !searching && searchResults.length === 0 ? (
+          {searchQuery.trim().length >= 2 &&
+          !searching &&
+          searchResults.length === 0 &&
+          !duplicateAlert ? (
             <p className="mt-1 text-caption text-muted">
               {t('object_edit_menu_item_no_results')}
             </p>

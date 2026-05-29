@@ -99,6 +99,18 @@ describe('buildOdlUpdateCreateOp', () => {
     expect(payload['value_text']).toBe('parent-obj-id');
   });
 
+  it('maps user_ref kind to value_text', () => {
+    const op = buildOdlUpdateCreateOp({
+      ...base,
+      updateType: 'admins',
+      valueKind: 'user_ref',
+      value: 'alice',
+    });
+    const payload = JSON.parse(op.json).events[0].payload as Record<string, unknown>;
+    expect(payload['value_text']).toBe('alice');
+    expect(payload['value_user_ref']).toBeUndefined();
+  });
+
   it('omits locale when not provided', () => {
     const op = buildOdlUpdateCreateOp({
       ...base,

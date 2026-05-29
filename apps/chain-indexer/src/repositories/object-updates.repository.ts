@@ -124,7 +124,7 @@ export class ObjectUpdatesRepository {
   async existsByObjectAndValue(
     objectId: string,
     updateType: string,
-    valueKind: 'text' | 'geo' | 'json' | 'object_ref',
+    valueKind: 'text' | 'geo' | 'json' | 'object_ref' | 'user_ref',
     value: unknown,
   ): Promise<boolean> {
     let query = this.db
@@ -133,7 +133,7 @@ export class ObjectUpdatesRepository {
       .where('object_id', '=', objectId)
       .where('update_type', '=', updateType);
 
-    if (valueKind === 'text' || valueKind === 'object_ref') {
+    if (valueKind === 'text' || valueKind === 'object_ref' || valueKind === 'user_ref') {
       query = query.where('value_text', '=', String(value));
     } else if (valueKind === 'json') {
       query = query.where(

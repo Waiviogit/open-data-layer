@@ -20,8 +20,13 @@ import {
   groupFieldsByPriority,
   type SemanticBlockId,
 } from '../../domain/group-fields-by-priority';
+import { allowsMultipleUpdateRows } from '../../domain/allows-multiple-update-rows';
+import {
+  excludedRefValuesForEntry,
+  isDuplicateRefValue,
+} from '../../domain/duplicate-ref-field-values';
+import { formatDuplicateRefMessage } from '../../domain/format-duplicate-ref-message';
 import type { FieldEntry } from '../../domain/object-create.types';
-import { supposedValueCountByType } from '../../domain/supposed-update-seeds';
 import { AddFieldPopover } from './add-field-popover';
 
 export type CoreFieldsEditorProps = {
@@ -57,10 +62,6 @@ export function CoreFieldsEditor({
   const groups = useMemo(() => groupFieldsByPriority(objectType), [objectType]);
   const semanticBlocks = useMemo(
     () => getSemanticBlocks(objectType),
-    [objectType],
-  );
-  const supposedCounts = useMemo(
-    () => supposedValueCountByType(objectType),
     [objectType],
   );
   const requiredSet = useMemo(() => new Set(groups.required), [groups.required]);
@@ -102,7 +103,6 @@ export function CoreFieldsEditor({
             title={t(BLOCK_I18N[block.id])}
             types={block.types}
             fields={fields}
-            supposedCounts={supposedCounts}
             requiredSet={requiredSet}
             tagCategoryNames={tagCategoryNames}
             galleryAlbumNames={galleryAlbumNames}
@@ -132,7 +132,6 @@ function SemanticBlock({
   title,
   types,
   fields,
-  supposedCounts,
   requiredSet,
   tagCategoryNames,
   galleryAlbumNames,
@@ -147,7 +146,6 @@ function SemanticBlock({
   title: string;
   types: readonly string[];
   fields: readonly FieldEntry[];
-  supposedCounts: Map<string, number>;
   requiredSet: Set<string>;
   tagCategoryNames: readonly string[];
   galleryAlbumNames: readonly string[];
@@ -179,7 +177,6 @@ function SemanticBlock({
             key={updateType}
             updateType={updateType}
             fields={fields}
-            supposedCounts={supposedCounts}
             requiredSet={requiredSet}
             tagCategoryNames={tagCategoryNames}
             galleryAlbumNames={galleryAlbumNames}
@@ -199,7 +196,6 @@ function SemanticBlock({
 function UpdateTypeSection({
   updateType,
   fields,
-  supposedCounts,
   requiredSet,
   tagCategoryNames,
   galleryAlbumNames,
@@ -212,7 +208,6 @@ function UpdateTypeSection({
 }: {
   updateType: string;
   fields: readonly FieldEntry[];
-  supposedCounts: Map<string, number>;
   requiredSet: Set<string>;
   tagCategoryNames: readonly string[];
   galleryAlbumNames: readonly string[];
@@ -224,11 +219,7 @@ function UpdateTypeSection({
   showTagPills: boolean;
 }) {
   const rows = fields.filter((f) => f.updateType === updateType);
-  const allowsMultiple =
-    updateType === UPDATE_TYPES.TAG_CATEGORY ||
-    updateType === UPDATE_TYPES.AGGREGATE_RATING ||
-    (UPDATE_REGISTRY[updateType]?.cardinality === 'multi' &&
-      (supposedCounts.get(updateType) ?? 0) > 1);
+  const allowsMultiple = allowsMultipleUpdateRows(updateType);
   const isRequired = requiredSet.has(updateType);
 
   if (
@@ -282,6 +273,7 @@ function UpdateTypeSection({
         <FieldRow
           key={entry.entryKey}
           entry={entry}
+          peerRows={rows}
           isRequired={isRequired}
           tagCategoryNames={tagCategoryNames}
           galleryAlbumNames={galleryAlbumNames}
@@ -407,6 +399,7 @@ function TagCategoryItemsGroup({
       {editingKey && rows.some((r) => r.entryKey === editingKey) ? (
         <FieldRow
           entry={rows.find((r) => r.entryKey === editingKey) as FieldEntry}
+          peerRows={rows}
           isRequired={isRequired}
           tagCategoryNames={tagCategoryNames}
           galleryAlbumNames={[]}
@@ -458,6 +451,7 @@ function isEntryFilled(entry: FieldEntry): boolean {
 
 function FieldRow({
   entry,
+  peerRows,
   isRequired,
   tagCategoryNames,
   galleryAlbumNames,
@@ -469,6 +463,7 @@ function FieldRow({
   autoFocusTagValue = false,
 }: {
   entry: FieldEntry;
+  peerRows: readonly FieldEntry[];
   isRequired: boolean;
   tagCategoryNames: readonly string[];
   galleryAlbumNames: readonly string[];
@@ -479,7 +474,17 @@ function FieldRow({
   showTypeLabel: boolean;
   autoFocusTagValue?: boolean;
 }) {
+  const { t } = useI18n();
   const [valid, setValid] = useState(false);
+  const [refDuplicateMessage, setRefDuplicateMessage] = useState<string | null>(
+    null,
+  );
+  const fieldLabel = labelForUpdateType(entry.updateType);
+  const excludedRefValues = excludedRefValuesForEntry(
+    peerRows,
+    entry.updateType,
+    entry.entryKey,
+  );
   const filled = isEntryFilled(entry);
   const heading =
     showTypeLabel && typeof entry.value === 'string' && entry.value.trim()
@@ -518,7 +523,19 @@ function FieldRow({
       <UpdateValueForm
         updateType={entry.updateType}
         value={entry.value}
-        onChange={(v) => onUpdateField(entry.entryKey, v)}
+        excludedRefValues={excludedRefValues}
+        onChange={(v) => {
+          if (
+            isDuplicateRefValue(peerRows, entry.updateType, entry.entryKey, v)
+          ) {
+            setRefDuplicateMessage(
+              formatDuplicateRefMessage(t, entry.updateType, fieldLabel, v),
+            );
+            return;
+          }
+          setRefDuplicateMessage(null);
+          onUpdateField(entry.entryKey, v);
+        }}
         onValidityChange={setValid}
         tagCategoryNames={tagCategoryNames}
         galleryAlbumNames={galleryAlbumNames}
@@ -529,7 +546,11 @@ function FieldRow({
         hideUpdateTypeHeading
         autoFocusTagValue={autoFocusTagValue}
       />
-      {!valid ? (
+      {refDuplicateMessage ? (
+        <p className="mt-1 text-caption text-accent" role="alert">
+          {refDuplicateMessage}
+        </p>
+      ) : !valid ? (
         <p className="mt-1 text-caption text-muted" aria-hidden>
           —
         </p>

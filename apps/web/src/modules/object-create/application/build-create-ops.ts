@@ -8,6 +8,7 @@ import {
 
 import { validateUpdateValue } from '@/modules/object-updates/application/update-value-form.utils';
 
+import { isDuplicateRefValue } from '../domain/duplicate-ref-field-values';
 import { groupFieldsByPriority } from '../domain/group-fields-by-priority';
 import { isEntryValid } from '../domain/object-health-score';
 import type { FieldEntry } from '../domain/object-create.types';
@@ -21,7 +22,7 @@ export type OdlCreateEvent = {
 };
 
 function resolveValueFieldKey(valueKind: OdlUpdateCreateValueKind): string {
-  if (valueKind === 'object_ref') {
+  if (valueKind === 'object_ref' || valueKind === 'user_ref') {
     return 'value_text';
   }
   return `value_${valueKind}`;
@@ -87,7 +88,18 @@ export function buildAllCreateEvents(input: BuildCreateOpsInput): OdlCreateEvent
     },
   ];
 
+  const acceptedFields: FieldEntry[] = [];
   for (const entry of input.fields) {
+    if (
+      isDuplicateRefValue(
+        acceptedFields,
+        entry.updateType,
+        entry.entryKey,
+        entry.value,
+      )
+    ) {
+      continue;
+    }
     const locale =
       entry.locale && entry.locale.length > 0 ? entry.locale : input.language;
     const payload = buildUpdateCreateEventPayload(input.objectId, input.creator, {
@@ -95,6 +107,7 @@ export function buildAllCreateEvents(input: BuildCreateOpsInput): OdlCreateEvent
       locale,
     });
     if (payload) {
+      acceptedFields.push(entry);
       events.push({
         action: 'update_create',
         v: 1,

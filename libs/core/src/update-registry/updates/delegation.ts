@@ -7,7 +7,7 @@ export const UPDATE_DELEGATION: UpdateDefinition = {
   namespace: 'odl',
   localizable: false,
   description: 'Delegation or authority reference.',
-  value_kind: 'text',
+  value_kind: 'user_ref',
   cardinality: 'single',
   schema: z.string().min(3).max(16),
 };

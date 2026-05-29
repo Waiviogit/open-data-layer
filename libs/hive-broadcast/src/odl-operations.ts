@@ -1,7 +1,12 @@
 import { buildCustomJsonOp } from './operation-builders';
 import type { CustomJsonOp } from './hive-operations';
 
-export type OdlUpdateCreateValueKind = 'text' | 'geo' | 'json' | 'object_ref';
+export type OdlUpdateCreateValueKind =
+  | 'text'
+  | 'geo'
+  | 'json'
+  | 'object_ref'
+  | 'user_ref';
 
 export type BuildOdlUpdateCreateOpInput = {
   /** Hive `custom_json` id (e.g. `odl-mainnet`). */
@@ -17,7 +22,7 @@ export type BuildOdlUpdateCreateOpInput = {
 };
 
 function resolveValueFieldKey(valueKind: OdlUpdateCreateValueKind): string {
-  if (valueKind === 'object_ref') {
+  if (valueKind === 'object_ref' || valueKind === 'user_ref') {
     return 'value_text';
   }
   return `value_${valueKind}`;
