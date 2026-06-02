@@ -218,6 +218,39 @@ export type HiveEngineTransaction = {
   logs: string;
 };
 
+/** Parsed `tokens` contract stake / unstake payload (`to` is the staker). */
+export type HiveEngineTokensStakePayload = {
+  symbol: string;
+  quantity?: string;
+  to: string;
+  isSignedWithActiveKey?: boolean;
+};
+
+/** Parsed `tokens` contract delegate / undelegate payload (`sender` is delegator). */
+export type HiveEngineTokensDelegatePayload = {
+  symbol: string;
+  quantity: string;
+  to: string;
+  isSignedWithActiveKey?: boolean;
+};
+
+/** Parsed `tokens` contract cancelUnstake payload (quantity in logs). */
+export type HiveEngineTokensCancelUnstakePayload = {
+  symbol: string;
+  txID: string;
+  isSignedWithActiveKey?: boolean;
+};
+
+export type HiveEngineTokensLogEvent = {
+  contract: string;
+  event: string;
+  data: Record<string, unknown>;
+};
+
+export type HiveEngineTokensLogs = {
+  events?: HiveEngineTokensLogEvent[];
+};
+
 export type HiveEngineBlock = {
   _id: number;
   blockNumber: number;

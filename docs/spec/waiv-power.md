@@ -49,11 +49,12 @@ Emitted when the Hive Engine **block parser** sees **`tokens`** contract actions
 
 | Action | Accounts | Delta on `raw_waiv_power` |
 |--------|----------|------------------------|
-| `stake` | `payload.account` | `+quantity` |
-| `unstake` | `payload.account` | `-quantity` |
-| `delegate` | `payload.from` | `-quantity` |
+| `stake` | `payload.to` | `+quantity` |
+| `unstake` | `payload.to` | `-quantity` |
+| `cancelUnstake` | log `unstakeCancel.data.account` (fallback `sender`) | `+quantity` (from log) |
+| `delegate` | `sender` | `-quantity` |
 | `delegate` | `payload.to` | `+quantity` |
-| `undelegate` | `payload.from` | `+quantity` |
+| `undelegate` | `sender` | `+quantity` |
 | `undelegate` | `payload.to` | `-quantity` |
 
 **Handler:** if `account` **not** in table → no-op. Else increment `raw_waiv_power` by delta (clamp at `0`), set `waiv_power_dirty = TRUE`. **`waiv_power` is not updated immediately.**

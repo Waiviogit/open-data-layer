@@ -1,6 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import type { HiveEngineBlock, HiveEngineTransaction } from '@opden-data-layer/clients';
+import type {
+  HiveEngineBlock,
+  HiveEngineTokensCancelUnstakePayload,
+  HiveEngineTokensDelegatePayload,
+  HiveEngineTokensLogs,
+  HiveEngineTokensStakePayload,
+  HiveEngineTransaction,
+} from '@opden-data-layer/clients';
 import {
   USER_OBJECT_POWERS_UPDATE_EVENT,
   UserObjectPowersUpdateEvent,
@@ -8,7 +15,14 @@ import {
 import type { HiveEngineSubParser } from '../hive-engine-sub-parser.interface';
 
 const TOKENS_CONTRACT = 'tokens';
-const TRACKED_ACTIONS = new Set(['stake', 'unstake', 'delegate', 'undelegate']);
+const WAIV_SYMBOL = 'WAIV';
+const TRACKED_ACTIONS = new Set([
+  'stake',
+  'unstake',
+  'cancelUnstake',
+  'delegate',
+  'undelegate',
+]);
 
 /**
  * Tracks WAIV stake/delegate operations from Hive Engine `tokens` contract
@@ -33,15 +47,26 @@ export class WaivStakeParser implements HiveEngineSubParser {
       return;
     }
 
-    let payload: Record<string, unknown>;
-    try {
-      payload = JSON.parse(tx.payload) as Record<string, unknown>;
-    } catch {
-      this.logger.warn(`WAIV stake parser: invalid JSON in ${tx.action} payload`);
-      return;
+    switch (tx.action) {
+      case 'stake':
+      case 'unstake':
+        this.processStakeOrUnstake(tx);
+        break;
+      case 'cancelUnstake':
+        this.processCancelUnstake(tx);
+        break;
+      case 'delegate':
+      case 'undelegate':
+        this.processDelegateOrUndelegate(tx);
+        break;
+      default:
+        break;
     }
+  }
 
-    if (payload.symbol !== 'WAIV') {
+  private processStakeOrUnstake(tx: HiveEngineTransaction): void {
+    const payload = this.parsePayload<HiveEngineTokensStakePayload>(tx);
+    if (!payload || payload.symbol !== WAIV_SYMBOL) {
       return;
     }
 
@@ -50,28 +75,81 @@ export class WaivStakeParser implements HiveEngineSubParser {
       return;
     }
 
-    switch (tx.action) {
-      case 'stake': {
-        this.emitDelta(String(payload.account ?? ''), quantity);
-        break;
-      }
-      case 'unstake': {
-        this.emitDelta(String(payload.account ?? ''), -quantity);
-        break;
-      }
-      case 'delegate': {
-        this.emitDelta(String(payload.from ?? ''), -quantity);
-        this.emitDelta(String(payload.to ?? ''), quantity);
-        break;
-      }
-      case 'undelegate': {
-        this.emitDelta(String(payload.from ?? ''), quantity);
-        this.emitDelta(String(payload.to ?? ''), -quantity);
-        break;
-      }
-      default:
-        break;
+    const account = payload.to.trim();
+    const delta = tx.action === 'stake' ? quantity : -quantity;
+    this.emitDelta(account, delta);
+  }
+
+  private processCancelUnstake(tx: HiveEngineTransaction): void {
+    const payload = this.parsePayload<HiveEngineTokensCancelUnstakePayload>(tx);
+    if (!payload || payload.symbol !== WAIV_SYMBOL) {
+      return;
     }
+
+    const fromLogs = this.parseLogEvent(tx, 'unstakeCancel');
+    const account = (fromLogs?.account ?? tx.sender).trim();
+    const quantity = fromLogs?.quantity;
+    if (!account || quantity === undefined || quantity === 0) {
+      this.logger.warn(
+        `WAIV stake parser: cancelUnstake missing account/quantity in tx ${tx.transactionId}`,
+      );
+      return;
+    }
+
+    this.emitDelta(account, quantity);
+  }
+
+  private processDelegateOrUndelegate(tx: HiveEngineTransaction): void {
+    const payload = this.parsePayload<HiveEngineTokensDelegatePayload>(tx);
+    if (!payload || payload.symbol !== WAIV_SYMBOL) {
+      return;
+    }
+
+    const quantity = parseFloat(String(payload.quantity ?? '0'));
+    if (!Number.isFinite(quantity) || quantity === 0) {
+      return;
+    }
+
+    const from = tx.sender.trim();
+    const to = payload.to.trim();
+    if (tx.action === 'delegate') {
+      this.emitDelta(from, -quantity);
+      this.emitDelta(to, quantity);
+      return;
+    }
+    this.emitDelta(from, quantity);
+    this.emitDelta(to, -quantity);
+  }
+
+  private parsePayload<T>(tx: HiveEngineTransaction): T | null {
+    try {
+      return JSON.parse(tx.payload) as T;
+    } catch {
+      this.logger.warn(`WAIV stake parser: invalid JSON in ${tx.action} payload`);
+      return null;
+    }
+  }
+
+  private parseLogEvent(
+    tx: HiveEngineTransaction,
+    eventName: string,
+  ): { account: string; quantity: number } | null {
+    try {
+      const logs = JSON.parse(tx.logs) as HiveEngineTokensLogs;
+      for (const ev of logs.events ?? []) {
+        if (ev.event !== eventName || ev.data.symbol !== WAIV_SYMBOL) {
+          continue;
+        }
+        const account = String(ev.data.account ?? '').trim();
+        const quantity = parseFloat(String(ev.data.quantity ?? '0'));
+        if (account.length > 0 && Number.isFinite(quantity) && quantity > 0) {
+          return { account, quantity };
+        }
+      }
+    } catch {
+      this.logger.warn(`WAIV stake parser: invalid logs in ${tx.action} tx ${tx.transactionId}`);
+    }
+    return null;
   }
 
   private emitDelta(account: string, delta: number): void {
