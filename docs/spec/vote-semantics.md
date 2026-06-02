@@ -98,6 +98,8 @@ weight_i = waiv_power_i > 1 ? waiv_power_i : 1
 rank_score = round( Σ (rank_i × weight_i) / Σ weight_i )
 ```
 
+`waiv_power` is the 30-day time-weighted rolling average from [`user_object_powers`](waiv-power.md), not the live stake.
+
 `rank_context` and `rank_decisive_event_seq` are null for this mode.
 
 ### Query-time ordering (multi-cardinality)
@@ -133,11 +135,18 @@ When no admin or trusted decisive vote exists for an update, the **community vot
 
 ### Voter weight (`waiv_power`)
 
-Each voter's weight uses **`waiv_power`** from [`user_object_powers`](waiv-power.md) (Hive Engine WAIV `stake + delegationsIn` for tracked accounts). This replaces **`object_reputation`** for validity weighting only; `object_reputation` on `accounts_current` may still exist for other features.
+Each voter's weight uses **`waiv_power`** from [`user_object_powers`](waiv-power.md).
+`waiv_power` is a **30-day time-weighted rolling average** of `raw_waiv_power`
+(Hive Engine WAIV `stake + delegationsIn`). The effective value lags behind the
+real stake by up to 30 days, giving the community time to react to significant
+power changes before they influence voting outcomes.
 
 ```
 weight_i = waiv_power_i > 1 ? waiv_power_i : 1
 ```
+
+See [`waiv-power.md`](waiv-power.md) for snapshot mechanics, cron schedule, and
+how the average is computed (`user_waiv_power_history` table).
 
 ### Field weight computation
 

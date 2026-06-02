@@ -23,7 +23,7 @@ export class UserObjectPowersUpdateListener {
       if (!row) {
         return;
       }
-      await this.repo.incrementWaivPower(trimmed, event.delta);
+      await this.repo.setRawWaivPowerDelta(trimmed, event.delta);
     } catch (e) {
       this.logger.error((e as Error).message);
     }

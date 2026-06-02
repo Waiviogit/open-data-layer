@@ -231,10 +231,15 @@ async function main(): Promise<void> {
       }
 
       const powers = await fetchWaivPowersForAccounts(nodes, batch);
-      const values = batch.map((account) => ({
-        account,
-        waiv_power: powers.get(account) ?? 0,
-      }));
+      const values = batch.map((account) => {
+        const power = powers.get(account) ?? 0;
+        return {
+          account,
+          waiv_power: power,
+          raw_waiv_power: power,
+          waiv_power_dirty: false,
+        };
+      });
 
       if (opts.dryRun) {
         console.log(

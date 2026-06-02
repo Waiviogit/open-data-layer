@@ -18,6 +18,7 @@ import { SchedulerDispatchService } from './scheduler-dispatch.service';
 import { SchedulerLockService } from './scheduler-lock.service';
 import { SchedulerWorkerService } from './scheduler-worker.service';
 import { SiteRegistryDailyRunner } from '../jobs/site-registry-daily.runner';
+import { WaivPowerAvgRunner } from '../jobs/waiv-power-avg.runner';
 
 @Module({
   imports: [
@@ -87,6 +88,7 @@ import { SiteRegistryDailyRunner } from '../jobs/site-registry-daily.runner';
   ],
   providers: [
     SiteRegistryDailyRunner,
+    WaivPowerAvgRunner,
     CurrencyCollectRunner,
     SchedulerLockService,
     SchedulerDispatchService,

@@ -33,6 +33,7 @@ export interface OdlDatabase {
   validity_votes: ValidityVotesTable;
   rank_votes: RankVotesTable;
   user_object_powers: UserObjectPowersTable;
+  user_waiv_power_history: UserWaivPowerHistoryTable;
   object_authority: ObjectAuthorityTable;
   accounts_current: AccountsCurrentTable;
   user_metadata: UserMetadataTable;
@@ -173,12 +174,32 @@ export type RankVoteUpdate = Updateable<RankVotesTable>;
 
 export interface UserObjectPowersTable {
   account: string;
+  /** 30-day time-weighted average used for vote weight (updated by scheduler). */
   waiv_power: number;
+  /** Live Hive Engine WAIV stake + delegationsIn (updated on chain events). */
+  raw_waiv_power: number;
+  /** Set when raw_waiv_power changes; cleared after daily history snapshot. */
+  waiv_power_dirty: boolean;
 }
 
 export type UserObjectPower = Selectable<UserObjectPowersTable>;
 export type NewUserObjectPower = Insertable<UserObjectPowersTable>;
 export type UserObjectPowerUpdate = Updateable<UserObjectPowersTable>;
+
+// ---------------------------------------------------------------------------
+// user_waiv_power_history
+// ---------------------------------------------------------------------------
+
+export interface UserWaivPowerHistoryTable {
+  id: Generated<number>;
+  account: string;
+  waiv_power: number;
+  recorded_at: ColumnType<Date, Date | string | undefined, Date | string>;
+}
+
+export type UserWaivPowerHistory = Selectable<UserWaivPowerHistoryTable>;
+export type NewUserWaivPowerHistory = Insertable<UserWaivPowerHistoryTable>;
+export type UserWaivPowerHistoryUpdate = Updateable<UserWaivPowerHistoryTable>;
 
 // ---------------------------------------------------------------------------
 // object_authority

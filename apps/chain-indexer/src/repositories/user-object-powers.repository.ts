@@ -27,8 +27,23 @@ export class UserObjectPowersRepository {
   async create(account: string, waiv_power: number): Promise<void> {
     await this.db
       .insertInto('user_object_powers')
-      .values({ account, waiv_power })
+      .values({
+        account,
+        waiv_power,
+        raw_waiv_power: waiv_power,
+        waiv_power_dirty: false,
+      })
       .execute();
+  }
+
+  async setRawWaivPowerDelta(account: string, delta: number): Promise<void> {
+    await sql`
+      UPDATE user_object_powers
+      SET
+        raw_waiv_power = GREATEST(0::double precision, raw_waiv_power + ${delta}::double precision),
+        waiv_power_dirty = TRUE
+      WHERE account = ${account}
+    `.execute(this.db);
   }
 
   async incrementWaivPower(account: string, delta: number): Promise<void> {

@@ -129,9 +129,26 @@ CREATE INDEX idx_object_authority_object_id_type_created_at ON object_authority 
 -- See waiv-power.md (normative).
 -- ---------------------------------------------------------------------------
 CREATE TABLE user_object_powers (
-  account    TEXT NOT NULL PRIMARY KEY,
-  waiv_power DOUBLE PRECISION NOT NULL DEFAULT 0
+  account           TEXT NOT NULL PRIMARY KEY,
+  waiv_power        DOUBLE PRECISION NOT NULL DEFAULT 0,
+  raw_waiv_power    DOUBLE PRECISION NOT NULL DEFAULT 0,
+  waiv_power_dirty  BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+-- ---------------------------------------------------------------------------
+-- user_waiv_power_history
+-- Event-sourced WAIV power snapshots for 30-day rolling average.
+-- See waiv-power.md (normative).
+-- ---------------------------------------------------------------------------
+CREATE TABLE user_waiv_power_history (
+  id          BIGSERIAL PRIMARY KEY,
+  account     TEXT NOT NULL,
+  waiv_power  DOUBLE PRECISION NOT NULL,
+  recorded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_uwph_account_recorded_at
+  ON user_waiv_power_history (account, recorded_at DESC);
 
 -- ---------------------------------------------------------------------------
 -- accounts_current
