@@ -1,6 +1,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { UPDATE_TYPES } from '@opden-data-layer/core';
 import type { Kysely } from 'kysely';
+import { sql } from 'kysely';
 import type {
   ObjectsCore,
   ObjectUpdate,
@@ -11,6 +12,7 @@ import type {
   AggregatedObject,
   VoterWaivPowerMap,
 } from '@opden-data-layer/objects-domain';
+import { LIST_TREE_MAX_DEPTH } from '../constants/cache.constants';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
 import type { RankVoteProjection } from '../domain/object-projection/projected-object.types';
@@ -48,6 +50,135 @@ export class AggregatedObjectRepository {
   private readonly logger = new Logger(AggregatedObjectRepository.name);
 
   constructor(@Inject(KYSELY) private readonly db: Kysely<Database>) {}
+
+  /**
+   * Collects all object IDs reachable from each root via `listItem` updates (superset for batch load).
+   * `object_updates` has no persisted validity — filtering is done in the service via {@link loadByObjectIds}
+   * and governance resolution.
+   */
+  async loadListTreeIdsByRoots(rootIds: string[]): Promise<Map<string, string[]>> {
+    const out = new Map<string, string[]>();
+    if (rootIds.length === 0) {
+      return out;
+    }
+
+    try {
+      const valueRows = rootIds.map((id) => sql`(${id})`);
+      const rows = await sql<{ root_id: string; object_id: string }>`
+        WITH RECURSIVE list_tree(root_id, object_id, depth) AS (
+          SELECT v.id, v.id, 0
+          FROM (VALUES ${sql.join(valueRows, sql`, `)}) AS v(id)
+
+          UNION ALL
+
+          SELECT lt.root_id, ou.value_text, lt.depth + 1
+          FROM object_updates ou
+          INNER JOIN list_tree lt ON lt.object_id = ou.object_id
+          WHERE ou.update_type = ${UPDATE_TYPES.LIST_ITEM}
+            AND ou.value_text IS NOT NULL
+            AND TRIM(ou.value_text) <> ''
+            AND lt.depth < ${LIST_TREE_MAX_DEPTH}
+        )
+        SELECT DISTINCT root_id, object_id
+        FROM list_tree
+      `.execute(this.db);
+
+      for (const rootId of rootIds) {
+        out.set(rootId, []);
+      }
+      for (const row of rows.rows) {
+        const ids = out.get(row.root_id);
+        if (ids) {
+          ids.push(row.object_id);
+        }
+      }
+      return out;
+    } catch (error) {
+      this.logger.error(
+        `Failed to load list tree ids: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      const fallback = new Map<string, string[]>();
+      for (const rootId of rootIds) {
+        fallback.set(rootId, []);
+      }
+      return fallback;
+    }
+  }
+
+  /**
+   * Minimal load for recursive list-item counting. Compared to {@link loadByObjectIds}:
+   *   - `object_updates`: only `listItem` rows (not all update types)
+   *   - `validity_votes` and `object_authority`: only for `list`-type objects (leaves need none)
+   *   - `user_object_powers`: only for voters on those list objects
+   *   - `rank_votes`: skipped entirely (not needed for counting)
+   */
+  async loadForListCount(objectIds: string[]): Promise<{
+    objects: AggregatedObject[];
+    voterWaivPowers: VoterWaivPowerMap;
+  }> {
+    if (objectIds.length === 0) {
+      return { objects: [], voterWaivPowers: new Map() };
+    }
+
+    try {
+      const [cores, listItemUpdates] = await Promise.all([
+        this.db
+          .selectFrom('objects_core')
+          .where('object_id', 'in', objectIds)
+          .where('status', '=', 'active')
+          .selectAll()
+          .execute(),
+        this.db
+          .selectFrom('object_updates')
+          .where('object_id', 'in', objectIds)
+          .where('update_type', '=', UPDATE_TYPES.LIST_ITEM)
+          .selectAll()
+          .execute(),
+      ]);
+
+      const listObjectIds = cores
+        .filter((c) => c.object_type === 'list')
+        .map((c) => c.object_id);
+
+      let validityVotes: ValidityVote[] = [];
+      let authorities: ObjectAuthority[] = [];
+      if (listObjectIds.length > 0) {
+        [validityVotes, authorities] = await Promise.all([
+          this.db
+            .selectFrom('validity_votes')
+            .where('object_id', 'in', listObjectIds)
+            .selectAll()
+            .execute(),
+          this.db
+            .selectFrom('object_authority')
+            .where('object_id', 'in', listObjectIds)
+            .selectAll()
+            .execute(),
+        ]);
+      }
+
+      const voterNames = collectDistinctVoters(validityVotes);
+      const voterWaivPowers: VoterWaivPowerMap = new Map();
+      if (voterNames.size > 0) {
+        const rows = await this.db
+          .selectFrom('user_object_powers')
+          .where('account', 'in', [...voterNames])
+          .select(['account', 'waiv_power'])
+          .execute();
+        for (const row of rows) {
+          voterWaivPowers.set(row.account, row.waiv_power);
+        }
+      }
+
+      const objects = groupByObjectId(cores, listItemUpdates, validityVotes, authorities);
+      return { objects, voterWaivPowers };
+    } catch (error) {
+      this.logger.error(
+        `Failed to load objects for list count: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return { objects: [], voterWaivPowers: new Map() };
+    }
+  }
 
   async loadByObjectIds(
     objectIds: string[],

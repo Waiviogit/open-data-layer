@@ -1,7 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RedisClientFactory } from '@opden-data-layer/clients';
 import { UPDATE_TYPES } from '@opden-data-layer/core';
-import type { GovernanceSnapshot } from '@opden-data-layer/objects-domain';
+import type {
+  AggregatedObject,
+  GovernanceSnapshot,
+  VoterWaivPowerMap,
+} from '@opden-data-layer/objects-domain';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { LIST_COUNT_CACHE_TTL_SEC } from '../../constants/cache.constants';
@@ -58,14 +62,33 @@ export class ListItemsRecursiveCountService {
     }
 
     if (uncached.length > 0) {
-      const computed = await Promise.all(
-        uncached.map(async (listRefId) => {
-          const handled = new Set<string>([options.parentObjectId, listRefId]);
-          const count = await this.countRecursiveLeaves(listRefId, handled, false, options);
-          return [listRefId, count] as const;
-        }),
+      const treeIdsByRoot =
+        await this.aggregatedObjectRepo.loadListTreeIdsByRoots(uncached);
+
+      const allIds = new Set<string>();
+      for (const listRefId of uncached) {
+        allIds.add(listRefId);
+        for (const id of treeIdsByRoot.get(listRefId) ?? []) {
+          allIds.add(id);
+        }
+      }
+
+      const { objects, voterWaivPowers } = await this.aggregatedObjectRepo.loadForListCount(
+        [...allIds],
       );
-      for (const [listRefId, count] of computed) {
+
+      const objectMap = new Map(objects.map((o) => [o.core.object_id, o]));
+
+      for (const listRefId of uncached) {
+        const handled = new Set<string>([options.parentObjectId, listRefId]);
+        const count = this.countInMemory(
+          listRefId,
+          handled,
+          false,
+          options,
+          objectMap,
+          voterWaivPowers,
+        );
         out.set(listRefId, count);
         const key = redisKey.listItemCount(options.parentObjectId, listRefId);
         try {
@@ -79,17 +102,15 @@ export class ListItemsRecursiveCountService {
     return out;
   }
 
-  private async countRecursiveLeaves(
+  private countInMemory(
     objectId: string,
     handled: Set<string>,
     recursive: boolean,
     options: ListItemsRecursiveCountOptions,
-  ): Promise<number> {
-    const { objects, voterWaivPowers } = await this.aggregatedObjectRepo.loadByObjectIds(
-      [objectId],
-      { viewerAccount: options.viewerAccount, includeRankVoteProjection: false },
-    );
-    const agg = objects[0];
+    objectMap: Map<string, AggregatedObject>,
+    voterWaivPowers: VoterWaivPowerMap,
+  ): number {
+    const agg = objectMap.get(objectId);
     if (!agg) {
       return 0;
     }
@@ -98,7 +119,7 @@ export class ListItemsRecursiveCountService {
       return 1;
     }
 
-    const views = this.objectViewService.resolve(objects, voterWaivPowers, {
+    const views = this.objectViewService.resolve([agg], voterWaivPowers, {
       update_types: [UPDATE_TYPES.LIST_ITEM],
       locale: options.locale,
       include_rejected: false,
@@ -116,7 +137,14 @@ export class ListItemsRecursiveCountService {
         continue;
       }
       handled.add(childId);
-      count += await this.countRecursiveLeaves(childId, handled, true, options);
+      count += this.countInMemory(
+        childId,
+        handled,
+        true,
+        options,
+        objectMap,
+        voterWaivPowers,
+      );
     }
     return count;
   }
