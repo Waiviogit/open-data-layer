@@ -11,8 +11,7 @@ export type AppHeaderProps = {
 export function AppHeader({ user }: AppHeaderProps) {
   return (
     <header
-      className="sticky top-0 z-40 border-b border-border bg-nav-bg"
-      style={{ backdropFilter: 'var(--backdrop-nav)' }}
+      className="app-header-blur sticky top-0 z-40 border-b border-border"
     >
       <TopNav user={user} />
     </header>

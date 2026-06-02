@@ -120,9 +120,51 @@
     @apply text-body-sm text-accent-fg;
   }
 
-  /** Post intercept modal backdrop (`bg-overlay/70` is invalid with CSS-var colors). */
+  /** Post intercept modal backdrop (`bg-overlay/70` is invalid with CSS-var colors).
+   *  `will-change: transform` promotes to its own compositor layer so backdrop-blur
+   *  is composited once and not re-evaluated on every scroll frame of the sibling div.
+   */
   .post-modal-scrim {
     background-color: var(--color-modal-scrim);
+    will-change: transform;
+  }
+
+  /**
+   * App header: backdrop-filter on ::before (non-stacking) so the blur layer is composited
+   * independently from the sticky scroll — avoids blur re-evaluation on every scroll tick.
+   * The header element itself carries no filter; `isolation: isolate` keeps it in its own layer.
+   */
+  .app-header-blur {
+    position: relative;
+    isolation: isolate;
+  }
+  .app-header-blur::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    backdrop-filter: var(--backdrop-nav);
+    background-color: var(--color-nav-bg);
+    will-change: transform;
+  }
+
+  /**
+   * Prevents layout shift from scrollbar appearing/disappearing when a modal locks body scroll.
+   * padding-right is injected by JS equal to the scrollbar width so layout stays stable.
+   * `contain: paint` on body tells the compositor the page beneath the modal cannot visually
+   * escape its bounds — no repaint propagation through the stacking context during modal scroll.
+   */
+  html.modal-open {
+    overflow: hidden;
+  }
+  html.modal-open > body {
+    /* contain: paint breaks fixed-position descendants (modal scroll container).
+       Compositor isolation is handled by will-change: transform on the scrim layer instead. */
+    pointer-events: none;
+  }
+  html.modal-open > body .post-modal-scroll,
+  html.modal-open > body .post-modal-scrim {
+    pointer-events: auto;
   }
 
   /* Injected by sanitize-post-html for YouTube URLs in post body */
@@ -218,7 +260,13 @@ html {
   font-family: var(--font-body);
   line-height: var(--leading-body);
   tab-size: 4;
-  scroll-behavior: smooth;
+  /* scroll-behavior: smooth causes jank when programmatic scrolls happen during modal scroll */
+  scroll-behavior: auto;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.modal-open) {
+    scroll-behavior: smooth;
+  }
 }
 body {
   font-family: inherit;

@@ -90,13 +90,17 @@ export function PostInterceptModalShell({ children }: PostInterceptModalShellPro
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [hideForObjectSurface, onClose]);
 
-  // Lock body scroll while modal is open
+  // Lock body scroll while modal is open.
+  // Measures the scrollbar width before hiding it and adds equivalent padding-right
+  // to <html> so fixed headers and the layout don't jump when the bar disappears.
   useEffect(() => {
     if (hideForObjectSurface) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.documentElement.style.paddingRight = `${scrollbarWidth}px`;
+    document.documentElement.classList.add('modal-open');
     return () => {
-      document.body.style.overflow = prev;
+      document.documentElement.classList.remove('modal-open');
+      document.documentElement.style.paddingRight = '';
     };
   }, [hideForObjectSurface]);
 
@@ -104,7 +108,7 @@ export function PostInterceptModalShell({ children }: PostInterceptModalShellPro
     return null;
   }
 
-  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareUrl = window.location.href;
   const shareX = `https://x.com/intent/tweet?url=${encodeURIComponent(shareUrl)}`;
   const shareFb = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
 
@@ -118,7 +122,7 @@ export function PostInterceptModalShell({ children }: PostInterceptModalShellPro
       */}
       <div className="post-modal-scrim fixed inset-0 z-[100] backdrop-blur-[2px]" aria-hidden />
       <div
-        className="fixed inset-0 z-[100] overflow-y-auto"
+        className="post-modal-scroll fixed inset-0 z-[100] touch-pan-y overflow-y-auto"
         role="presentation"
         onClick={onClose}
       >
