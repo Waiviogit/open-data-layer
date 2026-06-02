@@ -37,7 +37,7 @@ export function ObjectRefCard({ item, href }: ObjectRefCardProps) {
           }
         />
       </div>
-      <p className="min-w-0 flex-1 self-center truncate text-sm font-medium leading-snug text-fg">
+      <p className="min-w-0 flex-1 self-center truncate text-body-sm font-weight-label leading-body text-fg">
         {item.title}
       </p>
     </div>
@@ -105,7 +105,7 @@ export function ObjectRefListFeed({
 
   if (items.length === 0) {
     return (
-      <p className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
+      <p className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
         {t('object_ref_list_empty')}
       </p>
     );
@@ -127,7 +127,7 @@ export function ObjectRefListFeed({
         <div className="mt-4 flex justify-center">
           <button
             type="button"
-            className="rounded-btn border border-border bg-surface-control px-4 py-2 text-body-sm font-medium text-fg hover:bg-surface-control-hover disabled:opacity-50"
+            className="rounded-btn border border-border bg-surface-control px-4 py-2 text-body-sm font-weight-label text-fg hover:bg-surface-control-hover disabled:opacity-50"
             disabled={pending}
             onClick={onLoadMore}
           >

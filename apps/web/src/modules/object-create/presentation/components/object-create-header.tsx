@@ -25,11 +25,11 @@ export function ObjectCreateHeader({
     idCheckPending ? (
       <span className="text-caption text-muted">{t('object_create_id_checking')}</span>
     ) : idExists === true ? (
-      <span className="rounded-full bg-accent/15 px-2 py-0.5 text-caption font-medium text-accent">
+      <span className="rounded-full bg-accent/15 px-2 py-0.5 text-caption font-weight-label text-accent">
         {t('object_create_id_taken')}
       </span>
     ) : idExists === false ? (
-      <span className="rounded-full border border-border bg-ghost-surface px-2 py-0.5 text-caption font-medium text-fg">
+      <span className="rounded-full border border-border bg-ghost-surface px-2 py-0.5 text-caption font-weight-label text-fg">
         {t('object_create_id_available')}
       </span>
     ) : null;
@@ -38,7 +38,7 @@ export function ObjectCreateHeader({
     <header className="mb-6 flex flex-col gap-4 border-b border-border pb-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
-          <h1 className="text-page-title font-display text-heading">
+          <h1 className="text-section font-display font-weight-strong text-heading">
             {t('object_create_title')}
           </h1>
           <p className="mt-1 max-w-2xl text-body-sm text-fg-secondary">
@@ -57,7 +57,7 @@ export function ObjectCreateHeader({
           type="button"
           onClick={onClearAll}
           disabled={submitting}
-          className="shrink-0 rounded-btn border border-border px-4 py-2 text-body-sm font-medium text-fg hover:bg-ghost-surface disabled:opacity-50"
+          className="shrink-0 rounded-btn border border-border px-4 py-2 text-body-sm font-weight-label text-fg hover:bg-ghost-surface disabled:opacity-50"
         >
           {t('object_create_clear_all')}
         </button>

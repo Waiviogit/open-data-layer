@@ -47,8 +47,8 @@ function ObjectRefSection({
   const visible = items.slice(0, RIGHT_RAIL_MAX_ITEMS);
 
   return (
-    <aside className="w-full rounded-card border border-border bg-surface/60 px-3 py-card-padding text-sm text-muted">
-      <p className="font-medium text-fg">{title}</p>
+    <aside className="w-full rounded-card border border-border bg-surface/60 px-3 py-card-padding text-body-sm text-muted">
+      <p className="font-weight-label text-fg">{title}</p>
       <ul className="mt-3 w-full space-y-2">
         {visible.map((item) => (
           <li key={item.objectId} className="w-full">
@@ -62,7 +62,7 @@ function ObjectRefSection({
       {hasMore ? (
         <Link
           href={showMoreHref}
-          className="mt-3 inline-block text-sm font-medium text-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="mt-3 inline-block text-body-sm font-weight-label text-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           suppressHydrationWarning
         >
           {t('object_right_show_more')}

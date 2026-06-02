@@ -31,8 +31,8 @@ export function CategoryNavList({ items, basePath, sectionKey }: CategoryNavList
               href={href}
               suppressHydrationWarning
               className={[
-                'flex items-center justify-between gap-2 rounded-btn px-2 py-1.5 text-sm transition-colors',
-                isActive ? 'bg-surface font-medium text-fg' : 'text-muted hover:bg-surface/80 hover:text-fg',
+                'flex items-center justify-between gap-2 rounded-btn px-2 py-1.5 text-body-sm transition-colors',
+                isActive ? 'bg-surface font-weight-label text-fg' : 'text-muted hover:bg-surface/80 hover:text-fg',
               ].join(' ')}
               aria-current={isActive ? 'page' : undefined}
             >

@@ -46,7 +46,7 @@ export function DiscoverSidebar({
   return (
     <aside className="min-w-0 self-start space-y-6">
       <section>
-        <h2 className="mb-2 text-caption font-medium uppercase tracking-wide text-fg-tertiary">
+        <h2 className="mb-2 text-caption font-weight-label uppercase tracking-loose text-fg-tertiary">
           {t('discover_objects_menu')}
         </h2>
         <ul className="flex flex-col gap-0.5">
@@ -60,7 +60,7 @@ export function DiscoverSidebar({
                   className={[
                     'block rounded-md px-2 py-1.5 text-body-sm transition-colors',
                     active
-                      ? 'bg-accent/15 font-medium text-accent'
+                      ? 'bg-accent/15 font-weight-label text-accent'
                       : 'text-fg-secondary hover:bg-ghost-surface hover:text-fg',
                   ].join(' ')}
                   aria-current={active ? 'page' : undefined}
@@ -82,7 +82,7 @@ export function DiscoverSidebar({
         ) : null}
       </section>
       <section>
-        <h2 className="mb-2 text-caption font-medium uppercase tracking-wide text-fg-tertiary">
+        <h2 className="mb-2 text-caption font-weight-label uppercase tracking-loose text-fg-tertiary">
           {t('discover_users_menu')}
         </h2>
         <ul>
@@ -93,7 +93,7 @@ export function DiscoverSidebar({
               className={[
                 'block rounded-md px-2 py-1.5 text-body-sm transition-colors',
                 usersMode
-                  ? 'bg-accent/15 font-medium text-accent'
+                  ? 'bg-accent/15 font-weight-label text-accent'
                   : 'text-fg-secondary hover:bg-ghost-surface hover:text-fg',
               ].join(' ')}
               aria-current={usersMode ? 'page' : undefined}

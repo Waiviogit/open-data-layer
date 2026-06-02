@@ -89,7 +89,7 @@ export function ObjectTypeSelector({
       <div className="mt-4 space-y-4">
         {grouped.map((group) => (
           <div key={group.label}>
-            <p className="mb-2 text-caption font-medium uppercase tracking-wide text-muted">
+            <p className="mb-2 text-caption font-weight-label uppercase tracking-loose text-muted">
               {group.label}
             </p>
             <div className="flex flex-wrap gap-2">

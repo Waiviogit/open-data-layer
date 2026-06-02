@@ -45,13 +45,13 @@ export function DiscoverActiveChips({
 
   return (
     <div className="mb-4">
-      <span className="mb-1.5 block text-caption font-medium text-fg-tertiary">
+      <span className="mb-1.5 block text-caption font-weight-label text-fg-tertiary">
         {t('discover_active_search')}
       </span>
       <div className="flex flex-wrap gap-1.5">
         <span className="inline-flex max-w-full items-center gap-1 rounded-full border border-border bg-surface-control px-2 py-0.5 text-caption text-fg">
           <SearchQueryIcon />
-          <span className="truncate font-medium">{trimmedQ}</span>
+          <span className="truncate font-weight-label">{trimmedQ}</span>
           <button
             type="button"
             aria-label={t('discover_remove_search').replace('{query}', trimmedQ)}

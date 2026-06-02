@@ -24,7 +24,7 @@ export function LocaleSwitcher() {
   }
 
   return (
-    <label className="inline-flex items-center gap-2 text-sm">
+    <label className="inline-flex items-center gap-2 text-body-sm">
       <span className="sr-only">Language</span>
       <select
         aria-busy={pending}

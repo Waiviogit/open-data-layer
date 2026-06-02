@@ -169,13 +169,13 @@ export function UpdateCard({
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
           <Link
             href={creatorProfileHref}
-            className="truncate font-medium text-fg-secondary hover:underline focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            className="truncate font-weight-label text-fg-secondary hover:underline focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             suppressHydrationWarning
           >
             {item.creator}
           </Link>
           {weightLabel ? (
-            <span className="rounded bg-surface-control px-1.5 py-0.5 text-caption font-medium text-fg-secondary tabular-nums">
+            <span className="rounded bg-surface-control px-1.5 py-0.5 text-caption font-weight-label text-fg-secondary tabular-nums">
               {weightLabel}
             </span>
           ) : null}
@@ -191,7 +191,7 @@ export function UpdateCard({
 
       <div className="mt-3 border-t border-border pt-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-body-sm font-semibold text-fg">
+          <h3 className="text-body-sm font-weight-strong text-fg">
             {labelForUpdateType(item.update_type)}
           </h3>
           {showLocaleBadge ? (
@@ -237,7 +237,7 @@ export function UpdateCard({
 
       <div className="mt-3 border-t border-border pt-3">
         <p
-          className={`text-body-sm font-medium ${meetsThreshold ? 'text-success' : 'text-warning'}`}
+          className={`text-body-sm font-weight-label ${meetsThreshold ? 'text-success' : 'text-warning'}`}
         >
           {t('object_updates_approval')} {approvePercentLabel}%
         </p>
@@ -247,7 +247,7 @@ export function UpdateCard({
             type="button"
             disabled={voteDisabled}
             aria-pressed={optimisticVote === 'for'}
-            className={`rounded-md border px-3 py-1.5 text-caption font-medium disabled:cursor-not-allowed disabled:opacity-50 ${forActive}`}
+            className={`rounded-md border px-3 py-1.5 text-caption font-weight-label disabled:cursor-not-allowed disabled:opacity-50 ${forActive}`}
             onClick={() => void onVote('for')}
           >
             {t('object_updates_approve')} {item.for_vote_count}
@@ -256,7 +256,7 @@ export function UpdateCard({
             type="button"
             disabled={voteDisabled}
             aria-pressed={optimisticVote === 'against'}
-            className={`rounded-md border px-3 py-1.5 text-caption font-medium disabled:cursor-not-allowed disabled:opacity-50 ${againstActive}`}
+            className={`rounded-md border px-3 py-1.5 text-caption font-weight-label disabled:cursor-not-allowed disabled:opacity-50 ${againstActive}`}
             onClick={() => void onVote('against')}
           >
             {t('object_updates_reject')} {item.against_vote_count}

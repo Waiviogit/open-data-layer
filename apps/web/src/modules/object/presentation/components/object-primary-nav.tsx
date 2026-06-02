@@ -32,7 +32,7 @@ export function ObjectPrimaryNav({
             key={tab.segment}
             type="button"
             className={[
-              '-mb-px inline-flex items-center border-b-2 px-3 py-2.5 text-sm font-medium transition-colors',
+              '-mb-px inline-flex items-center border-b-2 px-3 py-2.5 text-body-sm font-weight-label transition-colors',
               active
                 ? 'border-accent text-fg'
                 : 'border-transparent text-muted hover:border-border hover:text-fg',

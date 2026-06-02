@@ -67,7 +67,7 @@ function DimensionRow({
         <span className="text-body-sm text-fg">{t(DIMENSION_I18N[dim.id])}</span>
         <span
           className={[
-            'shrink-0 rounded-full border px-2.5 py-0.5 text-caption font-medium capitalize',
+            'shrink-0 rounded-full border px-2.5 py-0.5 text-caption font-weight-label capitalize',
             RATING_BADGE_CLASS[dim.rating],
           ].join(' ')}
         >
@@ -97,7 +97,7 @@ export function ObjectHealthPanel({ completeness }: ObjectHealthPanelProps) {
 
       <div className="mt-4">
         <div className="flex items-center justify-between text-body-sm">
-          <span className="font-medium text-fg">{completeness.overallPercent}%</span>
+          <span className="font-weight-label text-fg">{completeness.overallPercent}%</span>
           <span className="text-caption text-muted">
             {t('object_create_completeness_overall')}
           </span>

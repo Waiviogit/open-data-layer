@@ -26,7 +26,7 @@ export function UpdateTypeSelectField({
   id,
 }: UpdateTypeSelectFieldProps) {
   return (
-    <label className="block text-sm">
+    <label className="block text-body-sm">
       <span className="text-muted">{label}</span>
       <select
         id={id}

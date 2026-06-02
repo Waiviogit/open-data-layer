@@ -59,9 +59,41 @@ index.ts         public barrel — other features import only from here
 
 ## Design tokens
 
-- Source of truth: **`src/styles/theme.css`** (`[data-theme='…']` CSS variables), extended in **`tailwind.config.js`**.
-- Use **semantic** Tailwind utilities from the theme — **no** raw `#…`, `rgb()`, or `rgba()` in `className` or inline styles (except documented exceptions).
+- Source of truth: **`src/styles/theme.css`** (`[data-theme='…']` CSS variables), extended in **`tailwind.config.js`**. Full token table: [`docs/apps/web/spec/theme.md`](../../docs/apps/web/spec/theme.md).
+- Use **semantic** Tailwind utilities mapped to those variables in `className`, `@apply`, and component CSS — not Tailwind’s default scale or raw CSS literals (except documented exceptions below).
 - New token role: update **`theme.css`** for every theme block, **`tailwind.config.js`**, and **`docs/apps/web/spec/theme.md`** in the same change.
+
+### Colors
+
+| Do | Don't |
+|----|--------|
+| `bg-bg`, `text-fg`, `border-border`, `text-link`, `bg-accent`, … | Raw `#…`, `rgb()`, `rgba()`, `hsl()` in `className` or inline `style` |
+
+### Typography
+
+| Do | Don't |
+|----|--------|
+| `text-body`, `text-body-sm`, `text-caption`, `text-section`, `text-display`, … | Tailwind defaults: `text-sm`, `text-lg`, `text-xl`, `text-2xl`, `text-[14px]`, … |
+| `font-body`, `font-display`, `font-editorial`, `font-mono`, `font-label` | `font-sans`, `font-serif`, inline `font-family`, named stacks in components |
+| `font-weight-body`, `font-weight-label`, `font-weight-strong`, `font-weight-display` | `font-normal`, `font-medium`, `font-semibold`, `font-bold` |
+| `leading-body`, `leading-editorial`, `leading-display`, `leading-compressed` | `leading-tight`, `leading-snug`, `leading-relaxed`, magic line-height numbers |
+| `tracking-body`, `tracking-caption`, `tracking-loose`, `tracking-display` | `tracking-wide`, `tracking-tighter`, arbitrary `tracking-[…]` |
+
+Body copy inherits `var(--font-body)` from `global.css`; still set **`font-body`** (or **`font-display`** / **`font-editorial`**) when a block must use a different stack (headlines, article prose, code).
+
+### Radius, elevation, layout
+
+| Do | Don't |
+|----|--------|
+| `rounded-btn`, `rounded-card`, `rounded-pill`, `shadow-card`, `shadow-ring`, … | `rounded-md`, `rounded-lg`, `shadow-sm`, `shadow-lg`, ad-hoc `box-shadow` |
+| `px-gutter`, `py-section-y`, `p-card-padding`, `max-w-container-content`, shell `*-shell-*` spacing | Raw `px-4`, `py-16`, `max-w-lg` when a layout token exists for the same role |
+
+In plain CSS (e.g. Leaflet overrides), prefer **`var(--font-size-body)`**, **`var(--font-mono)`**, **`var(--radius-btn)`** over pixel literals.
+
+### Documented exceptions
+
+- **Third-party embed CSS** (Leaflet, sanitized post HTML) may use minimal literals when no hook exists; still prefer theme `var(--*)` where you control the stylesheet.
+- **External brand mimicry** (e.g. Facebook Open Graph preview in object create) may keep platform-specific hex colors; typography there should still use tokens when it is app UI, not the mimic surface.
 
 ## Theme runtime
 

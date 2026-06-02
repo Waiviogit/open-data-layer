@@ -39,10 +39,10 @@ export function ShopObjectList({
         className="rounded-card border border-border bg-surface/80 p-card-padding"
         aria-labelledby="shop-objects-empty"
       >
-        <h2 id="shop-objects-empty" className="text-lg font-semibold text-fg">
+        <h2 id="shop-objects-empty" className="text-body-lg font-weight-strong font-display text-fg">
           Shop
         </h2>
-        <p className="mt-2 text-sm text-muted">No objects in this category yet.</p>
+        <p className="mt-2 text-body-sm text-muted">No objects in this category yet.</p>
       </section>
     );
   }
@@ -63,7 +63,7 @@ export function ShopObjectList({
         <div className="flex justify-center">
           <button
             type="button"
-            className="rounded-btn border border-border bg-surface-control px-4 py-2 text-body-sm font-medium text-fg hover:bg-surface-control-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-50"
+            className="rounded-btn border border-border bg-surface-control px-4 py-2 text-body-sm font-weight-label text-fg hover:bg-surface-control-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-50"
             disabled={pending || !cursor}
             onClick={() => {
               if (!cursor) {

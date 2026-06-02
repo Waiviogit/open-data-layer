@@ -27,13 +27,13 @@ export function ObjectCenterBreadcrumbs({
   return (
     <nav
       aria-label="Object path"
-      className="mb-3 flex flex-wrap items-center gap-1 text-sm text-muted"
+      className="mb-3 flex flex-wrap items-center gap-1 text-body-sm text-muted"
     >
       {segments.map((seg, index) => (
         <span key={`${seg.depth}-${seg.label}`} className="inline-flex min-w-0 items-center gap-1">
           {index > 0 ? <span aria-hidden className="text-border">/</span> : null}
           {index === segments.length - 1 ? (
-            <span className="truncate font-medium text-fg">{seg.label}</span>
+            <span className="truncate font-weight-label text-fg">{seg.label}</span>
           ) : (
             <button
               type="button"

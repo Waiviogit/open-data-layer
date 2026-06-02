@@ -158,12 +158,12 @@ function LeftRailBlockHeading({
   count?: number;
 }) {
   if (!onAdd) {
-    return <p className="font-medium text-fg">{label}</p>;
+    return <p className="font-weight-label text-fg">{label}</p>;
   }
   return (
     <div className="flex items-start justify-between gap-2">
       <div className="min-w-0 flex-1">
-        <p className="font-medium text-fg">{label}</p>
+        <p className="font-weight-label text-fg">{label}</p>
         {count != null ? (
           <div className="mt-1">
             <LeftRailUpdateCountBadge count={count} />
@@ -199,7 +199,7 @@ function LeftRailIdentifierSection({
         <div className="min-w-0 flex-1 space-y-1">
           <button
             type="button"
-            className="flex w-full min-w-0 items-center justify-between gap-2 text-left text-sm font-medium text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus rounded-sm"
+            className="flex w-full min-w-0 items-center justify-between gap-2 text-left text-body-sm font-weight-label text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus rounded-sm"
             aria-expanded={open}
             aria-controls={contentId}
             onClick={() => setOpen((v) => !v)}
@@ -215,8 +215,8 @@ function LeftRailIdentifierSection({
         <div id={contentId} className="mt-3 space-y-4">
           {rows.map((row, i) => (
             <div key={`${row.type}-${row.value}-${i}`}>
-              <p className="text-sm font-medium uppercase tracking-wide text-fg">{row.type}</p>
-              <p className="mt-1 tabular-nums text-sm leading-snug text-fg">{row.value}</p>
+              <p className="text-body-sm font-weight-label uppercase tracking-loose text-fg">{row.type}</p>
+              <p className="mt-1 tabular-nums text-body-sm leading-body text-fg">{row.value}</p>
             </div>
           ))}
         </div>
@@ -306,7 +306,7 @@ export function ObjectLeftRailPanel({
       ) : null}
       {displayBlocks.map((block, index) => {
         const cardClass =
-          'rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted';
+          'rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted';
 
         switch (block.kind) {
           case 'menuItems':
@@ -337,7 +337,7 @@ export function ObjectLeftRailPanel({
                   count={railBlockCount('name')}
                 />
                 {block.text.trim() ? (
-                  <p className="mt-2 font-medium text-fg">{block.text}</p>
+                  <p className="mt-2 font-weight-label text-fg">{block.text}</p>
                 ) : null}
               </aside>
             );
@@ -407,7 +407,7 @@ export function ObjectLeftRailPanel({
                 />
                 {intro.display ? (
                   <p
-                    className="mt-2 leading-relaxed text-fg"
+                    className="mt-2 leading-editorial text-fg"
                     title={intro.isTruncated ? block.text.trim() : undefined}
                   >
                     {intro.display}
@@ -416,7 +416,7 @@ export function ObjectLeftRailPanel({
                 {intro.display ? (
                   <Link
                     href={`/object/${encodeURIComponent(objectId)}/description`}
-                    className="mt-3 inline-block rounded-btn border border-border px-3 py-2 text-sm font-medium text-fg hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    className="mt-3 inline-block rounded-btn border border-border px-3 py-2 text-body-sm font-weight-label text-fg hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                     suppressHydrationWarning
                   >
                     {t('object_detail_description_button')}
@@ -424,7 +424,7 @@ export function ObjectLeftRailPanel({
                 ) : canOpenDescriptionPage ? (
                   <Link
                     href={`/object/${encodeURIComponent(objectId)}/description`}
-                    className="mt-3 inline-block rounded-btn border border-border px-3 py-2 text-sm font-medium text-fg hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    className="mt-3 inline-block rounded-btn border border-border px-3 py-2 text-body-sm font-weight-label text-fg hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                     suppressHydrationWarning
                   >
                     {t('object_detail_description_button')}
@@ -446,7 +446,7 @@ export function ObjectLeftRailPanel({
                   {block.aspects.map((aspect, aspectIndex) => (
                     <li key={`${aspect.update_id}-${aspectIndex}`} className="min-w-0">
                       <p
-                        className="truncate font-medium leading-snug text-fg"
+                        className="truncate font-weight-label leading-body text-fg"
                         title={aspect.dimension}
                       >
                         {aspect.dimension}
@@ -481,7 +481,7 @@ export function ObjectLeftRailPanel({
                 <div className="mt-3 space-y-4">
                   {block.sections.map((section) => (
                     <div key={section.categoryTitle}>
-                      <p className="text-fg text-sm font-normal">
+                      <p className="text-fg text-body-sm font-weight-body">
                         {section.categoryTitle}:
                       </p>
                       <div className="mt-1.5 flex flex-wrap gap-2">
@@ -550,7 +550,7 @@ export function ObjectLeftRailPanel({
                   <span className="text-muted" aria-hidden>
                     $
                   </span>
-                  <span className="font-semibold tabular-nums text-fg">{block.text}</span>
+                  <span className="font-weight-strong tabular-nums text-fg">{block.text}</span>
                 </div>
               </aside>
             );
@@ -579,7 +579,7 @@ export function ObjectLeftRailPanel({
                   addLabel={addLabel}
                   count={railBlockCount('address')}
                 />
-                <p className="mt-2 whitespace-pre-line leading-relaxed">{block.text}</p>
+                <p className="mt-2 whitespace-pre-line leading-editorial">{block.text}</p>
               </aside>
             );
           case 'geo': {
@@ -685,7 +685,7 @@ export function ObjectLeftRailPanel({
                           className="size-[22px] object-contain"
                         />
                       </div>
-                      <span className="min-w-0 flex-1 break-words leading-snug text-accent">
+                      <span className="min-w-0 flex-1 break-words leading-body text-accent">
                         {row.lineText}
                       </span>
                     </li>

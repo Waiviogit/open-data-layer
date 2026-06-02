@@ -79,7 +79,7 @@ export function UserSocialAccountRow({
         <UserAvatar username={row.name} avatarUrl={row.avatarUrl} displayName={row.name} size={44} />
       </Link>
       <div className="min-w-0 flex-1">
-        <Link href={href} className="font-medium text-fg hover:underline">
+        <Link href={href} className="font-weight-label text-fg hover:underline">
           {row.name}
         </Link>
         <p className="mt-0.5 flex flex-wrap items-center gap-2 text-caption text-fg-secondary">
@@ -97,7 +97,7 @@ export function UserSocialAccountRow({
           title={viewerUsername == null ? t('social_follow_login_hint') : undefined}
           onClick={() => void onFollowClick()}
           className={[
-            'group shrink-0 rounded-btn border px-3 py-1.5 text-body-sm font-medium transition-colors disabled:opacity-50',
+            'group shrink-0 rounded-btn border px-3 py-1.5 text-body-sm font-weight-label transition-colors disabled:opacity-50',
             isCurrentFollowing
               ? 'border-border bg-surface-control text-muted hover:border-red-400 hover:bg-red-500/10 hover:text-red-600'
               : 'border-accent text-accent hover:bg-accent/10',

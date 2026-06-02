@@ -168,7 +168,7 @@ function SemanticBlock({
           : 'rounded-btn border border-border-subtle bg-bg/50 p-4'
       }
     >
-      <h3 className="text-body-sm font-semibold uppercase tracking-wide text-heading">
+      <h3 className="text-body-sm font-weight-strong uppercase tracking-loose text-heading">
         {title}
       </h3>
       <div className="mt-4 space-y-6">
@@ -347,7 +347,7 @@ function TagCategoryItemsGroup({
 
   return (
     <div className="space-y-3">
-      <p className="text-body-sm font-medium text-fg">
+      <p className="text-body-sm font-weight-label text-fg">
         {labelForUpdateType(UPDATE_TYPES.TAG_CATEGORY_ITEM)}
         {isRequired ? (
           <span className="text-accent" aria-hidden>
@@ -494,7 +494,7 @@ function FieldRow({
   return (
     <div className="rounded-btn border border-border-subtle bg-bg p-4">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <span className="flex items-center gap-2 text-body-sm font-medium text-heading">
+        <span className="flex items-center gap-2 text-body-sm font-weight-label text-heading">
           {!filled && isRequired ? (
             <span
               className="size-2 shrink-0 rounded-full bg-amber-500/80"

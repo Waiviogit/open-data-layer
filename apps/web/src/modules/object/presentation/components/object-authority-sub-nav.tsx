@@ -45,7 +45,7 @@ export function ObjectAuthoritySubNav({
             key={sub}
             type="button"
             className={[
-              '-mb-px inline-flex border-b-2 px-2 py-2 text-caption font-medium transition-colors',
+              '-mb-px inline-flex border-b-2 px-2 py-2 text-caption font-weight-label transition-colors',
               active
                 ? 'border-accent text-fg'
                 : 'border-transparent text-muted hover:text-fg',

@@ -10,7 +10,7 @@ export default async function BlogPostNotFound() {
 
   return (
     <div className="mx-auto max-w-container-narrow px-gutter py-section-y-hero text-center">
-      <h1 className="text-2xl font-semibold text-fg">{t('page_not_found')}</h1>
+      <h1 className="text-section font-weight-strong font-display text-fg">{t('page_not_found')}</h1>
       <p className="mt-2 text-muted">{t('page_not_found_message')}</p>
       <Link href="/" className="mt-6 inline-block text-accent hover:underline">
         {t('user_profile_back_home')}

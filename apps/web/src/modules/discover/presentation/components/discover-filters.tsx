@@ -195,7 +195,7 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
       className="relative z-0 min-w-0 w-full self-start overflow-hidden"
       aria-busy={loading}
     >
-      <h2 className="mb-3 text-caption font-medium uppercase tracking-wide text-fg-tertiary">
+      <h2 className="mb-3 text-caption font-weight-label uppercase tracking-loose text-fg-tertiary">
         {t('discover_filters_title')}
       </h2>
       {loading ? (
@@ -209,7 +209,7 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
           {tags.length > 0 ? (
             <div className="mb-4">
               <div className="mb-1.5 flex items-center justify-between gap-2">
-                <span className="text-caption font-medium text-fg-tertiary">
+                <span className="text-caption font-weight-label text-fg-tertiary">
                   {t('discover_selected_filters')}
                 </span>
                 <button
@@ -255,7 +255,7 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
                 >
                   <button
                     type="button"
-                    className="flex w-full items-center justify-between py-1.5 text-start text-body-sm font-medium text-fg"
+                    className="flex w-full items-center justify-between py-1.5 text-start text-body-sm font-weight-label text-fg"
                     onClick={() => toggleCollapse(section.category)}
                     aria-expanded={!collapsed}
                   >

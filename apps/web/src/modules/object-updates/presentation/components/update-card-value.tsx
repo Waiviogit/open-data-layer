@@ -57,7 +57,7 @@ export function UpdateCardValue({ value_text, value_geo, value_json }: UpdateCar
         {hasLongText ? (
           <button
             type="button"
-            className="mt-2 text-body-sm font-medium text-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            className="mt-2 text-body-sm font-weight-label text-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             onClick={() => setExpanded((v) => !v)}
           >
             {expanded ? t('object_updates_show_less') : t('object_updates_show_more')}

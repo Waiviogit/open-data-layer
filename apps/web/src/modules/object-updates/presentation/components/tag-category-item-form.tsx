@@ -48,7 +48,7 @@ export function TagCategoryItemForm({
 
   if (categories.length === 0) {
     return (
-      <p className="text-sm text-muted" role="status">
+      <p className="text-body-sm text-muted" role="status">
         {t('object_edit_tag_item_no_categories')}
       </p>
     );
@@ -58,9 +58,9 @@ export function TagCategoryItemForm({
     category && categories.includes(category) ? category : categories[0] ?? '';
 
   return (
-    <fieldset className="space-y-3 text-sm">
+    <fieldset className="space-y-3 text-body-sm">
       <label className="block">
-        <span className="font-medium text-fg">{t('object_edit_tag_item_category')}</span>
+        <span className="font-weight-label text-fg">{t('object_edit_tag_item_category')}</span>
         <select
           className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-fg"
           value={selectedCategory}
@@ -74,7 +74,7 @@ export function TagCategoryItemForm({
         </select>
       </label>
       <label className="block">
-        <span className="font-medium text-fg">{t('object_edit_tag_item_value')}</span>
+        <span className="font-weight-label text-fg">{t('object_edit_tag_item_value')}</span>
         <input
           type="text"
           className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-fg"

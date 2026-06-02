@@ -90,7 +90,7 @@ export function UserHeader({
             avatarUrl={user.avatarUrl}
             displayName={user.displayName}
             size={96}
-            className="text-lg font-semibold"
+            className="text-body-lg font-weight-strong font-display"
           />
         )}
 
@@ -105,7 +105,7 @@ export function UserHeader({
               <div className="flex flex-wrap items-center gap-2">
                 <h1
                   className={[
-                    'truncate text-2xl font-semibold',
+                    'truncate text-section font-weight-strong font-display',
                     hasCoverPhoto
                       ? 'text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.85),0_0_12px_rgba(0,0,0,0.35)]'
                       : 'text-fg',
@@ -115,7 +115,7 @@ export function UserHeader({
                 </h1>
                 <span
                   className={[
-                    'text-sm',
+                    'text-body-sm',
                     hasCoverPhoto
                       ? 'text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]'
                       : 'text-muted',
@@ -124,13 +124,13 @@ export function UserHeader({
                   @{username}
                 </span>
                 {isGuest ? (
-                  <span className="rounded-btn bg-surface px-2 py-0.5 text-xs capitalize text-muted">
+                  <span className="rounded-btn bg-surface px-2 py-0.5 text-caption capitalize text-muted">
                     {t('guest')}
                   </span>
                 ) : null}
               </div>
-              <p className="mt-1 line-clamp-2 text-sm text-muted">{user.bio}</p>
-              <p className="mt-2 text-xs text-muted">
+              <p className="mt-1 line-clamp-2 text-body-sm text-muted">{user.bio}</p>
+              <p className="mt-2 text-caption text-muted">
                 {user.followerCount} {t('followers')} · {user.followingCount} {t('following')} ·{' '}
                 {user.postingCount} {t('posts')}
               </p>
@@ -146,7 +146,7 @@ export function UserHeader({
                 onClick={onFollowClick}
                 disabled={followPending}
                 className={[
-                  'group rounded-btn px-4 py-2 text-sm font-medium disabled:opacity-50',
+                  'group rounded-btn px-4 py-2 text-body-sm font-weight-label disabled:opacity-50',
                   isFollowing
                     ? 'border border-border bg-surface-control text-muted hover:border-red-400 hover:bg-red-500/10 hover:text-red-600'
                     : 'bg-accent text-accent-fg hover:opacity-90',
@@ -176,7 +176,7 @@ export function UserHeader({
           {!isHeroLoading && isSameUser ? (
             <button
               type="button"
-              className="rounded-btn border border-border px-4 py-2 text-sm font-medium text-fg hover:bg-surface"
+              className="rounded-btn border border-border px-4 py-2 text-body-sm font-weight-label text-fg hover:bg-surface"
             >
               {t('edit_profile')}
             </button>

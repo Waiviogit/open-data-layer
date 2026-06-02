@@ -43,7 +43,7 @@ export function SortDropdown<T extends string>({ value, options, onChange }: Sor
         className="inline-flex items-center gap-1 text-body-sm text-fg-secondary hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
       >
         <span className="hidden sm:inline">{t('social_sort_by')}&nbsp;</span>
-        <span className="font-medium text-fg">{currentLabel}</span>
+        <span className="font-weight-label text-fg">{currentLabel}</span>
         <svg
           aria-hidden="true"
           width="12"
@@ -78,7 +78,7 @@ export function SortDropdown<T extends string>({ value, options, onChange }: Sor
                 setOpen(false);
               }}
               className={`cursor-pointer px-4 py-2.5 text-body-sm transition-colors hover:bg-surface-alt ${
-                o.value === value ? 'font-medium text-fg' : 'text-fg-secondary'
+                o.value === value ? 'font-weight-label text-fg' : 'text-fg-secondary'
               }`}
             >
               {o.label}

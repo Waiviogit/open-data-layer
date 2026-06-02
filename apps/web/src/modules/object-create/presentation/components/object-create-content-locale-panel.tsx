@@ -19,7 +19,7 @@ export function ObjectCreateContentLocalePanel({
   return (
     <section className="rounded-card border border-border bg-surface p-card-padding">
       <label className="flex flex-col gap-2">
-        <span className="text-body-sm font-medium text-heading">
+        <span className="text-body-sm font-weight-label text-heading">
           {t('object_create_content_locale')}
         </span>
         <select

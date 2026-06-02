@@ -475,7 +475,7 @@ export function EditorInsertCaretOverlay({
                   className="flex flex-col items-center gap-1.5 rounded-btn bg-secondary px-2 py-3 text-body-sm text-secondary-fg opacity-70"
                 >
                   <Icon className="text-fg-secondary" />
-                  <span className="text-center leading-tight">{t(labelKey)}</span>
+                  <span className="text-center leading-compressed">{t(labelKey)}</span>
                 </button>
               ))}
             </div>

@@ -13,7 +13,7 @@ export function LeftRailUpdateCountBadge({ count }: LeftRailUpdateCountBadgeProp
   const label = formatUpdateCountLabel(count, t);
 
   return (
-    <p className="text-caption leading-snug text-muted tabular-nums" aria-label={label}>
+    <p className="text-caption leading-body text-muted tabular-nums" aria-label={label}>
       {label}
     </p>
   );

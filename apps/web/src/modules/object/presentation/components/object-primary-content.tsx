@@ -431,7 +431,7 @@ export function ObjectPrimaryContent({
         );
       }
       return (
-        <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
+        <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
           Loading…
         </div>
       );
@@ -459,7 +459,7 @@ export function ObjectPrimaryContent({
         return <ObjectNestedPageBody html={currentView.pageContentHtml} />;
       }
       return (
-        <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
+        <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
           <p className="text-fg">This page has no content yet.</p>
         </div>
       );
@@ -467,9 +467,9 @@ export function ObjectPrimaryContent({
 
     const hint = centerHintForKind(currentView.objectType);
     return (
-      <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
+      <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
         <p className="text-fg">
-          <span className="font-medium">{title}</span>
+          <span className="font-weight-label">{title}</span>
           {' — '}
           {hint}
         </p>
@@ -492,7 +492,7 @@ export function ObjectPrimaryContent({
     return (
       <FeedColumn>
         {objectDescriptionBody ?? (
-          <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
+          <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
             <p className="text-fg">This object has no description yet.</p>
           </div>
         )}
@@ -512,8 +512,8 @@ export function ObjectPrimaryContent({
     if (activePrimarySegment === 'authority') {
       return (
         <FeedColumn>
-          <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
-            <p className="font-medium text-fg">{stubPrimaryCopy(activePrimarySegment)}</p>
+          <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
+            <p className="font-weight-label text-fg">{stubPrimaryCopy(activePrimarySegment)}</p>
             <p className="mt-2 text-muted">{MOCK_STUB_HINT}</p>
           </div>
         </FeedColumn>
@@ -531,8 +531,8 @@ export function ObjectPrimaryContent({
     if (activePrimarySegment === 'followers') {
       return (
         <FeedColumn>
-          <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
-            <p className="font-medium text-fg">{stubPrimaryCopy(activePrimarySegment)}</p>
+          <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
+            <p className="font-weight-label text-fg">{stubPrimaryCopy(activePrimarySegment)}</p>
             <p className="mt-2 text-muted">{MOCK_STUB_HINT}</p>
           </div>
         </FeedColumn>
@@ -550,8 +550,8 @@ export function ObjectPrimaryContent({
     if (activePrimarySegment === 'updates') {
       return (
         <FeedColumn>
-          <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
-            <p className="font-medium text-fg">{stubPrimaryCopy(activePrimarySegment)}</p>
+          <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
+            <p className="font-weight-label text-fg">{stubPrimaryCopy(activePrimarySegment)}</p>
             <p className="mt-2 text-muted">{MOCK_STUB_HINT}</p>
           </div>
         </FeedColumn>
@@ -604,8 +604,8 @@ export function ObjectPrimaryContent({
 
     return (
       <FeedColumn>
-        <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
-          <p className="font-medium text-fg">{stubPrimaryCopy(activePrimarySegment)}</p>
+        <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
+          <p className="font-weight-label text-fg">{stubPrimaryCopy(activePrimarySegment)}</p>
           <p className="mt-2 text-muted">{MOCK_STUB_HINT}</p>
         </div>
       </FeedColumn>

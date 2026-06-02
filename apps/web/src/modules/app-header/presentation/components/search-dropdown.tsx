@@ -212,7 +212,7 @@ export function SearchDropdown({
 
         {showObjectsSection && visibleObjects.length > 0 ? (
           <div className="px-2 pt-2">
-            <p className="px-1 pb-1 text-caption font-medium uppercase tracking-wide text-fg-tertiary">
+            <p className="px-1 pb-1 text-caption font-weight-label uppercase tracking-loose text-fg-tertiary">
               {messages.sectionObjects}
             </p>
             <ul className="divide-y divide-border" role="listbox" id={`${listId}-objects`}>
@@ -258,7 +258,7 @@ export function SearchDropdown({
                         )}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate font-medium text-fg">{title}</span>
+                        <span className="block truncate font-weight-label text-fg">{title}</span>
                         {obj.parent_name ? (
                           <span className="block truncate text-body-sm text-fg-secondary">
                             {obj.parent_name}
@@ -278,7 +278,7 @@ export function SearchDropdown({
 
         {showUsersSection && visibleUsers.length > 0 ? (
           <div className="px-2 pt-2">
-            <p className="px-1 pb-1 text-caption font-medium uppercase tracking-wide text-fg-tertiary">
+            <p className="px-1 pb-1 text-caption font-weight-label uppercase tracking-loose text-fg-tertiary">
               {messages.sectionUsers}
             </p>
             <ul className="divide-y divide-border" role="listbox" id={`${listId}-users`}>
@@ -324,7 +324,7 @@ export function SearchDropdown({
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="flex flex-wrap items-center gap-2">
-                          <span className="font-medium text-fg">{u.name}</span>
+                          <span className="font-weight-label text-fg">{u.name}</span>
                           <span className="rounded border border-border px-1.5 py-0.5 text-caption text-fg-secondary">
                             {u.reputation.toFixed(2)} · {u.followers_count}
                           </span>

@@ -112,7 +112,7 @@
 html {
   -webkit-text-size-adjust: 100%;
   font-family: var(--font-body);
-  line-height: 1.5;
+  line-height: var(--leading-body);
   tab-size: 4;
   scroll-behavior: smooth;
 }
@@ -147,15 +147,7 @@ a {
   text-decoration: inherit;
 }
 pre {
-  font-family:
-    ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    Monaco,
-    Consolas,
-    Liberation Mono,
-    Courier New,
-    monospace;
+  font-family: var(--font-mono);
 }
 svg {
   display: block;
@@ -167,15 +159,7 @@ pre {
   background-color: var(--color-code-bg);
   border-radius: var(--radius-btn);
   color: var(--color-code-fg);
-  font-family:
-    ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    Monaco,
-    Consolas,
-    Liberation Mono,
-    Courier New,
-    monospace;
+  font-family: var(--font-mono);
   overflow: scroll;
   padding: 0.5rem 0.75rem;
 }

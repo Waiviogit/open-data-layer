@@ -69,14 +69,14 @@ function isActive(
 function navLinkClass(active: boolean, vertical: boolean) {
   if (vertical) {
     return [
-      'flex w-full items-center rounded-btn px-3 py-2.5 text-sm font-medium transition-colors',
+      'flex w-full items-center rounded-btn px-3 py-2.5 text-body-sm font-weight-label transition-colors',
       active
         ? 'bg-surface text-fg'
         : 'text-muted hover:bg-surface/80 hover:text-fg',
     ].join(' ');
   }
   return [
-    'inline-flex items-center rounded-btn px-3 py-2 text-sm font-medium transition-colors',
+    'inline-flex items-center rounded-btn px-3 py-2 text-body-sm font-weight-label transition-colors',
     active
       ? 'bg-surface text-fg'
       : 'text-muted hover:bg-surface/80 hover:text-fg',
@@ -86,14 +86,14 @@ function navLinkClass(active: boolean, vertical: boolean) {
 function subNavLinkClass(active: boolean, vertical: boolean) {
   if (vertical) {
     return [
-      'flex w-full items-center rounded-btn px-3 py-2 text-caption font-medium transition-colors pl-5',
+      'flex w-full items-center rounded-btn px-3 py-2 text-caption font-weight-label transition-colors pl-5',
       active
         ? 'bg-tertiary text-tertiary-fg'
         : 'text-muted hover:bg-surface/80 hover:text-fg',
     ].join(' ');
   }
   return [
-    'inline-flex items-center rounded-btn px-2.5 py-1.5 text-caption font-medium transition-colors',
+    'inline-flex items-center rounded-btn px-2.5 py-1.5 text-caption font-weight-label transition-colors',
     active
       ? 'bg-tertiary text-tertiary-fg'
       : 'text-muted hover:bg-surface/80 hover:text-fg',
@@ -109,7 +109,7 @@ function SocialSubmenuLinkLabel({
 }) {
   return (
     <span className="inline-flex max-w-full min-w-0 items-center gap-1 whitespace-nowrap">
-      <span className="font-semibold">{label}</span>
+      <span className="font-weight-strong">{label}</span>
       {count !== undefined ? (
         <span className="shrink-0 text-caption text-fg-secondary">{count}</span>
       ) : null}

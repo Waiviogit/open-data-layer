@@ -40,10 +40,10 @@ export function BlogFeedPostsList({
         className="rounded-card border border-border bg-surface/80 p-card-padding"
         aria-labelledby="feed-empty-title"
       >
-        <h2 id="feed-empty-title" className="text-lg font-semibold text-fg">
+        <h2 id="feed-empty-title" className="text-body-lg font-weight-strong font-display text-fg">
           Feed
         </h2>
-        <p className="mt-2 text-sm text-muted">No items to show yet.</p>
+        <p className="mt-2 text-body-sm text-muted">No items to show yet.</p>
       </section>
     );
   }
@@ -59,7 +59,7 @@ export function BlogFeedPostsList({
         <div className="flex justify-center">
           <button
             type="button"
-            className="rounded-btn border border-border bg-surface-control px-4 py-2 text-body-sm font-medium text-fg hover:bg-surface-control-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-50"
+            className="rounded-btn border border-border bg-surface-control px-4 py-2 text-body-sm font-weight-label text-fg hover:bg-surface-control-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-50"
             disabled={pending || !cursor}
             onClick={() => {
               if (!cursor) {

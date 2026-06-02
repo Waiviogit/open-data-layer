@@ -133,8 +133,8 @@ export function StoryVoteButton({
   const iconToneClass = iconActive ? 'text-accent' : 'text-muted';
   const countClass =
     countAccent === true
-      ? 'font-medium tabular-nums text-accent'
-      : 'font-medium tabular-nums text-fg-secondary';
+      ? 'font-weight-label tabular-nums text-accent'
+      : 'font-weight-label tabular-nums text-fg-secondary';
 
   const canInteract = Boolean(currentUsername?.trim());
 

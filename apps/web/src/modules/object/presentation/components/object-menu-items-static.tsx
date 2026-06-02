@@ -138,7 +138,7 @@ function MenuItemVisual({ item }: { item: ProjectedMenuItem }) {
 
   if (item.style === 'icon' && item.image) {
     return (
-      <span className="flex min-w-0 items-center gap-2 rounded-btn border border-border bg-surface px-3 py-2 text-left text-sm font-medium text-fg hover:bg-surface-alt">
+      <span className="flex min-w-0 items-center gap-2 rounded-btn border border-border bg-surface px-3 py-2 text-left text-body-sm font-weight-label text-fg hover:bg-surface-alt">
         <Image
           src={item.image}
           alt=""
@@ -154,7 +154,7 @@ function MenuItemVisual({ item }: { item: ProjectedMenuItem }) {
 
   return (
     <span
-      className={`block w-full truncate rounded-btn border px-3 py-2 text-sm font-medium ${
+      className={`block w-full truncate rounded-btn border px-3 py-2 text-body-sm font-weight-label ${
         isHighlight
           ? 'border-accent-alt bg-accent-alt text-white hover:opacity-95'
           : 'border-border bg-surface text-fg hover:bg-surface-alt'

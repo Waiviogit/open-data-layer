@@ -98,7 +98,7 @@ export function NotificationRow({ item }: NotificationRowProps) {
     <div className="flex gap-3 px-3 py-2.5">
       <NotificationTypeIcon item={item} />
       <div className="min-w-0 flex-1">
-        <p className="text-body-sm text-fg leading-snug">{message}</p>
+        <p className="text-body-sm text-fg leading-body">{message}</p>
         <p className="mt-0.5 text-nano text-fg-muted">{timeLabel}</p>
       </div>
     </div>

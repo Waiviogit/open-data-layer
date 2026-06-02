@@ -212,7 +212,7 @@ export function LexicalPostEditor({
       theme: {
         ...lexicalTheme,
         paragraph: pillChrome
-          ? 'mb-0 text-body text-fg font-weight-body leading-snug'
+          ? 'mb-0 text-body text-fg font-weight-body leading-body'
           : lexicalTheme.paragraph,
       },
       onError: (error: Error) => {

@@ -83,7 +83,7 @@ export function MenuItemForm({ value, onChange }: MenuItemFormProps) {
   }
 
   return (
-    <fieldset className="space-y-4 text-sm">
+    <fieldset className="space-y-4 text-body-sm">
       <legend className="sr-only">{UPDATE_TYPES.MENU_ITEM}</legend>
 
       <label className="block">
@@ -127,7 +127,7 @@ export function MenuItemForm({ value, onChange }: MenuItemFormProps) {
           <button
             type="button"
             className={[
-              'flex-1 rounded-btn border px-3 py-2 text-sm font-medium transition-colors',
+              'flex-1 rounded-btn border px-3 py-2 text-body-sm font-weight-label transition-colors',
               linkType === 'object'
                 ? 'border-accent bg-accent/10 text-fg'
                 : 'border-border bg-bg text-fg-secondary hover:bg-surface',
@@ -139,7 +139,7 @@ export function MenuItemForm({ value, onChange }: MenuItemFormProps) {
           <button
             type="button"
             className={[
-              'flex-1 rounded-btn border px-3 py-2 text-sm font-medium transition-colors',
+              'flex-1 rounded-btn border px-3 py-2 text-body-sm font-weight-label transition-colors',
               linkType === 'web'
                 ? 'border-accent bg-accent/10 text-fg'
                 : 'border-border bg-bg text-fg-secondary hover:bg-surface',

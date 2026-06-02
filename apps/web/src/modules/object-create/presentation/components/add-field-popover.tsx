@@ -99,7 +99,7 @@ export function AddFieldPopover({
         type="button"
         disabled={disabled}
         onClick={() => setOpen((o) => !o)}
-        className="text-body-sm font-medium text-accent hover:underline disabled:opacity-50"
+        className="text-body-sm font-weight-label text-accent hover:underline disabled:opacity-50"
         aria-expanded={open}
         aria-haspopup="listbox"
       >
@@ -156,7 +156,7 @@ export function AddFieldPopover({
                       onMouseEnter={() => setHighlight(index)}
                       onClick={() => selectType(type)}
                     >
-                      <span className="font-medium">
+                      <span className="font-weight-label">
                         {labelForUpdateType(type)}
                       </span>
                       {def?.description ? (

@@ -74,7 +74,7 @@ export function UpdateValueForm({
 
   if (!definition) {
     return (
-      <p className="text-sm text-muted">Unknown update type: {updateType}</p>
+      <p className="text-body-sm text-muted">Unknown update type: {updateType}</p>
     );
   }
 
@@ -160,11 +160,11 @@ function UpdateValueFields({
       updateType === UPDATE_TYPES.IMAGE_GALLERY ? t('add_new_album_placeholder') : undefined;
 
     return (
-      <label className="block text-sm">
-        {label ? <span className="font-medium text-fg">{label}</span> : null}
+      <label className="block text-body-sm">
+        {label ? <span className="font-weight-label text-fg">{label}</span> : null}
         {text.length > 80 ? (
           <textarea
-            className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-sm text-fg"
+            className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-body-sm text-fg"
             rows={4}
             value={text}
             placeholder={placeholder}
@@ -173,7 +173,7 @@ function UpdateValueFields({
         ) : (
           <input
             type={inputType}
-            className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-sm text-fg"
+            className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-body-sm text-fg"
             value={text}
             placeholder={placeholder}
             onChange={(e) => onChange(e.target.value)}
@@ -276,11 +276,11 @@ function JsonValueFields({
     const validation = validateUpdateValue(definition, text);
     const fieldLabel = label ?? definition.update_type;
     return (
-      <label className="block text-sm">
+      <label className="block text-body-sm">
         {hideLegend ? (
           <span className="sr-only">{fieldLabel}</span>
         ) : (
-          <span className="font-medium text-fg">{fieldLabel}</span>
+          <span className="font-weight-label text-fg">{fieldLabel}</span>
         )}
         <span className={hideLegend ? 'block text-muted' : 'mt-1 block text-muted'}>
           (one per line)
@@ -304,12 +304,12 @@ function JsonValueFields({
     const text = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
     const validation = validateUpdateValue(definition, text);
     return (
-      <label className="block text-sm">
+      <label className="block text-body-sm">
         {label ? (
-          <span className="font-medium text-fg">{label} (JSON)</span>
+          <span className="font-weight-label text-fg">{label} (JSON)</span>
         ) : null}
         <textarea
-          className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 font-mono text-xs text-fg"
+          className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 font-mono text-caption text-fg"
           rows={8}
           value={text}
           onChange={(e) => onChange(e.target.value)}
@@ -327,9 +327,9 @@ function JsonValueFields({
   >;
 
   return (
-    <fieldset className="space-y-3 text-sm">
+    <fieldset className="space-y-3 text-body-sm">
       {label && !hideLegend ? (
-        <legend className="font-medium text-fg">{label}</legend>
+        <legend className="font-weight-label text-fg">{label}</legend>
       ) : (
         <legend className="sr-only">{definition.update_type}</legend>
       )}
@@ -433,7 +433,7 @@ function JsonShapeField({
       <label className="block">
         <span className="text-muted">{label} (JSON)</span>
         <textarea
-          className="mt-1 w-full rounded-btn border border-border bg-bg px-3 py-2 font-mono text-xs text-fg"
+          className="mt-1 w-full rounded-btn border border-border bg-bg px-3 py-2 font-mono text-caption text-fg"
           rows={4}
           value={text}
           onChange={(e) => onFieldChange(e.target.value)}

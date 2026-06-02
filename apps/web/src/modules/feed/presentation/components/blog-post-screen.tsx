@@ -90,7 +90,7 @@ function StatButton({
   const showCount = count != null;
   const iconToneClass = iconActive === false ? 'text-muted' : 'text-accent';
   const countClass =
-    countAccent === true ? 'font-medium tabular-nums text-accent' : 'font-medium tabular-nums text-fg-secondary';
+    countAccent === true ? 'font-weight-label tabular-nums text-accent' : 'font-weight-label tabular-nums text-fg-secondary';
   return (
     <button
       type="button"
@@ -149,7 +149,7 @@ export function BlogPostScreen({
       {story.rebloggedBy ? (
         <p className="mb-3 rounded-md bg-surface-control px-2 py-1 text-caption text-muted">
           Reblogged by{' '}
-          <span className="font-medium text-fg-secondary">@{story.rebloggedBy}</span>
+          <span className="font-weight-label text-fg-secondary">@{story.rebloggedBy}</span>
         </p>
       ) : null}
 
@@ -158,7 +158,7 @@ export function BlogPostScreen({
         {story.title ? (
           <h1
             id={`post-title-${story.id}`}
-            className={isModal ? 'text-[1.6rem] font-semibold leading-tight text-heading' : 'text-display font-display text-heading'}
+            className={isModal ? 'text-section font-weight-strong font-display leading-compressed text-heading' : 'text-display font-display text-heading'}
           >
             {story.title}
           </h1>
@@ -170,7 +170,7 @@ export function BlogPostScreen({
 
         {/* Comment count — accent link, shown below title in modal */}
         {isModal && story.children != null && story.children > 0 ? (
-          <p className="mt-1.5 text-body-sm font-medium text-accent">
+          <p className="mt-1.5 text-body-sm font-weight-label text-accent">
             {story.children} {story.children === 1 ? 'comment' : 'comments'}
           </p>
         ) : null}
@@ -187,7 +187,7 @@ export function BlogPostScreen({
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
               <span className="font-weight-label text-body-sm text-fg">{displayAuthor}</span>
               {repLabel != null ? (
-                <span className="rounded bg-surface-control px-1.5 py-0.5 text-caption font-medium text-fg-secondary tabular-nums">
+                <span className="rounded bg-surface-control px-1.5 py-0.5 text-caption font-weight-label text-fg-secondary tabular-nums">
                   {repLabel}
                 </span>
               ) : null}
@@ -219,12 +219,12 @@ export function BlogPostScreen({
           suppressHydrationWarning
           className={[
             'blog-post-body min-w-0 text-fg leading-body',
-            isModal ? 'mt-5 text-[0.9375rem]' : 'mt-6 text-body',
+            isModal ? 'mt-5 text-body-sm' : 'mt-6 text-body',
             '[&_a]:break-words [&_a]:text-link',
             '[&_blockquote]:my-3 [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:text-fg-secondary',
-            '[&_h1]:mb-2 [&_h1]:mt-5 [&_h1]:text-xl [&_h1]:font-semibold',
-            '[&_h2]:mb-2 [&_h2]:mt-5 [&_h2]:text-lg [&_h2]:font-semibold',
-            '[&_h3]:mb-1.5 [&_h3]:mt-4 [&_h3]:font-semibold',
+            '[&_h1]:mb-2 [&_h1]:mt-5 [&_h1]:text-section [&_h1]:font-weight-strong [&_h1]:font-display',
+            '[&_h2]:mb-2 [&_h2]:mt-5 [&_h2]:text-body-lg [&_h2]:font-weight-strong [&_h2]:font-display',
+            '[&_h3]:mb-1.5 [&_h3]:mt-4 [&_h3]:font-weight-strong',
             '[&_img]:h-auto [&_img]:max-w-full [&_img]:my-3',
             '[&_p]:mb-4 [&_p]:empty:hidden',
             '[&_br]:block [&_br]:content-[""] [&_br]:mt-3',
@@ -273,7 +273,7 @@ export function BlogPostScreen({
           ) : null}
         </div>
         {payoutLabel ? (
-          <span className="text-body-sm font-semibold tabular-nums text-accent">{payoutLabel}</span>
+          <span className="text-body-sm font-weight-strong tabular-nums text-accent">{payoutLabel}</span>
         ) : null}
       </footer>
     </article>

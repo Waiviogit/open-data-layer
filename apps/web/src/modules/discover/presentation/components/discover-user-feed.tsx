@@ -108,7 +108,7 @@ export function DiscoverUserFeed({ q }: DiscoverUserFeedProps) {
                     )}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="font-medium text-fg">{u.name}</span>
+                    <span className="font-weight-label text-fg">{u.name}</span>
                     <span className="ms-2 text-caption text-fg-secondary">
                       {u.reputation.toFixed(2)} · {u.followers_count}
                     </span>
@@ -125,7 +125,7 @@ export function DiscoverUserFeed({ q }: DiscoverUserFeedProps) {
               <button
                 type="button"
                 disabled={pending}
-                className="rounded-btn border border-border bg-surface-control px-4 py-2 text-body-sm font-medium text-fg disabled:opacity-50"
+                className="rounded-btn border border-border bg-surface-control px-4 py-2 text-body-sm font-weight-label text-fg disabled:opacity-50"
                 onClick={() => {
                   startTransition(async () => {
                     const ac = new AbortController();

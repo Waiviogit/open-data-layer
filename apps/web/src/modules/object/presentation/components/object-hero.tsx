@@ -136,7 +136,7 @@ export function ObjectHero({
               <div className="flex flex-wrap items-center gap-2">
                 <h1
                   className={[
-                    'truncate text-2xl font-semibold',
+                    'truncate text-section font-weight-strong font-display',
                     hasCoverPhoto ? titleCoverClasses : '',
                   ].join(' ')}
                 >
@@ -144,7 +144,7 @@ export function ObjectHero({
                 </h1>
                 <span
                   className={[
-                    'rounded-btn px-2 py-0.5 text-xs font-medium',
+                    'rounded-btn px-2 py-0.5 text-caption font-weight-label',
                     hasCoverPhoto
                       ? `${mutedCoverClasses} bg-white/20`
                       : 'bg-white/15 text-nav-fg',
@@ -155,7 +155,7 @@ export function ObjectHero({
                 {displayWeightLabel ? (
                   <span
                     className={[
-                      'rounded-btn px-2 py-0.5 text-xs font-medium tabular-nums',
+                      'rounded-btn px-2 py-0.5 text-caption font-weight-label tabular-nums',
                       hasCoverPhoto
                         ? `${mutedCoverClasses} bg-white/20`
                         : 'bg-white/15 text-nav-fg',
@@ -168,7 +168,7 @@ export function ObjectHero({
               {subtitleTitle ? (
                 <p
                   className={[
-                    'mt-1 line-clamp-2 text-sm font-normal',
+                    'mt-1 line-clamp-2 text-body-sm font-weight-body',
                     hasCoverPhoto ? mutedCoverClasses : 'opacity-90',
                   ].join(' ')}
                 >
@@ -178,7 +178,7 @@ export function ObjectHero({
               {tagline ? (
                 <p
                   className={[
-                    'mt-2 line-clamp-2 text-sm',
+                    'mt-2 line-clamp-2 text-body-sm',
                     hasCoverPhoto ? mutedCoverClasses : 'opacity-90',
                   ].join(' ')}
                 >
@@ -192,7 +192,7 @@ export function ObjectHero({
                 type="button"
                 onClick={onFollowToggle}
                 className={[
-                  'group rounded-btn px-4 py-2 text-sm font-medium',
+                  'group rounded-btn px-4 py-2 text-body-sm font-weight-label',
                   isFollowing
                     ? 'border border-white/50 bg-white/15 text-white hover:border-red-400/80 hover:bg-red-500/25 hover:text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.75)]'
                     : 'bg-accent text-accent-fg hover:opacity-90',
@@ -231,7 +231,7 @@ export function ObjectHero({
                 type="button"
                 onClick={onToggleEdit}
                 className={[
-                  'rounded-btn px-4 py-2 text-sm font-medium',
+                  'rounded-btn px-4 py-2 text-body-sm font-weight-label',
                   hasCoverPhoto
                     ? 'border border-white/50 bg-white/15 text-white hover:bg-white/25 [text-shadow:0_1px_2px_rgba(0,0,0,0.75)]'
                     : 'border border-white/40 bg-white/10 text-nav-fg hover:bg-white/15',

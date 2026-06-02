@@ -24,8 +24,8 @@ export function ObjectRightFollowersSection({
   const hasMore = page.hasMore || page.total > RIGHT_RAIL_MAX_ITEMS;
 
   return (
-    <aside className="w-full rounded-card border border-border bg-surface/60 px-3 py-card-padding text-sm text-muted">
-      <p className="font-medium text-fg">{t('followers')}</p>
+    <aside className="w-full rounded-card border border-border bg-surface/60 px-3 py-card-padding text-body-sm text-muted">
+      <p className="font-weight-label text-fg">{t('followers')}</p>
       <ul className="mt-3 w-full space-y-2">
         {visible.map((row) => (
           <li key={row.name} className="w-full">
@@ -40,7 +40,7 @@ export function ObjectRightFollowersSection({
                 displayName={row.name}
                 size={40}
               />
-              <p className="min-w-0 flex-1 truncate text-sm font-medium leading-snug text-fg">
+              <p className="min-w-0 flex-1 truncate text-body-sm font-weight-label leading-body text-fg">
                 {row.name}
               </p>
               <span className="shrink-0 rounded-md border border-border bg-surface-control px-2 py-0.5 font-mono text-body-sm tabular-nums text-fg">
@@ -53,7 +53,7 @@ export function ObjectRightFollowersSection({
       {hasMore ? (
         <Link
           href={buildObjectFollowersPath(objectId)}
-          className="mt-3 inline-block text-sm font-medium text-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="mt-3 inline-block text-body-sm font-weight-label text-accent hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           suppressHydrationWarning
         >
           {t('object_right_show_more')}

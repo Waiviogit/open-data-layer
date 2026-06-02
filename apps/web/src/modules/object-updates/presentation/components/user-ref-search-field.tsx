@@ -124,7 +124,7 @@ function UserRefSearchResultsList({
                 )}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-medium text-fg">
+                <span className="block truncate font-weight-label text-fg">
                   {user.name}
                 </span>
                 <span
@@ -359,8 +359,8 @@ export function UserRefSearchField({
       : null;
 
   return (
-    <div className={label ? 'text-sm' : 'text-sm mt-0'}>
-      {label ? <span className="font-medium text-fg">{label}</span> : null}
+    <div className={label ? 'text-body-sm' : 'text-body-sm mt-0'}>
+      {label ? <span className="font-weight-label text-fg">{label}</span> : null}
       {selectedUser && accountName ? (
         <div className="relative mt-2 flex items-start gap-2 rounded-btn border border-border bg-bg p-2">
           <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-border bg-surface">
@@ -378,7 +378,7 @@ export function UserRefSearchField({
             )}
           </span>
           <span className="min-w-0 flex-1 pr-8">
-            <span className="block truncate font-medium text-fg">
+            <span className="block truncate font-weight-label text-fg">
               {selectedUser.name}
             </span>
             {resolvingUser ? (

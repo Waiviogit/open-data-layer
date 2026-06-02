@@ -313,8 +313,8 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
               hideUpdateTypeHeading={hideUpdateTypeHeading}
             />
             {definition.localizable ? (
-              <label className="mt-4 block text-sm">
-                <span className="font-medium text-fg">{t('object_edit_locale_label')}</span>
+              <label className="mt-4 block text-body-sm">
+                <span className="font-weight-label text-fg">{t('object_edit_locale_label')}</span>
                 <select
                   className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-fg"
                   value={locale}
@@ -331,16 +331,16 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
             ) : null}
           </div>
         ) : (
-          <p className="text-sm text-muted">{t('object_edit_validation_error')}</p>
+          <p className="text-body-sm text-muted">{t('object_edit_validation_error')}</p>
         )}
 
         {error ? (
-          <p className="mt-3 text-sm text-accent" role="alert">
+          <p className="mt-3 text-body-sm text-accent" role="alert">
             {error}
           </p>
         ) : null}
 
-        <label className="mt-4 flex cursor-pointer items-center gap-2 text-sm text-muted">
+        <label className="mt-4 flex cursor-pointer items-center gap-2 text-body-sm text-muted">
           <input
             type="checkbox"
             className="size-4 rounded border-border accent-accent"
@@ -356,7 +356,7 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="rounded-btn border border-border px-4 py-2 text-sm font-medium text-fg hover:bg-surface"
+            className="rounded-btn border border-border px-4 py-2 text-body-sm font-weight-label text-fg hover:bg-surface"
           >
             {t('object_edit_cancel')}
           </button>
@@ -364,7 +364,7 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
             type="button"
             onClick={() => void handleSubmit()}
             disabled={!isValid || submitting || !definition}
-            className="rounded-btn bg-accent px-4 py-2 text-sm font-medium text-accent-fg hover:opacity-90 disabled:opacity-50"
+            className="rounded-btn bg-accent px-4 py-2 text-body-sm font-weight-label text-accent-fg hover:opacity-90 disabled:opacity-50"
           >
             {submitting ? t('object_edit_submitting') : t('object_edit_submit')}
           </button>

@@ -68,8 +68,8 @@ function OgCard({
       >
         <p
           className={[
-            'truncate font-sans uppercase tracking-wide text-[#65676b]',
-            isMobile ? 'text-[10px]' : 'text-[11px]',
+            'truncate font-body uppercase tracking-loose text-[#65676b]',
+            'text-nano',
           ].join(' ')}
         >
           {hostname}
@@ -85,23 +85,23 @@ function OgCard({
         />
       ) : (
         <div
-          className="flex w-full items-center justify-center bg-[#e4e6eb] font-sans text-[#65676b]"
+          className="flex w-full items-center justify-center bg-[#e4e6eb] font-body text-[#65676b]"
           style={{ aspectRatio: String(OG_PREVIEW_IMAGE_ASPECT_RATIO) }}
         >
-          <span className={isMobile ? 'text-[11px]' : 'text-xs'}>{noImageLabel}</span>
+          <span className={isMobile ? 'text-nano' : 'text-caption'}>{noImageLabel}</span>
         </div>
       )}
 
       <div
         className={[
-          'border-t border-[#dadde1] bg-white font-sans',
+          'border-t border-[#dadde1] bg-white font-body',
           isMobile ? 'px-2.5 py-2' : 'px-3 py-2.5',
         ].join(' ')}
       >
         <p
           className={[
-            'font-semibold leading-snug text-[#050505]',
-            isMobile ? 'line-clamp-2 text-[13px]' : 'line-clamp-1 text-sm',
+            'font-weight-strong leading-body text-[#050505]',
+            isMobile ? 'line-clamp-2 text-caption' : 'line-clamp-1 text-body-sm',
           ].join(' ')}
           title={displayTitle || untitledLabel}
         >
@@ -109,8 +109,8 @@ function OgCard({
         </p>
         <p
           className={[
-            'mt-0.5 leading-snug text-[#65676b]',
-            isMobile ? 'line-clamp-2 text-[11px]' : 'line-clamp-2 text-xs',
+            'mt-0.5 leading-body text-[#65676b]',
+            isMobile ? 'line-clamp-2 text-nano' : 'line-clamp-2 text-caption',
           ].join(' ')}
           title={description.trim() || descriptionFallback}
         >
@@ -152,7 +152,7 @@ export function OpenGraphPreview({
             aria-selected={variant === id}
             onClick={() => setVariant(id)}
             className={[
-              'rounded-btn px-3 py-1 text-caption font-medium',
+              'rounded-btn px-3 py-1 text-caption font-weight-label',
               variant === id
                 ? 'bg-surface text-fg shadow-sm'
                 : 'text-muted hover:text-fg',
@@ -177,7 +177,7 @@ export function OpenGraphPreview({
             noImageLabel={noImageLabel}
             untitledLabel={untitledLabel}
           />
-          <p className="mt-2 text-center font-mono text-[10px] text-muted">
+          <p className="mt-2 text-center font-mono text-nano text-muted">
             1200×630 · 1.91:1
           </p>
         </div>

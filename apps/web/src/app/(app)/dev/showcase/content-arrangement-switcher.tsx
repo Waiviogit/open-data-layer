@@ -20,7 +20,7 @@ export function ContentArrangementSwitcher() {
             key={mode}
             type="button"
             onClick={() => setContentArrangement(mode)}
-            className={`rounded-btn border px-3 py-1.5 text-sm capitalize transition-colors ${
+            className={`rounded-btn border px-3 py-1.5 text-body-sm capitalize transition-colors ${
               active
                 ? 'border-accent bg-accent text-accent-fg'
                 : 'border-border bg-surface text-fg hover:bg-bg'

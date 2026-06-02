@@ -118,7 +118,7 @@ function StatButton({
   const showCount = count != null;
   const iconToneClass = iconActive === false ? 'text-muted' : 'text-accent';
   const countClass =
-    countAccent === true ? 'font-medium tabular-nums text-accent' : 'font-medium tabular-nums text-fg-secondary';
+    countAccent === true ? 'font-weight-label tabular-nums text-accent' : 'font-weight-label tabular-nums text-fg-secondary';
   return (
     <button
       type="button"
@@ -180,7 +180,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
       {story.rebloggedBy ? (
         <p className="mb-3 rounded-md bg-surface-control px-2 py-1 text-caption text-muted">
           Reblogged by{' '}
-          <span className="font-medium text-fg-secondary">@{story.rebloggedBy}</span>
+          <span className="font-weight-label text-fg-secondary">@{story.rebloggedBy}</span>
         </p>
       ) : null}
 
@@ -208,7 +208,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
               {displayAuthor}
             </Link>
             {repLabel != null ? (
-              <span className="rounded bg-surface-control px-1.5 py-0.5 text-caption font-medium text-fg-secondary tabular-nums">
+              <span className="rounded bg-surface-control px-1.5 py-0.5 text-caption font-weight-label text-fg-secondary tabular-nums">
                 {repLabel}
               </span>
             ) : null}
@@ -303,15 +303,15 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
             feedTab === 'comments' ? (
               <h2
                 id={`story-title-${story.id}`}
-                className="flex min-w-0 items-center gap-2 leading-snug"
+                className="flex min-w-0 items-center gap-2 leading-body"
               >
                 <span
-                  className="inline-flex shrink-0 items-center justify-center rounded-md bg-code-bg px-1.5 py-0.5 font-mono text-[0.65rem] font-bold uppercase leading-none tracking-wide text-code-fg"
+                  className="inline-flex shrink-0 items-center justify-center rounded-md bg-code-bg px-1.5 py-0.5 font-mono text-nano font-weight-strong uppercase leading-none tracking-loose text-code-fg"
                   aria-hidden
                 >
                   RE
                 </span>
-                <span className="min-w-0 flex-1 text-body font-medium text-fg-secondary">
+                <span className="min-w-0 flex-1 text-body font-weight-label text-fg-secondary">
                   {story.title}
                 </span>
               </h2>
@@ -319,7 +319,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
               <h2
                 id={`story-title-${story.id}`}
                 className={[
-                  'text-body-lg font-semibold',
+                  'text-body-lg font-weight-strong',
                   story.permalinkPath ? 'feed-story-title-link' : 'text-heading',
                 ]
                   .filter(Boolean)
@@ -347,7 +347,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
                   />
                   <button
                     type="button"
-                    className="absolute right-2 top-2 z-30 rounded-md bg-overlay/90 px-2 py-1 text-caption font-medium text-fg shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                    className="absolute right-2 top-2 z-30 rounded-md bg-overlay/90 px-2 py-1 text-caption font-weight-label text-fg shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                     onClick={() => setVideoPlaying(false)}
                   >
                     Close
@@ -429,7 +429,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
           />
         </div>
         {payoutLabel ? (
-          <span className="text-body-sm font-semibold tabular-nums text-accent">{payoutLabel}</span>
+          <span className="text-body-sm font-weight-strong tabular-nums text-accent">{payoutLabel}</span>
         ) : null}
       </footer>
       {currentUsername ? (

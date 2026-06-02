@@ -51,7 +51,7 @@ function SerpCharCounter({
   const over = current > max;
   return (
     <div className="flex flex-wrap items-center justify-end gap-2 text-caption">
-      <span className={over ? 'font-medium text-accent' : 'text-muted'}>
+      <span className={over ? 'font-weight-label text-accent' : 'text-muted'}>
         {current} / {max}
       </span>
       {over ? (
@@ -186,7 +186,7 @@ export function ObjectPreviewPanel({
               type="button"
               onClick={() => setTab(step.tab)}
               className={[
-                'rounded-btn px-2.5 py-1 text-caption font-medium',
+                'rounded-btn px-2.5 py-1 text-caption font-weight-label',
                 tab === step.tab
                   ? 'bg-accent text-accent-fg'
                   : 'text-fg-secondary hover:bg-ghost-surface',
@@ -284,7 +284,7 @@ export function ObjectPreviewPanel({
             </div>
 
             <div className="rounded-btn border border-border-subtle bg-ghost-surface p-3">
-              <p className="text-body-sm font-medium text-heading">
+              <p className="text-body-sm font-weight-label text-heading">
                 {t('object_create_seo_keywords_title')}
               </p>
               {keywords.length > 0 ? (

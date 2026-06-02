@@ -33,7 +33,7 @@ export function ObjectDescriptionBody({
   if (blocks.length === 0) {
     return (
       <article className={OBJECT_PAGE_CONTENT_ARTICLE_CLASS}>
-        <p className="text-sm text-muted">This object has no description yet.</p>
+        <p className="text-body-sm text-muted">This object has no description yet.</p>
       </article>
     );
   }

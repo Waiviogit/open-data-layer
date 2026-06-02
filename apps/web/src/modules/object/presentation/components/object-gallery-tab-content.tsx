@@ -70,7 +70,7 @@ export function ObjectGalleryTabContent({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
-            className="text-sm font-medium text-accent hover:underline"
+            className="text-body-sm font-weight-label text-accent hover:underline"
             onClick={onBackToAlbums}
           >
             {t('back_to_albums')}
@@ -78,7 +78,7 @@ export function ObjectGalleryTabContent({
           {canAddImage ? (
             <button
               type="button"
-              className="rounded-btn border border-border bg-bg px-3 py-1.5 text-sm font-medium text-fg hover:bg-surface"
+              className="rounded-btn border border-border bg-bg px-3 py-1.5 text-body-sm font-weight-label text-fg hover:bg-surface"
               onClick={() => requireLoginOr(() => setAddImageOpen(true))}
             >
               {t('add_new_image')}
@@ -87,11 +87,11 @@ export function ObjectGalleryTabContent({
         </div>
 
         {!album ? (
-          <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
+          <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
             <p className="text-fg">{t('gallery_list_empty')}</p>
             <button
               type="button"
-              className="mt-3 text-sm font-medium text-accent hover:underline"
+              className="mt-3 text-body-sm font-weight-label text-accent hover:underline"
               onClick={onBackToAlbums}
             >
               {t('back_to_albums')}
@@ -101,7 +101,7 @@ export function ObjectGalleryTabContent({
           <>
             <h2 className="text-section font-display text-heading">{album.name}</h2>
             {album.items.length === 0 ? (
-              <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
+              <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
                 <p>{t('gallery_list_empty')}</p>
               </div>
             ) : (
@@ -148,7 +148,7 @@ export function ObjectGalleryTabContent({
         {canAddAlbum ? (
           <button
             type="button"
-            className="rounded-btn border border-border bg-bg px-3 py-1.5 text-sm font-medium text-fg hover:bg-surface"
+            className="rounded-btn border border-border bg-bg px-3 py-1.5 text-body-sm font-weight-label text-fg hover:bg-surface"
             onClick={() => requireLoginOr(() => setAddAlbumOpen(true))}
           >
             {t('add_new_album')}
@@ -174,12 +174,12 @@ export function ObjectGalleryTabContent({
                     className="object-cover transition group-hover:opacity-95"
                   />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-xs text-muted">
+                  <div className="flex h-full items-center justify-center text-caption text-muted">
                     {t('gallery')}
                   </div>
                 )}
               </div>
-              <span className="px-2 py-2 text-sm font-medium text-fg">
+              <span className="px-2 py-2 text-body-sm font-weight-label text-fg">
                 {album.name} ({album.items.length})
               </span>
             </button>
@@ -191,7 +191,7 @@ export function ObjectGalleryTabContent({
           aria-hidden
         >
           <div className="relative aspect-square w-full bg-surface/80" />
-          <span className="px-2 py-2 text-sm font-medium text-muted">
+          <span className="px-2 py-2 text-body-sm font-weight-label text-muted">
             {t('related')} (0)
           </span>
         </div>

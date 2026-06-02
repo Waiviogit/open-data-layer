@@ -143,7 +143,7 @@ export function MediaEditor({
             }
             return rows.map((entry) => (
               <div key={entry.entryKey}>
-                <p className="mb-2 text-body-sm font-medium text-fg">
+                <p className="mb-2 text-body-sm font-weight-label text-fg">
                   {labelForUpdateType(updateType)}
                 </p>
                 <UpdateValueForm
@@ -161,13 +161,13 @@ export function MediaEditor({
 
           {supportsGalleryAlbum || supportsGalleryItem ? (
             <div className="space-y-4 border-t border-border pt-4">
-              <p className="text-body-sm font-medium text-fg">
+              <p className="text-body-sm font-weight-label text-fg">
                 {t('gallery')}
               </p>
 
               {albumEntries.map((entry) => (
                 <div key={entry.entryKey} className="rounded-btn border border-border-subtle bg-surface/40 p-4">
-                  <p className="mb-2 text-body-sm font-medium text-heading">
+                  <p className="mb-2 text-body-sm font-weight-label text-heading">
                     {labelForUpdateType(UPDATE_TYPES.IMAGE_GALLERY)}
                   </p>
                   <UpdateValueForm
@@ -202,7 +202,7 @@ export function MediaEditor({
                     key={albumName}
                     className="rounded-btn border border-border-subtle bg-bg p-4"
                   >
-                    <p className="text-body-sm font-medium text-heading">
+                    <p className="text-body-sm font-weight-label text-heading">
                       {albumName}
                     </p>
                     <div className="mt-3 space-y-4">

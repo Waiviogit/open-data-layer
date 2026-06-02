@@ -50,9 +50,9 @@ export function WalletAddressForm({ value, onChange }: WalletAddressFormProps) {
   }, [obj.symbol, obj.address, obj.title, onChange]);
 
   return (
-    <fieldset className="space-y-3 text-sm">
+    <fieldset className="space-y-3 text-body-sm">
       <label className="block">
-        <span className="font-medium text-fg">{t('object_edit_wallet_symbol')}</span>
+        <span className="font-weight-label text-fg">{t('object_edit_wallet_symbol')}</span>
         <select
           className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-fg"
           value={symbol}
@@ -66,7 +66,7 @@ export function WalletAddressForm({ value, onChange }: WalletAddressFormProps) {
         </select>
       </label>
       <label className="block">
-        <span className="font-medium text-fg">{t('object_edit_wallet_address')}</span>
+        <span className="font-weight-label text-fg">{t('object_edit_wallet_address')}</span>
         <input
           type="text"
           className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-fg"

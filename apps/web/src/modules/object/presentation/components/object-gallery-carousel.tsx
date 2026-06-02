@@ -17,7 +17,7 @@ export type ObjectGalleryCarouselProps = {
 };
 
 const CAROUSEL_CONTROL_CLASS =
-  'inline-flex w-4 shrink-0 items-center justify-center self-center text-[1.75rem] leading-none text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
+  'inline-flex w-4 shrink-0 items-center justify-center self-center text-display leading-none text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
 
 export function ObjectGalleryCarousel({ photos, onPhotoClick }: ObjectGalleryCarouselProps) {
   const { t } = useI18n();

@@ -205,12 +205,12 @@ export function ImageCidOrUrlForm({
 
   return (
     <fieldset
-      className="space-y-3 text-sm"
+      className="space-y-3 text-body-sm"
       onPointerEnter={markActive}
       onFocus={markActive}
     >
       {label && !hideLegend ? (
-        <legend className="font-medium text-fg">{label}</legend>
+        <legend className="font-weight-label text-fg">{label}</legend>
       ) : hideLegend ? (
         <legend className="sr-only">{zoneLegend}</legend>
       ) : null}
@@ -291,7 +291,7 @@ export function ImageCidOrUrlForm({
             </p>
           ) : (
             <>
-              <p className="text-body-sm font-medium text-fg">
+              <p className="text-body-sm font-weight-label text-fg">
                 {t('object_create_image_zone_title')}
               </p>
               <p className="text-body-sm text-muted">

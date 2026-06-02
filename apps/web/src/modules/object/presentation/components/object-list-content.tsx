@@ -44,11 +44,11 @@ function ListCatalogRow({
   const countLabel = item.listItemsCount !== undefined ? ` (${item.listItemsCount})` : '';
   const inner = (
     <>
-      <span className="min-w-0 flex-1 truncate font-medium text-fg">
+      <span className="min-w-0 flex-1 truncate font-weight-label text-fg">
         {item.name}
         {countLabel}
       </span>
-      <span className="shrink-0 text-lg text-muted" aria-hidden>
+      <span className="shrink-0 text-body-lg text-muted" aria-hidden>
         ›
       </span>
     </>
@@ -115,7 +115,7 @@ export function ObjectListContent({
         <div className="flex justify-end">
           <SortDropdown value={activeSortType} options={sortOptions} onChange={onSortChange} />
         </div>
-        <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
+        <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
           <p className="text-fg">This list is empty.</p>
         </div>
       </div>
@@ -128,7 +128,7 @@ export function ObjectListContent({
         <SortDropdown value={activeSortType} options={sortOptions} onChange={onSortChange} />
       </div>
       {pending ? (
-        <div className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted">
+        <div className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted">
           Loading…
         </div>
       ) : null}

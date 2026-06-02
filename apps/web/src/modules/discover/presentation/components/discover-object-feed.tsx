@@ -109,7 +109,7 @@ export function DiscoverObjectFeed({
               <button
                 type="button"
                 disabled={pending}
-                className="rounded-btn border border-border bg-surface-control px-4 py-2 text-body-sm font-medium text-fg hover:bg-surface-control-hover disabled:opacity-50"
+                className="rounded-btn border border-border bg-surface-control px-4 py-2 text-body-sm font-weight-label text-fg hover:bg-surface-control-hover disabled:opacity-50"
                 onClick={() => {
                   startTransition(async () => {
                     const ac = new AbortController();

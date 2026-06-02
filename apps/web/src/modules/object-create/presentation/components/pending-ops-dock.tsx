@@ -131,7 +131,7 @@ export function PendingOpsDock({
         style={NAV_BACKDROP_STYLE}
       >
         <div className="flex min-h-shell-header flex-wrap items-center gap-2 px-gutter py-2 sm:px-gutter-sm lg:flex-nowrap">
-          <p className="shrink-0 text-body-sm font-medium text-fg">{readyLine}</p>
+          <p className="shrink-0 text-body-sm font-weight-label text-fg">{readyLine}</p>
 
           <div className="min-w-0 flex-1 truncate text-caption text-fg-secondary">
             {categorySummary ? (
@@ -185,7 +185,7 @@ export function PendingOpsDock({
               type="button"
               disabled={!canPublish || busy}
               onClick={() => onPublish()}
-              className="rounded-btn bg-accent px-3 py-1.5 font-label text-body-sm font-semibold text-accent-fg hover:opacity-90 disabled:opacity-50"
+              className="rounded-btn bg-accent px-3 py-1.5 font-label text-body-sm font-weight-strong text-accent-fg hover:opacity-90 disabled:opacity-50"
             >
               {publishLabel}
             </button>
@@ -204,7 +204,7 @@ export function PendingOpsDock({
                   className="flex gap-2 rounded-btn px-2 py-1.5 hover:bg-ghost-surface"
                 >
                   <span className="shrink-0 text-accent">+</span>
-                  <span className="shrink-0 font-medium text-fg">{op.opLabel}</span>
+                  <span className="shrink-0 font-weight-label text-fg">{op.opLabel}</span>
                   <span className="min-w-0 truncate text-muted" title={op.preview}>
                     {op.preview}
                   </span>

@@ -52,15 +52,15 @@ export function ImageGalleryItemForm({
 
   if (albumNames.length === 0) {
     return (
-      <p className="text-sm text-muted" role="status">
+      <p className="text-body-sm text-muted" role="status">
         {t('object_edit_gallery_item_no_albums')}
       </p>
     );
   }
 
   const albumField = lockAlbum ? (
-    <label className="block text-sm">
-      <span className="font-medium text-fg">{t('album')}</span>
+    <label className="block text-body-sm">
+      <span className="font-weight-label text-fg">{t('album')}</span>
       <input
         type="text"
         readOnly
@@ -69,8 +69,8 @@ export function ImageGalleryItemForm({
       />
     </label>
   ) : (
-    <label className="block text-sm">
-      <span className="font-medium text-fg">{t('album')}</span>
+    <label className="block text-body-sm">
+      <span className="font-weight-label text-fg">{t('album')}</span>
       <select
         className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-fg"
         value={album && albumNames.includes(album) ? album : albumNames[0] ?? ''}

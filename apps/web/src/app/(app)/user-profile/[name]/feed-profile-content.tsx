@@ -87,10 +87,10 @@ export async function FeedProfileContent({ accountName, feedTab }: FeedProfileCo
           className="rounded-card border border-border bg-surface/80 p-card-padding"
           aria-labelledby="feed-empty-title"
         >
-          <h2 id="feed-empty-title" className="text-lg font-semibold text-fg">
+          <h2 id="feed-empty-title" className="text-body-lg font-weight-strong font-display text-fg">
             Feed
           </h2>
-          <p className="mt-2 text-sm text-muted">No items to show yet.</p>
+          <p className="mt-2 text-body-sm text-muted">No items to show yet.</p>
         </section>
       </FeedColumn>
     );

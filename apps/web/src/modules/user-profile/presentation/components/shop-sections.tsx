@@ -52,10 +52,10 @@ export function ShopSections({
         className="rounded-card border border-border bg-surface/80 p-card-padding"
         aria-labelledby="shop-sections-empty"
       >
-        <h2 id="shop-sections-empty" className="text-lg font-semibold text-fg">
+        <h2 id="shop-sections-empty" className="text-body-lg font-weight-strong font-display text-fg">
           Shop
         </h2>
-        <p className="mt-2 text-sm text-muted">No categories to show yet.</p>
+        <p className="mt-2 text-body-sm text-muted">No categories to show yet.</p>
       </section>
     );
   }
@@ -84,7 +84,7 @@ export function ShopSections({
               </p>
             </div>
             {sec.items.length === 0 ? (
-              <p className="mt-3 text-sm text-muted">No preview items.</p>
+              <p className="mt-3 text-body-sm text-muted">No preview items.</p>
             ) : (
               <ul className="mt-4 flex flex-col gap-card-padding">
                 {sec.items.map((o) => (
@@ -104,7 +104,7 @@ export function ShopSections({
         <div className="flex justify-center">
           <button
             type="button"
-            className="rounded-btn border border-border bg-surface-control px-4 py-2 text-body-sm font-medium text-fg hover:bg-surface-control-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-50"
+            className="rounded-btn border border-border bg-surface-control px-4 py-2 text-body-sm font-weight-label text-fg hover:bg-surface-control-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:opacity-50"
             disabled={pending || !cursor}
             onClick={() => {
               if (!cursor) {

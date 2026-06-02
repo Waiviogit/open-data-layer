@@ -102,7 +102,7 @@ export function UserSocialObjectRow({
         <Link
           href={href}
           prefetch={false}
-          className="block truncate font-medium text-fg underline-offset-2 hover:underline focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          className="block truncate font-weight-label text-fg underline-offset-2 hover:underline focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
           {name}
         </Link>
@@ -115,7 +115,7 @@ export function UserSocialObjectRow({
           type="button"
           disabled={pending}
           onClick={() => void onUnfollowClick()}
-          className="shrink-0 rounded-btn border border-border bg-surface-control px-3 py-1.5 text-body-sm font-medium text-muted transition-colors hover:border-red-400 hover:bg-red-500/10 hover:text-red-600 disabled:opacity-50"
+          className="shrink-0 rounded-btn border border-border bg-surface-control px-3 py-1.5 text-body-sm font-weight-label text-muted transition-colors hover:border-red-400 hover:bg-red-500/10 hover:text-red-600 disabled:opacity-50"
         >
           {t('unfollow')}
         </button>

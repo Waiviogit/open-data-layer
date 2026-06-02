@@ -57,11 +57,11 @@ export function GeoUpdateForm({
 
   return (
     <MapProvider>
-      <fieldset className="space-y-3 text-sm">
+      <fieldset className="space-y-3 text-body-sm">
         {hideLegend ? (
           <legend className="sr-only">{label || 'Map'}</legend>
         ) : (
-          <legend className="font-medium text-fg">{label}</legend>
+          <legend className="font-weight-label text-fg">{label}</legend>
         )}
         <label className="block">
           <span className="text-muted">Latitude</span>

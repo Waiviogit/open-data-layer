@@ -51,12 +51,12 @@ export function LinkedObjectsSection({
         <details open className="group">
           <summary
             id="post-linked-objects-heading"
-            className="flex cursor-pointer list-none items-center gap-1.5 font-label text-body-sm font-medium text-heading tracking-body [&::-webkit-details-marker]:hidden"
+            className="flex cursor-pointer list-none items-center gap-1.5 font-label text-body-sm font-weight-label text-heading tracking-body [&::-webkit-details-marker]:hidden"
           >
             <SummaryChevron />
             <span className="inline-flex items-center gap-2">
               {t('feed_linked_objects')}
-              <span className="rounded-pill bg-surface-control px-1.5 py-px text-micro font-medium text-fg-secondary tabular-nums">
+              <span className="rounded-pill bg-surface-control px-1.5 py-px text-micro font-weight-label text-fg-secondary tabular-nums">
                 {linkedObjects.length}
               </span>
             </span>
@@ -82,12 +82,12 @@ export function LinkedObjectsSection({
         <details className="group">
           <summary
             id="post-linked-hashtags-heading"
-            className="flex cursor-pointer list-none items-center gap-1.5 font-label text-body-sm font-medium text-heading tracking-body [&::-webkit-details-marker]:hidden"
+            className="flex cursor-pointer list-none items-center gap-1.5 font-label text-body-sm font-weight-label text-heading tracking-body [&::-webkit-details-marker]:hidden"
           >
             <SummaryChevron />
             <span className="inline-flex items-center gap-2">
               {t('feed_linked_object_hashtags')}
-              <span className="rounded-pill bg-surface-control px-1.5 py-px text-micro font-medium text-fg-secondary tabular-nums">
+              <span className="rounded-pill bg-surface-control px-1.5 py-px text-micro font-weight-label text-fg-secondary tabular-nums">
                 {hashtagObjects.length}
               </span>
             </span>

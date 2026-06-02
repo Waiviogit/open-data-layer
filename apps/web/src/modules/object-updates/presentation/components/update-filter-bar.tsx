@@ -185,7 +185,7 @@ export function ObjectUpdatesFilterBar(props: ObjectUpdatesFilterBarProps) {
           <button
             type="button"
             onClick={onAddUpdate}
-            className="rounded-btn border border-border bg-accent px-4 py-2 text-body-sm font-medium text-accent-fg hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            className="rounded-btn border border-border bg-accent px-4 py-2 text-body-sm font-weight-label text-accent-fg hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           >
             {t('object_edit_add_update')}
           </button>

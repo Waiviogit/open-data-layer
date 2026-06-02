@@ -98,19 +98,19 @@ module.exports = {
         ],
         caption: [
           'var(--font-size-caption)',
-          { lineHeight: '1.43' },
+          { lineHeight: 'var(--leading-compressed)' },
         ],
         'body-xs': [
           'var(--font-size-body-xs)',
-          { lineHeight: '1.43' },
+          { lineHeight: 'var(--leading-compressed)' },
         ],
         micro: [
           'var(--font-size-micro)',
-          { lineHeight: '1.33' },
+          { lineHeight: 'var(--leading-compressed)' },
         ],
         nano: [
           'var(--font-size-nano)',
-          { lineHeight: 'var(--leading-editorial)' },
+          { lineHeight: 'var(--leading-compressed)' },
         ],
       },
       fontWeight: {

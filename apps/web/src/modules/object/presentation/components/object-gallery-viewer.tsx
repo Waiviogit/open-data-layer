@@ -156,8 +156,8 @@ export function ObjectGalleryViewer({
     >
       <header className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b border-white/10 px-4 py-3">
         <div aria-hidden />
-        <div className="flex min-w-0 flex-wrap items-center justify-center gap-4 text-sm">
-          <span className="truncate font-medium text-white">
+        <div className="flex min-w-0 flex-wrap items-center justify-center gap-4 text-body-sm">
+          <span className="truncate font-weight-label text-white">
             <span className="text-white/70">{t('object_gallery_viewer_related_object')}</span>{' '}
             {displayName}
           </span>
@@ -170,19 +170,19 @@ export function ObjectGalleryViewer({
             >
               <span className="text-white/70">{t('album')}:</span>
               <span>{album.name}</span>
-              <span aria-hidden className="text-xs">
+              <span aria-hidden className="text-caption">
                 {albumDropdownOpen ? '▴' : '▾'}
               </span>
             </button>
             {albumDropdownOpen ? (
               <div className="absolute left-0 top-full z-10 mt-1 min-w-[12rem] overflow-hidden rounded-btn border border-border bg-surface shadow-card-float">
-                <div className="border-b border-border px-3 py-2 text-sm text-fg">
+                <div className="border-b border-border px-3 py-2 text-body-sm text-fg">
                   {album.name}
                 </div>
                 {canSetAvatar ? (
                   <button
                     type="button"
-                    className="block w-full px-3 py-2 text-left text-sm text-fg hover:bg-ghost-surface"
+                    className="block w-full px-3 py-2 text-left text-body-sm text-fg hover:bg-ghost-surface"
                     onClick={onSetAsAvatar}
                   >
                     {t('object_gallery_set_as_avatar')}
@@ -213,7 +213,7 @@ export function ObjectGalleryViewer({
           </button>
           <button
             type="button"
-            className="inline-flex size-8 items-center justify-center rounded-btn border border-white/20 text-lg text-white hover:bg-white/10"
+            className="inline-flex size-8 items-center justify-center rounded-btn border border-white/20 text-body-lg text-white hover:bg-white/10"
             aria-label={t('close')}
             onClick={onClose}
           >
@@ -226,7 +226,7 @@ export function ObjectGalleryViewer({
         {count > 1 ? (
           <button
             type="button"
-            className="absolute left-2 z-10 inline-flex size-10 shrink-0 items-center justify-center rounded-btn border border-white/20 text-2xl text-white hover:bg-white/10 md:left-4"
+            className="absolute left-2 z-10 inline-flex size-10 shrink-0 items-center justify-center rounded-btn border border-white/20 text-display text-white hover:bg-white/10 md:left-4"
             aria-label={t('object_detail_gallery_prev')}
             onClick={goPrev}
           >
@@ -252,7 +252,7 @@ export function ObjectGalleryViewer({
         {count > 1 ? (
           <button
             type="button"
-            className="absolute right-2 z-10 inline-flex size-10 shrink-0 items-center justify-center rounded-btn border border-white/20 text-2xl text-white hover:bg-white/10 md:right-4"
+            className="absolute right-2 z-10 inline-flex size-10 shrink-0 items-center justify-center rounded-btn border border-white/20 text-display text-white hover:bg-white/10 md:right-4"
             aria-label={t('object_detail_gallery_next')}
             onClick={goNext}
           >
@@ -261,7 +261,7 @@ export function ObjectGalleryViewer({
         ) : null}
       </div>
 
-      <footer className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-white/10 px-4 py-3 text-sm text-white/90">
+      <footer className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-white/10 px-4 py-3 text-body-sm text-white/90">
         <div className="flex flex-wrap items-center gap-3">
           <span>
             {t('object_updates_approve')} {currentStat.forCount}
@@ -273,7 +273,7 @@ export function ObjectGalleryViewer({
         </div>
         <span>
           {t('object_updates_approval')}{' '}
-          <span className="font-medium text-accent">
+          <span className="font-weight-label text-accent">
             {currentStat.approvePercent.toFixed(2)}%
           </span>
         </span>

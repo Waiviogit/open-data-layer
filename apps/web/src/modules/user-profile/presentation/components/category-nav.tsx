@@ -16,7 +16,7 @@ export type CategoryNavProps = {
 };
 
 function EmptyState() {
-  return <p className="mt-2 text-sm text-muted">No categories yet.</p>;
+  return <p className="mt-2 text-body-sm text-muted">No categories yet.</p>;
 }
 
 function NavChrome({
@@ -41,7 +41,7 @@ function NavChrome({
   return (
     <>
       {lineageSegments.length > 0 ? (
-        <p className="mb-2 flex flex-wrap gap-x-3 gap-y-1 text-xs">
+        <p className="mb-2 flex flex-wrap gap-x-3 gap-y-1 text-caption">
           <Link
             href={upHref}
             suppressHydrationWarning
@@ -68,9 +68,9 @@ function NavChrome({
           href={`${basePath}/${encodeURIComponent(UNCATEGORIZED_SHOP_PATH_SEGMENT)}`}
           suppressHydrationWarning
           className={[
-            'mt-3 block border-t border-border pt-2 text-xs underline-offset-2 hover:text-fg hover:underline',
+            'mt-3 block border-t border-border pt-2 text-caption underline-offset-2 hover:text-fg hover:underline',
             lineageSegments.length === 1 && lineageSegments[0] === UNCATEGORIZED_SHOP_PATH_SEGMENT
-              ? 'font-medium text-fg'
+              ? 'font-weight-label text-fg'
               : 'text-muted',
           ].join(' ')}
           aria-current={
@@ -102,12 +102,12 @@ export async function CategoryNav({
 
   return (
     <aside
-      className="rounded-card border border-border bg-surface/60 p-card-padding text-sm text-muted"
+      className="rounded-card border border-border bg-surface/60 p-card-padding text-body-sm text-muted"
       aria-label="Categories"
     >
-      <p className="font-medium text-fg">Categories</p>
+      <p className="font-weight-label text-fg">Categories</p>
       {data === null ? (
-        <p className="mt-2 text-sm text-muted">Categories unavailable.</p>
+        <p className="mt-2 text-body-sm text-muted">Categories unavailable.</p>
       ) : (
         <NavChrome
           data={data}

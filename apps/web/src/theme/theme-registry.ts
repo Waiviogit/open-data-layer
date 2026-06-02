@@ -1,11 +1,13 @@
 export const themeRegistry = {
   light: {
     label: 'Light',
-    description: 'Default feed UI — orange accent, Inter, flat cards, gray chrome',
+    description:
+      'Default feed UI — orange accent, Medium-style type (Sohne / GT Super / Charter), flat cards',
   },
   dark: {
     label: 'Dark',
-    description: 'Dark feed UI — same orange accent and compact scale as Light',
+    description:
+      'Dark feed UI — same orange accent and Medium-style type scale as Light',
   },
   studio: {
     label: 'Studio',

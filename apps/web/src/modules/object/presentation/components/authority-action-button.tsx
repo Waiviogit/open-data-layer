@@ -94,7 +94,7 @@ export function AuthorityActionButton({
         type="button"
         disabled={pending}
         className={[
-          'rounded-btn border px-4 py-2 text-body-sm font-medium transition-colors',
+          'rounded-btn border px-4 py-2 text-body-sm font-weight-label transition-colors',
           'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
           active
             ? 'border-border bg-surface-control text-muted hover:bg-surface-control-hover'
