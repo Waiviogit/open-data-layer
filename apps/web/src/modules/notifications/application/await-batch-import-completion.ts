@@ -8,6 +8,31 @@ import {
 
 const OBJECT_INDEX_POLL_INTERVAL_MS = 2_000;
 
+/** Polls query-api until the object exists or timeout. Never throws. */
+export async function awaitObjectIndexed(
+  objectId: string,
+  timeoutMs = BATCH_IMPORT_COMPLETION_TIMEOUT_MS,
+): Promise<void> {
+  const normalizedObjectId = objectId.trim();
+  if (!normalizedObjectId) {
+    await sleepMs(timeoutMs);
+    return;
+  }
+
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const exists = await checkObjectIdExists(normalizedObjectId);
+    if (exists === true) {
+      return;
+    }
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) {
+      return;
+    }
+    await sleepMs(Math.min(OBJECT_INDEX_POLL_INTERVAL_MS, remaining));
+  }
+}
+
 /**
  * Waits until batch_import is processed: WS `batch_import_completed` for trxId
  * and/or object appears in query-api. Never throws.
@@ -62,19 +87,8 @@ export async function awaitBatchImportCompletion(
     });
   };
 
-  const waitForObjectIndexed = async (): Promise<void> => {
-    while (Date.now() < deadline) {
-      const exists = await checkObjectIdExists(normalizedObjectId);
-      if (exists === true) {
-        return;
-      }
-      const remaining = deadline - Date.now();
-      if (remaining <= 0) {
-        return;
-      }
-      await sleepMs(Math.min(OBJECT_INDEX_POLL_INTERVAL_MS, remaining));
-    }
-  };
-
-  await Promise.race([waitForWsNotification(), waitForObjectIndexed()]);
+  await Promise.race([
+    waitForWsNotification(),
+    awaitObjectIndexed(normalizedObjectId, timeoutMs),
+  ]);
 }

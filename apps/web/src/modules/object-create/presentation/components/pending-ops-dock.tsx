@@ -97,7 +97,14 @@ export function PendingOpsDock({
       return t('object_create_publish');
     }
     if (!broadcastViaIpfs) {
-      return t('object_create_publishing');
+      switch (publishPhase) {
+        case 'confirming':
+          return t('object_create_confirming_on_chain');
+        case 'importing':
+          return t('object_create_indexing_object');
+        default:
+          return t('object_create_publishing');
+      }
     }
     switch (publishPhase) {
       case 'uploading':

@@ -12,6 +12,7 @@ import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import {
   awaitBatchImportCompletion,
+  awaitObjectIndexed,
   awaitTrxConfirmation,
 } from '@/modules/notifications';
 import { initialFormValueForUpdateTypeWithContext } from '@/modules/object-updates/application/tag-category-item-form-value';
@@ -462,20 +463,17 @@ export function useObjectCreateForm({
         ({ transactionId } = await getWalletFacade().broadcast({
           operations: ops,
         }));
-        void awaitTrxConfirmation(transactionId).finally(() => {
-          void refreshAfterBroadcast(router, () =>
-            revalidateObjectAfterBroadcast(state.objectId),
-          );
-        });
+        setPublishPhase('confirming');
+        await awaitTrxConfirmation(transactionId);
+        setPublishPhase('importing');
+        await awaitObjectIndexed(state.objectId);
       }
 
       clearObjectCreateDraft(username);
       setDraftSavedAt(null);
-      if (broadcastViaIpfs) {
-        void refreshAfterBroadcast(router, () =>
-          revalidateObjectAfterBroadcast(state.objectId),
-        );
-      }
+      await refreshAfterBroadcast(router, () =>
+        revalidateObjectAfterBroadcast(state.objectId),
+      );
       router.push(`/object/${encodeURIComponent(state.objectId)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'publish_failed');
