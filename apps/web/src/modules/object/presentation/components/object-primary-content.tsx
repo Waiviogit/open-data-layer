@@ -230,15 +230,21 @@ export function ObjectPrimaryContent({
     [objectId, router, searchParams],
   );
 
-  /** Updates nested stack; URL sync runs in useEffect (never inside setState updaters). */
+  type NestedStackUrlMode = 'push' | 'replace';
+
+  /** Updates nested stack; optional URL sync runs in useEffect (never inside setState updaters). */
   const commitNestedStack = useCallback(
     (
       computeNext: (prev: ObjectNestedViewEntry[]) => ObjectNestedViewEntry[],
-      mode: 'push' | 'replace' = 'push',
+      options: { mode?: NestedStackUrlMode; syncUrl?: boolean } = {},
     ) => {
+      const mode = options.mode ?? 'push';
+      const syncUrl = options.syncUrl ?? true;
       setNestedStack((prev) => {
         const next = computeNext(prev);
-        pendingStackUrlSyncRef.current = { stack: next, mode };
+        if (syncUrl) {
+          pendingStackUrlSyncRef.current = { stack: next, mode };
+        }
         return next;
       });
     },
@@ -315,7 +321,7 @@ export function ObjectPrimaryContent({
       commitNestedStack(
         (prev) =>
           depth < 0 ? [] : prev.slice(0, Math.min(depth + 1, prev.length)),
-        'push',
+        { mode: 'replace' },
       );
     },
     [commitNestedStack],
@@ -324,24 +330,28 @@ export function ObjectPrimaryContent({
   const navigateInColumn = useCallback(
     async (item: ProjectedListItem) => {
       const optimistic = pendingEntryFromListItem(item);
-      commitNestedStack((prev) => [...prev, optimistic], 'push');
+      commitNestedStack((prev) => [...prev, optimistic], { mode: 'push' });
 
       const resolved = await resolveNestedObjectContentAction(item.objectId);
       if (!resolved) {
         commitNestedStack(
           (prev) => prev.filter((e) => e.objectId !== item.objectId || !e.pending),
-          'replace',
+          { mode: 'replace' },
         );
         return;
       }
 
-      commitNestedStack((prev) => {
-        const withoutPending = prev.filter(
-          (e) => !(e.objectId === item.objectId && e.pending),
-        );
-        const withoutDup = withoutPending.filter((e) => e.objectId !== item.objectId);
-        return [...withoutDup, resolvedToEntry(resolved)];
-      }, 'replace');
+      // URL already updated by push above; only swap pending entry for resolved data.
+      commitNestedStack(
+        (prev) => {
+          const withoutPending = prev.filter(
+            (e) => !(e.objectId === item.objectId && e.pending),
+          );
+          const withoutDup = withoutPending.filter((e) => e.objectId !== item.objectId);
+          return [...withoutDup, resolvedToEntry(resolved)];
+        },
+        { syncUrl: false },
+      );
     },
     [commitNestedStack],
   );
