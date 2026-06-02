@@ -191,7 +191,7 @@ export function ObjectGeoPreview({ latitude, longitude, label }: ObjectGeoPrevie
               type="button"
               aria-label="Open map fullscreen"
               onClick={() => setExpanded(true)}
-              className="pointer-events-auto flex size-9 cursor-pointer items-center justify-center rounded-btn border border-border/80 bg-surface text-fg shadow-sm hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              className="pointer-events-auto flex size-9 cursor-pointer items-center justify-center rounded-btn border border-border/80 bg-surface text-fg shadow-card hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             >
               <IconExpandLarge className="text-fg-secondary" />
             </button>

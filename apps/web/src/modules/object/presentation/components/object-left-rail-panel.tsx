@@ -136,7 +136,7 @@ function LeftRailAddUpdateButton({
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex size-8 shrink-0 items-center justify-center rounded-full border border-accent bg-accent/10 text-accent hover:bg-accent/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      className="inline-flex size-8 shrink-0 items-center justify-center rounded-pill border border-accent bg-accent/10 text-accent hover:bg-accent/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
       aria-label={addLabel}
       title={addLabel}
     >
@@ -199,7 +199,7 @@ function LeftRailIdentifierSection({
         <div className="min-w-0 flex-1 space-y-1">
           <button
             type="button"
-            className="flex w-full min-w-0 items-center justify-between gap-2 text-left text-body-sm font-weight-label text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus rounded-sm"
+            className="flex w-full min-w-0 items-center justify-between gap-2 text-left text-body-sm font-weight-label text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus rounded-btn"
             aria-expanded={open}
             aria-controls={contentId}
             onClick={() => setOpen((v) => !v)}

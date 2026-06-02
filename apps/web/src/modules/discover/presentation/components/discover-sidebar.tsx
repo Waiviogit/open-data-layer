@@ -58,7 +58,7 @@ export function DiscoverSidebar({
                   href={buildDiscoverHref({ type, q, sort })}
                   suppressHydrationWarning
                   className={[
-                    'block rounded-md px-2 py-1.5 text-body-sm transition-colors',
+                    'block rounded-btn px-2 py-1.5 text-body-sm transition-colors',
                     active
                       ? 'bg-accent/15 font-weight-label text-accent'
                       : 'text-fg-secondary hover:bg-ghost-surface hover:text-fg',
@@ -91,7 +91,7 @@ export function DiscoverSidebar({
               href={buildDiscoverHref({ users: true, q, sort })}
               suppressHydrationWarning
               className={[
-                'block rounded-md px-2 py-1.5 text-body-sm transition-colors',
+                'block rounded-btn px-2 py-1.5 text-body-sm transition-colors',
                 usersMode
                   ? 'bg-accent/15 font-weight-label text-accent'
                   : 'text-fg-secondary hover:bg-ghost-surface hover:text-fg',

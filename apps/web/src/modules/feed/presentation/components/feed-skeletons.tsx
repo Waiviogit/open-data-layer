@@ -19,7 +19,7 @@ export function FeedStoryCardSkeleton() {
         <div className="h-4 max-w-[95%] animate-pulse rounded-btn bg-surface-control" />
         <div className="h-4 max-w-[80%] animate-pulse rounded-btn bg-surface-control" />
       </div>
-      <div className="mt-4 h-44 animate-pulse rounded-md bg-surface-control sm:h-52" />
+      <div className="mt-4 h-44 animate-pulse rounded-btn bg-surface-control sm:h-52" />
       <footer className="mt-4 flex flex-wrap gap-3 border-t border-border pt-3">
         <div className="h-8 w-14 animate-pulse rounded-btn bg-surface-control" />
         <div className="h-8 w-14 animate-pulse rounded-btn bg-surface-control" />
@@ -56,7 +56,7 @@ export function FeedPostGridSkeleton({ count = 9 }: FeedPostGridSkeletonProps) {
       {Array.from({ length: count }, (_, i) => (
         <div
           key={i}
-          className="aspect-square w-full animate-pulse rounded-sm bg-surface-control"
+          className="aspect-square w-full animate-pulse rounded-btn bg-surface-control"
         />
       ))}
     </div>

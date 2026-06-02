@@ -3,8 +3,8 @@
  * Compact profile matches object sidebar / modal map controls.
  */
 .leaflet-container.map-zoom-ui-compact .leaflet-control-zoom {
-  border: 1px solid rgb(0 0 0 / 0.08);
-  box-shadow: 0 1px 4px rgb(0 0 0 / 0.12);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
 }
 
 .leaflet-container.map-zoom-ui-compact .leaflet-control-zoom a {

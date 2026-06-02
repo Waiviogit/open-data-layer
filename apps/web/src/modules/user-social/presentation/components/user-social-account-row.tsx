@@ -83,7 +83,7 @@ export function UserSocialAccountRow({
           {row.name}
         </Link>
         <p className="mt-0.5 flex flex-wrap items-center gap-2 text-caption text-fg-secondary">
-          <span className="rounded-md border border-border bg-surface-control px-2 py-0.5 font-mono text-body-sm text-fg">
+          <span className="rounded-btn border border-border bg-surface-control px-2 py-0.5 font-mono text-body-sm text-fg">
             {row.wobjectsWeight.toFixed(2)}
           </span>
           <span aria-hidden>·</span>
@@ -99,7 +99,7 @@ export function UserSocialAccountRow({
           className={[
             'group shrink-0 rounded-btn border px-3 py-1.5 text-body-sm font-weight-label transition-colors disabled:opacity-50',
             isCurrentFollowing
-              ? 'border-border bg-surface-control text-muted hover:border-red-400 hover:bg-red-500/10 hover:text-red-600'
+              ? 'border-border bg-surface-control text-muted hover:border-error hover:bg-error/10 hover:text-error'
               : 'border-accent text-accent hover:bg-accent/10',
             viewerUsername == null ? 'cursor-not-allowed opacity-50' : '',
           ].join(' ')}

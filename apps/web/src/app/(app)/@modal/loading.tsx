@@ -7,11 +7,11 @@
 export default function ModalLoadingSkeleton() {
   return (
     <>
-      <div className="fixed inset-0 z-[100] bg-overlay/70 backdrop-blur-[2px]" aria-hidden />
+      <div className="post-modal-scrim fixed inset-0 z-[100] backdrop-blur-[2px]" aria-hidden />
       <div className="fixed inset-0 z-[100] overflow-y-auto">
         <div className="flex min-h-full flex-col items-center justify-start px-4 py-8 sm:px-6">
           <div className="flex w-full max-w-container-post items-start gap-3">
-            <div className="min-w-0 flex-1 animate-pulse rounded-sm border-0 bg-surface shadow-card-float">
+            <div className="min-w-0 flex-1 animate-pulse rounded-card border-0 bg-surface shadow-card-float">
               {/* Mobile close bar placeholder */}
               <div className="flex items-center justify-end border-b border-border px-4 py-2 lg:hidden">
                 <div className="size-8 rounded-circle bg-surface-control" />

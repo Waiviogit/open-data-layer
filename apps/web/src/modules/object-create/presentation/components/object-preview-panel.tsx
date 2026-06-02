@@ -203,7 +203,7 @@ export function ObjectPreviewPanel({
         {tab === 'preview' ? (
           <div className="space-y-3">
             {objectType ? (
-              <span className="inline-block rounded-full bg-ghost-surface px-2 py-0.5 text-caption text-muted">
+              <span className="inline-block rounded-pill bg-ghost-surface px-2 py-0.5 text-caption text-muted">
                 {labelForObjectType(objectType)}
               </span>
             ) : null}
@@ -292,7 +292,7 @@ export function ObjectPreviewPanel({
                   {keywords.map((kw) => (
                     <li
                       key={kw}
-                      className="rounded-full border border-border bg-bg px-2.5 py-0.5 font-mono text-caption text-fg"
+                      className="rounded-pill border border-border bg-bg px-2.5 py-0.5 font-mono text-caption text-fg"
                     >
                       {kw}
                     </li>

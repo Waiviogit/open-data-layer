@@ -81,8 +81,8 @@ export function UserHeader({
 
       <div className="relative -mt-12 flex flex-col gap-4 px-gutter pb-4 sm:flex-row sm:items-end sm:px-gutter-sm">
         {isHeroLoading ? (
-          <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border-4 border-bg bg-bg shadow-card">
-            <span className="h-8 w-8 animate-pulse rounded-full bg-surface" />
+          <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-circle border-4 border-bg bg-bg shadow-card">
+            <span className="h-8 w-8 animate-pulse rounded-circle bg-surface" />
           </div>
         ) : (
           <UserAvatar
@@ -106,9 +106,7 @@ export function UserHeader({
                 <h1
                   className={[
                     'truncate text-section font-weight-strong font-display',
-                    hasCoverPhoto
-                      ? 'text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.85),0_0_12px_rgba(0,0,0,0.35)]'
-                      : 'text-fg',
+                    hasCoverPhoto ? 'hero-on-photo-title' : 'text-fg',
                   ].join(' ')}
                 >
                   {user.displayName}
@@ -116,9 +114,7 @@ export function UserHeader({
                 <span
                   className={[
                     'text-body-sm',
-                    hasCoverPhoto
-                      ? 'text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]'
-                      : 'text-muted',
+                    hasCoverPhoto ? 'hero-on-photo-muted' : 'text-muted',
                   ].join(' ')}
                 >
                   @{username}
@@ -148,7 +144,7 @@ export function UserHeader({
                 className={[
                   'group rounded-btn px-4 py-2 text-body-sm font-weight-label disabled:opacity-50',
                   isFollowing
-                    ? 'border border-border bg-surface-control text-muted hover:border-red-400 hover:bg-red-500/10 hover:text-red-600'
+                    ? 'hero-follow-active'
                     : 'bg-accent text-accent-fg hover:opacity-90',
                 ].join(' ')}
               >

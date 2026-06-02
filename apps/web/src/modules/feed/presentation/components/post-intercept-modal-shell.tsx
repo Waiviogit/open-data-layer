@@ -116,7 +116,7 @@ export function PostInterceptModalShell({ children }: PostInterceptModalShellPro
         Keeping overflow-y-auto and backdrop-filter on the same fixed div
         forces a re-composite of the blur on every scroll tick → visible jank.
       */}
-      <div className="fixed inset-0 z-[100] bg-overlay/70 backdrop-blur-[2px]" aria-hidden />
+      <div className="post-modal-scrim fixed inset-0 z-[100] backdrop-blur-[2px]" aria-hidden />
       <div
         className="fixed inset-0 z-[100] overflow-y-auto"
         role="presentation"
@@ -136,7 +136,7 @@ export function PostInterceptModalShell({ children }: PostInterceptModalShellPro
             <div
               role="dialog"
               aria-modal="true"
-              className="min-w-0 flex-1 rounded-sm border-0 bg-surface shadow-card-float"
+              className="min-w-0 flex-1 rounded-card border-0 bg-surface shadow-card-float"
               onClick={(e) => e.stopPropagation()}
               onKeyDown={(e) => e.stopPropagation()}
             >

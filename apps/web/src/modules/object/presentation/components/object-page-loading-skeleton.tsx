@@ -54,7 +54,7 @@ export function ObjectPageCenterSkeleton() {
       {Array.from({ length: 3 }).map((_, i) => (
         <div key={i} className="rounded-card border border-border bg-surface/80 p-card-padding shadow-whisper">
           <div className="flex gap-3">
-            <PulseBlock className="size-16 shrink-0 rounded-md" />
+            <PulseBlock className="size-16 shrink-0 rounded-btn" />
             <div className="min-w-0 flex-1 space-y-2">
               <PulseBlock className="h-4 w-3/4" />
               <PulseBlock className="h-3 w-1/2" />
@@ -75,7 +75,7 @@ export function ObjectPageRightRailSkeleton() {
           <PulseBlock className="h-4 w-24" />
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="flex gap-2">
-              <PulseBlock className="size-12 shrink-0 rounded-md" />
+              <PulseBlock className="size-12 shrink-0 rounded-btn" />
               <div className="min-w-0 flex-1 space-y-1.5">
                 <PulseBlock className="h-3 w-full" />
                 <PulseBlock className="h-3 w-2/3" />

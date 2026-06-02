@@ -14,7 +14,7 @@ export default function UserProfileError({
       </p>
       <button
         onClick={reset}
-        className="mt-6 inline-block rounded-md bg-accent px-4 py-2 text-body-sm font-weight-label text-white hover:bg-accent/90"
+        className="mt-6 inline-block rounded-btn bg-accent px-4 py-2 text-body-sm font-weight-label text-accent-fg hover:bg-accent/90"
       >
         Try again
       </button>

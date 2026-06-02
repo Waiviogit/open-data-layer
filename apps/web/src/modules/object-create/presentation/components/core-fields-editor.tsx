@@ -365,7 +365,7 @@ function TagCategoryItemsGroup({
             <span
               key={entry.entryKey}
               className={[
-                'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-body-sm',
+                'inline-flex items-center gap-1 rounded-pill border px-2.5 py-1 text-body-sm',
                 isEmpty
                   ? 'border-dashed border-border-strong text-muted'
                   : 'border-border bg-ghost-surface text-fg',
@@ -497,7 +497,7 @@ function FieldRow({
         <span className="flex items-center gap-2 text-body-sm font-weight-label text-heading">
           {!filled && isRequired ? (
             <span
-              className="size-2 shrink-0 rounded-full bg-amber-500/80"
+              className="size-2 shrink-0 rounded-pill bg-accent-alt/80"
               title="Required"
               aria-hidden
             />

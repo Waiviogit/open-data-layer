@@ -92,8 +92,12 @@ In plain CSS (e.g. Leaflet overrides), prefer **`var(--font-size-body)`**, **`va
 
 ### Documented exceptions
 
+- **Hero/gallery chrome on photography** — use `.hero-on-photo-*` and `.gallery-*` classes in [`global.css`](src/app/global.css) only; do not scatter inline `text-white`, `bg-white/…`, or rgba `text-shadow` in components.
 - **Third-party embed CSS** (Leaflet, sanitized post HTML) may use minimal literals when no hook exists; still prefer theme `var(--*)` where you control the stylesheet.
-- **External brand mimicry** (e.g. Facebook Open Graph preview in object create) may keep platform-specific hex colors; typography there should still use tokens when it is app UI, not the mimic surface.
+- **Video letterbox / iframe backgrounds** — `bg-black` on YouTube embeds and inline video iframes (`.blog-post-youtube-embed`, feed story video) is allowed.
+- **External brand mimicry** (e.g. Facebook Open Graph preview in object create) may keep platform-specific hex colors, `rounded-md`/`rounded-lg`, and shadow literals on the mimic surface only.
+- **Dropdown / media sizing** — arbitrary `min-w-[…]`, `max-h-[…]`, `aspect-[…]` when no layout token exists for that control.
+- **Icon alignment** — `leading-none` on star ratings, carousel arrows, and similar non-text glyphs.
 
 ## Theme runtime
 

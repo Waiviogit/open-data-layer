@@ -89,11 +89,6 @@ export function ObjectHero({
 
   const hasCoverPhoto = Boolean(coverImageUrl?.trim());
 
-  const titleCoverClasses =
-    'text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.85),0_0_12px_rgba(0,0,0,0.35)]';
-  const mutedCoverClasses =
-    'text-white/90 [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]';
-
   return (
     <header className="overflow-hidden rounded-card border border-border bg-bg shadow-card">
       <div className="relative overflow-hidden rounded-t-card">
@@ -108,10 +103,7 @@ export function ObjectHero({
               className="object-cover"
               unoptimized={shouldUnoptimizeRemoteImage(coverImageUrl)}
             />
-            <div
-              className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/40 to-black/55"
-              aria-hidden
-            />
+            <div className="hero-cover-vignette absolute inset-0" aria-hidden />
             <div className="absolute inset-0 bg-nav-bg/65" aria-hidden />
           </>
         ) : null}
@@ -119,7 +111,7 @@ export function ObjectHero({
         <div
           className={[
             'relative z-10 px-gutter pb-5 pt-6 sm:px-gutter-sm',
-            hasCoverPhoto ? 'text-white' : 'bg-nav-bg text-nav-fg',
+            hasCoverPhoto ? 'gallery-chrome-text' : 'bg-nav-bg text-nav-fg',
           ].join(' ')}
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
@@ -129,7 +121,7 @@ export function ObjectHero({
               displayName={title}
               size={96}
               isSquare
-              className="border border-white/25 bg-white/10 p-1.5 backdrop-blur-sm"
+              className={hasCoverPhoto ? 'hero-on-photo-avatar' : undefined}
             />
 
             <div className="min-w-0 flex-1 pb-1">
@@ -137,7 +129,7 @@ export function ObjectHero({
                 <h1
                   className={[
                     'truncate text-section font-weight-strong font-display',
-                    hasCoverPhoto ? titleCoverClasses : '',
+                    hasCoverPhoto ? 'hero-on-photo-title' : '',
                   ].join(' ')}
                 >
                   {title}
@@ -146,8 +138,8 @@ export function ObjectHero({
                   className={[
                     'rounded-btn px-2 py-0.5 text-caption font-weight-label',
                     hasCoverPhoto
-                      ? `${mutedCoverClasses} bg-white/20`
-                      : 'bg-white/15 text-nav-fg',
+                      ? 'hero-on-photo-chip'
+                      : 'bg-ghost-surface text-nav-fg',
                   ].join(' ')}
                 >
                   {kindLabel}
@@ -157,8 +149,8 @@ export function ObjectHero({
                     className={[
                       'rounded-btn px-2 py-0.5 text-caption font-weight-label tabular-nums',
                       hasCoverPhoto
-                        ? `${mutedCoverClasses} bg-white/20`
-                        : 'bg-white/15 text-nav-fg',
+                        ? 'hero-on-photo-chip'
+                        : 'bg-ghost-surface text-nav-fg',
                     ].join(' ')}
                   >
                     {displayWeightLabel}
@@ -169,7 +161,7 @@ export function ObjectHero({
                 <p
                   className={[
                     'mt-1 line-clamp-2 text-body-sm font-weight-body',
-                    hasCoverPhoto ? mutedCoverClasses : 'opacity-90',
+                    hasCoverPhoto ? 'hero-on-photo-muted' : 'opacity-90',
                   ].join(' ')}
                 >
                   {subtitleTitle}
@@ -179,7 +171,7 @@ export function ObjectHero({
                 <p
                   className={[
                     'mt-2 line-clamp-2 text-body-sm',
-                    hasCoverPhoto ? mutedCoverClasses : 'opacity-90',
+                    hasCoverPhoto ? 'hero-on-photo-muted' : 'opacity-90',
                   ].join(' ')}
                 >
                   {tagline}
@@ -194,11 +186,10 @@ export function ObjectHero({
                 className={[
                   'group rounded-btn px-4 py-2 text-body-sm font-weight-label',
                   isFollowing
-                    ? 'border border-white/50 bg-white/15 text-white hover:border-red-400/80 hover:bg-red-500/25 hover:text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.75)]'
+                    ? hasCoverPhoto
+                      ? 'hero-on-photo-btn hero-on-photo-btn-destructive'
+                      : 'hero-follow-active'
                     : 'bg-accent text-accent-fg hover:opacity-90',
-                  !hasCoverPhoto && isFollowing
-                    ? 'border-border bg-bg text-fg hover:border-red-400 hover:bg-red-500/10 hover:text-red-600'
-                    : '',
                 ].join(' ')}
               >
                 <span className={isFollowing ? 'group-hover:hidden' : ''}>
@@ -217,7 +208,7 @@ export function ObjectHero({
                   className={[
                     'rounded-btn p-2',
                     hasCoverPhoto
-                      ? 'border border-white/50 bg-white/15 text-white hover:bg-white/25 [text-shadow:0_1px_2px_rgba(0,0,0,0.75)]'
+                      ? 'hero-on-photo-btn'
                       : 'border border-border bg-bg text-fg hover:bg-muted',
                   ].join(' ')}
                   aria-pressed={isBell}
@@ -233,8 +224,8 @@ export function ObjectHero({
                 className={[
                   'rounded-btn px-4 py-2 text-body-sm font-weight-label',
                   hasCoverPhoto
-                    ? 'border border-white/50 bg-white/15 text-white hover:bg-white/25 [text-shadow:0_1px_2px_rgba(0,0,0,0.75)]'
-                    : 'border border-white/40 bg-white/10 text-nav-fg hover:bg-white/15',
+                    ? 'hero-on-photo-btn'
+                    : 'border border-ghost-border bg-ghost-surface text-nav-fg hover:bg-ghost-surface',
                 ].join(' ')}
               >
                 {isEditMode ? t('object_detail_view') : t('object_detail_edit')}
@@ -245,8 +236,8 @@ export function ObjectHero({
                 className={[
                   'rounded-btn p-2',
                   hasCoverPhoto
-                    ? 'border border-white/50 bg-white/15 text-white hover:bg-white/25 [text-shadow:0_1px_2px_rgba(0,0,0,0.75)]'
-                    : 'border border-white/40 bg-white/10 text-nav-fg hover:bg-white/15',
+                    ? 'hero-on-photo-btn'
+                    : 'border border-ghost-border bg-ghost-surface text-nav-fg hover:bg-ghost-surface',
                 ].join(' ')}
                 aria-pressed={isFavorite}
                 title={

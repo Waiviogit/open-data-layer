@@ -10,12 +10,12 @@ const AppMapImpl = dynamic(
     ssr: false,
     loading: () => (
       <div
-        className="bg-surface-alt flex min-h-64 w-full items-center justify-center rounded-md border border-border"
+        className="bg-surface-alt flex min-h-64 w-full items-center justify-center rounded-btn border border-border"
         aria-busy="true"
       >
         <span className="sr-only">Loading map</span>
         <span
-          className="bg-muted h-2 w-32 animate-pulse rounded-full"
+          className="bg-muted h-2 w-32 animate-pulse rounded-circle"
           aria-hidden="true"
         />
       </div>

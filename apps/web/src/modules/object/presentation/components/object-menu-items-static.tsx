@@ -156,7 +156,7 @@ function MenuItemVisual({ item }: { item: ProjectedMenuItem }) {
     <span
       className={`block w-full truncate rounded-btn border px-3 py-2 text-body-sm font-weight-label ${
         isHighlight
-          ? 'border-accent-alt bg-accent-alt text-white hover:opacity-95'
+          ? 'border-accent-alt bg-accent-alt text-accent-fg hover:opacity-95'
           : 'border-border bg-surface text-fg hover:bg-surface-alt'
       }`}
     >

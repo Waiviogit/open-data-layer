@@ -201,7 +201,7 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
       {loading ? (
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-20 animate-pulse rounded-md bg-surface-control" aria-hidden />
+            <div key={i} className="h-20 animate-pulse rounded-btn bg-surface-control" aria-hidden />
           ))}
         </div>
       ) : (
@@ -224,7 +224,7 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex max-w-full items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5 text-caption text-accent"
+                    className="inline-flex max-w-full items-center gap-1 rounded-pill bg-accent/15 px-2 py-0.5 text-caption text-accent"
                   >
                     <span className="truncate">{decodeTagFilter(tag)?.value ?? tag}</span>
                     <button
@@ -233,7 +233,7 @@ export function DiscoverFilters({ objectType, q, tags, sort }: DiscoverFiltersPr
                         '{tag}',
                         decodeTagFilter(tag)?.value ?? tag,
                       )}
-                      className="shrink-0 rounded-full p-0.5 hover:bg-accent/20"
+                      className="shrink-0 rounded-circle p-0.5 hover:bg-accent/20"
                       onClick={() => onToggleTag(tag, false)}
                     >
                       <ChipRemoveIcon />

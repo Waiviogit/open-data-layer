@@ -159,10 +159,10 @@ export function ObjectCard({
           linkReplace={linkReplace}
           onNavigate={onNavigate}
           ariaLabel={`View object: ${titleLabel}`}
-          className="shrink-0 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          className="shrink-0 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
           <span
-            className="flex items-center justify-center overflow-hidden rounded-md border-[0.5px] border-border bg-surface-alt"
+            className="flex items-center justify-center overflow-hidden rounded-btn border-[0.5px] border-border bg-surface-alt"
             style={{ width: THUMB_SIZE, height: THUMB_SIZE }}
           >
             {thumbUrl ? (

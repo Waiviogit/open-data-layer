@@ -114,7 +114,7 @@ function ObjectRefSearchResultsList({
                 isDuplicate ? onSelectDuplicate(result) : onSelect(result)
               }
             >
-              <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md bg-surface-control">
+              <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-btn bg-surface-control">
                 {img ? (
                   <img
                     src={img}
@@ -140,7 +140,7 @@ function ObjectRefSearchResultsList({
                   </span>
                 ) : null}
               </span>
-              <span className="shrink-0 rounded-sm bg-surface-control px-1.5 py-0.5 text-caption text-muted">
+              <span className="shrink-0 rounded-btn bg-surface-control px-1.5 py-0.5 text-caption text-muted">
                 {formatObjectTypeLabel(result.object_type)}
               </span>
             </button>
@@ -368,7 +368,7 @@ export function ObjectRefSearchField({
       {label ? <span className="font-weight-label text-fg">{label}</span> : null}
       {selectedObject && objectId ? (
         <div className="relative mt-2 flex items-start gap-2 rounded-btn border border-border bg-bg p-2">
-          <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md border border-border bg-surface">
+          <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-btn border border-border bg-surface">
             {resolvingObject ? (
               <span className="flex h-full w-full animate-pulse items-center justify-center bg-surface-control text-caption text-muted">
                 …
@@ -403,7 +403,7 @@ export function ObjectRefSearchField({
               </span>
             ) : null}
             {selectedObject.object_type ? (
-              <span className="mt-1 inline-block rounded-sm bg-surface px-1.5 py-0.5 text-caption text-muted">
+              <span className="mt-1 inline-block rounded-btn bg-surface px-1.5 py-0.5 text-caption text-muted">
                 {formatObjectTypeLabel(selectedObject.object_type)}
               </span>
             ) : null}
@@ -411,7 +411,7 @@ export function ObjectRefSearchField({
           <button
             type="button"
             onClick={onClearObject}
-            className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full border border-border bg-surface text-fg hover:bg-surface-alt"
+            className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-pill border border-border bg-surface text-fg hover:bg-surface-alt"
             aria-label={t('object_edit_menu_item_clear_object')}
             title={t('object_edit_menu_item_clear_object')}
           >

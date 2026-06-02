@@ -19,7 +19,7 @@ function IconPlaySmall({ className }: { className?: string }) {
         height="20"
         viewBox="0 0 24 24"
         fill="currentColor"
-        className="drop-shadow-sm"
+        className="drop-shadow-[0_1px_2px_var(--color-overlay)]"
       >
         <path d="M8 5v14l11-7L8 5z" />
       </svg>
@@ -79,7 +79,7 @@ export function StoryPreviewTile({ story }: StoryPreviewTileProps) {
         </div>
       )}
       {showVideoBadge ? (
-        <div className="absolute right-1.5 top-1.5 text-white drop-shadow-md">
+        <div className="absolute right-1.5 top-1.5 text-accent-fg">
           <IconPlaySmall className="inline-flex rounded-circle bg-overlay/80 p-1" />
         </div>
       ) : null}

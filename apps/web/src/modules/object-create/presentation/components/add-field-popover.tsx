@@ -108,7 +108,7 @@ export function AddFieldPopover({
 
       {open ? (
         <div
-          className="absolute left-0 right-0 z-20 mt-2 overflow-hidden rounded-card border border-border bg-surface shadow-lg"
+          className="absolute left-0 right-0 z-20 mt-2 overflow-hidden rounded-card border border-border bg-surface shadow-card-float"
           role="listbox"
         >
           <div className="border-b border-border p-2">

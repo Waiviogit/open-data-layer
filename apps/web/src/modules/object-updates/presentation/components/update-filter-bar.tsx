@@ -150,7 +150,7 @@ export function ObjectUpdatesFilterBar(props: ObjectUpdatesFilterBarProps) {
         <label className="flex flex-col gap-1 text-caption text-muted sm:min-w-[10rem]">
           <span>{t('object_updates_filter_type')}</span>
           <select
-            className="rounded-md border border-border bg-surface-control px-2 py-2 text-body-sm text-fg"
+            className="rounded-btn border border-border bg-surface-control px-2 py-2 text-body-sm text-fg"
             value={filters.update_type ?? ''}
             onChange={onTypeChange}
           >
@@ -166,7 +166,7 @@ export function ObjectUpdatesFilterBar(props: ObjectUpdatesFilterBarProps) {
           <label className="flex flex-col gap-1 text-caption text-muted sm:min-w-[10rem]">
             <span>{t('object_updates_filter_locale')}</span>
             <select
-              className="rounded-md border border-border bg-surface-control px-2 py-2 text-body-sm text-fg"
+              className="rounded-btn border border-border bg-surface-control px-2 py-2 text-body-sm text-fg"
               value={filters.locale ?? ''}
               onChange={onLocaleChange}
             >

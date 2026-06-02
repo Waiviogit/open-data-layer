@@ -21,9 +21,113 @@
     @apply block w-full px-3 py-2 text-start text-body-sm text-fg hover:bg-ghost-surface;
   }
 
+  /** Legible text and controls on cover photos (object hero, profile header). */
+  .hero-on-photo-title {
+    color: var(--color-accent-fg);
+    text-shadow:
+      0 1px 3px color-mix(in srgb, var(--color-overlay) 85%, transparent),
+      0 0 12px color-mix(in srgb, var(--color-overlay) 35%, transparent);
+  }
+
+  .hero-on-photo-muted {
+    color: color-mix(in srgb, var(--color-accent-fg) 90%, transparent);
+    text-shadow: 0 1px 2px color-mix(in srgb, var(--color-overlay) 80%, transparent);
+  }
+
+  .hero-on-photo-chip {
+    color: color-mix(in srgb, var(--color-accent-fg) 90%, transparent);
+    text-shadow: 0 1px 2px color-mix(in srgb, var(--color-overlay) 80%, transparent);
+    border-radius: var(--radius-btn);
+    background-color: var(--color-ghost-surface);
+  }
+
+  .hero-on-photo-avatar {
+    @apply border border-ghost-border bg-ghost-surface p-1.5 backdrop-blur-sm;
+  }
+
+  .hero-on-photo-btn {
+    @apply rounded-btn border border-ghost-border bg-ghost-surface text-accent-fg;
+    text-shadow: 0 1px 2px color-mix(in srgb, var(--color-overlay) 75%, transparent);
+  }
+
+  .hero-on-photo-btn:hover {
+    background-color: color-mix(in srgb, var(--color-ghost-surface) 85%, var(--color-accent-fg));
+  }
+
+  .hero-on-photo-btn-destructive:hover {
+    @apply border-error text-accent-fg;
+    background-color: color-mix(in srgb, var(--color-error) 25%, transparent);
+  }
+
+  .hero-follow-active {
+    @apply border border-border bg-surface-control text-muted;
+  }
+
+  .hero-follow-active:hover {
+    @apply border-error text-error;
+    background-color: color-mix(in srgb, var(--color-error) 10%, transparent);
+  }
+
+  .hero-cover-vignette {
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--color-overlay) 100%, transparent),
+      color-mix(in srgb, var(--color-overlay) 90%, transparent),
+      color-mix(in srgb, var(--color-overlay) 100%, transparent)
+    );
+  }
+
+  /** Full-screen gallery viewer chrome on dark scrim. */
+  .gallery-scrim {
+    background-color: color-mix(in srgb, var(--color-overlay) 90%, transparent);
+  }
+
+  .gallery-chrome-text {
+    @apply text-accent-fg;
+  }
+
+  .gallery-chrome-text-muted {
+    color: color-mix(in srgb, var(--color-accent-fg) 70%, transparent);
+  }
+
+  .gallery-chrome-border {
+    @apply border-ghost-border;
+  }
+
+  .gallery-chrome-control {
+    @apply rounded-btn border border-ghost-border text-accent-fg hover:bg-ghost-surface;
+  }
+
+  .gallery-chrome-footer {
+    @apply border-t border-ghost-border text-body-sm;
+    color: color-mix(in srgb, var(--color-accent-fg) 90%, transparent);
+  }
+
+  .gallery-chrome-divider {
+    color: color-mix(in srgb, var(--color-accent-fg) 40%, transparent);
+  }
+
+  .gallery-failed-scrim {
+    @apply absolute inset-0;
+    background-color: color-mix(in srgb, var(--color-overlay) 80%, transparent);
+  }
+
+  .gallery-failed-bar {
+    @apply absolute inset-x-0 top-1/2 -translate-y-1/2 bg-overlay py-3 text-center;
+  }
+
+  .gallery-failed-text {
+    @apply text-body-sm text-accent-fg;
+  }
+
+  /** Post intercept modal backdrop (`bg-overlay/70` is invalid with CSS-var colors). */
+  .post-modal-scrim {
+    background-color: var(--color-modal-scrim);
+  }
+
   /* Injected by sanitize-post-html for YouTube URLs in post body */
   .blog-post-youtube-embed {
-    @apply relative my-4 aspect-video w-full max-w-full overflow-hidden rounded-md border border-border bg-black;
+    @apply relative my-4 aspect-video w-full max-w-full overflow-hidden rounded-btn border border-border bg-black;
   }
 
   .blog-post-youtube-embed iframe {

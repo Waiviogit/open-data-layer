@@ -109,7 +109,7 @@ function UserRefSearchResultsList({
                 isDuplicate ? onSelectDuplicate(user) : onSelect(user)
               }
             >
-              <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-surface-control">
+              <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-circle bg-surface-control">
                 {user.profile_image ? (
                   <img
                     src={user.profile_image}
@@ -363,7 +363,7 @@ export function UserRefSearchField({
       {label ? <span className="font-weight-label text-fg">{label}</span> : null}
       {selectedUser && accountName ? (
         <div className="relative mt-2 flex items-start gap-2 rounded-btn border border-border bg-bg p-2">
-          <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-border bg-surface">
+          <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-pill border border-border bg-surface">
             {selectedUser.profile_image ? (
               <img
                 src={selectedUser.profile_image}
@@ -394,7 +394,7 @@ export function UserRefSearchField({
           <button
             type="button"
             onClick={onClearUser}
-            className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full border border-border bg-surface text-fg hover:bg-surface-alt"
+            className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-pill border border-border bg-surface text-fg hover:bg-surface-alt"
             aria-label={t('object_edit_delegation_clear_user')}
             title={t('object_edit_delegation_clear_user')}
           >

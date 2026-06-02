@@ -131,7 +131,7 @@ function TypeChip({
       disabled={disabled}
       onClick={() => onSelect(type)}
       className={[
-        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-body-sm transition-colors',
+        'inline-flex items-center gap-1.5 rounded-pill border px-3 py-1.5 text-body-sm transition-colors',
         selected
           ? 'border-accent bg-accent text-accent-fg'
           : 'border-border bg-bg text-fg hover:border-accent hover:bg-ghost-surface',

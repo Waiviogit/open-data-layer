@@ -25,11 +25,11 @@ export function ObjectCreateHeader({
     idCheckPending ? (
       <span className="text-caption text-muted">{t('object_create_id_checking')}</span>
     ) : idExists === true ? (
-      <span className="rounded-full bg-accent/15 px-2 py-0.5 text-caption font-weight-label text-accent">
+      <span className="rounded-pill bg-accent/15 px-2 py-0.5 text-caption font-weight-label text-accent">
         {t('object_create_id_taken')}
       </span>
     ) : idExists === false ? (
-      <span className="rounded-full border border-border bg-ghost-surface px-2 py-0.5 text-caption font-weight-label text-fg">
+      <span className="rounded-pill border border-border bg-ghost-surface px-2 py-0.5 text-caption font-weight-label text-fg">
         {t('object_create_id_available')}
       </span>
     ) : null;
@@ -41,7 +41,7 @@ export function ObjectCreateHeader({
           <h1 className="text-section font-display font-weight-strong text-heading">
             {t('object_create_title')}
           </h1>
-          <p className="mt-1 max-w-2xl text-body-sm text-fg-secondary">
+          <p className="mt-1 max-w-container-content text-body-sm text-fg-secondary">
             {t('object_create_subtitle')}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2">

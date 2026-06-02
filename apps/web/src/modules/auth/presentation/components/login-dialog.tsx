@@ -33,7 +33,7 @@ export function LoginDialog({ open, onClose }: LoginDialogProps) {
       aria-modal="true"
       aria-labelledby="login-dialog-title"
     >
-      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-card-lg border border-border bg-surface p-card-padding shadow-card-float">
+      <div className="max-h-[90vh] w-full max-w-container-narrow overflow-y-auto rounded-card-lg border border-border bg-surface p-card-padding shadow-card-float">
         <div className="mb-4 flex items-start justify-between gap-4">
           <h2
             id="login-dialog-title"

@@ -76,7 +76,7 @@ export function UpdateCardValue({ value_text, value_geo, value_json }: UpdateCar
         </p>
         <MapProvider>
           <div
-            className="overflow-hidden rounded-md border border-border"
+            className="overflow-hidden rounded-btn border border-border"
             style={{ minHeight: OBJECT_MAP_PREVIEW_MIN_HEIGHT_PX }}
             aria-labelledby={mapLabelId}
           >
@@ -109,7 +109,7 @@ export function UpdateCardValue({ value_text, value_geo, value_json }: UpdateCar
 
   if (value_json != null) {
     return (
-      <pre className="max-h-80 overflow-auto rounded-md border border-border bg-surface-alt p-3 text-caption text-fg">
+      <pre className="max-h-80 overflow-auto rounded-btn border border-border bg-surface-alt p-3 text-caption text-fg">
         <code>{jsonBlock}</code>
       </pre>
     );

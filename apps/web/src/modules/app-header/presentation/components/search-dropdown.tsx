@@ -53,7 +53,7 @@ function pickFlatIndexForRow(
 
 function tabPillClass(selected: boolean): string {
   return [
-    'rounded-full border px-2.5 py-1 text-caption transition-colors',
+    'rounded-pill border px-2.5 py-1 text-caption transition-colors',
     selected
       ? 'border-accent bg-accent/10 text-fg'
       : 'border-transparent bg-surface-control text-fg-secondary hover:bg-ghost-surface',
@@ -64,7 +64,7 @@ function TabCountSuffix({ loading, value }: { loading: boolean; value: number })
   if (loading) {
     return (
       <span
-        className="ms-0.5 inline-block h-3 w-7 align-middle rounded-sm bg-surface-control animate-pulse"
+        className="ms-0.5 inline-block h-3 w-7 align-middle rounded-btn bg-surface-control animate-pulse"
         aria-hidden
       />
     );
@@ -76,7 +76,7 @@ function TypeTabSkeletons() {
   return TAB_SKELETON_WIDTHS.map((w) => (
     <span
       key={w}
-      className="h-7 shrink-0 rounded-full bg-surface-control animate-pulse"
+      className="h-7 shrink-0 rounded-circle bg-surface-control animate-pulse"
       style={{ width: w }}
       aria-hidden
     />
@@ -243,7 +243,7 @@ export function SearchDropdown({
                         }
                       }}
                     >
-                      <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md bg-surface-control">
+                      <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-btn bg-surface-control">
                         {obj.image_url ? (
                           <img
                             src={obj.image_url}
@@ -265,7 +265,7 @@ export function SearchDropdown({
                           </span>
                         ) : null}
                       </span>
-                      <span className="shrink-0 rounded-sm bg-surface-control px-1.5 py-0.5 text-caption text-fg-secondary">
+                      <span className="shrink-0 rounded-btn bg-surface-control px-1.5 py-0.5 text-caption text-fg-secondary">
                         {formatObjectTypeLabel(obj.object_type)}
                       </span>
                     </button>
@@ -308,7 +308,7 @@ export function SearchDropdown({
                         }
                       }}
                     >
-                      <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-surface-control">
+                      <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-circle bg-surface-control">
                         {u.profile_image ? (
                           <img
                             src={u.profile_image}
@@ -331,7 +331,7 @@ export function SearchDropdown({
                         </span>
                       </span>
                       {u.is_following ? (
-                        <span className="shrink-0 rounded-sm bg-surface-control px-1.5 py-0.5 text-caption text-fg-secondary">
+                        <span className="shrink-0 rounded-btn bg-surface-control px-1.5 py-0.5 text-caption text-fg-secondary">
                           {messages.following}
                         </span>
                       ) : (

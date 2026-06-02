@@ -149,26 +149,26 @@ export function ObjectGalleryViewer({
 
   const overlay = (
     <div
-      className="fixed inset-0 z-[150] flex h-dvh max-h-dvh flex-col overflow-hidden overscroll-none bg-black/90 text-fg"
+      className="gallery-scrim fixed inset-0 z-[150] flex h-dvh max-h-dvh flex-col overflow-hidden overscroll-none text-fg"
       role="dialog"
       aria-modal="true"
       aria-label={t('gallery')}
     >
-      <header className="grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b border-white/10 px-4 py-3">
+      <header className="gallery-chrome-border grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b px-4 py-3">
         <div aria-hidden />
         <div className="flex min-w-0 flex-wrap items-center justify-center gap-4 text-body-sm">
-          <span className="truncate font-weight-label text-white">
-            <span className="text-white/70">{t('object_gallery_viewer_related_object')}</span>{' '}
+          <span className="gallery-chrome-text truncate font-weight-label">
+            <span className="gallery-chrome-text-muted">{t('object_gallery_viewer_related_object')}</span>{' '}
             {displayName}
           </span>
           <div ref={albumDropdownRef} className="relative">
             <button
               type="button"
-              className="inline-flex items-center gap-1 rounded-btn border border-white/20 px-2 py-1 text-white hover:bg-white/10"
+              className="gallery-chrome-control inline-flex items-center gap-1 px-2 py-1"
               aria-expanded={albumDropdownOpen}
               onClick={() => setAlbumDropdownOpen((open) => !open)}
             >
-              <span className="text-white/70">{t('album')}:</span>
+              <span className="gallery-chrome-text-muted">{t('album')}:</span>
               <span>{album.name}</span>
               <span aria-hidden className="text-caption">
                 {albumDropdownOpen ? '▴' : '▾'}
@@ -195,7 +195,7 @@ export function ObjectGalleryViewer({
         <div className="flex items-center justify-end gap-2">
           <button
             type="button"
-            className="inline-flex size-8 items-center justify-center rounded-btn border border-white/20 text-white hover:bg-white/10"
+            className="gallery-chrome-control inline-flex size-8 items-center justify-center"
             aria-label={t('object_gallery_zoom_out')}
             onClick={zoomOut}
             disabled={zoom <= MIN_ZOOM}
@@ -204,7 +204,7 @@ export function ObjectGalleryViewer({
           </button>
           <button
             type="button"
-            className="inline-flex size-8 items-center justify-center rounded-btn border border-white/20 text-white hover:bg-white/10"
+            className="gallery-chrome-control inline-flex size-8 items-center justify-center"
             aria-label={t('object_gallery_zoom_in')}
             onClick={zoomIn}
             disabled={zoom >= MAX_ZOOM}
@@ -213,7 +213,7 @@ export function ObjectGalleryViewer({
           </button>
           <button
             type="button"
-            className="inline-flex size-8 items-center justify-center rounded-btn border border-white/20 text-body-lg text-white hover:bg-white/10"
+            className="gallery-chrome-control inline-flex size-8 items-center justify-center text-body-lg"
             aria-label={t('close')}
             onClick={onClose}
           >
@@ -226,14 +226,14 @@ export function ObjectGalleryViewer({
         {count > 1 ? (
           <button
             type="button"
-            className="absolute left-2 z-10 inline-flex size-10 shrink-0 items-center justify-center rounded-btn border border-white/20 text-display text-white hover:bg-white/10 md:left-4"
+            className="gallery-chrome-control absolute left-2 z-10 inline-flex size-10 shrink-0 items-center justify-center text-display md:left-4"
             aria-label={t('object_detail_gallery_prev')}
             onClick={goPrev}
           >
             ‹
           </button>
         ) : null}
-        <div className="relative h-full w-full max-w-5xl overflow-hidden">
+        <div className="relative h-full w-full max-w-container-page overflow-hidden">
           <div
             className="relative mx-auto h-full w-full max-h-[calc(100vh-8rem)]"
             style={{
@@ -252,7 +252,7 @@ export function ObjectGalleryViewer({
         {count > 1 ? (
           <button
             type="button"
-            className="absolute right-2 z-10 inline-flex size-10 shrink-0 items-center justify-center rounded-btn border border-white/20 text-display text-white hover:bg-white/10 md:right-4"
+            className="gallery-chrome-control absolute right-2 z-10 inline-flex size-10 shrink-0 items-center justify-center text-display md:right-4"
             aria-label={t('object_detail_gallery_next')}
             onClick={goNext}
           >
@@ -261,12 +261,12 @@ export function ObjectGalleryViewer({
         ) : null}
       </div>
 
-      <footer className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-white/10 px-4 py-3 text-body-sm text-white/90">
+      <footer className="gallery-chrome-footer flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-3">
         <div className="flex flex-wrap items-center gap-3">
           <span>
             {t('object_updates_approve')} {currentStat.forCount}
           </span>
-          <span className="text-white/40">|</span>
+          <span className="gallery-chrome-divider">|</span>
           <span>
             {t('object_updates_reject')} {currentStat.againstCount}
           </span>

@@ -71,7 +71,7 @@ export function DiscoverUserFeed({ q }: DiscoverUserFeedProps) {
           {Array.from({ length: 5 }).map((_, i) => (
             <li
               key={i}
-              className="h-14 animate-pulse rounded-md bg-surface-control"
+              className="h-14 animate-pulse rounded-btn bg-surface-control"
               aria-hidden
             />
           ))}
@@ -87,7 +87,7 @@ export function DiscoverUserFeed({ q }: DiscoverUserFeedProps) {
                   href={`/@${encodeURIComponent(u.name)}`}
                   className="flex items-center gap-3 px-3 py-2 hover:bg-ghost-surface"
                 >
-                  <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-surface-control">
+                  <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-circle bg-surface-control">
                     {u.profile_image ? (
                       <Image
                         src={u.profile_image}

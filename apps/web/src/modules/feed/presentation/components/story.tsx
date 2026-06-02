@@ -85,7 +85,7 @@ function IconPlay() {
         height="28"
         viewBox="0 0 24 24"
         fill="currentColor"
-        className="ml-0.5 text-white drop-shadow-lg"
+        className="ml-0.5 text-accent-fg"
       >
         <path d="M8 5v14l11-7L8 5z" />
       </svg>
@@ -122,7 +122,7 @@ function StatButton({
   return (
     <button
       type="button"
-      className="inline-flex items-center gap-1.5 rounded-md px-1 py-1 text-caption text-muted transition-colors hover:bg-surface-control hover:text-fg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      className="inline-flex items-center gap-1.5 rounded-btn px-1 py-1 text-caption text-muted transition-colors hover:bg-surface-control hover:text-fg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
       disabled
       aria-label={label}
       title={title ?? undefined}
@@ -178,7 +178,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
       data-feed-tab={feedTab}
     >
       {story.rebloggedBy ? (
-        <p className="mb-3 rounded-md bg-surface-control px-2 py-1 text-caption text-muted">
+        <p className="mb-3 rounded-btn bg-surface-control px-2 py-1 text-caption text-muted">
           Reblogged by{' '}
           <span className="font-weight-label text-fg-secondary">@{story.rebloggedBy}</span>
         </p>
@@ -203,7 +203,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
             <Link
               href={authorProfileHref}
               suppressHydrationWarning
-              className="font-weight-label text-body-sm text-fg hover:underline focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              className="font-weight-label text-body-sm text-fg hover:underline focus-visible:rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             >
               {displayAuthor}
             </Link>
@@ -241,9 +241,9 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
                     suppressHydrationWarning
                     title={chipLabel}
                     aria-label={`View object: ${chipLabel}`}
-                    className="inline-flex rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                    className="inline-flex rounded-circle focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                   >
-                    <span className="flex size-9 items-center justify-center overflow-hidden rounded-full border border-border bg-surface-control ring-1 ring-border/60">
+                    <span className="flex size-9 items-center justify-center overflow-hidden rounded-pill border border-border bg-surface-control ring-1 ring-border/60">
                       {chipImage ? (
                         <Image
                           src={chipImage}
@@ -278,7 +278,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
           <Link
             href={story.permalinkPath}
             suppressHydrationWarning
-            className="absolute inset-0 z-[5] cursor-pointer rounded-md"
+            className="absolute inset-0 z-[5] cursor-pointer rounded-btn"
             aria-label={
               story.title?.trim()
                 ? `View post: ${story.title.trim()}`
@@ -306,7 +306,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
                 className="flex min-w-0 items-center gap-2 leading-body"
               >
                 <span
-                  className="inline-flex shrink-0 items-center justify-center rounded-md bg-code-bg px-1.5 py-0.5 font-mono text-nano font-weight-strong uppercase leading-none tracking-loose text-code-fg"
+                  className="inline-flex shrink-0 items-center justify-center rounded-btn bg-code-bg px-1.5 py-0.5 font-mono text-nano font-weight-strong uppercase leading-none tracking-loose text-code-fg"
                   aria-hidden
                 >
                   RE
@@ -335,7 +335,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
           )}
 
           {previewMediaUrl ? (
-            <div className="relative aspect-video max-h-[260px] min-h-[180px] w-full overflow-hidden rounded-md border border-border bg-surface-control">
+            <div className="relative aspect-video max-h-[260px] min-h-[180px] w-full overflow-hidden rounded-btn border border-border bg-surface-control">
               {videoPlaying && story.videoEmbedUrl ? (
                 <>
                   <iframe
@@ -347,7 +347,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
                   />
                   <button
                     type="button"
-                    className="absolute right-2 top-2 z-30 rounded-md bg-overlay/90 px-2 py-1 text-caption font-weight-label text-fg shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                    className="absolute right-2 top-2 z-30 rounded-btn bg-overlay/90 px-2 py-1 text-caption font-weight-label text-fg shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                     onClick={() => setVideoPlaying(false)}
                   >
                     Close

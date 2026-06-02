@@ -108,7 +108,7 @@ export function AdministrativeHeartButton({
   return (
     <button
       type="button"
-      className="inline-flex rounded-sm p-0.5 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+      className="inline-flex rounded-btn p-0.5 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
       disabled={pending}
       aria-pressed={active}
       title={hint}

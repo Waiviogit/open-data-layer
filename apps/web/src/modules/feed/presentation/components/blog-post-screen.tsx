@@ -94,7 +94,7 @@ function StatButton({
   return (
     <button
       type="button"
-      className="inline-flex items-center gap-1.5 rounded-md px-1 py-1 text-caption text-muted transition-colors hover:bg-surface-control hover:text-fg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+      className="inline-flex items-center gap-1.5 rounded-btn px-1 py-1 text-caption text-muted transition-colors hover:bg-surface-control hover:text-fg-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
       disabled
       aria-label={label}
       title={title ?? undefined}
@@ -147,7 +147,7 @@ export function BlogPostScreen({
       data-blog-post-variant={variant}
     >
       {story.rebloggedBy ? (
-        <p className="mb-3 rounded-md bg-surface-control px-2 py-1 text-caption text-muted">
+        <p className="mb-3 rounded-btn bg-surface-control px-2 py-1 text-caption text-muted">
           Reblogged by{' '}
           <span className="font-weight-label text-fg-secondary">@{story.rebloggedBy}</span>
         </p>
@@ -158,7 +158,11 @@ export function BlogPostScreen({
         {story.title ? (
           <h1
             id={`post-title-${story.id}`}
-            className={isModal ? 'text-section font-weight-strong font-display leading-compressed text-heading' : 'text-display font-display text-heading'}
+            className={
+              isModal
+                ? 'text-section font-weight-strong leading-compressed text-heading'
+                : 'text-display font-display text-heading'
+            }
           >
             {story.title}
           </h1>
@@ -187,7 +191,7 @@ export function BlogPostScreen({
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
               <span className="font-weight-label text-body-sm text-fg">{displayAuthor}</span>
               {repLabel != null ? (
-                <span className="rounded bg-surface-control px-1.5 py-0.5 text-caption font-weight-label text-fg-secondary tabular-nums">
+                <span className="rounded-btn bg-surface-control px-1.5 py-0.5 text-caption font-weight-label text-fg-secondary tabular-nums">
                   {repLabel}
                 </span>
               ) : null}
@@ -219,7 +223,7 @@ export function BlogPostScreen({
           suppressHydrationWarning
           className={[
             'blog-post-body min-w-0 text-fg leading-body',
-            isModal ? 'mt-5 text-body-sm' : 'mt-6 text-body',
+            isModal ? 'mt-5 text-body font-editorial leading-editorial' : 'mt-6 text-body',
             '[&_a]:break-words [&_a]:text-link',
             '[&_blockquote]:my-3 [&_blockquote]:border-l-2 [&_blockquote]:border-border [&_blockquote]:pl-4 [&_blockquote]:text-fg-secondary',
             '[&_h1]:mb-2 [&_h1]:mt-5 [&_h1]:text-section [&_h1]:font-weight-strong [&_h1]:font-display',
@@ -228,7 +232,7 @@ export function BlogPostScreen({
             '[&_img]:h-auto [&_img]:max-w-full [&_img]:my-3',
             '[&_p]:mb-4 [&_p]:empty:hidden',
             '[&_br]:block [&_br]:content-[""] [&_br]:mt-3',
-            '[&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-code-bg [&_pre]:p-3',
+            '[&_pre]:overflow-x-auto [&_pre]:rounded-btn [&_pre]:bg-code-bg [&_pre]:p-3',
             '[&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5',
             '[&_li]:mb-1',
           ].join(' ')}

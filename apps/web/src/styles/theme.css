@@ -32,6 +32,7 @@
   --color-error-fg: #ffffff;
   --color-focus: #f87007;
   --color-overlay: rgb(0 0 0 / 0.45);
+  --color-modal-scrim: rgb(0 0 0 / 0.7);
   --color-ghost-surface: rgb(255 255 255 / 0.92);
   --color-ghost-border: #e9e7e7;
   --color-fg-disabled: #bfbfbf;
@@ -150,6 +151,7 @@
   --color-error-fg: #ffffff;
   --color-focus: #f87007;
   --color-overlay: rgb(0 0 0 / 0.65);
+  --color-modal-scrim: rgb(0 0 0 / 0.7);
   --color-ghost-surface: rgb(28 28 28 / 0.92);
   --color-ghost-border: #4f545c;
   --color-fg-disabled: #525252;
@@ -265,6 +267,7 @@
   --color-error-fg: #ffffff;
   --color-focus: #2563eb;
   --color-overlay: rgb(0 0 0 / 0.5);
+  --color-modal-scrim: rgb(0 0 0 / 0.7);
   --color-ghost-surface: rgb(255 255 255 / 0.1);
   --color-ghost-border: rgb(255 255 255 / 0.35);
   --color-fg-disabled: rgb(17 24 39 / 0.24);
@@ -383,6 +386,7 @@
   --color-error-fg: #0a0a0a;
   --color-focus: #93c5fd;
   --color-overlay: rgb(0 0 0 / 0.65);
+  --color-modal-scrim: rgb(0 0 0 / 0.7);
   --color-ghost-surface: rgb(255 255 255 / 0.08);
   --color-ghost-border: rgb(255 255 255 / 0.3);
   --color-fg-disabled: rgb(243 244 246 / 0.24);
@@ -500,6 +504,7 @@
   --color-error-fg: #fffef8;
   --color-focus: #8b6914;
   --color-overlay: rgb(67 52 34 / 0.5);
+  --color-modal-scrim: rgb(67 52 34 / 0.72);
   --color-ghost-surface: rgb(244 236 216 / 0.1);
   --color-ghost-border: rgb(244 236 216 / 0.35);
   --color-fg-disabled: rgb(67 52 34 / 0.24);
@@ -614,6 +619,7 @@
   --color-error-fg: #ffffff;
   --color-focus: #0071e3;
   --color-overlay: rgb(0 0 0 / 0.5);
+  --color-modal-scrim: rgb(0 0 0 / 0.7);
   --color-ghost-surface: rgb(255 255 255 / 0.32);
   --color-ghost-border: rgb(255 255 255 / 0.35);
   --color-fg-disabled: rgb(0 0 0 / 0.48);
@@ -722,6 +728,7 @@
   --color-error-fg: #ffffff;
   --color-focus: #222222;
   --color-overlay: rgb(0 0 0 / 0.5);
+  --color-modal-scrim: rgb(0 0 0 / 0.7);
   --color-ghost-surface: rgb(255 255 255 / 0.92);
   --color-ghost-border: rgb(0 0 0 / 0.08);
   --color-fg-disabled: rgb(0 0 0 / 0.24);

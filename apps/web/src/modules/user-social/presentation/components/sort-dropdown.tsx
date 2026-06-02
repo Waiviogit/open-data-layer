@@ -66,7 +66,7 @@ export function SortDropdown<T extends string>({ value, options, onChange }: Sor
         <ul
           role="listbox"
           aria-label={t('social_sort_by')}
-          className="absolute right-0 top-full z-20 mt-1 min-w-[9rem] overflow-hidden rounded-lg border border-border bg-surface-raised shadow-lg"
+          className="absolute right-0 top-full z-20 mt-1 min-w-[9rem] overflow-hidden rounded-card border border-border bg-surface-raised shadow-card-float"
         >
           {options.map((o) => (
             <li

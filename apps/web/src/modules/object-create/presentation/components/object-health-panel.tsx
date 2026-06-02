@@ -67,7 +67,7 @@ function DimensionRow({
         <span className="text-body-sm text-fg">{t(DIMENSION_I18N[dim.id])}</span>
         <span
           className={[
-            'shrink-0 rounded-full border px-2.5 py-0.5 text-caption font-weight-label capitalize',
+            'shrink-0 rounded-pill border px-2.5 py-0.5 text-caption font-weight-label capitalize',
             RATING_BADGE_CLASS[dim.rating],
           ].join(' ')}
         >
@@ -103,7 +103,7 @@ export function ObjectHealthPanel({ completeness }: ObjectHealthPanelProps) {
           </span>
         </div>
         <div
-          className="mt-2 h-1.5 overflow-hidden rounded-full bg-border"
+          className="mt-2 h-1.5 overflow-hidden rounded-circle bg-border"
           role="progressbar"
           aria-valuenow={completeness.overallPercent}
           aria-valuemin={0}
@@ -111,7 +111,7 @@ export function ObjectHealthPanel({ completeness }: ObjectHealthPanelProps) {
           aria-label={t('object_create_completeness_title')}
         >
           <div
-            className="h-full rounded-full bg-accent transition-all"
+            className="h-full rounded-pill bg-accent transition-all"
             style={{ width: `${completeness.overallPercent}%` }}
           />
         </div>

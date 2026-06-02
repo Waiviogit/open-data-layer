@@ -240,7 +240,7 @@ function ProviderIcon({ src, alt }: { src: string; alt: string }) {
       alt={alt}
       width={PROVIDER_ICON_SIZE}
       height={PROVIDER_ICON_SIZE}
-      className="shrink-0 rounded-sm"
+      className="shrink-0 rounded-btn"
       unoptimized
     />
   );
