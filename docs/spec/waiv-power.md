@@ -45,17 +45,19 @@ Emitted (in-process event) when the posting account acts in:
 
 ## Indexer: `user_object_powers.update`
 
-Emitted when the Hive Engine **block parser** sees **`tokens`** contract actions for **WAIV**:
+Emitted when the Hive Engine **block parser** sees **`tokens`** contract log events for **WAIV**.
+Deltas apply to `raw_waiv_power` (`stake + delegationsIn`). Failed transactions produce no log events and are skipped silently.
 
-| Action | Accounts | Delta on `raw_waiv_power` |
-|--------|----------|------------------------|
-| `stake` | `payload.to` | `+quantity` |
-| `unstake` | `payload.to` | `-quantity` |
-| `cancelUnstake` | log `unstakeCancel.data.account` (fallback `sender`) | `+quantity` (from log) |
-| `delegate` | `sender` | `-quantity` |
-| `delegate` | `payload.to` | `+quantity` |
-| `undelegate` | `sender` | `+quantity` |
-| `undelegate` | `payload.to` | `-quantity` |
+| Log event | Tx action | Account | Delta on `raw_waiv_power` |
+|-----------|-----------|---------|------------------------|
+| `stake` | `stake` (user) | `data.account` | `+quantity` |
+| `delegate` | `delegate` (user) | `tx.sender` | `-quantity` |
+| `delegate` | `delegate` (user) | `data.to` | `+quantity` |
+| `undelegateStart` | `undelegate` (user) | `data.from` | `-quantity` |
+| `unstake` | `checkPendingUnstakes` (virtual) | `data.account` | `-quantity` |
+| `undelegateDone` | `checkPendingUndelegations` (virtual) | `data.account` | `+quantity` |
+
+**Not tracked:** `unstakeStart`, `unstakeCancel`, user `unstake` / `cancelUnstake` actions (no immediate `stake + delegationsIn` change at user tx time).
 
 **Handler:** if `account` **not** in table → no-op. Else increment `raw_waiv_power` by delta (clamp at `0`), set `waiv_power_dirty = TRUE`. **`waiv_power` is not updated immediately.**
 
