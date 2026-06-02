@@ -17,7 +17,7 @@ import {
 } from '@/modules/object/infrastructure/resolve-nested-object-content.server';
 import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
 import { loadMessages } from '@/i18n/runtime/load-messages';
-import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
+import { getRequestUser } from '@/shared/infrastructure/auth/get-request-user.server';
 import { buildObjectMetadata, JsonLdScript } from '@/seo';
 
 import { getObjectAuthorityPageQuery } from '@/modules/object/application/queries/get-object-authority-page.query';
@@ -197,8 +197,7 @@ export default async function ObjectDetailPage({
   const locale = await getRequestLocale();
   const sp = await searchParams;
 
-  const auth = createCookieAuthContextProvider();
-  const user = await auth.getUser();
+  const user = await getRequestUser();
   const viewerUsername = user?.username ?? null;
 
   const model = await loadObjectPageModel(objectId, locale, viewerUsername);

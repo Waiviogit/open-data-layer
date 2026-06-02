@@ -1,30 +1,32 @@
+import { Suspense } from 'react';
+
 import { ParallelModalSlot } from './parallel-modal-slot';
+import { AppHeaderUser } from './app-header-user.server';
 
 import { LoginModalProvider } from '@/modules/auth';
-import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
+import { AppHeader } from '@/modules/app-header';
 import {
-  AppHeader,
   AppShell,
   BottomNav,
   LayoutProvider,
 } from '@/shared/presentation/layout';
 
-export default async function AppRouteGroupLayout({
+export default function AppRouteGroupLayout({
   children,
   modal,
 }: {
   children: React.ReactNode;
   modal: React.ReactNode;
 }) {
-  const auth = createCookieAuthContextProvider();
-  const current = await auth.getUser();
-  const headerUser = current ? { username: current.username } : null;
-
   return (
     <LayoutProvider>
       <LoginModalProvider>
         <AppShell
-          header={<AppHeader user={headerUser} />}
+          header={
+            <Suspense fallback={<AppHeader user={null} />}>
+              <AppHeaderUser />
+            </Suspense>
+          }
           bottomNav={<BottomNav />}
           className="py-section-y-sm"
         >

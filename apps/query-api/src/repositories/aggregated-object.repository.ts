@@ -12,7 +12,10 @@ import type {
   AggregatedObject,
   VoterWaivPowerMap,
 } from '@opden-data-layer/objects-domain';
-import { LIST_TREE_MAX_DEPTH } from '../constants/cache.constants';
+import {
+  LIST_TREE_MAX_DEPTH,
+  LIST_TREE_WARN_NODE_COUNT,
+} from '../constants/cache.constants';
 import type { Database } from '../database';
 import { KYSELY } from '../database';
 import type { RankVoteProjection } from '../domain/object-projection/projected-object.types';
@@ -63,25 +66,44 @@ export class AggregatedObjectRepository {
     }
 
     try {
+      const started = Date.now();
       const valueRows = rootIds.map((id) => sql`(${id})`);
       const rows = await sql<{ root_id: string; object_id: string }>`
-        WITH RECURSIVE list_tree(root_id, object_id, depth) AS (
-          SELECT v.id, v.id, 0
+        WITH RECURSIVE list_tree(root_id, object_id, depth, path) AS (
+          SELECT v.id, v.id, 0, ARRAY[v.id]::text[]
           FROM (VALUES ${sql.join(valueRows, sql`, `)}) AS v(id)
 
           UNION ALL
 
-          SELECT lt.root_id, ou.value_text, lt.depth + 1
-          FROM object_updates ou
-          INNER JOIN list_tree lt ON lt.object_id = ou.object_id
-          WHERE ou.update_type = ${UPDATE_TYPES.LIST_ITEM}
-            AND ou.value_text IS NOT NULL
-            AND TRIM(ou.value_text) <> ''
-            AND lt.depth < ${LIST_TREE_MAX_DEPTH}
+          SELECT lt.root_id, child.child_id, lt.depth + 1, lt.path || child.child_id
+          FROM list_tree lt
+          CROSS JOIN LATERAL (
+            SELECT DISTINCT TRIM(ou.value_text) AS child_id
+            FROM object_updates ou
+            WHERE ou.object_id = lt.object_id
+              AND ou.update_type = ${UPDATE_TYPES.LIST_ITEM}
+              AND ou.value_text IS NOT NULL
+              AND TRIM(ou.value_text) <> ''
+          ) child
+          WHERE lt.depth < ${LIST_TREE_MAX_DEPTH}
+            AND NOT (child.child_id = ANY(lt.path))
         )
         SELECT DISTINCT root_id, object_id
         FROM list_tree
       `.execute(this.db);
+
+      const elapsedMs = Date.now() - started;
+      if (rows.rows.length > LIST_TREE_WARN_NODE_COUNT || elapsedMs > 500) {
+        const byRoot = new Map<string, number>();
+        for (const row of rows.rows) {
+          byRoot.set(row.root_id, (byRoot.get(row.root_id) ?? 0) + 1);
+        }
+        const largest = [...byRoot.entries()].sort((a, b) => b[1] - a[1])[0];
+        this.logger.warn(
+          `loadListTreeIdsByRoots roots=${rootIds.length} nodes=${rows.rows.length} ${elapsedMs}ms` +
+            (largest ? ` largest=${largest[0]}(${largest[1]} nodes)` : ''),
+        );
+      }
 
       for (const rootId of rootIds) {
         out.set(rootId, []);
@@ -121,6 +143,7 @@ export class AggregatedObjectRepository {
     }
 
     try {
+      const started = Date.now();
       const [cores, listItemUpdates] = await Promise.all([
         this.db
           .selectFrom('objects_core')
@@ -171,6 +194,12 @@ export class AggregatedObjectRepository {
       }
 
       const objects = groupByObjectId(cores, listItemUpdates, validityVotes, authorities);
+      const elapsedMs = Date.now() - started;
+      if (objectIds.length > LIST_TREE_WARN_NODE_COUNT || elapsedMs > 500) {
+        this.logger.warn(
+          `loadForListCount ids=${objectIds.length} listObjects=${listObjectIds.length} listItemRows=${listItemUpdates.length} ${elapsedMs}ms`,
+        );
+      }
       return { objects, voterWaivPowers };
     } catch (error) {
       this.logger.error(

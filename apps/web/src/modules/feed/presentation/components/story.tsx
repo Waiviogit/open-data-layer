@@ -23,6 +23,7 @@ import {
   formatRelativeFeedTime,
   formatReputation,
 } from './story-utils';
+import { ObjectPageLink } from './object-page-link';
 import { StoryCommentEditor } from './story-comment-editor';
 import { StoryOverflowMenu } from './story-overflow-menu';
 import { StoryVoteButton } from './story-vote-button';
@@ -235,12 +236,10 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
               const chipLabel = chipName ?? o.object_id;
               return (
                 <li key={o.object_id} className="list-none">
-                  <Link
+                  <ObjectPageLink
                     href={objectPagePath(o.object_id)}
-                    prefetch={false}
-                    suppressHydrationWarning
                     title={chipLabel}
-                    aria-label={`View object: ${chipLabel}`}
+                    ariaLabel={`View object: ${chipLabel}`}
                     className="inline-flex rounded-circle focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                   >
                     <span className="flex size-9 items-center justify-center overflow-hidden rounded-pill border border-border bg-surface-control ring-1 ring-border/60">
@@ -265,7 +264,7 @@ export function Story({ story, feedTab, currentUsername }: StoryProps) {
                         />
                       )}
                     </span>
-                  </Link>
+                  </ObjectPageLink>
                 </li>
               );
             })}

@@ -11,23 +11,19 @@ jest.mock('@/shared/presentation', () => ({
   shouldUnoptimizeRemoteImage: () => false,
 }));
 
-jest.mock('next/link', () => ({
-  __esModule: true,
-  default: ({
+jest.mock('./object-page-link', () => ({
+  ObjectPageLink: ({
     href,
     children,
-    replace: _replace,
-    prefetch: _prefetch,
-    ...rest
+    ariaLabel,
+    className,
   }: {
     href: string;
     children: ReactNode;
+    ariaLabel?: string;
     className?: string;
-    'aria-label'?: string;
-    replace?: boolean;
-    prefetch?: boolean;
   }) => (
-    <a href={href} {...rest}>
+    <a href={href} aria-label={ariaLabel} className={className}>
       {children}
     </a>
   ),

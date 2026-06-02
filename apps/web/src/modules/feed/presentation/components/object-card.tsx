@@ -1,8 +1,10 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { useCallback, useRef, useState } from 'react';
+
+import { ObjectPageLink } from './object-page-link';
 
 import type { CardRatingDimension } from '../../application/dto/object-card-rating';
 import { mergeRatingDimensions } from '../../application/dto/object-card-rating';
@@ -21,6 +23,7 @@ function CardNavTarget({
   href,
   linkReplace,
   onNavigate,
+  onPendingChange,
   className,
   ariaLabel,
   children,
@@ -28,6 +31,7 @@ function CardNavTarget({
   href: string;
   linkReplace: boolean;
   onNavigate?: () => void;
+  onPendingChange?: (pending: boolean) => void;
   className?: string;
   ariaLabel?: string;
   children: ReactNode;
@@ -40,16 +44,15 @@ function CardNavTarget({
     );
   }
   return (
-    <Link
+    <ObjectPageLink
       href={href}
       replace={linkReplace}
-      prefetch={false}
-      suppressHydrationWarning
-      aria-label={ariaLabel}
+      ariaLabel={ariaLabel}
       className={className}
+      onPendingChange={onPendingChange}
     >
       {children}
-    </Link>
+    </ObjectPageLink>
   );
 }
 
@@ -143,8 +146,25 @@ export function ObjectCard({
     objectFields.aggregateRatingAspects(o),
   );
 
+  const [navPending, setNavPending] = useState(false);
+  const navPendingCountRef = useRef(0);
+  const onNavPendingChange = useCallback((pending: boolean) => {
+    navPendingCountRef.current += pending ? 1 : -1;
+    if (navPendingCountRef.current < 0) {
+      navPendingCountRef.current = 0;
+    }
+    setNavPending(navPendingCountRef.current > 0);
+  }, []);
+
+  const rootClassName = [
+    'relative list-none rounded-card border-[0.5px] border-border bg-surface-control/40 p-card-padding shadow-whisper',
+    navPending ? 'opacity-90' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <Root className="relative list-none rounded-card border-[0.5px] border-border bg-surface-control/40 p-card-padding shadow-whisper">
+    <Root className={rootClassName} aria-busy={navPending || undefined}>
       <div className="absolute end-3 top-3">
         <AdministrativeHeartButton
           objectId={o.object_id}
@@ -158,6 +178,7 @@ export function ObjectCard({
           href={href}
           linkReplace={linkReplace}
           onNavigate={onNavigate}
+          onPendingChange={onNavPendingChange}
           ariaLabel={`View object: ${titleLabel}`}
           className="shrink-0 rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
@@ -194,6 +215,7 @@ export function ObjectCard({
             href={href}
             linkReplace={linkReplace}
             onNavigate={onNavigate}
+            onPendingChange={onNavPendingChange}
             className="max-w-full text-left font-weight-label text-body text-heading hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
           >
             {titleLabel}

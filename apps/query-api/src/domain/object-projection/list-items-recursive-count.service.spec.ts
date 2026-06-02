@@ -86,23 +86,7 @@ describe('ListItemsRecursiveCountService', () => {
   });
 
   it('sums recursive leaf counts for nested lists', async () => {
-    const treeIds = [
-      'appetizers',
-      'dips',
-      'finger',
-      'street',
-      'leaf-1',
-      'leaf-2',
-      'leaf-3',
-    ];
     const repo = {
-      loadListTreeIdsByRoots: jest.fn(async (roots: string[]) => {
-        const m = new Map<string, string[]>();
-        for (const root of roots) {
-          m.set(root, treeIds);
-        }
-        return m;
-      }),
       loadForListCount: jest.fn(async (ids: string[]) => ({
         objects: ids.map((id) => agg(id, 'list')),
         voterWaivPowers: new Map(),
@@ -142,13 +126,6 @@ describe('ListItemsRecursiveCountService', () => {
 
   it('returns 1 for non-list objects', async () => {
     const repo = {
-      loadListTreeIdsByRoots: jest.fn(async (roots: string[]) => {
-        const m = new Map<string, string[]>();
-        for (const root of roots) {
-          m.set(root, [root]);
-        }
-        return m;
-      }),
       loadForListCount: jest.fn(async (ids: string[]) => ({
         objects: ids.map((id) =>
           id === 'product-1' ? agg('product-1', 'product') : agg(id, 'list'),
