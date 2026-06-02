@@ -151,20 +151,9 @@
   /**
    * Prevents layout shift from scrollbar appearing/disappearing when a modal locks body scroll.
    * padding-right is injected by JS equal to the scrollbar width so layout stays stable.
-   * `contain: paint` on body tells the compositor the page beneath the modal cannot visually
-   * escape its bounds — no repaint propagation through the stacking context during modal scroll.
    */
   html.modal-open {
     overflow: hidden;
-  }
-  html.modal-open > body {
-    /* contain: paint breaks fixed-position descendants (modal scroll container).
-       Compositor isolation is handled by will-change: transform on the scrim layer instead. */
-    pointer-events: none;
-  }
-  html.modal-open > body .post-modal-scroll,
-  html.modal-open > body .post-modal-scrim {
-    pointer-events: auto;
   }
 
   /* Injected by sanitize-post-html for YouTube URLs in post body */

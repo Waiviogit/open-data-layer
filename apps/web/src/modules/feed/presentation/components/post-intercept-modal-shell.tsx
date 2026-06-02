@@ -104,13 +104,27 @@ export function PostInterceptModalShell({ children }: PostInterceptModalShellPro
     };
   }, [hideForObjectSurface]);
 
+  const openShareX = useCallback(() => {
+    const shareUrl = window.location.href;
+    window.open(
+      `https://x.com/intent/tweet?url=${encodeURIComponent(shareUrl)}`,
+      '_blank',
+      'noopener',
+    );
+  }, []);
+
+  const openShareFacebook = useCallback(() => {
+    const shareUrl = window.location.href;
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+      '_blank',
+      'noopener',
+    );
+  }, []);
+
   if (hideForObjectSurface) {
     return null;
   }
-
-  const shareUrl = window.location.href;
-  const shareX = `https://x.com/intent/tweet?url=${encodeURIComponent(shareUrl)}`;
-  const shareFb = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
 
   return (
     <>
@@ -171,10 +185,10 @@ export function PostInterceptModalShell({ children }: PostInterceptModalShellPro
               <ActionPill label="Reblog">
                 <IconReblog />
               </ActionPill>
-              <ActionPill label="Share on X" onClick={() => window.open(shareX, '_blank', 'noopener')}>
+              <ActionPill label="Share on X" onClick={openShareX}>
                 <IconShareX />
               </ActionPill>
-              <ActionPill label="Share on Facebook" onClick={() => window.open(shareFb, '_blank', 'noopener')}>
+              <ActionPill label="Share on Facebook" onClick={openShareFacebook}>
                 <IconShareFacebook />
               </ActionPill>
             </div>
