@@ -2,7 +2,10 @@ import { readFile, stat } from 'node:fs/promises';
 
 import type { ConfigService } from '@nestjs/config';
 
-import { IPFS_UPLOAD_MAX_BYTES } from '../constants/ipfs-upload';
+import {
+  IPFS_UPLOAD_FILE_MAX_BYTES,
+  IPFS_UPLOAD_MAX_BYTES,
+} from '../constants/ipfs-upload';
 import { IpfsUploadService } from './ipfs-upload.service';
 import type { WaivioAuthSessionService } from './waivio-auth-session.service';
 
@@ -84,6 +87,66 @@ describe('IpfsUploadService', () => {
         headers: { Authorization: 'Bearer access-token' },
       }),
     );
+  });
+
+  describe('uploadFile', () => {
+    it('rejects when both filePath and content are provided', async () => {
+      await expect(
+        service.uploadFile({ filePath: 'a.json', content: '{}' }),
+      ).rejects.toThrow('Provide exactly one of filePath or content');
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('rejects when neither filePath nor content is provided', async () => {
+      await expect(service.uploadFile({})).rejects.toThrow(
+        'Provide exactly one of filePath or content',
+      );
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('rejects inline content above the file cap before fetch', async () => {
+      const oversized = 'x'.repeat(IPFS_UPLOAD_FILE_MAX_BYTES + 1);
+      await expect(service.uploadFile({ content: oversized })).rejects.toThrow(
+        'MiB limit',
+      );
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('uploads inline content and returns cid', async () => {
+      (global.fetch as jest.Mock).mockResolvedValue(
+        new Response(JSON.stringify({ cid: 'QmFileCid' }), {
+          status: 201,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+      const result = await service.uploadFile({
+        content: '{"events":[]}',
+        filename: 'odl-test.json',
+      });
+
+      expect(result.cid).toBe('QmFileCid');
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/upload/file'),
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer access-token',
+            'Content-Type': 'application/octet-stream',
+          }),
+        }),
+      );
+    });
+
+    it('surfaces gateway 401 without returning a cid', async () => {
+      (global.fetch as jest.Mock).mockResolvedValue(
+        new Response('', { status: 401 }),
+      );
+
+      await expect(service.uploadFile({ content: '{}' })).rejects.toThrow(
+        '401',
+      );
+    });
   });
 
   it('surfaces gateway 400 message', async () => {

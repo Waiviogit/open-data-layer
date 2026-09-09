@@ -14,6 +14,7 @@ import {
 } from '../../../repositories';
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
 import { updateVotePayloadSchema } from '../odl-envelope.schema';
+import { resolveEventAccount } from '../normalize-event-account';
 import { WriteGuardRunner } from '../guards';
 import {
   GovernanceObjectMutatedEvent,
@@ -62,7 +63,16 @@ export class UpdateVoteHandler implements OdlActionHandler {
       return;
     }
 
-    const { voter, vote } = result.data;
+    const { vote } = result.data;
+    const { account: voter, mismatch } = resolveEventAccount(
+      ctx.creator,
+      result.data.voter,
+    );
+    if (mismatch) {
+      this.logger.warn(
+        `update_vote: payload voter '${result.data.voter}' does not match posting auth '${ctx.creator}'; using posting auth`,
+      );
+    }
 
     let update_id: string;
     if (result.data.create_event_id !== undefined) {

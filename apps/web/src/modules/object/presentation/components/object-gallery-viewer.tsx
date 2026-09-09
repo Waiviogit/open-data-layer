@@ -19,8 +19,9 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@/icons';
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
-import { awaitTrxConfirmation } from '@/modules/notifications';
 import { buildGalleryItemBroadcastOp } from '@opden-data-layer/hive-broadcast';
+import { broadcastOdlOpWithOverflow } from '@/modules/object-updates/application/broadcast-odl-op-with-overflow';
+import { broadcastOverflowErrorMessage } from '@/modules/object-updates/application/broadcast-overflow-error-message';
 import { OBJECT_UPDATES_MIN_APPROVAL_PERCENT } from '@/modules/object-updates/constants';
 import { AddUpdateModal } from '@/modules/object-updates/presentation/components/add-update-modal';
 import { UpdateVoteControls } from '@/modules/object-updates/presentation/components/update-vote-controls';
@@ -297,17 +298,23 @@ export function ObjectGalleryViewer({
           itemValue,
           onChainGalleryAlbumNames,
         });
-        const { transactionId } = await getWalletFacade().broadcast({
-          operations: [op],
+        const result = await broadcastOdlOpWithOverflow({
+          op,
+          account: creator,
+          odlCustomJsonId,
+          objectId,
         });
+        if (!result.success) {
+          setAddAlbumError(broadcastOverflowErrorMessage(result.error, t));
+          setAddAlbumPending(null);
+          return;
+        }
         setAddAlbumPending(null);
         setOptimisticAlbumAdds((prev) => new Set([...prev, targetAlbumName]));
         setAlbumDropdownOpen(false);
-        void awaitTrxConfirmation(transactionId).finally(() => {
-          void refreshAfterBroadcast(router, () =>
-            revalidateObjectAfterBroadcast(objectId),
-          );
-        });
+        void refreshAfterBroadcast(router, () =>
+          revalidateObjectAfterBroadcast(objectId),
+        );
       } catch (err) {
         setAddAlbumError(
           err instanceof Error ? err.message : t('object_edit_validation_error'),

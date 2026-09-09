@@ -16,6 +16,26 @@ const BASE = {
   language: 'en-US',
 } as const;
 
+const LEGAL_BASE = {
+  objectId: 'legal-abc123',
+  objectType: 'legal_document',
+  creator: 'alice',
+  odlCustomJsonId: 'odl-testnet',
+  language: 'en-US',
+} as const;
+
+function legalOverflowBaseFields(): TestField[] {
+  return [
+    { entryKey: 'name', updateType: 'name', value: 'Terms' },
+    { entryKey: 'description', updateType: 'description', value: 'Legal body' },
+    {
+      entryKey: 'image',
+      updateType: 'image',
+      value: { url: 'https://example.com/legal.jpg' },
+    },
+  ];
+}
+
 type TestField = {
   entryKey: string;
   updateType: string;
@@ -256,17 +276,17 @@ describe('buildCreateOps', () => {
 
   it('splits into two ops when events exceed 8192 bytes', () => {
     const ops = buildCreateOps({
-      ...BASE,
+      ...LEGAL_BASE,
       fields: [
-        ...recipeRequiredFields().filter((f) => f.updateType !== 'description'),
+        ...legalOverflowBaseFields(),
         {
-          entryKey: 'description',
-          updateType: 'description',
+          entryKey: 'legalText',
+          updateType: 'legalText',
           value: largeText(6000),
         },
         {
-          entryKey: 'extra-desc',
-          updateType: 'description',
+          entryKey: 'legalText-de',
+          updateType: 'legalText',
           value: largeText(3000),
           locale: 'de-DE',
         },
@@ -295,12 +315,12 @@ describe('buildCreateOps', () => {
   it('throws when a single event exceeds 8192 bytes', () => {
     expect(() =>
       buildCreateOps({
-        ...BASE,
+        ...LEGAL_BASE,
         fields: [
-          ...recipeRequiredFields().filter((f) => f.updateType !== 'description'),
+          ...legalOverflowBaseFields(),
           {
-            entryKey: 'description',
-            updateType: 'description',
+            entryKey: 'legalText',
+            updateType: 'legalText',
             value: largeText(HIVE_CUSTOM_OP_DATA_MAX_LENGTH),
           },
         ],
@@ -309,17 +329,17 @@ describe('buildCreateOps', () => {
   });
 
   it('throws when events require more than 5 ops', () => {
-    const extraDescriptions = Array.from({ length: 14 }, (_, i) => ({
-      entryKey: `description:${i}`,
-      updateType: 'description',
-      value: largeText(2800),
+    const extraLegalBodies = Array.from({ length: 14 }, (_, i) => ({
+      entryKey: `legalText:${i}`,
+      updateType: 'legalText',
+      value: largeText(7000),
       locale: `loc-${i}`,
     }));
 
     expect(() =>
       buildCreateOps({
-        ...BASE,
-        fields: [...recipeRequiredFields(), ...extraDescriptions],
+        ...LEGAL_BASE,
+        fields: [...legalOverflowBaseFields(), ...extraLegalBodies],
       }),
     ).toThrow(
       new RegExp(
@@ -380,25 +400,25 @@ describe('parseObjectIdFromCreateOdlJson', () => {
 describe('buildCreateOdlJson', () => {
   it('returns all events in one string regardless of size', () => {
     const fields = [
-      ...recipeRequiredFields().filter((f) => f.updateType !== 'description'),
+      ...legalOverflowBaseFields(),
       {
-        entryKey: 'description',
-        updateType: 'description',
+        entryKey: 'legalText',
+        updateType: 'legalText',
         value: largeText(6000),
       },
       {
-        entryKey: 'extra-desc',
-        updateType: 'description',
+        entryKey: 'legalText-de',
+        updateType: 'legalText',
         value: largeText(3000),
         locale: 'de-DE',
       },
     ];
-    const json = buildCreateOdlJson({ ...BASE, fields });
+    const json = buildCreateOdlJson({ ...LEGAL_BASE, fields });
     const parsed = JSON.parse(json) as { events: unknown[] };
     expect(parsed.events.length).toBeGreaterThan(2);
     expect(jsonByteLength(json)).toBeGreaterThan(HIVE_CUSTOM_OP_DATA_MAX_LENGTH);
 
-    const ops = buildCreateOps({ ...BASE, fields });
+    const ops = buildCreateOps({ ...LEGAL_BASE, fields });
     expect(ops.length).toBeGreaterThan(1);
   });
 

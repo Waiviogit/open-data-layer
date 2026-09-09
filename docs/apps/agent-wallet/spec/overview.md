@@ -58,6 +58,7 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 | Hive posting authority / act-as grantor | [hive-account-authority-for-agents skill](../../skills/hive-account-authority-for-agents.md) |
 | HAS login from chat (Telegram, Slack) | [has-login-from-chat skill](../../skills/has-login-from-chat.md) |
 | IPFS image upload + avatar/gallery policy | [ipfs-image-upload skill](../../skills/ipfs-image-upload.md) |
+| IPFS file upload + ODL batch import | [ipfs-file-upload skill](../../skills/ipfs-file-upload.md) |
 
 ## MCP tools
 
@@ -68,8 +69,9 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 | `has_login_qr` | `deepLink`, `qrAscii`, optional `qrPngPath` for a pending login — terminal and second-device fallback only |
 | `has_session` | `account`, `expiresAt` (no secrets) |
 | `has_logout` | — |
-| `odl_build_object_create` | `ops`, `opsCount`, `bytes`, `warnings` — **new objects only** |
-| `odl_build_update_create` | `ops`, `opsCount`, `bytes` — single `update_create` for existing object |
+| `odl_build_object_create` | `ops`, `opsCount`, `bytes`, `warnings`, `suggestIpfsBatch`, `requiresIpfsBatch`, `envelopeJson?` — **new objects only** |
+| `odl_build_update_create` | `ops`, `opsCount`, `bytes`, `requiresIpfsBatch`, `envelopeJson?` — single `update_create` for existing object |
+| `odl_build_batch_import` | `ops`, `opsCount`, `bytes` — one `batch_import` op for an IPFS CID |
 | `odl_build_gallery_item` | `ops`, `opsCount`, `bytes` — gallery item (+ album ensure when needed) |
 | `hive_build_post` | `ops`, `opsCount: 2`, `json_metadata`, `warnings` — root Hive post (`comment` + `comment_options`); `author` may be a grantor |
 | `hive_build_posting_authority_grant` | `ops`, `keyType: active`, `signerAccount`, `canSignLocally`, `warnings` — grant/revoke posting `account_auths` |
@@ -81,7 +83,8 @@ Leo object threads (Reviews > Threads) are **not** built by agent-wallet — see
 | `wallet_accounts` | configured accounts with key/Waivio/notifications readiness (no secrets) |
 | `wallet_status` | signing mode, HAS/Waivio/local readiness, `localAccounts[]` (no secrets) |
 | `waivio_auth_start` / `waivio_auth_status` / `waivio_auth_logout` | Waivio JWT session per account (optional `account`) |
-| `ipfs_upload_image` | `{ cid, url? }` after authenticated upload (optional `account`) |
+| `ipfs_upload_image` | `{ cid, url? }` after authenticated upload (optional `account`; max 50 MiB) |
+| `ipfs_upload_file` | `{ cid }` — ODL envelope JSON via `/upload/file` (optional `account`; max 10 MiB) |
 | `wallet_broadcast` / `wallet_broadcast_status` | mode-aware broadcast (HAS or local keys; optional `account` signer) |
 | `osl_build_channel_create` | group / object `channel_create` envelope |
 | `osl_build_message_create` | plaintext `message_create` |

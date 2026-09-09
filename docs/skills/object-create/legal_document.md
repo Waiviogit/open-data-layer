@@ -31,7 +31,7 @@ Legal document body referenced by OBL offers (single-writer).
 | `name` | Document title (e.g. `Terms of Service v2026-01`) |
 | `title` | Display title if different from `name` |
 | `description` | Short summary for catalog UI — not the legal body |
-| `legalText` | Full legal text from counsel or approved template — **never generated** |
+| `legalText` | Full legal text from counsel or approved template — **never generated**; large body → IPFS `batch_import` when `requiresIpfsBatch` |
 
 ## Categories and tags (soft)
 

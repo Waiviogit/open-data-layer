@@ -40,4 +40,27 @@ describe('ObjectCreateHandler', () => {
 
     expect(create).not.toHaveBeenCalled();
   });
+
+  it('attributes a new object to posting auth when payload claims another creator', async () => {
+    const create = jest.fn();
+    const findByObjectId = jest.fn().mockResolvedValue(null);
+    const emit = jest.fn();
+    const handler = new ObjectCreateHandler(
+      { findByObjectId, create } as never,
+      { emit } as unknown as EventEmitter2,
+    );
+
+    await handler.handle(
+      {
+        object_id: 'pgx-new',
+        object_type: OBJECT_TYPES.RECIPE,
+        creator: 'alice',
+      },
+      { ...ctx, creator: 'bob' },
+    );
+
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({ creator: 'bob' }),
+    );
+  });
 });

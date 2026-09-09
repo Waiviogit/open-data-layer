@@ -95,6 +95,61 @@ describe('UpdateCreateHandler write guard', () => {
     expect(validityVotesDeps.validityVotesRepository.createIfAbsent).not.toHaveBeenCalled();
   });
 
+  it('attributes update to posting auth when payload claims another creator', async () => {
+    const create = jest.fn().mockResolvedValue(undefined);
+    const objectUpdatesRepository = {
+      create,
+      existsByObjectAndValue: jest.fn().mockResolvedValue(false),
+    } as unknown as import('../../../repositories').ObjectUpdatesRepository;
+    const objectsCoreRepository = {
+      findByObjectId: jest.fn().mockResolvedValue(placeCore),
+    } as unknown as import('../../../repositories').ObjectsCoreRepository;
+    const runner = new WriteGuardRunner([]);
+    const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
+    const userRefDeps = defaultUpdateCreateUserRefDeps();
+    const validityVotesDeps = defaultUpdateCreateValidityVotesDeps();
+    const emitWithContext = jest.fn();
+    const notificationEmitter = {
+      ...defaultNotificationEmitter(),
+      emitWithContext,
+    } as unknown as import('../../notification-adapter/notification-emitter.service').NotificationEmitterService;
+    const handler = new UpdateCreateHandler(
+      objectUpdatesRepository,
+      objectsCoreRepository,
+      userRefDeps.accountsCurrentRepository,
+      userRefDeps.accountSyncQueueRepository,
+      userRefDeps.hiveClient,
+      runner,
+      validityVotesDeps.validityVotesRepository,
+      eventEmitter,
+      notificationEmitter,
+    );
+
+    await handler.handle(
+      {
+        object_id: 'place1',
+        update_type: 'name',
+        creator: 'alice',
+        value_text: 'Title',
+      },
+      { ...baseCtx, creator: 'bob' },
+    );
+
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({ creator: 'bob' }),
+    );
+    expect(validityVotesDeps.validityVotesRepository.createIfAbsent).toHaveBeenCalledWith(
+      expect.objectContaining({ voter: 'bob' }),
+    );
+    expect(emitWithContext).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({
+        type: 'object_update',
+        actor: 'bob',
+      }),
+    );
+  });
+
   it('persists when signer matches governance object creator', async () => {
     const create = jest.fn().mockResolvedValue(undefined);
     const objectUpdatesRepository = {
@@ -207,6 +262,11 @@ describe('UpdateCreateHandler write guard', () => {
     const eventEmitter = { emit: jest.fn() } as unknown as EventEmitter2;
     const userRefDeps = defaultUpdateCreateUserRefDeps();
     const validityVotesDeps = defaultUpdateCreateValidityVotesDeps();
+    const emitWithContext = jest.fn();
+    const notificationEmitter = {
+      ...defaultNotificationEmitter(),
+      emitWithContext,
+    } as unknown as import('../../notification-adapter/notification-emitter.service').NotificationEmitterService;
     const handler = new UpdateCreateHandler(
       objectUpdatesRepository,
       objectsCoreRepository,
@@ -216,7 +276,7 @@ describe('UpdateCreateHandler write guard', () => {
       runner,
       validityVotesDeps.validityVotesRepository,
       eventEmitter,
-      defaultNotificationEmitter(),
+      notificationEmitter,
     );
 
     const ctx = { ...baseCtx, creator: 'owner' };
@@ -234,6 +294,7 @@ describe('UpdateCreateHandler write guard', () => {
     expect(create).not.toHaveBeenCalled();
     expect(validityVotesDeps.validityVotesRepository.createIfAbsent).not.toHaveBeenCalled();
     expect(eventEmitter.emit).not.toHaveBeenCalled();
+    expect(emitWithContext).not.toHaveBeenCalled();
   });
 
   it('still emits events when createIfAbsent throws', async () => {

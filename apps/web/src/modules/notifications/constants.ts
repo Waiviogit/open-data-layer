@@ -4,6 +4,9 @@ export const TRX_CONFIRMATION_TIMEOUT_MS = 10_000;
 /** Max wait for IPFS batch_import to finish (WS + query-api object poll). */
 export const BATCH_IMPORT_COMPLETION_TIMEOUT_MS = 60_000;
 
+/** Grace wait when notifications WS is unavailable during batch_import edit flows. */
+export const BATCH_IMPORT_NO_WS_GRACE_MS = 8_000;
+
 /** Max wait for get_notifications WebSocket response. */
 export const GET_NOTIFICATIONS_TIMEOUT_MS = 10_000;
 

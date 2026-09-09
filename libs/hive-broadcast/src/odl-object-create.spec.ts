@@ -98,6 +98,20 @@ describe('buildObjectCreateEnvelope', () => {
       }),
     ).toThrow('Invalid value for update_type "cookTime"');
   });
+
+  it('sets requiresIpfsBatch when a single event exceeds the Hive limit', () => {
+    const result = buildObjectCreateEnvelope({
+      objectId: 'legal-abc',
+      objectType: 'legal_document',
+      creator: BASE.creator,
+      id: BASE.id,
+      fields: [{ updateType: 'legalText', value: largeText(20_000) }],
+    });
+
+    expect(result.requiresIpfsBatch).toBe(true);
+    expect(result.ops).toEqual([]);
+    expect(result.events.length).toBeGreaterThan(1);
+  });
 });
 
 describe('chunkOdlEventsIntoOps', () => {

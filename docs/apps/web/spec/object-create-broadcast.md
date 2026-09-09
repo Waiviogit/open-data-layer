@@ -56,6 +56,10 @@ Each op uses the same `id` (`odlCustomJsonId`), `required_posting_auths: [creato
 
 Indexer processes each `custom_json` in transaction order; chunked create ops are equivalent to one large envelope split for chain limits only.
 
+### Auto IPFS fallback
+
+When direct publish is selected but `buildCreateOps` throws a chunking overflow (`isCreateChunkingOverflowError` — single event over 8192 bytes or more than 5 ops), the form **automatically retries** via the IPFS path (`publishViaIpfsBatch`) without user action. Same upload + `buildOdlBatchImportOp` flow as explicit IPFS publish; waits for `batch_import_completed` when applicable.
+
 ### UI (publish dock)
 
 [`PendingOpsDock`](../../../../apps/web/src/modules/object-create/presentation/components/pending-ops-dock.tsx) shows live payload size from `useObjectCreateForm` → `broadcastSize`:

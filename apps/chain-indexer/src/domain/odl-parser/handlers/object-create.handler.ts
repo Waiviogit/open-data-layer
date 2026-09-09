@@ -4,6 +4,7 @@ import { hiveBlockTimestampToDate, OBJECT_TYPE_REGISTRY } from '@opden-data-laye
 import { ObjectsCoreRepository } from '../../../repositories';
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
 import { objectCreatePayloadSchema } from '../odl-envelope.schema';
+import { resolveEventAccount } from '../normalize-event-account';
 import {
   USER_OBJECT_POWERS_CREATE_EVENT,
   UserObjectPowersCreateEvent,
@@ -26,7 +27,16 @@ export class ObjectCreateHandler implements OdlActionHandler {
       return;
     }
 
-    const { object_id, object_type, creator } = result.data;
+    const { object_id, object_type, creator: payloadCreator } = result.data;
+    const { account: creator, mismatch } = resolveEventAccount(
+      ctx.creator,
+      payloadCreator,
+    );
+    if (mismatch) {
+      this.logger.warn(
+        `object_create: payload creator '${payloadCreator}' does not match posting auth '${ctx.creator}'; using posting auth`,
+      );
+    }
 
     if (!OBJECT_TYPE_REGISTRY[object_type]) {
       this.logger.warn(`Unknown object_type '${object_type}' in object_create; skipping`);

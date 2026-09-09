@@ -32,7 +32,14 @@ export type BuildObjectCreateEnvelopeResult = {
   events: OdlCreateEvent[];
   ops: CustomJsonOp[];
   warnings: string[];
+  /** True when events must be uploaded via IPFS batch_import instead of direct ops. */
+  requiresIpfsBatch: boolean;
 };
+
+/** Full ODL envelope JSON for IPFS batch import. */
+export function buildOdlEnvelopeJson(events: readonly OdlCreateEvent[]): string {
+  return serializeEnvelope(events);
+}
 
 export function resolveOdlValueFieldKey(
   valueKind: OdlUpdateCreateValueKind,
@@ -179,13 +186,27 @@ export function buildObjectCreateEnvelope(
     });
   }
 
-  const ops = chunkOdlEventsIntoOps({
-    events,
-    creator: input.creator,
-    id: input.id,
-  });
+  let ops: CustomJsonOp[] = [];
+  let requiresIpfsBatch = false;
+  try {
+    ops = chunkOdlEventsIntoOps({
+      events,
+      creator: input.creator,
+      id: input.id,
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (
+      message.includes('exceeds Hive custom_json limit') ||
+      message.includes('custom_json operations; maximum is')
+    ) {
+      requiresIpfsBatch = true;
+    } else {
+      throw err;
+    }
+  }
 
-  return { events, ops, warnings };
+  return { events, ops, warnings, requiresIpfsBatch };
 }
 
 export function parseObjectIdFromCreateOdlJson(odlJson: string): string | null {

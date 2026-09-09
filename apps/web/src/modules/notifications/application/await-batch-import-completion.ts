@@ -1,12 +1,56 @@
 import { checkObjectIdExists } from '@/modules/object-create/infrastructure/actions/check-object-id.action';
 
-import { BATCH_IMPORT_COMPLETION_TIMEOUT_MS } from '../constants';
+import {
+  BATCH_IMPORT_COMPLETION_TIMEOUT_MS,
+  BATCH_IMPORT_NO_WS_GRACE_MS,
+} from '../constants';
 import {
   getNotificationsWsClient,
   sleepMs,
+  type NotificationsWsClient,
 } from '../infrastructure/notifications-ws-client';
 
 const OBJECT_INDEX_POLL_INTERVAL_MS = 2_000;
+
+function waitForBatchImportWs(
+  client: NotificationsWsClient,
+  trxId: string,
+  deadline: number,
+): Promise<void> {
+  const normalizedTrx = trxId.trim();
+  if (!normalizedTrx) {
+    return Promise.resolve();
+  }
+
+  const remaining = Math.max(0, deadline - Date.now());
+  if (remaining === 0) {
+    return Promise.resolve();
+  }
+
+  return new Promise<void>((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      unsub();
+      clearTimeout(timer);
+      resolve();
+    };
+
+    const unsub = client.addNotificationListener((item) => {
+      if (
+        item.type === 'batch_import_completed' &&
+        item.trxId === normalizedTrx
+      ) {
+        finish();
+      }
+    });
+
+    const timer = setTimeout(finish, remaining);
+  });
+}
 
 /** Polls query-api until the object exists or timeout. Never throws. */
 export async function awaitObjectIndexed(
@@ -51,44 +95,34 @@ export async function awaitBatchImportCompletion(
 
   const deadline = Date.now() + timeoutMs;
 
-  const waitForWsNotification = (): Promise<void> => {
-    const client = getNotificationsWsClient();
-    if (!client || !normalizedTrx) {
-      return Promise.resolve();
-    }
-
-    const remaining = Math.max(0, deadline - Date.now());
-    if (remaining === 0) {
-      return Promise.resolve();
-    }
-
-    return new Promise<void>((resolve) => {
-      let settled = false;
-      const finish = () => {
-        if (settled) {
-          return;
-        }
-        settled = true;
-        unsub();
-        clearTimeout(timer);
-        resolve();
-      };
-
-      const unsub = client.addNotificationListener((item) => {
-        if (
-          item.type === 'batch_import_completed' &&
-          item.trxId === normalizedTrx
-        ) {
-          finish();
-        }
-      });
-
-      const timer = setTimeout(finish, remaining);
-    });
-  };
+  const client = getNotificationsWsClient();
+  if (!client || !normalizedTrx) {
+    await sleepMs(Math.min(BATCH_IMPORT_NO_WS_GRACE_MS, timeoutMs));
+    return;
+  }
 
   await Promise.race([
-    waitForWsNotification(),
+    waitForBatchImportWs(client, normalizedTrx, deadline),
     awaitObjectIndexed(normalizedObjectId, timeoutMs),
   ]);
+}
+
+/** Waits for WS `batch_import_completed` for trxId. Never throws. */
+export async function awaitBatchImportByTrx(
+  trxId: string,
+  timeoutMs = BATCH_IMPORT_COMPLETION_TIMEOUT_MS,
+): Promise<void> {
+  const normalizedTrx = trxId.trim();
+  if (!normalizedTrx) {
+    await sleepMs(Math.min(BATCH_IMPORT_NO_WS_GRACE_MS, timeoutMs));
+    return;
+  }
+
+  const client = getNotificationsWsClient();
+  if (!client) {
+    await sleepMs(Math.min(BATCH_IMPORT_NO_WS_GRACE_MS, timeoutMs));
+    return;
+  }
+
+  await waitForBatchImportWs(client, normalizedTrx, Date.now() + timeoutMs);
 }

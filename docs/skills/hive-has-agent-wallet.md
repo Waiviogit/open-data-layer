@@ -176,9 +176,11 @@ Tool names:
 | `has_login_qr` | Fallback artefacts for a pending login: `deepLink`, `qrAscii`, optional `qrPngPath` |
 | `has_session` | `{ active, session: { account, expiresAt } }` — no secrets |
 | `has_logout` | Clear session + session file |
-| `odl_build_object_create` | Build `custom_json` ops for **new** objects only (always includes `object_create`) |
-| `odl_build_update_create` | Build single `update_create` op for an **existing** object |
+| `odl_build_object_create` | Build `custom_json` ops for **new** objects only (always includes `object_create`); returns `requiresIpfsBatch` + `envelopeJson` when payload cannot fit on chain |
+| `odl_build_update_create` | Build single `update_create` op for an **existing** object; returns `requiresIpfsBatch` + `envelopeJson` when one event exceeds 8192 bytes |
 | `odl_build_gallery_item` | Build `imageGalleryItem` op for an **existing** object (album ensure when needed) |
+| `ipfs_upload_file` | Upload ODL envelope JSON (inline `content` or `filePath`); max **10 MiB**; returns `{ cid }` |
+| `odl_build_batch_import` | Build one `batch_import` op referencing an IPFS CID from `ipfs_upload_file` |
 | `has_broadcast` | Start sign flow; returns `requestId` |
 | `has_broadcast_status` | Poll: `pending` / `signed` / `rejected` / `error` / `expired` |
 
@@ -210,9 +212,11 @@ Repeating `has_login_start` for the same account returns the existing pending re
 }
 ```
 
-Uses `UPDATE_REGISTRY` Zod schemas (not web form validators). Returns `ops`, `opsCount`, `bytes`, `perOpBytes`, `warnings`, and `suggestIpfsBatch` when near Hive/HAS limits.
+Uses `UPDATE_REGISTRY` Zod schemas (not web form validators). Returns `ops`, `opsCount`, `bytes`, `perOpBytes`, `warnings`, `suggestIpfsBatch`, and `requiresIpfsBatch` when the envelope cannot fit in direct `custom_json` ops.
 
 **Do not use** when the object already exists.
+
+When `requiresIpfsBatch` is true, `ops` is empty — use the IPFS batch recipe below instead of broadcasting oversize `custom_json`.
 
 ### 4. Update existing object (one field)
 
@@ -228,7 +232,19 @@ Uses `UPDATE_REGISTRY` Zod schemas (not web form validators). Returns `ops`, `op
 
 Returns `ops` with a single `update_create` event (no `object_create`). **Do not** follow with `update_vote` — chain-indexer auto-approves the creator's update.
 
-### 5. Gallery item on existing object
+When `requiresIpfsBatch` is true (large `pageContent`, `skillContent`, `legalText`, …), do **not** broadcast the returned op — use the IPFS batch recipe.
+
+### 5. IPFS batch overflow (`requiresIpfsBatch`)
+
+When `odl_build_object_create` or `odl_build_update_create` returns `requiresIpfsBatch: true`:
+
+1. `ipfs_upload_file({ content: envelopeJson, account })` → `{ cid }`
+2. `odl_build_batch_import({ account, cid })` → `{ ops }`
+3. `wallet_broadcast` / `has_broadcast` with those ops
+
+Never broadcast an oversize `custom_json` directly. Indexer replays child events from the IPFS file via `batch_import`. See [ipfs-file-upload.md](ipfs-file-upload.md).
+
+### 6. Gallery item on existing object
 
 ```json
 // tools/call odl_build_gallery_item
@@ -244,7 +260,7 @@ Pass album names from `resolve_object` → `fields.imageGallery`. When the album
 
 Resolve field shapes first via knowledge-api: `get_object_type`, `get_update_schema`.
 
-### 6. Broadcast
+### 7. Broadcast
 
 ```json
 // tools/call has_broadcast
@@ -253,7 +269,7 @@ Resolve field shapes first via knowledge-api: `get_object_type`, `get_update_sch
 
 Poll `has_broadcast_status` until `signed` with `transactionId` or terminal failure (`rejected`, `error`, `expired`). With Keychain posting auto-approve, poll immediately after the phone signs — do not wait for a UI "done" confirmation.
 
-### 7. Confirm indexing
+### 8. Confirm indexing
 
 Same as [hive-blockchain-broadcast § Step 4](hive-blockchain-broadcast.md#step-4--confirm-on-chain). Match `ODL_NETWORK` with chain-indexer / query-api.
 
@@ -261,6 +277,7 @@ Same as [hive-blockchain-broadcast § Step 4](hive-blockchain-broadcast.md#step-
 
 | Situation | Action |
 |-----------|--------|
+| `requiresIpfsBatch: true` on any builder | `ipfs_upload_file` → `odl_build_batch_import` → broadcast (mandatory) |
 | `odl_build_object_create` returns `suggestIpfsBatch` or `opsCount >= 4` | Prefer IPFS batch import instead of direct chain create |
 | Per-op JSON near 8 KB | May cause HAS sign timeout; split fields or use IPFS |
 | `has_broadcast_status` → `expired` | **`resolve_object` first** — tx may already be on chain; do not resend same ops |

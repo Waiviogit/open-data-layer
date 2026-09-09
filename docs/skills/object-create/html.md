@@ -27,7 +27,7 @@ HTML embed object.
 
 | Update | Semantics |
 |--------|-----------|
-| `htmlContent` | Primary HTML body (semantic baseline) — sanitize; no script injection unless explicitly allowed by product |
+| `htmlContent` | Primary HTML body (semantic baseline) — sanitize; no script injection unless explicitly allowed by product; large body → IPFS `batch_import` when `requiresIpfsBatch` |
 | `parent` | Site container |
 
 ## Categories and tags (soft)

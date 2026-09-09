@@ -142,7 +142,7 @@ All routes are under the global prefix **`/ipfs-gateway`** (see `main.ts`).
 | Method | Path | Description |
 |--------|------|-------------|
 | `POST` | `/upload/image` | Multipart field `file`; max **50 MiB** per file; image converted to WebP, pinned, copied into MFS `/images/` |
-| `POST` | `/upload/file` | Raw body `application/octet-stream`; streamed to IPFS (large files), optional `?filename=`; copied into MFS `/files/` |
+| `POST` | `/upload/file` | Raw body `application/octet-stream`; max **16 MiB**; streamed to IPFS, optional `?filename=`; copied into MFS `/files/` |
 | `GET` | `/files/{cid}` | Stream object by CID as octet-stream (local first, then peer fallback via `/files/{cid}` on peers) |
 | `GET` | `/content/image/{cid}` | Same object as WebP with inline disposition (browser-friendly, CDN-cacheable) |
 | `GET` | `/namespaces/{namespace}/cid` | `namespace` ∈ `images` \| `files`; returns directory CID for bulk pin |

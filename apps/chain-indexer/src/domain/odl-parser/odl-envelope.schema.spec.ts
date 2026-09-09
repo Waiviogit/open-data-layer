@@ -1,4 +1,17 @@
-import { batchImportChildEventSchema } from './odl-envelope.schema';
+import {
+  batchImportChildEventSchema,
+  batchImportPayloadSchema,
+} from './odl-envelope.schema';
+
+describe('batchImportPayloadSchema', () => {
+  it('rejects batch reference that is an IPFS path rather than a bare CID', () => {
+    const result = batchImportPayloadSchema.safeParse({
+      type: 'ipfs',
+      ref: 'QmAbc/dir/file',
+    });
+    expect(result.success).toBe(false);
+  });
+});
 
 describe('batchImportChildEventSchema', () => {
   it('accepts update_user_metadata for IPFS batch replay', () => {

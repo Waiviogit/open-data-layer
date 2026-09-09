@@ -91,7 +91,7 @@ ODL handlers emit `objectName: null` on `object_update`, `object_status_change`,
 4. **Retries:** `BATCH_IMPORT_MAX_RETRIES` (default 3), exponential backoff base `BATCH_IMPORT_RETRY_DELAY_MS` (default 1000 ms): delay = `base * 2^attempt`.
 5. On success, **`IpfsClient.cat(ref)`** streams JSON; the worker parses a top-level **`events`** array (streaming JSON) and dispatches each event through the same action handlers as inline ODL (reusing `OdlEventContext` from the parent operation).
 
-IPFS must be reachable at `IPFS_API_URL` when exercising this path.
+IPFS must be reachable at `IPFS_API_URL` when exercising this path. **The gateway that accepted the upload and chain-indexer must share the same Kubo** — gateway pins via `POST /upload/file`, indexer reads via `cat(ref)`. Different nodes (or split `IPFS_API_URL` values) cause silent batch loss after retries. See [ipfs-file-upload.md](../../../skills/ipfs-file-upload.md#shared-kubo-node-ops).
 
 ## 9) Verification
 

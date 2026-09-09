@@ -38,6 +38,30 @@ describe('HasSessionService ODL build helpers', () => {
     jest.clearAllMocks();
   });
 
+  it('buildUpdateCreate returns requiresIpfsBatch for oversize payloads', () => {
+    const envelopeJson = JSON.stringify({
+      events: [{ action: 'update_create', v: 1, payload: { value_text: 'x'.repeat(20_000) } }],
+    });
+    (buildValidatedUpdateCreateOp as jest.Mock).mockReturnValue({
+      type: 'custom_json',
+      id: 'odl-testnet',
+      json: envelopeJson,
+      required_auths: [],
+      required_posting_auths: ['alice'],
+    });
+
+    const result = service.buildUpdateCreate({
+      objectId: 'skill-1',
+      creator: 'alice',
+      updateType: 'skillContent',
+      value: 'x'.repeat(20_000),
+    });
+
+    expect(result.requiresIpfsBatch).toBe(true);
+    expect(result.ops).toEqual([]);
+    expect(result.envelopeJson).toBe(envelopeJson);
+  });
+
   it('buildUpdateCreate returns a single validated op', () => {
     const mockedOp = {
       type: 'custom_json',
@@ -67,6 +91,45 @@ describe('HasSessionService ODL build helpers', () => {
     expect(result.ops).toEqual([mockedOp]);
     expect(result.opsCount).toBe(1);
     expect(result.bytes).toBeGreaterThan(0);
+  });
+
+  it('buildObjectCreate returns requiresIpfsBatch for oversize envelope', () => {
+    const result = service.buildObjectCreate({
+      objectType: 'legal_document',
+      objectId: 'legal-oversize',
+      creator: 'alice',
+      fields: [{ updateType: 'legalText', value: 'x'.repeat(20_000) }],
+    });
+
+    expect(result.requiresIpfsBatch).toBe(true);
+    expect(result.ops).toEqual([]);
+    expect(result.envelopeJson).toBeDefined();
+    expect(result.bytes).toBeGreaterThan(8192);
+  });
+
+  it('buildBatchImport returns batch_import op for account and cid', () => {
+    const result = service.buildBatchImport({
+      account: '@Alice',
+      cid: 'QmTest',
+    });
+
+    expect(result.opsCount).toBe(1);
+    const op = result.ops[0] as {
+      json: string;
+      required_posting_auths: string[];
+      required_auths: string[];
+    };
+    expect(op.required_posting_auths).toEqual(['alice']);
+    expect(op.required_auths).toEqual([]);
+    const envelope = JSON.parse(op.json) as {
+      events: Array<{ action: string; payload: Record<string, unknown> }>;
+    };
+    expect(envelope.events).toHaveLength(1);
+    expect(envelope.events[0]?.action).toBe('batch_import');
+    expect(envelope.events[0]?.payload).toEqual({
+      type: 'ipfs',
+      ref: 'QmTest',
+    });
   });
 
   it('buildGalleryItem normalizes creator and passes album names', () => {

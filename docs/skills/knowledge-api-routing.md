@@ -50,6 +50,7 @@ related:
 | Local dev: Docker, migrate, serve | overview | `docs/getting-started.md` |
 | New Hive account | skill | `docs/skills/hive-account-signup.md` |
 | Sign/broadcast Hive/ODL txs | skill | `docs/skills/hive-blockchain-broadcast.md` |
+| Large ODL update / IPFS batch (`pageContent`, `skillContent`, … over 8192 B) | skill | `docs/skills/ipfs-file-upload.md` · `hive-has-agent-wallet.md` § IPFS batch |
 | HAS agent session / local agent-wallet | skill | `docs/skills/hive-has-agent-wallet.md` |
 | HAS login from Telegram / chat messengers | skill | `docs/skills/has-login-from-chat.md` |
 | OBL: discover/publish/sign offers & contracts | skill | `docs/skills/obl-offers-contracts.md` |

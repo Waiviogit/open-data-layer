@@ -79,7 +79,8 @@ Use `get_update_schema({ update_type })` → `localizable` to decide per field.
 
 ## Broadcast
 
-- Check payload size warnings from `odl_build_object_create` (`perOpBytes`, `suggestIpfsBatch`).
+- Check payload size warnings from `odl_build_object_create` (`perOpBytes`, `suggestIpfsBatch`, `requiresIpfsBatch`).
+- When **`requiresIpfsBatch`** is true, do **not** put large body text on chain in a direct `custom_json` — upload the envelope via [ipfs-file-upload](ipfs-file-upload.md) and broadcast **`batch_import`** only.
 - Broadcast in small groups per [HAS agent wallet](hive-has-agent-wallet.md) guidance.
 - On consecutive `expired` statuses, relogin before retry; verify chain state first.
 - Do not add duplicate object/user refs — web filters these; agent-wallet does not.

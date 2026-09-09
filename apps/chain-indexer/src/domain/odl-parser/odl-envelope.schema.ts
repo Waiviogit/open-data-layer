@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { cidSchema } from '@opden-data-layer/core';
 import { OSL_MESSAGING_ACTIONS } from '../osl-parser/osl-envelope.schema';
 
 // ---------------------------------------------------------------------------
@@ -93,7 +94,7 @@ export type UserShopDeselectPayload = z.infer<typeof userShopDeselectPayloadSche
 
 export const batchImportPayloadSchema = z.object({
   type: z.literal('ipfs'),
-  ref: z.string().min(1),
+  ref: cidSchema.refine((v) => !/[\s/]/.test(v), { message: 'Invalid CID' }),
 });
 
 export type BatchImportPayload = z.infer<typeof batchImportPayloadSchema>;

@@ -111,7 +111,12 @@ Or use a gitignored `.env` loaded by your launcher.
 
 `HIVE_ACTIVE_KEY` is **not** required for Waivio JWT auth or typical ODL `custom_json` posting ops.
 
+## Large ODL bodies (not images)
+
+Oversize `update_create` / object-create envelopes use **`ipfs_upload_file`** and **`batch_import`**, not `ipfs_upload_image`. See [ipfs-file-upload.md](ipfs-file-upload.md).
+
 ## Related skills
 
+- [ipfs-file-upload.md](ipfs-file-upload.md) — ODL JSON upload for `batch_import`
 - [hive-has-agent-wallet.md](./hive-has-agent-wallet.md) — HAS login and broadcast
 - [hive-blockchain-broadcast.md](./hive-blockchain-broadcast.md) — ODL op construction

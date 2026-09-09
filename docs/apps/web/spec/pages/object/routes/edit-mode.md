@@ -31,7 +31,7 @@ Logged-in users can toggle **Edit** on an object profile page and add new ODL up
 | `+` click | Modal: optional update-type select (multi-type blocks), schema-driven value form, optional locale when `UPDATE_REGISTRY[type].localizable` |
 | Edit left rail | All supported slots show heading + `+` even when empty; **grouped sections** with sticky headings (HEADER, DETAILS, …); order from core edit-field-groups catalog — see below |
 | Update count | Muted line under each field heading (e.g. `2 updates`); **click** navigates to the **Updates** tab and sets the feed `update_type` filter for that field |
-| Submit | `buildOdlUpdateCreateOp` → wallet broadcast → `awaitTrxConfirmation` → `router.refresh()` |
+| Submit | `buildOdlUpdateCreateOp` → `broadcastOdlOpWithOverflow` (auto IPFS `batch_import` when op JSON exceeds 8192 bytes) → `awaitTrxConfirmation` (+ `awaitBatchImportByTrx` when IPFS used) → `router.refresh()` |
 | Creator vote | Indexer auto-inserts validity vote `for` from `creator` on every successful `update_create` (no client `update_vote` in create trx) |
 | `object_ref` value | Debounced object search (same as menu item); submitted as `value_text` = referenced `object_id` |
 | `geo` value | Latitude/longitude inputs + interactive map (click to set marker; inputs move marker) |
@@ -119,6 +119,7 @@ Built by `@opden-data-layer/hive-broadcast` **`buildOdlUpdateCreateOp`** (single
 | Edit block order (web) | `apps/web/src/modules/object-updates/domain/edit-mode-block-order.ts` |
 | Form utils | `apps/web/src/modules/object-updates/application/update-value-form.utils.ts` |
 | Modal | `apps/web/src/modules/object-updates/presentation/components/add-update-modal.tsx` |
+| Oversize update broadcast | `apps/web/src/modules/object-updates/application/broadcast-odl-op-with-overflow.ts` |
 | Left rail | `apps/web/src/modules/object/presentation/components/object-left-rail-panel.tsx` |
 | Tags left rail (edit) | `apps/web/src/modules/object/presentation/components/object-tags-left-rail-section.tsx` |
 | Tag chip | `apps/web/src/modules/object-updates/presentation/components/tag-chip.tsx` |

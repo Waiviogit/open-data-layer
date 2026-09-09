@@ -24,6 +24,7 @@ import {
   buildCreateOps,
   parseObjectIdFromCreateOdlJson,
 } from './build-create-ops';
+import { isCreateChunkingOverflowError } from './is-create-chunking-overflow-error';
 import {
   clearObjectCreateDraft,
   saveObjectCreateDraft,
@@ -410,9 +411,7 @@ export function useObjectCreateForm({
         language: state.language,
       };
 
-      let transactionId: string;
-
-      if (broadcastViaIpfs) {
+      const publishViaIpfsBatch = async (): Promise<string> => {
         const odlJson = buildCreateOdlJson(createParams);
         const ipfsObjectId = parseObjectIdFromCreateOdlJson(odlJson);
         if (ipfsObjectId !== createParams.objectId) {
@@ -428,22 +427,36 @@ export function useObjectCreateForm({
           account: username,
           cid: ipfsResult.cid,
         });
-        ({ transactionId } = await getWalletFacade().broadcast({
+        const { transactionId: trxId } = await getWalletFacade().broadcast({
           operations: [batchOp],
-        }));
+        });
         setPublishPhase('confirming');
-        await awaitTrxConfirmation(transactionId);
+        await awaitTrxConfirmation(trxId);
         setPublishPhase('importing');
-        await awaitBatchImportCompletion(transactionId, state.objectId);
+        await awaitBatchImportCompletion(trxId, state.objectId);
+        return trxId;
+      };
+
+      if (broadcastViaIpfs) {
+        setPublishPhase('uploading');
+        await publishViaIpfsBatch();
       } else {
-        const ops = buildCreateOps(createParams);
-        ({ transactionId } = await getWalletFacade().broadcast({
-          operations: ops,
-        }));
-        setPublishPhase('confirming');
-        await awaitTrxConfirmation(transactionId);
-        setPublishPhase('importing');
-        await awaitObjectIndexed(state.objectId);
+        try {
+          const ops = buildCreateOps(createParams);
+          const { transactionId } = await getWalletFacade().broadcast({
+            operations: ops,
+          });
+          setPublishPhase('confirming');
+          await awaitTrxConfirmation(transactionId);
+          setPublishPhase('importing');
+          await awaitObjectIndexed(state.objectId);
+        } catch (err) {
+          if (!isCreateChunkingOverflowError(err)) {
+            throw err;
+          }
+          setPublishPhase('uploading');
+          await publishViaIpfsBatch();
+        }
       }
 
       clearObjectCreateDraft(username);

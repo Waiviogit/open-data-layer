@@ -3788,5 +3788,7 @@
   "permissions_active_grant_ack": "Я понимаю, что active authority позволяет переводить средства и менять настройки аккаунта.",
   "permissions_active_grant_ack_required": "Подтвердите, что понимаете риски active authority.",
   "permissions_active_revoke_confirm": "Отзыв active authority требует active key. Этот аккаунт больше не сможет действовать от вашего имени с active правами.",
-  "permissions_active_revoke_ack": "Я понимаю и хочу отозвать active authority."
+  "permissions_active_revoke_ack": "Я понимаю и хочу отозвать active authority.",
+  "object_edit_upload_unauthorized": "Sign in again to upload (session may have expired).",
+  "object_edit_upload_failed": "IPFS upload failed. Try again later."
 }

@@ -37,4 +37,13 @@ describe('BatchImportHandler', () => {
 
     expect(emitter.emit).not.toHaveBeenCalled();
   });
+
+  it('does not emit when ref is an IPFS path rather than a bare CID', async () => {
+    const emitter = { emit: jest.fn() } as unknown as EventEmitter2;
+    const handler = new BatchImportHandler(emitter);
+
+    await handler.handle({ type: 'ipfs', ref: 'QmAbc/dir/file' }, ctx);
+
+    expect(emitter.emit).not.toHaveBeenCalled();
+  });
 });

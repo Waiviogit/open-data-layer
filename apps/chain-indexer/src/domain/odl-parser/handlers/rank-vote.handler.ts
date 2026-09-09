@@ -10,6 +10,7 @@ import {
 } from '../../../repositories';
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
 import { rankVotePayloadSchema } from '../odl-envelope.schema';
+import { resolveEventAccount } from '../normalize-event-account';
 import { WriteGuardRunner } from '../guards';
 import {
   GovernanceObjectMutatedEvent,
@@ -42,7 +43,16 @@ export class RankVoteHandler implements OdlActionHandler {
       return;
     }
 
-    const { voter, rank, rank_context } = result.data;
+    const { rank, rank_context } = result.data;
+    const { account: voter, mismatch } = resolveEventAccount(
+      ctx.creator,
+      result.data.voter,
+    );
+    if (mismatch) {
+      this.logger.warn(
+        `rank_vote: payload voter '${result.data.voter}' does not match posting auth '${ctx.creator}'; using posting auth`,
+      );
+    }
     let { object_id } = result.data;
 
     let update_id: string;

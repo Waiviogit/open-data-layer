@@ -126,6 +126,40 @@ export function registerAgentWalletTools(
   );
 
   server.registerTool(
+    'ipfs_upload_file',
+    {
+      description:
+        'Upload a generic file or inline JSON to IPFS via Waivio gateway POST /upload/file (max 10 MiB). Requires active Waivio auth. Provide exactly one of filePath or content. Returns { cid, contentUrl, url? }.',
+      inputSchema: z.object({
+        filePath: z
+          .string()
+          .optional()
+          .describe('Path to a local file (max 10 MiB)'),
+        content: z
+          .string()
+          .optional()
+          .describe('Inline UTF-8 content (e.g. ODL envelope JSON from odl_build_* when requiresIpfsBatch)'),
+        filename: z
+          .string()
+          .optional()
+          .describe('Optional filename for the IPFS entry (default from path or upload.bin)'),
+        account: z
+          .string()
+          .optional()
+          .describe('Hive account whose Waivio auth token is used for upload'),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = await deps.ipfsUpload.uploadFile(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
     'wallet_broadcast',
     {
       description:
@@ -241,7 +275,7 @@ export function registerAgentWalletTools(
     'odl_build_object_create',
     {
       description:
-        'Build ODL object_create custom_json ops for NEW objects only. Always includes object_create. Do not use when the object already exists. Returns perOpBytes, warnings, and suggestIpfsBatch when near size/op limits.',
+        'Build ODL object_create custom_json ops for NEW objects only. Always includes object_create. Do not use when the object already exists. When requiresIpfsBatch is true, upload envelopeJson via ipfs_upload_file then odl_build_batch_import. Returns perOpBytes, warnings, suggestIpfsBatch (soft HAS hint), and requiresIpfsBatch (hard >8192 bytes or >5 ops).',
       inputSchema: z.object({
         objectType: z.string().min(1),
         objectId: z.string().optional(),
@@ -270,7 +304,7 @@ export function registerAgentWalletTools(
     'odl_build_update_create',
     {
       description:
-        'Build a single update_create custom_json op for an EXISTING object (avatar image, title, description, etc.). Do not use for new objects. Indexer auto-approves creator validity — do not broadcast update_vote for the same update.',
+        'Build a single update_create custom_json op for an EXISTING object (avatar image, title, description, etc.). Do not use for new objects. When requiresIpfsBatch is true (payload >8192 bytes), upload envelopeJson via ipfs_upload_file then odl_build_batch_import — do not broadcast the oversize op. Indexer auto-approves creator validity — do not broadcast update_vote for the same update.',
       inputSchema: z.object({
         objectId: z.string().min(1),
         creator: z.string().min(1),
@@ -283,6 +317,26 @@ export function registerAgentWalletTools(
     async (args) => {
       try {
         const result = deps.hasSession.buildUpdateCreate(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'odl_build_batch_import',
+    {
+      description:
+        'Build a batch_import custom_json op referencing an IPFS CID (from ipfs_upload_file). Broadcast via wallet_broadcast after uploading the envelope.',
+      inputSchema: z.object({
+        account: z.string().min(1).describe('Hive account in required_posting_auths'),
+        cid: z.string().min(1).describe('IPFS CID from ipfs_upload_file'),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = deps.hasSession.buildBatchImport(args);
         return jsonToolResult(result);
       } catch (error) {
         return toolError((error as Error).message);

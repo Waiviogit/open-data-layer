@@ -113,7 +113,7 @@ These URLs are **not** wrapped in the Hive `0x0` proxy at display time (see skip
 
 Runtime configuration only — see [web conventions — Env config](web-conventions.md#runtime-vs-build-ghcr--compose). The root layout reads `IPFS_CONTENT_BASE_URL` and passes it to client UI via `IpfsContentBaseProvider` / `useIpfsContentBaseUrl()`.
 
-Upload (`POST /ipfs-gateway/upload/image`, `/upload/file`) is proxied at **`/ipfs-gateway/`** through nginx and requires **`Authorization: Bearer`** (access JWT, same `JWT_SECRET` as auth-api). Server actions read `odl_access` and forward the token.
+Upload (`POST /ipfs-gateway/upload/image`, `/upload/file`) is proxied at **`/ipfs-gateway/`** through nginx and requires **`Authorization: Bearer`** (access JWT, same `JWT_SECRET` as auth-api). Server actions read `odl_access` and forward the token. **`/upload/image`** max **50 MiB**; **`/upload/file`** max **16 MiB** (ODL JSON envelopes for `batch_import`).
 
 **Code:** `get-ipfs-content-base-url.ts`, `get-ipfs-gateway-server-base-url.ts`, `get-bearer-access-token.server.ts`, `upload-image.action.ts`.
 

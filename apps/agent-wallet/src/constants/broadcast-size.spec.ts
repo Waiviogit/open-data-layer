@@ -1,3 +1,5 @@
+import { utf8ByteLength } from '@opden-data-layer/hive-broadcast';
+
 import { computeObjectCreateBroadcastMeta } from './broadcast-size';
 
 describe('computeObjectCreateBroadcastMeta', () => {
@@ -5,9 +7,7 @@ describe('computeObjectCreateBroadcastMeta', () => {
     const ops = [{ json: '{"a":1}' }, { json: '{"b":22}' }];
     const meta = computeObjectCreateBroadcastMeta(ops, []);
 
-    expect(meta.perOpBytes).toEqual(
-      ops.map((op) => new TextEncoder().encode(op.json).length),
-    );
+    expect(meta.perOpBytes).toEqual(ops.map((op) => utf8ByteLength(op.json)));
     expect(meta.bytes).toBe(meta.perOpBytes.reduce((a, b) => a + b, 0));
     expect(meta.opsCount).toBe(2);
     expect(meta.suggestIpfsBatch).toBe(false);

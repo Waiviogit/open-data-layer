@@ -7,8 +7,11 @@ import { buildOdlUpdateCreateOp, buildOdlUpdateVoteOp } from '@opden-data-layer/
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
+import { useI18n } from '@/i18n/providers/i18n-provider';
 import { getWalletFacade } from '@/modules/auth';
 import { awaitTrxConfirmation } from '@/modules/notifications';
+import { broadcastOdlOpWithOverflow } from '@/modules/object-updates/application/broadcast-odl-op-with-overflow';
+import { broadcastOverflowErrorMessage } from '@/modules/object-updates/application/broadcast-overflow-error-message';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 
@@ -24,8 +27,10 @@ export function useListCatalogEdit({
   onRequireLogin,
 }: UseListCatalogEditOptions) {
   const router = useRouter();
+  const { t } = useI18n();
   const odlCustomJsonId = useOdlCustomJsonId();
   const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const addListItem = useCallback(
     async (targetObjectId: string) => {
@@ -39,6 +44,7 @@ export function useListCatalogEdit({
         return;
       }
       setBusy(true);
+      setActionError(null);
       try {
         const op = buildOdlUpdateCreateOp({
           id: odlCustomJsonId,
@@ -49,19 +55,24 @@ export function useListCatalogEdit({
           value: objectId,
           required_posting_auths: [creator],
         });
-        const { transactionId } = await getWalletFacade().broadcast({
-          operations: [op],
+        const result = await broadcastOdlOpWithOverflow({
+          op,
+          account: creator,
+          odlCustomJsonId,
+          objectId: catalogObjectId,
         });
-        void awaitTrxConfirmation(transactionId).finally(() => {
+        if (result.success) {
           void refreshAfterBroadcast(router, () =>
             revalidateObjectAfterBroadcast(catalogObjectId),
           );
-        });
+          return;
+        }
+        setActionError(broadcastOverflowErrorMessage(result.error, t));
       } finally {
         setBusy(false);
       }
     },
-    [catalogObjectId, odlCustomJsonId, onRequireLogin, router, viewerUsername],
+    [catalogObjectId, odlCustomJsonId, onRequireLogin, router, t, viewerUsername],
   );
 
   const rejectListItem = useCallback(
@@ -100,5 +111,5 @@ export function useListCatalogEdit({
     [catalogObjectId, odlCustomJsonId, onRequireLogin, router, viewerUsername],
   );
 
-  return { addListItem, rejectListItem, busy };
+  return { addListItem, rejectListItem, busy, actionError };
 }

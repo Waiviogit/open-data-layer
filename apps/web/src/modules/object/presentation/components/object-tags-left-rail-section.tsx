@@ -17,7 +17,8 @@ import { PlusIcon } from '@/icons';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
 import { buildDiscoverHref, encodeTagFilter } from '@/modules/discover/domain/discover-url';
-import { awaitTrxConfirmation } from '@/modules/notifications';
+import { broadcastOdlOpWithOverflow } from '@/modules/object-updates/application/broadcast-odl-op-with-overflow';
+import { broadcastOverflowErrorMessage } from '@/modules/object-updates/application/broadcast-overflow-error-message';
 import type { TagApprovalStatsIndex } from '@/modules/object/domain/tag-approval-stats';
 import { resolveTagApprovalStat } from '@/modules/object/domain/tag-approval-stats';
 import type { TagCategorySectionView } from '@/modules/object/infrastructure/object-projected-fields';
@@ -77,6 +78,7 @@ export function ObjectTagsLeftRailSection({
   );
   const [tagDraft, setTagDraft] = useState('');
   const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [voteOverrides, setVoteOverrides] = useState<
     Record<string, 'for' | 'against'>
   >({});
@@ -165,6 +167,7 @@ export function ObjectTagsLeftRailSection({
       }
 
       setBusy(true);
+      setActionError(null);
       try {
         const createInput = {
           id: odlCustomJsonId,
@@ -176,14 +179,20 @@ export function ObjectTagsLeftRailSection({
           required_posting_auths: [voter],
         } as const;
         const op = buildOdlUpdateCreateOp(createInput);
-        const { transactionId } = await getWalletFacade().broadcast({
-          operations: [op],
+        const result = await broadcastOdlOpWithOverflow({
+          op,
+          account: voter,
+          odlCustomJsonId,
+          objectId,
         });
-        void awaitTrxConfirmation(transactionId).finally(() => {
-          void refreshTagDataAfterBroadcast();
-        });
+        if (!result.success) {
+          setActionError(broadcastOverflowErrorMessage(result.error, t));
+          return false;
+        }
+        void refreshTagDataAfterBroadcast();
         return true;
       } catch {
+        setActionError(t('object_edit_validation_error'));
         return false;
       } finally {
         setBusy(false);
@@ -194,6 +203,7 @@ export function ObjectTagsLeftRailSection({
       odlCustomJsonId,
       onRequireLogin,
       refreshTagDataAfterBroadcast,
+      t,
       viewerUsername,
     ],
   );
@@ -312,6 +322,11 @@ export function ObjectTagsLeftRailSection({
 
   return (
     <>
+      {actionError ? (
+        <p className="mb-2 text-body-sm text-danger" role="alert">
+          {actionError}
+        </p>
+      ) : null}
       <div className="flex items-start gap-2">
         {categoryComposing ? (
           <span className="inline-flex min-w-0 flex-1 items-center gap-1 rounded-pill border border-dashed border-border-strong px-2.5 py-1">

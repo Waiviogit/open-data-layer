@@ -26,7 +26,7 @@ Static page or content page.
 
 | Update | Semantics |
 |--------|-----------|
-| `pageContent` | Primary page body (semantic baseline) |
+| `pageContent` | Primary page body (semantic baseline); large body → IPFS `batch_import` when `requiresIpfsBatch` |
 | `parent` | Site hierarchy parent |
 | `website` | Canonical URL if mirrored |
 

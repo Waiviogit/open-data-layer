@@ -32,7 +32,7 @@ Agent skill stored as an ODL object (Agent Skills shape: frontmatter fields + ma
 |--------|-----------|
 | `name` | Skill identifier and display title; prefer kebab-style object id prefix |
 | `description` | **Primary trigger text** — what the skill does and when to use it (slightly pushy; all “when to use” belongs here, not in `skillContent`) |
-| `skillContent` | Markdown body — how to execute the workflow (imperative, explain why, keep lean; under ~500 lines ideal) |
+| `skillContent` | Markdown body — how to execute the workflow (imperative, explain why, keep lean; under ~500 lines ideal); large body → IPFS `batch_import` when `requiresIpfsBatch` |
 | `license` | License **name** only (text), not a file reference |
 | `compatibility` | Optional env requirements (products, packages, network); max 500 chars |
 | `metadata` | One `{ key, value }` update per entry; query-api folds rows into one object |

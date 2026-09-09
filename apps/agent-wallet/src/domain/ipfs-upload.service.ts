@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import type { AgentWalletConfig } from '../config/agent-wallet.config';
 import {
   IPFS_UPLOAD_FIELD_NAME,
+  IPFS_UPLOAD_FILE_MAX_BYTES,
   IPFS_UPLOAD_MAX_BYTES,
 } from '../constants/ipfs-upload';
 import { mimeFromImageExtension } from '../utils/image-mime';
@@ -39,6 +40,54 @@ export class IpfsUploadService {
     private readonly config: ConfigService<AgentWalletConfig, true>,
     private readonly waivioAuth: WaivioAuthSessionService,
   ) {}
+
+  async uploadFile(input: {
+    filePath?: string;
+    content?: string;
+    filename?: string;
+    account?: string;
+  }): Promise<IpfsUploadResult> {
+    const hasPath = Boolean(input.filePath?.trim());
+    const hasContent = input.content !== undefined;
+    if (hasPath === hasContent) {
+      throw new Error('Provide exactly one of filePath or content');
+    }
+
+    let body: Buffer;
+    let filename: string;
+
+    if (hasPath) {
+      const resolvedPath = input.filePath!.trim();
+      let fileStat;
+      try {
+        fileStat = await stat(resolvedPath);
+      } catch {
+        throw new Error(`File not found: ${resolvedPath}`);
+      }
+      if (!fileStat.isFile()) {
+        throw new Error(`Path is not a file: ${resolvedPath}`);
+      }
+      if (fileStat.size > IPFS_UPLOAD_FILE_MAX_BYTES) {
+        throw new Error(
+          `File exceeds ${IPFS_UPLOAD_FILE_MAX_BYTES / (1024 * 1024)} MiB limit`,
+        );
+      }
+      body = await import('node:fs/promises').then((fs) =>
+        fs.readFile(resolvedPath),
+      );
+      filename = input.filename?.trim() || basename(resolvedPath);
+    } else {
+      body = Buffer.from(input.content!, 'utf8');
+      if (body.length > IPFS_UPLOAD_FILE_MAX_BYTES) {
+        throw new Error(
+          `Content exceeds ${IPFS_UPLOAD_FILE_MAX_BYTES / (1024 * 1024)} MiB limit`,
+        );
+      }
+      filename = input.filename?.trim() || 'upload.bin';
+    }
+
+    return this.uploadRawFile(body, filename, input.account);
+  }
 
   async uploadImage(filePath: string, account?: string): Promise<IpfsUploadResult> {
     const resolvedPath = filePath.trim();
@@ -82,6 +131,77 @@ export class IpfsUploadService {
 
   private waivioApiOrigin(): string {
     return this.config.get('waivioApiOrigin', { infer: true });
+  }
+
+  private async uploadRawFile(
+    body: Buffer,
+    filename: string,
+    account?: string,
+    allowRetry = true,
+  ): Promise<IpfsUploadResult> {
+    const accessToken = await this.waivioAuth.getAccessToken(account);
+    const origin = this.waivioApiOrigin();
+    const safeName = filename.replace(/[^\w.-]/g, '_');
+    const uploadUrl = `${buildWaivioIpfsGatewayBaseUrl(origin)}/upload/file?filename=${encodeURIComponent(safeName)}`;
+
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/octet-stream',
+      },
+      body: new Uint8Array(body),
+    });
+
+    if (response.status === 401 && allowRetry) {
+      await this.waivioAuth.getAccessToken(account, true);
+      return this.uploadRawFile(body, filename, account, false);
+    }
+
+    if (response.status === 413) {
+      throw new Error('File too large for gateway');
+    }
+    if (!response.ok) {
+      const detail = await this.readErrorBody(response);
+      throw new Error(
+        detail
+          ? `IPFS file upload failed (${response.status}): ${detail}`
+          : `IPFS file upload failed (${response.status})`,
+      );
+    }
+
+    let parsed: unknown;
+    try {
+      parsed = await response.json();
+    } catch {
+      throw new Error('IPFS upload returned invalid JSON');
+    }
+
+    const cid =
+      typeof parsed === 'object' &&
+      parsed !== null &&
+      'cid' in parsed &&
+      typeof (parsed as { cid?: unknown }).cid === 'string'
+        ? (parsed as { cid: string }).cid.trim()
+        : '';
+
+    if (!cid) {
+      throw new Error('IPFS upload response missing cid');
+    }
+
+    const gatewayUrl =
+      typeof parsed === 'object' &&
+      parsed !== null &&
+      'url' in parsed &&
+      typeof (parsed as { url?: unknown }).url === 'string'
+        ? (parsed as { url: string }).url
+        : undefined;
+
+    return {
+      cid,
+      contentUrl: `${buildWaivioIpfsGatewayBaseUrl(origin)}/files/${cid}`,
+      ...(gatewayUrl ? { url: gatewayUrl } : {}),
+    };
   }
 
   private async uploadBuffer(

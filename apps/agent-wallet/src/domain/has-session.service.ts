@@ -11,7 +11,11 @@ import {
 import {
   buildGalleryItemBroadcastOp,
   buildObjectCreateEnvelope,
+  buildOdlBatchImportOp,
+  buildOdlEnvelopeJson,
   buildValidatedUpdateCreateOp,
+  exceedsHiveCustomJsonLimit,
+  utf8ByteLength,
 } from '@opden-data-layer/hive-broadcast';
 import qrcode from 'qrcode';
 
@@ -241,6 +245,8 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
     perOpBytes: number[];
     warnings: string[];
     suggestIpfsBatch: boolean;
+    requiresIpfsBatch?: boolean;
+    envelopeJson?: string;
   } {
     const creator = input.creator.trim().replace(/^@/, '').toLowerCase();
     const objectId =
@@ -256,6 +262,20 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
       language: input.language,
     });
 
+    if (result.requiresIpfsBatch) {
+      const envelopeJson = buildOdlEnvelopeJson(result.events);
+      return {
+        ops: [],
+        opsCount: 0,
+        bytes: utf8ByteLength(envelopeJson),
+        perOpBytes: [],
+        warnings: result.warnings,
+        suggestIpfsBatch: true,
+        requiresIpfsBatch: true,
+        envelopeJson,
+      };
+    }
+
     const meta = computeObjectCreateBroadcastMeta(result.ops, result.warnings);
 
     return {
@@ -265,6 +285,7 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
       perOpBytes: meta.perOpBytes,
       warnings: meta.warnings,
       suggestIpfsBatch: meta.suggestIpfsBatch,
+      requiresIpfsBatch: false,
     };
   }
 
@@ -279,6 +300,8 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
     ops: unknown[];
     opsCount: number;
     bytes: number;
+    requiresIpfsBatch?: boolean;
+    envelopeJson?: string;
   } {
     const op = buildValidatedUpdateCreateOp({
       id: this.config.get('odlCustomJsonId', { infer: true }),
@@ -290,6 +313,37 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
       language: input.language,
     });
 
+    const bytes = utf8ByteLength(op.json);
+    if (exceedsHiveCustomJsonLimit(op.json)) {
+      return {
+        ops: [],
+        opsCount: 0,
+        bytes,
+        requiresIpfsBatch: true,
+        envelopeJson: op.json,
+      };
+    }
+
+    return {
+      ops: [op],
+      opsCount: 1,
+      bytes,
+      requiresIpfsBatch: false,
+    };
+  }
+
+  buildBatchImport(input: { account: string; cid: string }): {
+    ops: unknown[];
+    opsCount: number;
+    bytes: number;
+  } {
+    const account = input.account.trim().replace(/^@/, '').toLowerCase();
+    const cid = input.cid.trim();
+    const op = buildOdlBatchImportOp({
+      id: this.config.get('odlCustomJsonId', { infer: true }),
+      account,
+      cid,
+    });
     return this.singleOpBuildResult(op);
   }
 
@@ -320,7 +374,7 @@ export class HasSessionService implements OnModuleInit, OnModuleDestroy {
     opsCount: number;
     bytes: number;
   } {
-    const bytes = new TextEncoder().encode(op.json).length;
+    const bytes = utf8ByteLength(op.json);
     return {
       ops: [op],
       opsCount: 1,

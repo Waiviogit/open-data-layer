@@ -87,7 +87,7 @@ All routes are under the global prefix **`/ipfs-gateway`** (see `main.ts`).
 | Method | Path | Description |
 |--------|------|-------------|
 | `POST` | `/upload/image` | **Bearer JWT** (`typ: access`); multipart field `file`; max **50 MiB**; WebP, MFS `/images/` |
-| `POST` | `/upload/file` | **Bearer JWT**; raw `application/octet-stream`; streamed; optional `?filename=`; MFS `/files/` |
+| `POST` | `/upload/file` | **Bearer JWT**; raw `application/octet-stream`; streamed; optional `?filename=`; max **`UPLOAD_FILE_MAX_BYTES` = 16 MiB** (`upload.constants.ts`); MFS `/files/` — ODL envelopes for `batch_import` |
 | `GET` | `/files/{cid}` | Stream object by CID as octet-stream (local first, then peer fallback) |
 | `GET` | `/content/image/{cid}` | Same object as WebP with inline disposition (CDN-cacheable) |
 | `GET` | `/namespaces/{namespace}/cid` | `namespace` ∈ `images` \| `files`; returns directory CID for bulk pin |

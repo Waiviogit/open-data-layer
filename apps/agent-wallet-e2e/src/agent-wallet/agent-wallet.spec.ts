@@ -18,6 +18,8 @@ const REQUIRED_TOOLS = [
   'waivio_auth_status',
   'waivio_auth_logout',
   'ipfs_upload_image',
+  'ipfs_upload_file',
+  'odl_build_batch_import',
   'wallet_broadcast',
   'wallet_broadcast_status',
   'has_login_start',
@@ -282,6 +284,24 @@ describe('agent-wallet MCP (e2e)', () => {
       (result) => result.data.status === 'signed',
     );
     expect(broadcastStatus.data.transactionId).toBe('trx-fake-1');
+  });
+
+  it('returns requiresIpfsBatch for oversize update_create', async () => {
+    const built = await mcpCallTool<{
+      requiresIpfsBatch?: boolean;
+      ops: unknown[];
+      envelopeJson?: string;
+    }>('odl_build_update_create', {
+      objectId: 'skill-e2e-oversize',
+      creator: 'alice',
+      updateType: 'skillContent',
+      value: 'x'.repeat(20_000),
+    });
+
+    expect(built.isError).toBe(false);
+    expect(built.data.requiresIpfsBatch).toBe(true);
+    expect(built.data.ops).toEqual([]);
+    expect(built.data.envelopeJson).toBeDefined();
   });
 
   it('builds update_create without object_create for existing objects', async () => {

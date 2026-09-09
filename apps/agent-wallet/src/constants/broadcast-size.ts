@@ -1,6 +1,7 @@
 import {
   HIVE_CUSTOM_OP_DATA_MAX_LENGTH,
   OBJECT_CREATE_MAX_OPS_PER_TRX,
+  utf8ByteLength,
 } from '@opden-data-layer/hive-broadcast';
 
 /** Warn when direct chain create approaches max ops per transaction (matches web dock). */
@@ -21,9 +22,7 @@ export function computeObjectCreateBroadcastMeta(
   ops: readonly { json: string }[],
   existingWarnings: readonly string[],
 ): ObjectCreateBroadcastMeta {
-  const perOpBytes = ops.map(
-    (op) => new TextEncoder().encode(op.json).length,
-  );
+  const perOpBytes = ops.map((op) => utf8ByteLength(op.json));
   const bytes = perOpBytes.reduce((sum, n) => sum + n, 0);
   const opsCount = ops.length;
   const warnings = [...existingWarnings];

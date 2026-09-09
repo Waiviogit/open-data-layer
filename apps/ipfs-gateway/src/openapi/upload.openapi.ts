@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { UPLOAD_IMAGE_MAX_FILE_BYTES } from '../constants/upload.constants';
+import {
+  UPLOAD_FILE_MAX_BYTES,
+  UPLOAD_IMAGE_MAX_FILE_BYTES,
+} from '../constants/upload.constants';
 import { registry } from './registry';
 
 const ipfsUploadResultSchema = registry.register(
@@ -48,11 +51,11 @@ registry.registerPath({
 registry.registerPath({
   method: 'post',
   path: '/upload/file',
-  summary: 'Stream a large binary file to IPFS',
+  summary: 'Stream a binary file to IPFS (ODL envelopes)',
   description:
     'Accepts raw bytes as `application/octet-stream`. ' +
-    'The body is streamed directly to IPFS without buffering in memory — ' +
-    'suitable for multi-GB files. ' +
+    `Max upload size is ${UPLOAD_FILE_MAX_BYTES / (1024 * 1024)} MiB per file. ` +
+    'The body is streamed to IPFS without buffering the full payload in memory. ' +
     'Optional `filename` query parameter sets the MFS entry name; ' +
     'defaults to `upload-<timestamp>.bin`.',
   request: {
@@ -75,6 +78,9 @@ registry.registerPath({
     201: {
       description: 'Stored on IPFS',
       content: { 'application/json': { schema: ipfsUploadResultSchema } },
+    },
+    413: {
+      description: `File exceeds maximum size (${UPLOAD_FILE_MAX_BYTES / (1024 * 1024)} MiB)`,
     },
   },
 });

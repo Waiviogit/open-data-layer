@@ -110,7 +110,7 @@ export function ObjectListContent({
   const { t } = useI18n();
   const [addObjectId, setAddObjectId] = useState('');
   const showEditControls = isEditMode && Boolean(viewerUsername?.trim());
-  const { addListItem, rejectListItem, busy } = useListCatalogEdit({
+  const { addListItem, rejectListItem, busy, actionError } = useListCatalogEdit({
     catalogObjectId,
     viewerUsername,
     onRequireLogin,
@@ -155,6 +155,11 @@ export function ObjectListContent({
 
   const addObjectField = showEditControls ? (
     <div className="rounded-card border border-border bg-surface p-card-padding">
+      {actionError ? (
+        <p className="mb-2 text-body-sm text-danger" role="alert">
+          {actionError}
+        </p>
+      ) : null}
       <ObjectRefSearchField
         value={addObjectId}
         onChange={(nextId) => {

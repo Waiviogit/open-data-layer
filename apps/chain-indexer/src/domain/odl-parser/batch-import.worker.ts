@@ -4,7 +4,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OnEvent } from '@nestjs/event-emitter';
 import { NotificationEmitterService } from '../notification-adapter/notification-emitter.service';
 import { IpfsClient } from '@opden-data-layer/clients';
-import { Readable, type Duplex } from 'node:stream';
+import { Readable, Transform, type Duplex } from 'node:stream';
 import { chain } from 'stream-chain';
 import streamJson from 'stream-json';
 
@@ -40,6 +40,10 @@ import { MessageUpdateHandler } from '../osl-parser/handlers/message-update.hand
 import { MessageDeleteHandler } from '../osl-parser/handlers/message-delete.handler';
 import { MessageContextExcludeHandler } from '../osl-parser/handlers/message-context-exclude.handler';
 import { ShopDeselectHandler } from './handlers/shop-deselect.handler';
+import {
+  BATCH_IMPORT_MAX_BYTES,
+  BATCH_IMPORT_MAX_EVENTS,
+} from '../../constants/batch-import.constants';
 import { batchImportChildEventSchema } from './odl-envelope.schema';
 
 @Injectable()
@@ -132,7 +136,7 @@ export class BatchImportWorker {
       return;
     }
 
-    const completed = await this.processEventStream(stream, ctx);
+    const completed = await this.processEventStream(stream, ctx, ref);
     if (!completed) {
       return;
     }
@@ -151,9 +155,23 @@ export class BatchImportWorker {
   private async processEventStream(
     stream: Readable,
     parentCtx: OdlEventContext,
+    ref: string,
   ): Promise<boolean> {
+    let bytesRead = 0;
+    const byteCounter = new Transform({
+      transform(chunk: Buffer, _enc, cb) {
+        if (bytesRead + chunk.length > BATCH_IMPORT_MAX_BYTES) {
+          cb(new Error('BATCH_IMPORT_TOO_LARGE'));
+          return;
+        }
+        bytesRead += chunk.length;
+        cb(null, chunk);
+      },
+    });
+
     const pipeline = chain([
       stream,
+      byteCounter,
       streamJson(),
       pickFilter({ filter: 'events' }),
       streamArrayMod.asStream(),
@@ -167,6 +185,16 @@ export class BatchImportWorker {
       await new Promise<void>((resolve, reject) => {
       pipeline.on('data', (item: { key: number; value: unknown }) => {
         chainPromise = chainPromise.then(async () => {
+          if (childIndex >= BATCH_IMPORT_MAX_EVENTS) {
+            if (childIndex === BATCH_IMPORT_MAX_EVENTS) {
+              this.logger.warn(
+                `batch_import: event cap ${BATCH_IMPORT_MAX_EVENTS} reached for '${ref}'; aborting rest`,
+              );
+            }
+            childIndex += 1;
+            return;
+          }
+
           const raw = item.value;
           const parsed = batchImportChildEventSchema.safeParse(raw);
           if (!parsed.success) {

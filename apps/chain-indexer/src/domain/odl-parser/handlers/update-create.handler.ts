@@ -20,6 +20,7 @@ import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
 import { coerceGeoUpdateRawValue } from '../coerce-geo-update-raw-value';
 import { coerceJsonUpdateRawValue } from '../coerce-json-update-raw-value';
 import { updateCreatePayloadSchema } from '../odl-envelope.schema';
+import { resolveEventAccount } from '../normalize-event-account';
 import { WriteGuardRunner } from '../guards';
 import {
   GovernanceObjectMutatedEvent,
@@ -75,7 +76,21 @@ export class UpdateCreateHandler implements OdlActionHandler {
       return;
     }
 
-    const { object_id, update_type, creator, locale: payloadLocale } = result.data;
+    const {
+      object_id,
+      update_type,
+      creator: payloadCreator,
+      locale: payloadLocale,
+    } = result.data;
+    const { account: creator, mismatch } = resolveEventAccount(
+      ctx.creator,
+      payloadCreator,
+    );
+    if (mismatch) {
+      this.logger.warn(
+        `update_create: payload creator '${payloadCreator}' does not match posting auth '${ctx.creator}'; using posting auth`,
+      );
+    }
 
     const object = await this.objectsCoreRepository.findByObjectId(object_id);
     if (!object) {

@@ -3,19 +3,17 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import {
-  buildOdlUpdateCreateOp,
-} from '@opden-data-layer/hive-broadcast';
 import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
+import { buildOdlUpdateCreateOp } from '@opden-data-layer/hive-broadcast';
 
 import { DEFAULT_LOCALE } from '@/i18n/config/default-locale';
 import { locales } from '@/i18n/config/locales';
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
-import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
-import { awaitTrxConfirmation } from '@/modules/notifications';
+import { useHydrateWalletProvider } from '@/modules/auth';
+import { broadcastOdlOpWithOverflow } from '../../application/broadcast-odl-op-with-overflow';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 import { ModalShell, ModalShellCloseButton, MODAL_Z_INDEX_ABOVE_MAP } from '@/shared/presentation';
@@ -253,13 +251,25 @@ export function AddUpdateModal(props: AddUpdateModalProps) {
               onChainGalleryAlbumNames,
             })
           : buildOdlUpdateCreateOp(createInput);
-      const { transactionId } = await getWalletFacade().broadcast({
-        operations: [op],
+      const result = await broadcastOdlOpWithOverflow({
+        op,
+        account: viewerUsername,
+        odlCustomJsonId,
+        objectId,
       });
+      if (!result.success) {
+        if (result.error === 'unauthorized') {
+          setError(t('object_edit_upload_unauthorized'));
+        } else if (result.error === 'upload_failed') {
+          setError(t('object_edit_upload_failed'));
+        } else {
+          setError(t('object_edit_validation_error'));
+        }
+        setSubmitting(false);
+        return;
+      }
       onClose();
-      void awaitTrxConfirmation(transactionId).finally(() => {
-        void refreshAfterBroadcast(router, () => revalidateObjectAfterBroadcast(objectId));
-      });
+      void refreshAfterBroadcast(router, () => revalidateObjectAfterBroadcast(objectId));
     } catch (err) {
       setError(err instanceof Error ? err.message : t('object_edit_validation_error'));
       setSubmitting(false);

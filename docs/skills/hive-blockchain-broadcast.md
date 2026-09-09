@@ -191,7 +191,7 @@ Import builders from `@opden-data-layer/hive-broadcast`:
 | `buildOdlObjectOwnershipOp` | `object_ownership` | exclusive / supervised |
 | `buildOdlObjectFollowOp` | `object_follow` | follow / unfollow / bell |
 | `buildOdlUserFollowBellOp` | `user_follow` | bell toggle |
-| `buildOdlBatchImportOp` | `batch_import` | IPFS CID; large creates |
+| `buildOdlBatchImportOp` | `batch_import` | IPFS CID; large creates and oversize standalone `update_create` |
 
 ### Agent rule: votes
 
@@ -256,6 +256,8 @@ Limits:
 - `HIVE_CUSTOM_OP_DATA_MAX_LENGTH` = **8192** UTF-8 bytes per `custom_json.json`
 - Max **5** `custom_json` ops per transaction for object create (web constant `OBJECT_CREATE_MAX_OPS_PER_TRX`)
 - Oversized payloads → IPFS + `buildOdlBatchImportOp`
+
+**Large standalone `update_create`** (e.g. `pageContent`, `skillContent`, `legalText`, `htmlContent` over 8192 bytes): upload the full `{ events: [...] }` envelope to IPFS, then broadcast **`batch_import`** with the CID — **not** OSL `overflow_ref` (that field is for messaging only). Agent-wallet: `odl_build_update_create` → when `requiresIpfsBatch`, `ipfs_upload_file` + `odl_build_batch_import`. See [ipfs-file-upload.md](ipfs-file-upload.md).
 
 Example — single field update after object exists (library or MCP `odl_build_update_create`):
 
