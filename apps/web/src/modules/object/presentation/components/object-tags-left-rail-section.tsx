@@ -16,6 +16,7 @@ import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { PlusIcon } from '@/icons';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { getWalletFacade, useHydrateWalletProvider } from '@/modules/auth';
+import { awaitTrxConfirmation } from '@/modules/notifications';
 import { buildDiscoverHref, encodeTagFilter } from '@/modules/discover/domain/discover-url';
 import { broadcastOdlOpWithOverflow } from '@/modules/object-updates/application/broadcast-odl-op-with-overflow';
 import { broadcastOverflowErrorMessage } from '@/modules/object-updates/application/broadcast-overflow-error-message';
