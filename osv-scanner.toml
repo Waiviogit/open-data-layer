@@ -31,3 +31,8 @@ ignoreUntil = 2027-02-28
 id = "GHSA-w3rx-r6r6-pgpr"
 reason = "Transitive optional dep via less (vite/webpack dev toolchain). image-size repo archived; npm latest 2.0.2 still affected. Dev/build-only; not shipped in production Docker bundles."
 ignoreUntil = 2027-02-28
+
+[[IgnoredVulns]]
+id = "GHSA-vwc7-r8mq-g2x9"
+reason = "Transitive via @module-federation/dts-plugin (Nx/webpack dev toolchain). npm latest adm-zip 0.6.0 still affected; upstream PR #575 not released. Dev/build-only; not shipped in production Docker bundles."
+ignoreUntil = 2027-02-28
