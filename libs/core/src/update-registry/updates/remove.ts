@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { objectIdSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_REMOVE: UpdateDefinition = {
@@ -9,5 +9,5 @@ export const UPDATE_REMOVE: UpdateDefinition = {
   description: 'Soft-remove or hide reference.',
   value_kind: 'text',
   cardinality: 'multi',
-  schema: z.string().min(1),
+  schema: objectIdSchema,
 };

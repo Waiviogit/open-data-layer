@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { shortTokenSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_TYPICAL_AGE_RANGE: UpdateDefinition = {
@@ -10,5 +10,5 @@ export const UPDATE_TYPICAL_AGE_RANGE: UpdateDefinition = {
   description: 'Target age range or rating.',
   value_kind: 'text',
   cardinality: 'single',
-  schema: z.string().min(1),
+  schema: shortTokenSchema,
 };

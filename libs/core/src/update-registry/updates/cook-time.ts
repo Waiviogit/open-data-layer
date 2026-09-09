@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { shortTokenSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_COOK_TIME: UpdateDefinition = {
@@ -10,5 +10,5 @@ export const UPDATE_COOK_TIME: UpdateDefinition = {
   description: 'Cooking or prep time.',
   value_kind: 'text',
   cardinality: 'single',
-  schema: z.string().min(1),
+  schema: shortTokenSchema,
 };

@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { mediumTextSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_WORK_HOURS: UpdateDefinition = {
@@ -10,5 +10,5 @@ export const UPDATE_WORK_HOURS: UpdateDefinition = {
   description: 'Opening hours or work schedule.',
   value_kind: 'text',
   cardinality: 'single',
-  schema: z.string().min(1),
+  schema: mediumTextSchema,
 };

@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { compatibilitySchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_COMPATIBILITY: UpdateDefinition = {
@@ -10,5 +10,5 @@ export const UPDATE_COMPATIBILITY: UpdateDefinition = {
     'Environment requirements: intended products, system packages, network access, etc.',
   value_kind: 'text',
   cardinality: 'single',
-  schema: z.string().min(1).max(500),
+  schema: compatibilitySchema,
 };

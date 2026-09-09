@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
 import { cidSchema } from '../schemas/cid-schema';
+import { labelSchema, urlStringSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 /**
@@ -9,9 +10,9 @@ import { UPDATE_TYPES } from '../update-types';
  */
 export const imageGalleryItemJsonSchema = z
   .object({
-    album: z.string().min(1),
+    album: labelSchema,
     cid: cidSchema.optional(),
-    url: z.url().optional(),
+    url: urlStringSchema.optional(),
   })
   .strict()
   .refine((v) => Boolean(v.cid) !== Boolean(v.url), {

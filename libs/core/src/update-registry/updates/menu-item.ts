@@ -1,5 +1,12 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import {
+  objectIdSchema,
+  shortTokenSchema,
+  titleSchema,
+  urlOrCidStringSchema,
+  urlStringSchema,
+} from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 /** Button/menu row visual style (legacy Waivio: Standard, Highlight, Icon, Image). */
@@ -18,12 +25,12 @@ const menuItemStyleSchema = z.enum(MENU_ITEM_STYLES);
  */
 export const UPDATE_MENU_ITEM_SCHEMA = z
   .object({
-    title: z.string().optional(),
+    title: titleSchema.optional(),
     style: menuItemStyleSchema,
-    image: z.string().optional(),
-    link_to_object: z.string().min(3).max(256).optional(),
-    object_type: z.string().optional(),
-    link_to_web: z.url().optional(),
+    image: urlOrCidStringSchema.optional(),
+    link_to_object: objectIdSchema.optional(),
+    object_type: shortTokenSchema.optional(),
+    link_to_web: urlStringSchema.optional(),
   })
   .refine((v) => v.link_to_object !== undefined || v.link_to_web !== undefined, {
     message: 'Either link_to_object or link_to_web is required',

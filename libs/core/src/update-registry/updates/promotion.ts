@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { labelSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_PROMOTION: UpdateDefinition = {
@@ -10,7 +11,7 @@ export const UPDATE_PROMOTION: UpdateDefinition = {
   value_kind: 'json',
   cardinality: 'single',
   schema: z.object({
-    value: z.string().min(1),
+    value: labelSchema,
     start_date: z.number().int().positive().optional(),
     end_date: z.number().int().positive().optional(),
   }),

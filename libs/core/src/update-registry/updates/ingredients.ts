@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { labelArraySchema } from '../schemas/string-schemas';
+import { UPDATE_ARRAY_MAX } from '../string-limits';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_INGREDIENTS: UpdateDefinition = {
@@ -10,5 +12,5 @@ export const UPDATE_INGREDIENTS: UpdateDefinition = {
   description: 'Recipe ingredients list.',
   value_kind: 'json',
   cardinality: 'single',
-  schema: z.array(z.string().min(1)).min(1),
+  schema: labelArraySchema(UPDATE_ARRAY_MAX.INGREDIENTS).min(1),
 };

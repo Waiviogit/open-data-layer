@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { labelSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_AGGREGATE_RATING: UpdateDefinition = {
@@ -11,5 +11,5 @@ export const UPDATE_AGGREGATE_RATING: UpdateDefinition = {
   value_kind: 'text',
   cardinality: 'multi',
   rank_aggregation: 'average',
-  schema: z.string().min(1),
+  schema: labelSchema,
 };

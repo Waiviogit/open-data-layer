@@ -137,7 +137,37 @@ export { UPDATE_ALLOWED_TOOLS } from './updates/allowed-tools';
 export { UPDATE_REFERENCES } from './updates/references';
 export { UPDATE_SKILL_CONTENT } from './updates/skill-content';
 
+export { UPDATE_ARRAY_MAX, UPDATE_STRING_MAX } from './string-limits';
 export { cidSchema } from './schemas/cid-schema';
+export {
+  affiliateProductIdTypeSchema,
+  bodySchema,
+  compatibilitySchema,
+  currencySchema,
+  dateStringSchema,
+  descriptionSchema,
+  emailSchema,
+  hiveAccountNameArraySchema,
+  hiveAccountNameSchema,
+  labelArraySchema,
+  labelSchema,
+  mediumTextSchema,
+  nameSchema,
+  newsFilterNestedStringArraySchema,
+  newsFilterStringArraySchema,
+  newsFilterStringSchema,
+  numericStringSchema,
+  objectIdArraySchema,
+  objectIdSchema,
+  phoneSchema,
+  postalCodeSchema,
+  shortTokenArraySchema,
+  shortTokenSchema,
+  titleSchema,
+  urlOrCidStringSchema,
+  urlStringSchema,
+  urlTemplateSchema,
+} from './schemas/string-schemas';
 export {
   imageCidOrUrlJsonSchema,
   type ImageCidOrUrlJson,

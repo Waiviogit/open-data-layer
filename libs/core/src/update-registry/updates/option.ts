@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { labelSchema, urlOrCidStringSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_OPTION: UpdateDefinition = {
@@ -11,9 +12,9 @@ export const UPDATE_OPTION: UpdateDefinition = {
   localizable: true,
   semantic_key: 'option',
   schema: z.object({
-    category: z.string().min(1),
-    value: z.string().min(1),
+    category: labelSchema,
+    value: labelSchema,
     position: z.number().default(1),
-    image: z.string().optional(),
+    image: urlOrCidStringSchema.optional(),
   }),
 };

@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { hiveAccountNameSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 /** Governance: account responsible for object data curation; highest precedence. @see docs/spec/governance-resolution.md §2 */
@@ -11,5 +11,5 @@ export const UPDATE_ADMINS: UpdateDefinition = {
   description: 'Governance: accounts responsible for object data curation.',
   value_kind: 'user_ref',
   cardinality: 'multi',
-  schema: z.string().min(1),
+  schema: hiveAccountNameSchema,
 };

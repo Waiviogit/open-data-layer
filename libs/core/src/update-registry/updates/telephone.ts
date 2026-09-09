@@ -1,10 +1,12 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { phoneSchema } from '../schemas/string-schemas';
+import { UPDATE_STRING_MAX } from '../string-limits';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_TELEPHONE_SCHEMA = z.object({
-  title: z.string().max(128).optional(),
-  value: z.string().min(1),
+  title: z.string().max(UPDATE_STRING_MAX.TELEPHONE_TITLE).optional(),
+  value: phoneSchema,
 });
 
 export const UPDATE_TELEPHONE: UpdateDefinition = {

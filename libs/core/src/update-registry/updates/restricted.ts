@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { hiveAccountNameSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 /** Governance: account flagged for reward eligibility (informational only in V2). @see docs/spec/governance-resolution.md §2 */
@@ -10,5 +10,5 @@ export const UPDATE_RESTRICTED: UpdateDefinition = {
   description: 'Governance: restricted account list.',
   value_kind: 'user_ref',
   cardinality: 'multi',
-  schema: z.string().min(1),
+  schema: hiveAccountNameSchema,
 };

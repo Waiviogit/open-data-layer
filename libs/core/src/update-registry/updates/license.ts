@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { labelSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_LICENSE: UpdateDefinition = {
@@ -9,5 +9,5 @@ export const UPDATE_LICENSE: UpdateDefinition = {
   description: 'License name for the skill (not a file reference).',
   value_kind: 'text',
   cardinality: 'single',
-  schema: z.string().min(1).max(256),
+  schema: labelSchema,
 };

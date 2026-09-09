@@ -1,5 +1,6 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { shortTokenArraySchema } from '../schemas/string-schemas';
+import { UPDATE_ARRAY_MAX } from '../string-limits';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_MAP_OBJECT_TAGS: UpdateDefinition = {
@@ -9,5 +10,5 @@ export const UPDATE_MAP_OBJECT_TAGS: UpdateDefinition = {
   localizable: false,
   value_kind: 'json',
   cardinality: 'single',
-  schema: z.array(z.string().min(1)),
+  schema: shortTokenArraySchema(UPDATE_ARRAY_MAX.MAP_OBJECT_TAGS),
 };

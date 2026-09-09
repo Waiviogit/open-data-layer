@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { titleSchema, urlStringSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_BUTTON: UpdateDefinition = {
@@ -11,7 +12,7 @@ export const UPDATE_BUTTON: UpdateDefinition = {
   value_kind: 'json',
   cardinality: 'multi',
   schema: z.object({
-    title: z.string().min(1),
-    link: z.string().min(1),
+    title: titleSchema,
+    link: urlStringSchema,
   }),
 };

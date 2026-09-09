@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { UPDATE_STRING_MAX } from '../string-limits';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_GROUP_LAST_ACTIVITY: UpdateDefinition = {
@@ -10,5 +11,8 @@ export const UPDATE_GROUP_LAST_ACTIVITY: UpdateDefinition = {
   value_kind: 'text',
   cardinality: 'single',
   /** Milliseconds to subtract from current date, e.g. "7776000000" (90 days). */
-  schema: z.string().regex(/^\d+$/, 'Must be a numeric string in milliseconds'),
+  schema: z
+    .string()
+    .regex(/^\d+$/, 'Must be a numeric string in milliseconds')
+    .max(UPDATE_STRING_MAX.NUMERIC),
 };

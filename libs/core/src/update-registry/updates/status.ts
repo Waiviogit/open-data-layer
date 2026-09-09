@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { objectIdSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 import {
   OBJECT_STATUS_VALUES,
@@ -36,7 +37,7 @@ export function mapStatusUpdateTitleToCoreStatus(
 export const UPDATE_STATUS_SCHEMA = z
   .object({
     title: z.enum(STATUS_UPDATE_TITLE_VALUES),
-    link: z.string().optional(),
+    link: objectIdSchema.optional(),
   })
   .superRefine((data, ctx) => {
     if (data.title === 'relisted' && !data.link?.trim()) {

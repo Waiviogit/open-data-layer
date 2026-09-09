@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { currencySchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_CURRENCY: UpdateDefinition = {
@@ -9,5 +9,5 @@ export const UPDATE_CURRENCY: UpdateDefinition = {
   description: 'Preferred settlement currency (e.g. USD, WAIV).',
   value_kind: 'text',
   cardinality: 'single',
-  schema: z.string().min(2).max(16),
+  schema: currencySchema,
 };

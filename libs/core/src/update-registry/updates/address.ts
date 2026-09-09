@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { labelSchema, postalCodeSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_ADDRESS: UpdateDefinition = {
@@ -15,11 +16,11 @@ export const UPDATE_ADDRESS: UpdateDefinition = {
   value_kind: 'json',
   cardinality: 'single',
   schema: z.object({
-    street: z.string().min(1),
-    suite: z.string().min(1).optional(),
-    locality: z.string().min(1),
-    state: z.string().min(1).optional(),
-    postal_code: z.string().min(1),
-    country: z.string().min(1),
+    street: labelSchema,
+    suite: labelSchema.optional(),
+    locality: labelSchema,
+    state: labelSchema.optional(),
+    postal_code: postalCodeSchema,
+    country: labelSchema,
   }),
 };

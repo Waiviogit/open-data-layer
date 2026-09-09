@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { emailSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_EMAIL: UpdateDefinition = {
@@ -10,5 +10,5 @@ export const UPDATE_EMAIL: UpdateDefinition = {
   description: 'Email address or contact.',
   value_kind: 'text',
   cardinality: 'single',
-  schema: z.string().email(),
+  schema: emailSchema,
 };

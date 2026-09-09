@@ -1,5 +1,11 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import {
+  newsFilterNestedStringArraySchema,
+  newsFilterStringArraySchema,
+  shortTokenArraySchema,
+} from '../schemas/string-schemas';
+import { UPDATE_ARRAY_MAX } from '../string-limits';
 import { UPDATE_TYPES } from '../update-types';
 
 /**
@@ -15,8 +21,8 @@ export const UPDATE_NEWS_FILTER: UpdateDefinition = {
   namespace: 'odl',
   localizable: false,
   schema: z.object({
-    allow_list: z.array(z.array(z.string())),
-    ignore_list: z.array(z.string()),
-    type_list: z.array(z.string()),
+    allow_list: newsFilterNestedStringArraySchema,
+    ignore_list: newsFilterStringArraySchema,
+    type_list: shortTokenArraySchema(UPDATE_ARRAY_MAX.NEWS_LIST),
   }),
 };

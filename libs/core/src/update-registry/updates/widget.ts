@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { bodySchema, shortTokenSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_WIDGET: UpdateDefinition = {
@@ -10,8 +11,8 @@ export const UPDATE_WIDGET: UpdateDefinition = {
   value_kind: 'json',
   cardinality: 'multi',
   schema: z.object({
-    column: z.string().min(1),
-    type: z.string().min(1),
-    content: z.string().min(1),
+    column: shortTokenSchema,
+    type: shortTokenSchema,
+    content: bodySchema,
   }),
 };

@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { labelSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_ALLOWED_TOOLS: UpdateDefinition = {
@@ -9,5 +9,5 @@ export const UPDATE_ALLOWED_TOOLS: UpdateDefinition = {
   description: 'Allowed tool name or pattern for the skill.',
   value_kind: 'text',
   cardinality: 'multi',
-  schema: z.string().min(1).max(256),
+  schema: labelSchema,
 };

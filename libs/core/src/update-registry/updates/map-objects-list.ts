@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { objectIdSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_MAP_OBJECTS_LIST: UpdateDefinition = {
@@ -9,5 +9,5 @@ export const UPDATE_MAP_OBJECTS_LIST: UpdateDefinition = {
   localizable: false,
   value_kind: 'object_ref',
   cardinality: 'single',
-  schema: z.string().min(3).max(256),
+  schema: objectIdSchema,
 };

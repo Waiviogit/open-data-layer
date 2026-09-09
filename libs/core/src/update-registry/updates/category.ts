@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { labelSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_CATEGORY: UpdateDefinition = {
@@ -10,5 +10,5 @@ export const UPDATE_CATEGORY: UpdateDefinition = {
   description: 'Department or category list.',
   value_kind: 'text',
   cardinality: 'multi',
-  schema: z.string().min(1),
+  schema: labelSchema,
 };

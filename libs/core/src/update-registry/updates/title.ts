@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { titleSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_TITLE: UpdateDefinition = {
@@ -10,5 +10,5 @@ export const UPDATE_TITLE: UpdateDefinition = {
   description: 'Display title.',
   value_kind: 'text',
   cardinality: 'single',
-  schema: z.string().min(1).max(256),
+  schema: titleSchema,
 };

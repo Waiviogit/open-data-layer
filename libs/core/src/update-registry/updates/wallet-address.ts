@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { labelSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 /** Canonical wallet symbols (Waivio / legacy cryptocurrency picker). */
@@ -19,8 +20,8 @@ const walletSymbolSchema = z.enum(WALLET_SYMBOLS);
 
 export const UPDATE_WALLET_ADDRESS_SCHEMA = z.object({
   symbol: walletSymbolSchema,
-  address: z.string().min(1),
-  title: z.string().optional(),
+  address: labelSchema,
+  title: labelSchema.optional(),
 });
 
 export const UPDATE_WALLET_ADDRESS: UpdateDefinition = {

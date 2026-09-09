@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { hiveAccountNameArraySchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_GROUP_FOLLOWERS: UpdateDefinition = {
@@ -9,5 +9,5 @@ export const UPDATE_GROUP_FOLLOWERS: UpdateDefinition = {
   description: 'Group followers or audience config.',
   value_kind: 'json',
   cardinality: 'single',
-  schema: z.array(z.string().min(1)),
+  schema: hiveAccountNameArraySchema,
 };

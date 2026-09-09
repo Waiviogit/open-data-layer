@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { hiveAccountNameSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 /** Governance: restricts object search scope to objects this account has favorited (`object_favorite`). @see docs/spec/governance-resolution.md §6 */
@@ -10,5 +10,5 @@ export const UPDATE_AUTHORITIES: UpdateDefinition = {
   description: 'Governance: authority or scope list.',
   value_kind: 'user_ref',
   cardinality: 'multi',
-  schema: z.string().min(1),
+  schema: hiveAccountNameSchema,
 };

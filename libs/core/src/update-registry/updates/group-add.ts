@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { hiveAccountNameSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_GROUP_ADD: UpdateDefinition = {
@@ -9,5 +9,5 @@ export const UPDATE_GROUP_ADD: UpdateDefinition = {
   description: 'Group membership or add member.',
   value_kind: 'text',
   cardinality: 'multi',
-  schema: z.string().min(3).max(16),
+  schema: hiveAccountNameSchema,
 };

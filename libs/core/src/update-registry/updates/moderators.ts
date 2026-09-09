@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { hiveAccountNameSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 /** Governance: account responsible for muting social content; their mutes form the resolved muted set. @see docs/spec/governance-resolution.md §2 */
@@ -10,5 +10,5 @@ export const UPDATE_MODERATORS: UpdateDefinition = {
   description: 'Governance: moderator account list.',
   value_kind: 'user_ref',
   cardinality: 'multi',
-  schema: z.string().min(1),
+  schema: hiveAccountNameSchema,
 };

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { labelSchema, urlStringSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_IDENTIFIER: UpdateDefinition = {
@@ -11,8 +12,8 @@ export const UPDATE_IDENTIFIER: UpdateDefinition = {
   value_kind: 'json',
   cardinality: 'multi',
   schema: z.object({
-    value: z.string().min(1),
-    type: z.string().min(1),
-    image: z.url().optional(),
+    value: labelSchema,
+    type: labelSchema,
+    image: urlStringSchema.optional(),
   }),
 };

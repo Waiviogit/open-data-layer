@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { dateStringSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_DATE_PUBLISHED: UpdateDefinition = {
@@ -10,5 +10,5 @@ export const UPDATE_DATE_PUBLISHED: UpdateDefinition = {
   semantic_key: 'datePublished',
   value_kind: 'text',
   cardinality: 'single',
-  schema: z.string().min(1),
+  schema: dateStringSchema,
 };

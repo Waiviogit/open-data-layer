@@ -1,5 +1,6 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { labelArraySchema } from '../schemas/string-schemas';
+import { UPDATE_ARRAY_MAX } from '../string-limits';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_AFFILIATE_CODE: UpdateDefinition = {
@@ -13,5 +14,5 @@ export const UPDATE_AFFILIATE_CODE: UpdateDefinition = {
    * Array where first element is "PERSONAL" or a domain (e.g. "example.social.gifts")
    * and remaining are codes, optionally with show chance: "CODE1::70", "CODE2::30".
    */
-  schema: z.array(z.string().min(1)).min(1),
+  schema: labelArraySchema(UPDATE_ARRAY_MAX.AFFILIATE_CODE).min(1),
 };

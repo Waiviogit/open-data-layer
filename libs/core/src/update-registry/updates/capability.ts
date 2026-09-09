@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { shortTokenSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_CAPABILITY: UpdateDefinition = {
@@ -9,5 +9,5 @@ export const UPDATE_CAPABILITY: UpdateDefinition = {
   description: 'Agent capability tag (e.g. image-generation).',
   value_kind: 'text',
   cardinality: 'multi',
-  schema: z.string().min(1).max(64),
+  schema: shortTokenSchema,
 };

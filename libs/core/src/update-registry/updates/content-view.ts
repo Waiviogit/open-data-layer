@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { shortTokenSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_CONTENT_VIEW: UpdateDefinition = {
@@ -9,5 +9,5 @@ export const UPDATE_CONTENT_VIEW: UpdateDefinition = {
   description: 'Content view or layout mode.',
   value_kind: 'text',
   cardinality: 'single',
-  schema: z.string().min(1),
+  schema: shortTokenSchema,
 };

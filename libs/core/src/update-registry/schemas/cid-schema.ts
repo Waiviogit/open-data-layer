@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { UPDATE_STRING_MAX } from '../string-limits';
 
 /**
  * IPFS-style CID: non-empty string. Strict multibase parsing (e.g. via `multiformats`)
@@ -8,4 +9,4 @@ import { z } from 'zod';
 export const cidSchema = z
   .string()
   .min(1, { message: 'Invalid CID' })
-  .max(2048, { message: 'Invalid CID' });
+  .max(UPDATE_STRING_MAX.CID, { message: 'Invalid CID' });

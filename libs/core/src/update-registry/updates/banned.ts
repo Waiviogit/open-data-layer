@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { hiveAccountNameSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 /** Governance: platform-level ban; content from this account excluded from resolved views. @see docs/spec/governance-resolution.md §2 */
@@ -10,5 +10,5 @@ export const UPDATE_BANNED: UpdateDefinition = {
   description: 'Governance: platform-level ban; account excluded from resolved views.',
   value_kind: 'user_ref',
   cardinality: 'multi',
-  schema: z.string().min(1),
+  schema: hiveAccountNameSchema,
 };

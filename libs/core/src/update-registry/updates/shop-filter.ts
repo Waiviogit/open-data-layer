@@ -1,5 +1,11 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import {
+  hiveAccountNameArraySchema,
+  labelArraySchema,
+  shortTokenSchema,
+} from '../schemas/string-schemas';
+import { UPDATE_ARRAY_MAX } from '../string-limits';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_SHOP_FILTER: UpdateDefinition = {
@@ -10,9 +16,9 @@ export const UPDATE_SHOP_FILTER: UpdateDefinition = {
   value_kind: 'json',
   cardinality: 'single',
   schema: z.object({
-    type: z.string().min(1),
-    departments: z.array(z.string()).optional(),
-    tags: z.array(z.string()).optional(),
-    authorities: z.array(z.string()).optional(),
+    type: shortTokenSchema,
+    departments: labelArraySchema(UPDATE_ARRAY_MAX.SHOP_FILTER_LIST).optional(),
+    tags: labelArraySchema(UPDATE_ARRAY_MAX.SHOP_FILTER_LIST).optional(),
+    authorities: hiveAccountNameArraySchema.optional(),
   }),
 };

@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { numericStringSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_PRINT_LENGTH: UpdateDefinition = {
@@ -9,5 +9,5 @@ export const UPDATE_PRINT_LENGTH: UpdateDefinition = {
   description: 'Print or page length.',
   value_kind: 'text',
   cardinality: 'single',
-  schema: z.string().regex(/^\d+$/, 'Must be a numeric string'),
+  schema: numericStringSchema,
 };

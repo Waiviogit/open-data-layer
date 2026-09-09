@@ -56,6 +56,8 @@ const UPDATE_REGISTRY: Record<string, UpdateDefinition> = { ... };
 
 The indexer validates every incoming `update_create` against this registry. If the `updateType` is not present in the registry, the event is rejected with `UNSUPPORTED_UPDATE_TYPE`. If the value fails schema validation, it is rejected with `INVALID_UPDATE_VALUE`.
 
+**String length limits:** every `z.string()` in an update schema must have an explicit `.max()` (or use a shared schema from `libs/core/src/update-registry/schemas/string-schemas.ts` that already applies one). Named buckets live in `UPDATE_STRING_MAX` and `UPDATE_ARRAY_MAX` (`string-limits.ts`). Examples: `name`/`title` 256, `description` 2048, large bodies (`pageContent`, `skillContent`, `legalText`, `htmlContent`, `widget.content`) 500_000, Hive account refs 3–16, object refs 3–256. Limits apply to new `update_create` events only; existing indexed rows are not revalidated.
+
 **Edit-mode field groups** (`edit-field-groups.ts` in the same module) are a **UI-only** catalog: they define left-rail section headings and edit ordering in `apps/web` (and may be reused by object-create later). They are **not** stored on chain, not validated by the indexer, and do not affect view-mode field order.
 
 ## 4. Indexer validation flow

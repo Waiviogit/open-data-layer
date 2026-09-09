@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { urlStringSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 /** Canonical link channel names (payload `type`); legacy Mongo keys are mapped only in migration. */
@@ -36,6 +37,6 @@ export const UPDATE_LINK: UpdateDefinition = {
   cardinality: 'multi',
   schema: z.object({
     type: linkTypeSchema,
-    value: z.string().min(1),
+    value: urlStringSchema,
   }),
 };

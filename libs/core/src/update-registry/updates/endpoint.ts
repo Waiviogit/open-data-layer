@@ -1,14 +1,16 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { urlStringSchema } from '../schemas/string-schemas';
+import { UPDATE_STRING_MAX } from '../string-limits';
 import { UPDATE_TYPES } from '../update-types';
 
 export const ENDPOINT_PROTOCOLS = ['mcp', 'a2a', 'api', 'rest'] as const;
 
 export const UPDATE_ENDPOINT_SCHEMA = z.object({
   protocol: z.enum(ENDPOINT_PROTOCOLS),
-  url: z.string().url(),
-  auth: z.string().max(64).optional(),
-  description: z.string().max(256).optional(),
+  url: urlStringSchema,
+  auth: z.string().max(UPDATE_STRING_MAX.ENDPOINT_AUTH).optional(),
+  description: z.string().max(UPDATE_STRING_MAX.ENDPOINT_DESCRIPTION).optional(),
 });
 
 export const UPDATE_ENDPOINT: UpdateDefinition = {

@@ -1,10 +1,11 @@
 import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
+import { descriptionSchema, labelSchema } from '../schemas/string-schemas';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_METADATA_SCHEMA = z.object({
-  key: z.string().min(1),
-  value: z.string().min(1),
+  key: labelSchema,
+  value: descriptionSchema,
 });
 
 export const UPDATE_METADATA: UpdateDefinition = {
