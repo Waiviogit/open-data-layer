@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { safeHttpUrl } from '@/shared/domain/safe-http-url';
 import { ModalShell, ModalShellCloseButton, MODAL_Z_INDEX_ABOVE_MAP } from '@/shared/presentation';
 
 export type ExternalLinkModalProps = {
@@ -74,11 +75,23 @@ export type ExternalLinkButtonProps = {
 
 export function ExternalLinkButton({ href, className, children }: ExternalLinkButtonProps) {
   const [open, setOpen] = useState(false);
+  const safeHref = safeHttpUrl(href);
 
   const handleConfirm = useCallback(() => {
-    window.open(href, '_blank', 'noopener,noreferrer');
+    if (!safeHref) {
+      return;
+    }
+    window.open(safeHref, '_blank', 'noopener,noreferrer');
     setOpen(false);
-  }, [href]);
+  }, [safeHref]);
+
+  if (!safeHref) {
+    return (
+      <span className={className} aria-disabled="true">
+        {children}
+      </span>
+    );
+  }
 
   return (
     <>
@@ -87,7 +100,7 @@ export function ExternalLinkButton({ href, className, children }: ExternalLinkBu
       </button>
       {open ? (
         <ExternalLinkModal
-          url={href}
+          url={safeHref}
           onClose={() => setOpen(false)}
           onConfirm={handleConfirm}
         />

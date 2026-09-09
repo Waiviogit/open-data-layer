@@ -4,6 +4,7 @@
 import { render, screen } from '@testing-library/react';
 
 import { I18nProvider } from '@/i18n/providers/i18n-provider';
+import { WIDGET_EMBED_SANDBOX } from '@/modules/object/domain/widget-embed.constants';
 
 import { ObjectWidgetContent } from './object-widget-content';
 
@@ -55,7 +56,17 @@ describe('ObjectWidgetContent', () => {
     expect(document.querySelector('iframe')).toBeNull();
   });
 
-  it('renders srcDoc iframe for Widget type', () => {
+  it('does not render javascript: forward link', () => {
+    renderWidget({
+      column: 'forward',
+      type: 'Widget',
+      content: 'javascript:alert(1)',
+    });
+    expect(screen.queryByRole('link')).toBeNull();
+    expect(document.querySelector('iframe')).toBeNull();
+  });
+
+  it('renders sandboxed srcDoc iframe for Widget type HTML', () => {
     renderWidget({
       column: 'one',
       type: 'Widget',
@@ -64,10 +75,11 @@ describe('ObjectWidgetContent', () => {
     const iframe = document.querySelector('iframe');
     expect(iframe).not.toBeNull();
     expect(iframe).toHaveAttribute('srcdoc', '<div>embed</div>');
+    expect(iframe).toHaveAttribute('sandbox', WIDGET_EMBED_SANDBOX);
     expect(iframe).not.toHaveAttribute('src');
   });
 
-  it('renders external src iframe for non-Widget type', () => {
+  it('renders sandboxed external src iframe for non-Widget type', () => {
     renderWidget({
       column: 'one',
       type: 'Youtube',
@@ -75,15 +87,32 @@ describe('ObjectWidgetContent', () => {
     });
     const iframe = document.querySelector('iframe');
     expect(iframe).toHaveAttribute('src', 'https://youtube.com/embed/abc');
+    expect(iframe).toHaveAttribute('sandbox', WIDGET_EMBED_SANDBOX);
   });
 
-  it('renders inline iframe HTML when content contains iframe tag', () => {
-    const { container } = renderWidget({
+  it('wraps inline iframe HTML in sandboxed srcDoc instead of parent innerHTML', () => {
+    renderWidget({
       column: 'one',
       type: 'Widget',
       content: '<iframe src="https://x.com"></iframe>',
     });
-    expect(container.querySelector('iframe')).not.toBeNull();
-    expect(container.querySelector('iframe')?.getAttribute('srcdoc')).toBeNull();
+    const iframe = document.querySelector('iframe');
+    expect(iframe).not.toBeNull();
+    expect(iframe).toHaveAttribute(
+      'srcdoc',
+      '<iframe src="https://x.com"></iframe>',
+    );
+    expect(iframe).toHaveAttribute('sandbox', WIDGET_EMBED_SANDBOX);
+    expect(iframe).not.toHaveAttribute('src');
+  });
+
+  it('shows empty state for unsafe external URL without HTML', () => {
+    renderWidget({
+      column: 'one',
+      type: 'Youtube',
+      content: 'javascript:alert(1)',
+    });
+    expect(screen.getByText('This widget is empty')).toBeInTheDocument();
+    expect(document.querySelector('iframe')).toBeNull();
   });
 });

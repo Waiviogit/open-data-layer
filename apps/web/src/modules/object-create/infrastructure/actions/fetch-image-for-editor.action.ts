@@ -5,6 +5,7 @@ import {
   extractCidFromContentGatewayUrl,
   imageContentUrlForCid,
 } from '@/config/ipfs-content-url';
+import { getRequestUser } from '@/shared/infrastructure/auth/get-request-user.server';
 import { safeFetch } from '@/shared/infrastructure/http/safe-fetch.server';
 
 import {
@@ -14,6 +15,7 @@ import {
 import { fetchImageForImport } from '../fetch-image-for-import.server';
 
 export type FetchImageForEditorErrorCode =
+  | 'unauthorized'
   | 'invalid_cid'
   | 'invalid_url'
   | 'fetch_failed'
@@ -79,6 +81,11 @@ export async function fetchImageForEditor(
   url: string,
   cid?: string,
 ): Promise<FetchImageForEditorResult> {
+  const user = await getRequestUser();
+  if (!user) {
+    return { error: 'unauthorized' };
+  }
+
   const trimmedUrl = url.trim();
   const trimmedCid = cid?.trim() ?? '';
   const gatewayCid =

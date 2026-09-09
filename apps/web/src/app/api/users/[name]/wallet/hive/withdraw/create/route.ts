@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 import { postHiveChangellyWithdrawCreateQuery } from '@/modules/user-wallet/application/queries/hive-changelly-withdraw.queries';
 import { normalizeHiveChangellyOutputCoin } from '@/modules/user-wallet/domain/hive-changelly-withdraw.constants';
+import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,7 +11,11 @@ export async function POST(
   context: { params: Promise<{ name: string }> },
 ) {
   const { name } = await context.params;
-  const accountName = decodeURIComponent(name);
+  const accountName = decodeURIComponent(name).trim().toLowerCase();
+  const user = await createCookieAuthContextProvider().getUser();
+  if (!user || user.username.trim().toLowerCase() !== accountName) {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+  }
 
   let body: Record<string, unknown>;
   try {

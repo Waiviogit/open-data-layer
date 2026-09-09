@@ -1,8 +1,18 @@
+import { lookup } from 'node:dns/promises';
+
 import {
   isAllowedImageImportUrl,
+  isAllowedImageImportUrlAsync,
+  isPrivateOrRestrictedIp,
   resolveImageMimeForImport,
   sniffImageMimeFromBuffer,
 } from './import-image-from-url';
+
+jest.mock('node:dns/promises', () => ({
+  lookup: jest.fn(),
+}));
+
+const mockedLookup = lookup as jest.MockedFunction<typeof lookup>;
 
 describe('isAllowedImageImportUrl', () => {
   it('allows public https URL', () => {
@@ -19,12 +29,47 @@ describe('isAllowedImageImportUrl', () => {
     expect(isAllowedImageImportUrl('http://localhost/x.png').ok).toBe(false);
   });
 
-  it('rejects raw IPv4', () => {
+  it('rejects private IPv4', () => {
     expect(isAllowedImageImportUrl('https://192.168.1.1/x.png').ok).toBe(false);
+  });
+
+  it('allows public IPv4 literal', () => {
+    expect(isAllowedImageImportUrl('https://8.8.8.8/x.png').ok).toBe(true);
   });
 
   it('rejects non-http(s)', () => {
     expect(isAllowedImageImportUrl('file:///tmp/x.png').ok).toBe(false);
+  });
+});
+
+describe('isPrivateOrRestrictedIp', () => {
+  it('flags RFC1918 and loopback', () => {
+    expect(isPrivateOrRestrictedIp('127.0.0.1')).toBe(true);
+    expect(isPrivateOrRestrictedIp('10.0.0.1')).toBe(true);
+    expect(isPrivateOrRestrictedIp('192.168.0.1')).toBe(true);
+    expect(isPrivateOrRestrictedIp('::1')).toBe(true);
+  });
+
+  it('allows public IPv4', () => {
+    expect(isPrivateOrRestrictedIp('8.8.8.8')).toBe(false);
+  });
+});
+
+describe('isAllowedImageImportUrlAsync', () => {
+  beforeEach(() => {
+    mockedLookup.mockReset();
+  });
+
+  it('rejects hostname that resolves to private IP', async () => {
+    mockedLookup.mockResolvedValue({ address: '127.0.0.1', family: 4 });
+    const r = await isAllowedImageImportUrlAsync('https://evil.example/x.png');
+    expect(r.ok).toBe(false);
+  });
+
+  it('allows hostname that resolves to public IP', async () => {
+    mockedLookup.mockResolvedValue({ address: '8.8.8.8', family: 4 });
+    const r = await isAllowedImageImportUrlAsync('https://cdn.example.com/x.png');
+    expect(r.ok).toBe(true);
   });
 });
 

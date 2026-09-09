@@ -1,8 +1,9 @@
 import 'server-only';
 
 import {
+  IMAGE_IMPORT_MAX_REDIRECTS,
   IMPORT_IMAGE_MAX_BYTES,
-  isAllowedImageImportUrl,
+  isAllowedImageImportUrlAsync,
   resolveImageMimeForImport,
 } from '../domain/import-image-from-url';
 
@@ -12,29 +13,73 @@ export type FetchImageForImportResult =
   | { buffer: Buffer; mime: string }
   | { error: 'invalid_url' | 'fetch_failed' | 'too_large' | 'not_image' };
 
-export async function fetchImageForImport(
-  urlString: string,
-): Promise<FetchImageForImportResult> {
-  const allowed = isAllowedImageImportUrl(urlString);
-  if (!allowed.ok) {
+type FetchImageImportFetchError = Extract<
+  FetchImageForImportResult,
+  { error: string }
+>['error'];
+
+async function fetchImageImportResponse(
+  startUrlString: string,
+): Promise<Response | { error: FetchImageImportFetchError }> {
+  const initial = await isAllowedImageImportUrlAsync(startUrlString);
+  if (!initial.ok) {
     return { error: 'invalid_url' };
   }
 
-  let response: Response;
-  try {
-    response = await fetch(allowed.url.toString(), {
-      method: 'GET',
-      redirect: 'follow',
-      headers: { Accept: 'image/*' },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    });
-  } catch {
-    return { error: 'fetch_failed' };
+  let current = initial.url;
+
+  for (let hop = 0; hop <= IMAGE_IMPORT_MAX_REDIRECTS; hop++) {
+    if (hop > 0) {
+      const allowed = await isAllowedImageImportUrlAsync(current.toString());
+      if (!allowed.ok) {
+        return { error: 'invalid_url' };
+      }
+      current = allowed.url;
+    }
+
+    let response: Response;
+    try {
+      response = await fetch(current.toString(), {
+        method: 'GET',
+        redirect: 'manual',
+        headers: { Accept: 'image/*' },
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
+    } catch {
+      return { error: 'fetch_failed' };
+    }
+
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get('location');
+      if (!location) {
+        return { error: 'fetch_failed' };
+      }
+      try {
+        current = new URL(location, current);
+      } catch {
+        return { error: 'invalid_url' };
+      }
+      continue;
+    }
+
+    if (!response.ok) {
+      return { error: 'fetch_failed' };
+    }
+
+    return response;
   }
 
-  if (!response.ok) {
-    return { error: 'fetch_failed' };
+  return { error: 'fetch_failed' };
+}
+
+export async function fetchImageForImport(
+  urlString: string,
+): Promise<FetchImageForImportResult> {
+  const responseOrError = await fetchImageImportResponse(urlString);
+  if (!(responseOrError instanceof Response)) {
+    return responseOrError;
   }
+  const response = responseOrError;
 
   const reader = response.body?.getReader();
   if (!reader) {

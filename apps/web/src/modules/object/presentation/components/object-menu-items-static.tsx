@@ -7,6 +7,7 @@ import type { ProjectedMenuItem } from '../../domain/projected-menu-item.types';
 import { isMenuInHostTargetType } from '../../domain/object-menu.constants';
 import { OBJECT_PAGE_VIEW_PATH_PARAM } from '../../domain/object-page-url.constants';
 
+import { safeHttpUrl } from '@/shared/domain/safe-http-url';
 import { OptimisticNavLink, shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 
 export type ObjectMenuItemsStaticProps = {
@@ -92,9 +93,13 @@ function MenuItemNavWrapper({
   }
 
   if (item.link_to_web) {
+    const webHref = safeHttpUrl(item.link_to_web);
+    if (!webHref) {
+      return <>{children}</>;
+    }
     return (
       <a
-        href={item.link_to_web}
+        href={webHref}
         target="_blank"
         rel="noopener noreferrer"
         className="block min-w-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"

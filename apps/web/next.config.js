@@ -17,12 +17,27 @@ const nextConfig = {
   // Request Client Hints so SSR can resolve `system` theme via `Sec-CH-Prefers-Color-Scheme`
   // (see get-server-theme-resolution.ts). Without this, the server often defaults to light.
   async headers() {
+    const securityHeaders = [
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      { key: 'X-Frame-Options', value: 'DENY' },
+      {
+        key: 'Content-Security-Policy',
+        value:
+          "frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'",
+      },
+      {
+        key: 'Permissions-Policy',
+        value: 'camera=(), microphone=(), geolocation=(self)',
+      },
+    ];
     return [
       {
         source: '/:path*',
         headers: [
           { key: 'Accept-CH', value: 'Sec-CH-Prefers-Color-Scheme' },
           { key: 'Vary', value: 'Sec-CH-Prefers-Color-Scheme' },
+          ...securityHeaders,
         ],
       },
     ];

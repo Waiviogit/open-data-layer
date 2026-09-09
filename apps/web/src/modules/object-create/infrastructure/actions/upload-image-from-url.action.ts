@@ -11,6 +11,8 @@ import {
   type FetchImageForImportResult,
   fetchImageForImport,
 } from '../fetch-image-for-import.server';
+import { getRequestUser } from '@/shared/infrastructure/auth/get-request-user.server';
+
 import {
   type UploadImageToIpfsErrorCode,
   type UploadImageToIpfsResult,
@@ -32,6 +34,11 @@ function mapImportFetchError(
 export async function uploadImageFromUrl(
   url: string,
 ): Promise<UploadImageToIpfsResult> {
+  const user = await getRequestUser();
+  if (!user) {
+    return { error: 'unauthorized' };
+  }
+
   const trimmed = url.trim();
   if (!trimmed) {
     return { error: 'invalid_url' };

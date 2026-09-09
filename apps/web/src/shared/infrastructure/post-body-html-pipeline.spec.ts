@@ -81,4 +81,26 @@ describe('sanitizePostBodyHtml', () => {
     expect(html).not.toContain('images.hive.blog/0x0');
     expect(html).not.toContain('data-fallback-src');
   });
+
+  it('strips script tags from markdown body', () => {
+    const html = sanitizePostBodyHtml('Hello<script>alert(1)</script>world');
+    expect(html).not.toContain('<script');
+    expect(html).not.toContain('alert(1)');
+  });
+
+  it('strips onerror handlers from raw HTML', () => {
+    const html = sanitizePostBodyHtml(
+      '<img src="https://example.com/x.png" onerror="alert(1)" />',
+    );
+    expect(html).not.toContain('onerror');
+    expect(html).not.toContain('alert(1)');
+  });
+
+  it('strips javascript: href from raw HTML links', () => {
+    const html = sanitizePostBodyHtml(
+      '<a href="javascript:alert(1)">click me</a>',
+    );
+    expect(html).not.toContain('javascript:');
+    expect(html).not.toContain('alert(1)');
+  });
 });

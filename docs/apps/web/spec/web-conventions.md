@@ -115,6 +115,14 @@ Rare exception: static product defaults identical on every deployment (e.g. opti
 - Infrastructure: mock `fetch` or inject ports.
 - Co-locate `*.spec.ts` next to source (see root `AGENTS.md`).
 
+## Security headers
+
+Baseline response headers are set in [`next.config.js`](../../../apps/web/next.config.js) for all routes: `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, partial `Content-Security-Policy` (`frame-ancestors`, `object-src`, `base-uri`, `form-action`), and `Permissions-Policy` (camera/microphone off; geolocation same-origin for map panels).
+
+Production HTTPS adds `Strict-Transport-Security` in [`nginx/conf.d/default.conf.template`](../../../nginx/conf.d/default.conf.template).
+
+User-controlled external links must use [`safeHttpUrl`](../../../apps/web/src/shared/domain/safe-http-url.ts) (`http`/`https` only). On-chain widget HTML is sandboxed in [`ObjectWidgetContent`](../../../apps/web/src/modules/object/presentation/components/object-widget-content.tsx) — never inject into the parent document.
+
 ## Verification
 
 | Command | Purpose |
