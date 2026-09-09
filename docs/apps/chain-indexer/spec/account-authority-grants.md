@@ -6,10 +6,11 @@ type: spec
 status: active
 scope: chain-indexer
 tags: [chain-indexer, hive, authority]
-updated_at: 2026-09-07
+updated_at: 2026-09-09
 related:
   - docs/apps/chain-indexer/spec/social-parsers.md
   - docs/apps/query-api/spec/user-account-auths-endpoint.md
+  - docs/spec/hive-account-authority.md
 ---
 
 # Hive account authority grants
@@ -18,7 +19,7 @@ related:
 
 ## Purpose
 
-Materialize Hive `account_auths` edges (owner / active / posting only) so query-api can answer who delegated authority to an account. Memo keys are not indexed — memo has no `account_auths` in the Hive protocol.
+Materialize Hive `account_auths` edges (owner / active / posting only) so query-api can answer who delegated authority to an account. Memo keys are not indexed — memo has no `account_auths` in the Hive protocol. Stores **direct edges only** — nested delegation chains are not flattened; see [hive-account-authority.md](../../../spec/hive-account-authority.md).
 
 ## Tables
 

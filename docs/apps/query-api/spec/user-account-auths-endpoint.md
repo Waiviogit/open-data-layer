@@ -6,15 +6,18 @@ type: spec
 status: active
 scope: query-api
 tags: [query-api, hive, authority]
-updated_at: 2026-09-08
+updated_at: 2026-09-09
 related:
   - docs/apps/query-api/spec/overview.md
   - docs/apps/chain-indexer/spec/account-authority-grants.md
+  - docs/spec/hive-account-authority.md
 ---
 
 # User Hive account authority lists
 
 Reverse index for Hive `account_auths` edges stored in `user_account_auths`. Replaces the broken `condenser_api.get_account_references` RPC.
+
+**Direct edges only.** Each row is one `(grantor, authority_type, grantee)` tuple from chain state. Nested authorization (e.g. `A → B → C` where C can sign as A) is evaluated by Hive at sign time but **not** expanded here — `get_user_authority_grantors(C)` returns B, not A. See [hive-account-authority.md](../../../spec/hive-account-authority.md).
 
 ## Routes
 

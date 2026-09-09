@@ -6,10 +6,11 @@ type: spec
 status: active
 scope: web
 tags: [web, user-profile, hive, authority]
-updated_at: 2026-09-08
+updated_at: 2026-09-09
 related:
   - docs/apps/web/spec/pages/user-profile/overview.md
   - docs/apps/query-api/spec/user-account-auths-endpoint.md
+  - docs/spec/hive-account-authority.md
 ---
 
 # User profile permissions page
@@ -26,6 +27,14 @@ Full-width layout under the profile hero (same shell family as map — no left/r
 | **Received Authorities** | `GET .../authority-grantors` | View only |
 
 Query params: `tab=granted|received` (default granted), `type=posting|active|owner` (omit = all), `sort=rank|followers|a-z|recency` (default `a-z`).
+
+## Hive semantics
+
+Lists show **direct** `account_auths` edges only (one hop). Hive consensus may allow nested signing up to depth 2 — e.g. if you grant posting to B and B grants posting to C, C can post as you on chain even though this page lists only B.
+
+Granting authority means trusting the recipient **and** their own delegation tree (same authority type, depth 2). Active grants control funds and settings; posting grants cannot transfer funds (HF28).
+
+Full protocol reference: [hive-account-authority.md](../../../../../../spec/hive-account-authority.md).
 
 ## Entry
 

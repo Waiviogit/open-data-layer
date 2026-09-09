@@ -6,13 +6,14 @@ type: skill
 status: active
 scope: platform
 tags: [hive, authority, delegation, agent-wallet, query-api, posting, account_update]
-updated_at: 2026-09-08
+updated_at: 2026-09-09
 related:
   - docs/skills/query-api-mcp-routing.md
   - docs/skills/hive-blockchain-broadcast.md
   - docs/skills/hive-post-create.md
   - docs/skills/hive-has-agent-wallet.md
   - docs/skills/wallet-delegation-swap-for-agents.md
+  - docs/spec/hive-account-authority.md
   - docs/apps/query-api/spec/user-account-auths-endpoint.md
   - docs/apps/agent-wallet/spec/overview.md
 ---
@@ -70,7 +71,23 @@ The code default for `AGENT_WALLET_SIGNING_MODE` is still `has`; env-key deploym
 | **active** | Transfers, HP delegation, `account_update`, active `custom_json` | No — grantor must sign with active key |
 | **owner** | Account recovery, owner-only changes | No — never grant by default |
 
-Posting delegation **never** unlocks active operations.
+Posting delegation **never** unlocks active operations (HF28 strict authorities).
+
+Full protocol reference: [hive-account-authority.md](../spec/hive-account-authority.md).
+
+## Nested account_auths (depth 2)
+
+Hive recurses `account_auths` up to **depth 2**. Granting authority to B also trusts B's own delegation tree.
+
+| Chain | Signs as A? |
+| ----- | ----------- |
+| `A.posting → B.posting → C.posting` | C posting key can sign posting ops as A |
+| `A.active → B.active → C.active` | C active key can sign active ops as A |
+| `A → B → C → D` | No — depth 3 exceeds limit |
+
+**Owner trap:** `A.owner.account_auths → B` is checked via **`B.active`**, not `B.owner`. Nested: `A.owner → B.active → C.active` means C's **active** key can satisfy A's **owner** authority. Never grant owner unless the user explicitly requests it and understands this.
+
+**query-api lists direct edges only.** `get_user_authority_grantors(C)` returns immediate grantors (e.g. B), not transitive ones (A). For full trust assessment, inspect live `get_accounts` authority trees.
 
 ## Act-as rule (name vs key)
 
@@ -160,7 +177,7 @@ Example: `wallet_broadcast({ account: "waivio.import", ops, keyType: "posting" }
 ## Safety
 
 - Never drop existing `key_auths` when merging `account_auths`.
-- Never grant owner authority unless the user explicitly asks.
+- Never grant owner authority unless the user explicitly asks — owner entries resolve via the grantee's **active** tree (see [hive-account-authority.md](../spec/hive-account-authority.md)).
 - Confirm grantor identity before acting as them.
 - Keys never logged or echoed in tool output.
 
@@ -172,6 +189,7 @@ agent-wallet loads multiple Hive accounts from `accounts.json` (or env fallback)
 
 ## Related
 
+- [Hive account authority (spec)](../spec/hive-account-authority.md) — nested recursion, owner→active, HF28
 - [Query API MCP routing](query-api-mcp-routing.md) — live data tools
 - [Hive blockchain broadcast](hive-blockchain-broadcast.md) — ODL ops; on-behalf posting uses grantor names in ops
 - [Hive post create](hive-post-create.md) — `author` may be a grantor

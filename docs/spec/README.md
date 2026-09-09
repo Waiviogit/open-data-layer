@@ -117,6 +117,7 @@ Details: [architecture overview](../architecture/overview.md).
 | Doc | Description |
 |-----|-------------|
 | [social-account-ingestion.md](social-account-ingestion.md) | Follow/mute/reblog ingestion; `accounts_current` |
+| [hive-account-authority.md](hive-account-authority.md) | Hive `account_auths` delegation, nested recursion (depth 2), owner→active |
 | [monetization.md](monetization.md) | Plan tiers, entitlement mapping, gateway enforcement |
 | [acceptance-tests.md](acceptance-tests.md) | Acceptance criteria and non-functional targets |
 | [resolved-view-waivio-legacy.md](resolved-view-waivio-legacy.md) | Informative: legacy Waivio pipeline vs ODL resolution |

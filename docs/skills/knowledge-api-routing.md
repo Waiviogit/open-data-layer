@@ -66,7 +66,7 @@ related:
 | Write object thread (Reviews > Threads) | skill | [hive-thread-create.md](hive-thread-create.md) |
 | OSL messaging (DM / group / object channels) | skill | [osl-messaging.md](osl-messaging.md) |
 | Wallet delegations / balances / swaps | skill | [wallet-delegation-swap-for-agents.md](wallet-delegation-swap-for-agents.md) |
-| Hive posting authority / act as grantor | skill | [hive-account-authority-for-agents.md](hive-account-authority-for-agents.md) |
+| Hive posting authority / act as grantor | skill + spec | [hive-account-authority-for-agents.md](hive-account-authority-for-agents.md) · [hive-account-authority.md](../spec/hive-account-authority.md) |
 | Coding style in this repo | agents | `AGENTS.md` or `apps/<app>/AGENTS.md` |
 
 ## MCP tools cheat sheet
@@ -97,6 +97,7 @@ related:
 | `docs/skills/osl-messaging.md` | OSL messaging read/send via query-api + agent-wallet |
 | `docs/skills/wallet-delegation-swap-for-agents.md` | HP/RC/WAIV delegations, balances, swaps |
 | `docs/skills/hive-account-authority-for-agents.md` | Posting authority grantors, act-as grantor, grant/revoke |
+| `docs/spec/hive-account-authority.md` | Hive `account_auths` protocol — nested recursion, owner→active, HF28 |
 | `docs/skills/query-api-mcp-routing.md` | Live-data query-api MCP tool map |
 | `docs/skills/obl-offers-contracts.md` | OBL offers: discover, publish, sign contracts |
 | `docs/skills/obl-ledger.md` | OBL invoices, payments, balances, ledger |
