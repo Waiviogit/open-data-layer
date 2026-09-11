@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, user-profile, hive, authority]
-updated_at: 2026-09-09
+updated_at: 2026-09-11
 related:
   - docs/apps/web/spec/pages/user-profile/overview.md
   - docs/apps/query-api/spec/user-account-auths-endpoint.md
@@ -44,7 +44,7 @@ Logged-in account menu → **Permissions** (after Wallet). Other profiles are vi
 
 1. Server action loads live `condenser_api.get_accounts` (never indexer snapshot).
 2. `mergeHiveAccountAuths` + `buildAccountUpdateAuthorityOp`.
-3. Web wallet facade broadcasts with **Active** key.
+3. Web wallet facade broadcasts with **Active** key. Keychain/HAS send the wire op as JSON. HiveSigner redirects to `/sign/account_update` with `posting`/`active` **JSON-encoded** in the query (see [auth.md](../../../auth.md) signing).
 
 After success: `revalidateUserPermissionsAfterBroadcast` invalidates authority list cache tags.
 

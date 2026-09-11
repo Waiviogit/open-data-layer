@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, auth]
-updated_at: 2026-06-10
+updated_at: 2026-09-11
 related:
   - docs/apps/web/spec/overview.md
   - docs/apps/web/spec/web-conventions.md
@@ -77,7 +77,7 @@ Default **`HAS_WS_URL`**: `wss://hive-auth.arcange.eu` (with fallback to `wss://
 - **Browser singleton:** `getWalletFacade()` (`infrastructure/wallet-facade.client.ts`) shares one facade + BFF client across the app. After a **full page reload**, the cookie session is still valid but the in-memory `activeProvider` is lost; **`useHydrateWalletProvider()`** restores Keychain, HiveSigner, or HiveAuth (HAS session) from `localStorage`.
 - **Operations:** Domain builders (`buildVoteOp`, `buildCommentOp`, `buildCommentOptionsOp`, `buildCustomJsonOp`, `buildReblogOp`) produce a normalized `BroadcastTransactionInput` (`HiveOperationPayload`).
 - **ODL `custom_json`:** Client broadcasts use **`useOdlCustomJsonId()`** (runtime **`ODL_NETWORK`** via root layout). `mainnet` → `odl-mainnet`, `testnet` → `odl-testnet` — same **`ODL_NETWORK`** as **chain-indexer**. Docker: one repo-root **`.env`** at container start only (no build-time ODL env on the image).
-- **Signing:** `DefaultWalletFacade` dispatches to an `IHiveSigner` for the active provider. **HiveSigner** sessions always use the HiveSigner signer — Keychain is never tried when `activeProvider` is `hivesigner`, even if the Keychain extension is installed. For Keychain/HAS sessions on desktop, the facade may try the injected Keychain extension before falling back to HAS broadcast. Keychain uses `hive_keychain.requestBroadcast` with **Active** key for Hive Engine `custom_json`. HiveSigner: posting-key ops via SDK; active-key Engine ops redirect to HiveSigner sign URL. **HiveAuth** uses `HAS.broadcast` via `createHiveAuthSigner()` (requires valid `odl_hiveauth_session`).
+- **Signing:** `DefaultWalletFacade` dispatches to an `IHiveSigner` for the active provider. **HiveSigner** sessions always use the HiveSigner signer — Keychain is never tried when `activeProvider` is `hivesigner`, even if the Keychain extension is installed. For Keychain/HAS sessions on desktop, the facade may try the injected Keychain extension before falling back to HAS broadcast. Keychain uses `hive_keychain.requestBroadcast` with **Active** key for Hive Engine `custom_json`. HiveSigner: posting-key ops via SDK; active-key ops redirect to a HiveSigner `/sign/{op}` URL. Nested query fields are **JSON-encoded** (`account_update` `posting`/`active` authorities, `custom_json` auth arrays) — `hivesigner.sign()` would stringify objects as `[object Object]`. **HiveAuth** uses `HAS.broadcast` via `createHiveAuthSigner()` (requires valid `odl_hiveauth_session`).
 - **Providers:** Keychain (extension or HAS fallback), HiveSigner (redirect). HiveAuth is used internally for mobile Keychain login and broadcast — not shown as a separate login row.
 
 ### `json_metadata` and comment + `comment_options`

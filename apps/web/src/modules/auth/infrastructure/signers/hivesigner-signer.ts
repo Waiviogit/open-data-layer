@@ -1,16 +1,16 @@
 'use client';
 
 import { Client } from 'hivesigner';
-import hivesigner from 'hivesigner';
 
 import type { IHiveSigner } from '../../application/ports/hive-signer.port';
 import type { HiveOperationPayload } from '@opden-data-layer/hive-broadcast';
 import type { BroadcastTransactionResult } from '../../domain/types';
 import { getHivesignerToken } from '../hivesigner-token';
 import { extractTransactionIdFromBroadcastResult } from './extract-transaction-id';
-import { buildHiveSignerCustomJsonSignUrl } from './hivesigner-custom-json-sign-url';
 import { hivePayloadRequiresActiveKey } from './hive-operation-signing';
 import { toHiveWireOperation } from './hive-operation-wire';
+import { buildHiveSignerCustomJsonSignUrl } from './hivesigner-custom-json-sign-url';
+import { buildHiveSignerSignUrl } from './hivesigner-sign-url';
 
 export const HIVESIGNER_REDIRECT_INITIATED = 'HiveSigner redirect initiated';
 
@@ -35,16 +35,8 @@ function redirectForActiveKeyOperations(wireOps: WireOperation[]): never {
           },
           callbackUri,
         )
-      : hivesigner.sign(
-          name,
-          params as Record<string, string | number | boolean>,
-          callbackUri,
-        );
+      : buildHiveSignerSignUrl(name, params, callbackUri);
 
-  if (typeof signUrl !== 'string') {
-    const err = signUrl as { error_description?: string; error?: string };
-    throw new Error(err.error_description ?? err.error ?? 'HiveSigner sign URL failed');
-  }
   window.location.assign(signUrl);
   throw new Error(HIVESIGNER_REDIRECT_INITIATED);
 }

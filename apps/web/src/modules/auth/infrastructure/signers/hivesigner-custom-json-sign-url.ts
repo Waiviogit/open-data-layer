@@ -1,4 +1,4 @@
-const HIVESIGNER_SIGN_BASE = 'https://hivesigner.com';
+import { buildHiveSignerSignUrl } from './hivesigner-sign-url';
 
 export type HiveSignerCustomJsonSignParams = {
   required_auths: readonly string[];
@@ -8,22 +8,22 @@ export type HiveSignerCustomJsonSignParams = {
 };
 
 /**
- * HiveSigner `/sign/custom_json` expects JSON array query params for auth fields.
- * `hivesigner.sign()` only accepts scalars and stringifies arrays incorrectly.
+ * HiveSigner `/sign/custom_json` expects JSON array query params for auth fields
+ * plus `authority=active` for Engine / active-key json.
  */
 export function buildHiveSignerCustomJsonSignUrl(
   params: HiveSignerCustomJsonSignParams,
   redirectUri: string,
 ): string {
-  const query = new URLSearchParams();
-  query.set('authority', 'active');
-  query.set('required_auths', JSON.stringify([...params.required_auths]));
-  query.set(
-    'required_posting_auths',
-    JSON.stringify([...params.required_posting_auths]),
+  return buildHiveSignerSignUrl(
+    'custom_json',
+    {
+      authority: 'active',
+      required_auths: [...params.required_auths],
+      required_posting_auths: [...params.required_posting_auths],
+      id: params.id,
+      json: params.json,
+    },
+    redirectUri,
   );
-  query.set('id', params.id);
-  query.set('json', params.json);
-  query.set('redirect_uri', redirectUri);
-  return `${HIVESIGNER_SIGN_BASE}/sign/custom_json?${query.toString()}`;
 }
