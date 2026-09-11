@@ -59,6 +59,10 @@ jest.mock('@opden-data-layer/hive-broadcast', () => ({
   buildOdlUpdateVoteOp: jest.fn(),
 }));
 
+jest.mock('@/modules/object-updates/application/broadcast-odl-op-with-overflow', () => ({
+  broadcastOdlOpWithOverflow: jest.fn(),
+}));
+
 jest.mock('@/modules/object-updates/presentation/components/add-update-modal', () => ({
   AddUpdateModal: () => null,
 }));
