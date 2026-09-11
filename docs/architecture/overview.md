@@ -52,7 +52,8 @@ Indexer parses and persists Hive social/account operations:
 - `mute` relations,
 - `follow` / `unfollow` relations,
 - `reblog` actions,
-- `create_account`,
+- `account_create`,
+- `create_claimed_account`,
 - `update_account` (v1/v2 forms).
 For user profile projection, indexer currently stores only:
 - `name`,

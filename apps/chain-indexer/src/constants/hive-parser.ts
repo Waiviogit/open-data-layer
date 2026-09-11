@@ -6,7 +6,7 @@ export const HIVE_OPERATION = Object.freeze({
   CUSTOM_JSON: 'custom_json',
   ACCOUNT_UPDATE: 'account_update',
   ACCOUNT_UPDATE2: 'account_update2',
-  CREATE_ACCOUNT: 'create_account',
+  CREATE_ACCOUNT: 'account_create',
   CREATE_CLAIMED_ACCOUNT: 'create_claimed_account',
   RECOVER_ACCOUNT: 'recover_account',
   VOTE: 'vote',

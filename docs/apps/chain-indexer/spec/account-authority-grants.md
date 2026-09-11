@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: chain-indexer
 tags: [chain-indexer, hive, authority]
-updated_at: 2026-09-09
+updated_at: 2026-09-11
 related:
   - docs/apps/chain-indexer/spec/social-parsers.md
   - docs/apps/query-api/spec/user-account-auths-endpoint.md
@@ -33,7 +33,7 @@ Materialize Hive `account_auths` edges (owner / active / posting only) so query-
 Handled by `AccountAuthorityService` on:
 
 - `account_update`, `account_update2` — replace only authority types present in the op
-- `create_account`, `create_claimed_account` — seed initial authorities for `new_account_name`
+- `account_create`, `create_claimed_account` — seed initial authorities for `new_account_name`
 - `recover_account` — replace `owner` from `new_owner_authority` only
 - `AccountSyncWorker` — full snapshot from `get_accounts` at chain head
 

@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: chain-indexer
 tags: [chain-indexer, social-parsers]
-updated_at: 2026-07-09
+updated_at: 2026-09-11
 related:
   - docs/apps/chain-indexer/spec/overview.md
   - docs/apps/chain-indexer/spec/account-sync.md
@@ -29,8 +29,10 @@ Deterministic handling of Hive operations that drive the social graph and profil
 | `custom_json` with `id: "follow"` | `FollowSocialService` / `ReblogSocialService` | `user_subscriptions`, `user_account_mutes`, `accounts_current` counters, `post_reblogged_users` (reblog branch) |
 | `account_update` | `AccountProfileUpdateService` + `AccountAuthorityService` | Profile columns on `accounts_current` when row exists; [account authority grants](account-authority-grants.md) snapshot for present `owner`/`active`/`posting` types; if **no row**, enqueue [account sync](account-sync.md) |
 | `account_update2` | Same chain as `account_update` | Same as `account_update` (v2 payload shape) |
-| `create_account`, `create_claimed_account` | `AccountEnsureService` + `AccountAuthorityService` | Minimal `accounts_current` row if absent; authority snapshot for new account; enqueue [account sync](account-sync.md) |
+| `account_create`, `create_claimed_account` | `AccountEnsureService` + `AccountAuthorityService` | Minimal `accounts_current` row if absent; authority snapshot for new account; enqueue [account sync](account-sync.md) |
 | `recover_account` | `AccountAuthorityService` | Owner authority replacement for recovered account; see [account-authority-grants.md](account-authority-grants.md) |
+
+Live create ops are **`account_create`** (paid ~3 HIVE fee) and **`create_claimed_account`** (spends a previously claimed ACT). `claim_account` only buys a ticket (`pending_claimed_accounts`); it does not create an account and is not wired as a create handler.
 
 ## Signer
 

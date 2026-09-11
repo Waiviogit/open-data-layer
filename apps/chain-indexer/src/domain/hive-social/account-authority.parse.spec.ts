@@ -59,7 +59,7 @@ describe('account-authority.parse', () => {
     expect(parsed?.types.posting).toEqual(['waivio.import']);
   });
 
-  it('parses create_account authorities for new_account_name', () => {
+  it('parses account_create authorities for new_account_name', () => {
     const parsed = parseAccountAuthorityCreate({
       new_account_name: 'newbie',
       owner: { account_auths: [['recovery', 1]] },
@@ -70,6 +70,39 @@ describe('account-authority.parse', () => {
       types: {
         owner: ['recovery'],
         posting: ['waivio.app'],
+      },
+    });
+  });
+
+  it('seeds empty account_auths from a paid account_create payload', () => {
+    const parsed = parseAccountAuthorityCreate({
+      fee: '3.000 HIVE',
+      creator: 'flowmaster',
+      new_account_name: 'insta.agent',
+      memo_key: 'STM5XAS1mK4tnR6hB976AajBosUszqrp2e44UmJ57MNxADWpzZRAo',
+      json_metadata: '{}',
+      owner: {
+        key_auths: [['STM5JCXwH8KDshDwc6iCfjrDkJvvVZ93dBmxsYW4VFZ5FNxr5EaHo', 1]],
+        account_auths: [],
+        weight_threshold: 1,
+      },
+      active: {
+        key_auths: [['STM8Tq6oA8223cMmpZQwasw923X3dFU7mZaWdesNaQCyri1rL8Aug', 1]],
+        account_auths: [],
+        weight_threshold: 1,
+      },
+      posting: {
+        key_auths: [['STM5J3ZZpMfHDYfuLAHTixPw5eYwycF96sGXgR1SkppXsPChxvrgA', 1]],
+        account_auths: [],
+        weight_threshold: 1,
+      },
+    });
+    expect(parsed).toEqual({
+      grantor: 'insta.agent',
+      types: {
+        owner: [],
+        active: [],
+        posting: [],
       },
     });
   });

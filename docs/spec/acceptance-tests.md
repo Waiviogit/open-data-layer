@@ -117,8 +117,8 @@ Canonical event order is determined by `event_seq` — a packed BIGINT encoding 
 - **Action**: Index reblog event.
 - **Expect**: `social_reblogs_log` contains deterministic relation A->P with event metadata.
 
-### AC-I18: create_account populates initial account projection
-- **Setup**: New account A appears via `create_account`.
+### AC-I18: account_create populates initial account projection
+- **Setup**: New account A appears via `account_create`.
 - **Action**: Index event.
 - **Expect**: `accounts_current` contains A with available profile projection fields.
 

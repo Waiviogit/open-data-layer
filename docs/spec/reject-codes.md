@@ -65,7 +65,7 @@ Indexer MUST persist reject code whenever an event is not applied to neutral sta
 |------|------|
 | `INVALID_SOCIAL_PAYLOAD` | `mute`, `follow/unfollow`, or `reblog` payload is malformed or misses required fields. |
 | `INVALID_BULK_MUTE_PAYLOAD` | Bulk mute payload is malformed or contains invalid target account set. |
-| `INVALID_ACCOUNT_PAYLOAD` | `create_account` or `update_account` (v1/v2) payload cannot be parsed into normalized account projection. |
+| `INVALID_ACCOUNT_PAYLOAD` | `account_create` or `update_account` (v1/v2) payload cannot be parsed into normalized account projection. |
 | `POST_AUTHOR_MUTED_BY_GOVERNANCE` | Query-time governance filtering reason: post author is muted by effective owner/moderator set in current governance context. |
 
 ### Generic write-path codes

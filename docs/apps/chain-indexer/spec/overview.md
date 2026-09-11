@@ -6,7 +6,7 @@ type: overview
 status: active
 scope: chain-indexer
 tags: [chain-indexer, overview]
-updated_at: 2026-06-10
+updated_at: 2026-09-11
 related:
   - docs/README.md
   - docs/apps/chain-indexer/developer-guide.md
@@ -39,7 +39,7 @@ The **chain-indexer** application is the **Hive write path**: it reads blocks in
 ## 3) Non-goals
 
 - **No governance masking for API callers** — indexer stores canonical rows; filtering and masks are defined in domain specs and implemented in the query path.
-- **Not a full Hive mirror** — only operations wired in `HiveMainParser` are processed (`custom_json` for ODL id, follow, and RC delegate, `comment`, `delete_comment`, `vote`, `account_update`, `account_update2`, `create_account`, `create_claimed_account`, `recover_account`, `delegate_vesting_shares`; see [social-parsers](social-parsers.md), [account-authority-grants](account-authority-grants.md), [vote-ingestion](vote-ingestion.md), [hive-delegations](hive-delegations.md)).
+- **Not a full Hive mirror** — only operations wired in `HiveMainParser` are processed (`custom_json` for ODL id, follow, and RC delegate, `comment`, `delete_comment`, `vote`, `account_update`, `account_update2`, `account_create`, `create_claimed_account`, `recover_account`, `delegate_vesting_shares`; see [social-parsers](social-parsers.md), [account-authority-grants](account-authority-grants.md), [vote-ingestion](vote-ingestion.md), [hive-delegations](hive-delegations.md)).
 
 ## 4) High-level data flow
 

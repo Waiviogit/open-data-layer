@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: chain-indexer
 tags: [chain-indexer, account-sync]
-updated_at: 2026-06-10
+updated_at: 2026-09-11
 related:
   - docs/apps/chain-indexer/spec/overview.md
   - docs/apps/chain-indexer/spec/social-parsers.md
@@ -25,7 +25,7 @@ Background recovery for Hive accounts when the indexer has no (or incomplete) `a
 | Trigger | Behavior |
 |---------|----------|
 | `account_update` | If `accounts_current` has no row for `account`, enqueue `account_name` (no upsert from the op alone). |
-| `create_account` / `create_claimed_account` | After minimal `ensureUserExists`, enqueue the new account name. |
+| `account_create` / `create_claimed_account` | After minimal `ensureUserExists`, enqueue the new account name. |
 
 Re-enqueue uses `ON CONFLICT (account_name) DO NOTHING` — duplicate queue rows are ignored.
 

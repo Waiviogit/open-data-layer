@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: platform
 tags: [platform, domain]
-updated_at: 2026-06-10
+updated_at: 2026-09-11
 related:
   - docs/spec/README.md
 ---
@@ -23,7 +23,8 @@ This document defines deterministic ingestion and normalization for Hive social/
 - `follow`
 - `unfollow`
 - `reblog`
-- `create_account`
+- `account_create`
+- `create_claimed_account`
 - `update_account` (v1/v2)
 
 It is normative for Indexer Service storage schema and merge behavior.
