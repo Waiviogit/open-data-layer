@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OblRepository } from '../../../repositories/obl.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
 import { contractSignPayloadSchema } from '../obl-envelope.schema';
+import { OblNotificationService } from '../obl-notification.service';
 import { normalizePair, asJsonValue } from '../obl.utils';
 
 @Injectable()
@@ -10,7 +11,10 @@ export class ContractSignHandler implements OdlActionHandler {
   readonly action = 'contract_sign';
   private readonly logger = new Logger(ContractSignHandler.name);
 
-  constructor(private readonly oblRepository: OblRepository) {}
+  constructor(
+    private readonly oblRepository: OblRepository,
+    private readonly oblNotifications: OblNotificationService,
+  ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
     const parsed = contractSignPayloadSchema.safeParse(payload);
@@ -105,6 +109,19 @@ export class ContractSignHandler implements OdlActionHandler {
         );
         await this.oblRepository.promotePendingLinesForPair(pairLow, pairHigh, trx);
       }
+    });
+
+    this.oblNotifications.emit(ctx, {
+      type: 'obl_contract_sign',
+      objectId: null,
+      actor: data.signer,
+      payload: {
+        contractId: data.contract_id,
+        offerId: offer.offer_id,
+        provider: data.provider,
+        client: data.client,
+        signer: data.signer,
+      },
     });
   }
 }

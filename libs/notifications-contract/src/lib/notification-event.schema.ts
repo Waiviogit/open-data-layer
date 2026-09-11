@@ -224,6 +224,80 @@ const bellObjectMessagePayload = messageDirectPayload.extend({
   objectName: z.string().nullable().optional(),
 });
 
+const oblOfferKind = z.enum(['offer', 'request']);
+
+const oblOfferPublishPayload = z.object({
+  offerId: z.string(),
+  version: z.number().int().positive(),
+  kind: oblOfferKind,
+  name: z.string(),
+  author: z.string(),
+  arbiter: z.string().nullable(),
+});
+
+const oblOfferRetirePayload = z.object({
+  offerId: z.string(),
+  version: z.number().int().positive(),
+  kind: oblOfferKind,
+  name: z.string(),
+  author: z.string(),
+});
+
+const oblContractSignPayload = z.object({
+  contractId: z.string(),
+  offerId: z.string(),
+  provider: z.string(),
+  client: z.string(),
+  signer: z.string(),
+});
+
+const oblServiceOrderCreatePayload = z.object({
+  serviceOrderId: z.string(),
+  contractId: z.string(),
+  creator: z.string(),
+  provider: z.string(),
+  client: z.string(),
+});
+
+const oblReportCreatePayload = z.object({
+  reportId: z.string(),
+  contractId: z.string(),
+  author: z.string(),
+  provider: z.string(),
+  client: z.string(),
+});
+
+const oblInvoiceIssuePayload = z.object({
+  invoiceId: z.string(),
+  issuer: z.string(),
+  debtor: z.string(),
+  beneficiaries: z.array(z.string()),
+  amountUsd: z.string(),
+  contractId: z.string().nullable(),
+});
+
+const oblPaymentPayload = z.object({
+  paymentId: z.string(),
+  payer: z.string(),
+  receiver: z.string(),
+  amountUsd: z.string(),
+  state: z.string(),
+});
+
+const oblDisputeOpenPayload = z.object({
+  disputeId: z.string(),
+  invoiceId: z.string(),
+  disputant: z.string(),
+  resolver: z.string().nullable(),
+  debtor: z.string(),
+  beneficiaries: z.array(z.string()),
+  amountUsd: z.string(),
+});
+
+const oblDisputeResolvePayload = oblDisputeOpenPayload.extend({
+  resolver: z.string(),
+});
+
 const emptyPayload = z.object({}).strict();
 
 const notificationEventVariants = [
@@ -410,6 +484,61 @@ const notificationEventVariants = [
     type: z.literal('bell_object_message'),
     ...envelopeSchema,
     payload: bellObjectMessagePayload,
+  }),
+  z.object({
+    type: z.literal('obl_offer_publish'),
+    ...envelopeSchema,
+    payload: oblOfferPublishPayload,
+  }),
+  z.object({
+    type: z.literal('obl_offer_update'),
+    ...envelopeSchema,
+    payload: oblOfferPublishPayload,
+  }),
+  z.object({
+    type: z.literal('obl_offer_retire'),
+    ...envelopeSchema,
+    payload: oblOfferRetirePayload,
+  }),
+  z.object({
+    type: z.literal('obl_contract_sign'),
+    ...envelopeSchema,
+    payload: oblContractSignPayload,
+  }),
+  z.object({
+    type: z.literal('obl_service_order_create'),
+    ...envelopeSchema,
+    payload: oblServiceOrderCreatePayload,
+  }),
+  z.object({
+    type: z.literal('obl_report_create'),
+    ...envelopeSchema,
+    payload: oblReportCreatePayload,
+  }),
+  z.object({
+    type: z.literal('obl_invoice_issue'),
+    ...envelopeSchema,
+    payload: oblInvoiceIssuePayload,
+  }),
+  z.object({
+    type: z.literal('obl_payment_declare'),
+    ...envelopeSchema,
+    payload: oblPaymentPayload,
+  }),
+  z.object({
+    type: z.literal('obl_payment_confirm'),
+    ...envelopeSchema,
+    payload: oblPaymentPayload,
+  }),
+  z.object({
+    type: z.literal('obl_dispute_open'),
+    ...envelopeSchema,
+    payload: oblDisputeOpenPayload,
+  }),
+  z.object({
+    type: z.literal('obl_dispute_resolve'),
+    ...envelopeSchema,
+    payload: oblDisputeResolvePayload,
   }),
   z.object({
     type: z.literal('trx_processed'),

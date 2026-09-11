@@ -1,4 +1,7 @@
-import { NOTIFICATION_EVENT_TYPES } from '@opden-data-layer/notifications-contract';
+import {
+  NOTIFICATION_EVENT_TYPES,
+  type AnyNotificationEvent,
+} from '@opden-data-layer/notifications-contract';
 import { minimalNotificationEventPayload } from '../testing/minimal-payloads';
 import { buildNotificationMessage } from './registry';
 
@@ -56,6 +59,100 @@ describe('buildNotificationMessage', () => {
     expect(msg.href).toBe('/object/obj-1/updates/upd-1');
     expect(msg.paramHrefs?.['objectName']).toBe('/object/obj-1/updates/upd-1');
     expect(msg.icon).toBe('object');
+  });
+
+  it('builds obl_contract_sign message', () => {
+    const msg = buildNotificationMessage({
+      ...baseEnvelope,
+      type: 'obl_contract_sign',
+      actor: 'bob',
+      payload: {
+        contractId: 'c-1',
+        offerId: 'offer-1',
+        provider: 'alice',
+        client: 'bob',
+        signer: 'bob',
+      },
+    });
+    expect(msg.key).toBe('notification_obl_contract_sign');
+    expect(msg.href).toBe('/business/contracts/c-1');
+    expect(msg.params['signer']).toBe('bob');
+  });
+
+  it.each([
+    {
+      type: 'obl_offer_publish' as const,
+      actor: 'alice',
+      payload: {
+        offerId: 'offer-1',
+        version: 2,
+        kind: 'offer' as const,
+        name: 'API',
+        author: 'alice',
+        arbiter: 'carol',
+      },
+      href: '/offers/offer-1/versions/2',
+    },
+    {
+      type: 'obl_offer_update' as const,
+      actor: 'alice',
+      payload: {
+        offerId: 'req-1',
+        version: 3,
+        kind: 'request' as const,
+        name: 'Help',
+        author: 'alice',
+        arbiter: null,
+      },
+      href: '/requests/req-1/versions/3',
+    },
+    {
+      type: 'obl_invoice_issue' as const,
+      actor: 'alice',
+      payload: {
+        invoiceId: 'inv-1',
+        issuer: 'alice',
+        debtor: 'bob',
+        beneficiaries: ['alice'],
+        amountUsd: '10.00000000',
+        contractId: null,
+      },
+      href: '/business/invoices/inv-1',
+    },
+    {
+      type: 'obl_payment_declare' as const,
+      actor: 'bob',
+      payload: {
+        paymentId: 'pay-1',
+        payer: 'bob',
+        receiver: 'alice',
+        amountUsd: '10.00000000',
+        state: 'pending' as const,
+      },
+      href: '/business/relationships/alice',
+    },
+    {
+      type: 'obl_dispute_open' as const,
+      actor: 'bob',
+      payload: {
+        disputeId: 'd-1',
+        invoiceId: 'inv-1',
+        disputant: 'bob',
+        resolver: 'carol',
+        debtor: 'bob',
+        beneficiaries: ['alice'],
+        amountUsd: '7.00000000',
+      },
+      href: '/business/disputes/d-1',
+    },
+  ])('builds $type href', ({ type, actor, payload, href }) => {
+    const msg = buildNotificationMessage({
+      ...baseEnvelope,
+      type,
+      actor,
+      payload,
+    } as AnyNotificationEvent);
+    expect(msg.href).toBe(href);
   });
 
   it('builds update_vote_cast with fallback update type when updateType is missing', () => {

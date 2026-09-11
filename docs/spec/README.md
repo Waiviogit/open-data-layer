@@ -133,6 +133,7 @@ Details: [architecture overview](../architecture/overview.md).
 | [obl/disputes.md](obl/disputes.md) | Dispute rules and resolution |
 | [obl/service-orders.md](obl/service-orders.md) | Immutable service orders per contract |
 | [obl/reports.md](obl/reports.md) | Immutable reports (contract / service order) |
+| [obl/notifications.md](obl/notifications.md) | Lifecycle notifications for OBL actions |
 
 ### Library integration
 

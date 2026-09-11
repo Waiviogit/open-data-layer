@@ -23,7 +23,7 @@ updated_at: 2026-07-30
 
 ## Response
 
-JSON object with boolean toggles and `minimal_transfer` (USD threshold for inbound transfers). Includes `messages` (DM and group message notifications). Excludes legacy `deactivation_campaign`.
+JSON object with boolean toggles and `minimal_transfer` (USD threshold for inbound transfers). Includes `messages` (DM and group message notifications) and `obl` (Open Business Layer lifecycle events). Excludes legacy `deactivation_campaign`.
 
 When no `user_notification_settings` row exists, returns defaults aligned with Mongo migration:
 
@@ -31,6 +31,7 @@ When no `user_notification_settings` row exists, returns defaults aligned with M
 - `my_post`, `my_comment`, `my_like`, `downvote`, `claim_reward` → `false`
 - `minimal_transfer` → `0`
 - `messages` → `true`
+- `obl` → `true`
 
 ## Write path
 

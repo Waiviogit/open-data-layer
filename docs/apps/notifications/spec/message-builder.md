@@ -45,6 +45,8 @@ Pure functions only — no Nest, React, or i18n runtime.
 
 Wallet notifications use `walletTransfersPath(username, tab)` with `?type=WAIV`, `?type=HIVE`, or `?type=ENGINE` (web wallet tab), resolved from payload symbol/amount via `walletTabFromSymbol` / `walletTabFromAmount` — not legacy operation names like `transfer` or `tokens`.
 
+OBL types use `/business/*` and public offer/request version URLs (`oblPublicOfferPath`, `oblContractPath`, `oblInvoicePath`, …). Payment events link to `/business/relationships/:counterparty`.
+
 ## Adding a type
 
 1. Extend `NotificationPayloadMap` + `notificationEventSchema` in `notifications-contract`.

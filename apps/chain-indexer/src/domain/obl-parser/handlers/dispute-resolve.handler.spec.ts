@@ -2,6 +2,7 @@ import type { OdlEventContext } from '../../odl-shared';
 import type { OblRepository } from '../../../repositories/obl.repository';
 import { DisputeResolveHandler } from './dispute-resolve.handler';
 import { OblInvoice, OblObligationLine } from '@opden-data-layer/odl-db-types';
+import { mockOblNotifications } from '../obl-notification.service.spec-helpers';
 
 const invoiceHeader: OblInvoice = {
   invoice_id: 'inv-1',
@@ -55,11 +56,13 @@ function buildHandler(mocks: Partial<OblRepository>) {
   const resolveDispute = jest.fn();
   const updateLinesStateForInvoice = jest.fn();
   const updateLine = jest.fn();
+  const oblNotifications = mockOblNotifications();
   const handler = new DisputeResolveHandler({
     findDispute: jest.fn().mockResolvedValue({
       dispute_id: 'd-1',
       invoice_id: 'inv-1',
       status: 'open',
+      disputant: 'bob',
     }),
     findInvoice: jest.fn().mockResolvedValue(invoiceHeader),
     listLinesForInvoice: jest.fn().mockResolvedValue([disputedLine()]),
@@ -69,19 +72,22 @@ function buildHandler(mocks: Partial<OblRepository>) {
     updateLinesStateForInvoice,
     updateLine,
     ...mocks,
-  } as unknown as OblRepository);
+  } as unknown as OblRepository,
+    oblNotifications.service,
+  );
   return {
     handler,
     runInTransaction,
     resolveDispute,
     updateLinesStateForInvoice,
     updateLine,
+    oblNotifications,
   };
 }
 
 describe('DisputeResolveHandler', () => {
   it('rejects when invoice is not disputed', async () => {
-    const { handler, runInTransaction } = buildHandler({
+    const { handler, runInTransaction, oblNotifications } = buildHandler({
       listLinesForInvoice: jest
         .fn()
         .mockResolvedValue([disputedLine({ state: 'confirmed' })]),
@@ -93,10 +99,11 @@ describe('DisputeResolveHandler', () => {
     );
 
     expect(runInTransaction).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).not.toHaveBeenCalled();
   });
 
   it('resolves single line with partial final amount', async () => {
-    const { handler, updateLinesStateForInvoice } = buildHandler({});
+    const { handler, updateLinesStateForInvoice, oblNotifications } = buildHandler({});
 
     await handler.handle(
       { dispute_id: 'd-1', resolver: 'bob', final_amount_usd: '8' },
@@ -107,6 +114,20 @@ describe('DisputeResolveHandler', () => {
       'inv-1',
       { state: 'resolved', final_amount_usd: '8.00000000' },
       expect.anything(),
+    );
+    expect(oblNotifications.emit).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        type: 'obl_dispute_resolve',
+        actor: 'bob',
+        payload: expect.objectContaining({
+          disputeId: 'd-1',
+          invoiceId: 'inv-1',
+          disputant: 'bob',
+          resolver: 'bob',
+          amountUsd: '8.00000000',
+        }),
+      }),
     );
   });
 
@@ -168,7 +189,7 @@ describe('DisputeResolveHandler', () => {
 
   it('rejects partial resolve on multi invoice', async () => {
     const multiHeader: OblInvoice = { ...invoiceHeader, kind: 'multi' };
-    const { handler, runInTransaction } = buildHandler({
+    const { handler, runInTransaction, oblNotifications } = buildHandler({
       findInvoice: jest.fn().mockResolvedValue(multiHeader),
       listLinesForInvoice: jest.fn().mockResolvedValue([
         disputedLine({ line_id: 'inv-1:0', amount_usd: '5.00000000' }),
@@ -186,5 +207,6 @@ describe('DisputeResolveHandler', () => {
     );
 
     expect(runInTransaction).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).not.toHaveBeenCalled();
   });
 });

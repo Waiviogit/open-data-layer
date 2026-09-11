@@ -3,14 +3,18 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OblRepository } from '../../../repositories/obl.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
 import { disputeOpenPayloadSchema } from '../obl-envelope.schema';
-import { toUsdString } from '../obl.utils';
+import { OblNotificationService } from '../obl-notification.service';
+import { toUsdString, authorizedDisputeResolver } from '../obl.utils';
 
 @Injectable()
 export class DisputeOpenHandler implements OdlActionHandler {
   readonly action = 'dispute_open';
   private readonly logger = new Logger(DisputeOpenHandler.name);
 
-  constructor(private readonly oblRepository: OblRepository) {}
+  constructor(
+    private readonly oblRepository: OblRepository,
+    private readonly oblNotifications: OblNotificationService,
+  ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
     const parsed = disputeOpenPayloadSchema.safeParse(payload);
@@ -97,6 +101,25 @@ export class DisputeOpenHandler implements OdlActionHandler {
         { state: 'disputed' },
         trx,
       );
+    });
+
+    const contract = invoice.contract_id
+      ? await this.oblRepository.findContract(invoice.contract_id)
+      : null;
+
+    this.oblNotifications.emit(ctx, {
+      type: 'obl_dispute_open',
+      objectId: null,
+      actor: data.disputant,
+      payload: {
+        disputeId: data.dispute_id,
+        invoiceId: data.invoice_id,
+        disputant: data.disputant,
+        resolver: authorizedDisputeResolver(contract),
+        debtor: invoice.debtor,
+        beneficiaries: [...new Set(lines.map((line) => line.beneficiary))],
+        amountUsd: proposedUsd,
+      },
     });
   }
 }

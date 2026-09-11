@@ -21,7 +21,7 @@ related:
 
 Strict object (no `account` — PK is `ctx.creator`):
 
-`follow`, `reblog`, `reply`, `mention`, `vote`, `downvote`, `claimed_object_updates`, `group_id_control`, `followed_user_threads`, `transfer`, `fill_order`, `power_up`, `claim_reward`, `witness_vote`, `my_post`, `my_comment`, `my_like`, `minimal_transfer`.
+`follow`, `reblog`, `reply`, `mention`, `vote`, `downvote`, `claimed_object_updates`, `group_id_control`, `followed_user_threads`, `transfer`, `fill_order`, `power_up`, `claim_reward`, `witness_vote`, `my_post`, `my_comment`, `my_like`, `minimal_transfer`, `messages` (optional, default `true`), `obl` (optional, default `true`).
 
 Handler: `UserNotificationSettingsHandler` in `apps/chain-indexer/src/domain/osl-parser/handlers/`.
 

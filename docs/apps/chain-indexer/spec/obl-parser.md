@@ -24,6 +24,8 @@ Registered ids: `obl-mainnet`, `obl-testnet` (see `hive.oblCustomJsonId`). Dispa
 
 `offer_publish`, `offer_update`, `offer_retire`, `contract_sign`, `service_order_create`, `report_create`, `invoice_issue`, `payment_declare`, `payment_confirm`, `dispute_open`, `dispute_resolve`.
 
+After a successful persist, handlers emit `obl_*` notifications via `OblNotificationService` — see [OBL lifecycle notifications](../../../spec/obl/notifications.md).
+
 Repository: `OblRepository` (`obl_*` tables).
 
 ## Non–custom_json ingestion

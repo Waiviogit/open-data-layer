@@ -63,4 +63,22 @@ export const EN_NOTIFICATION_DICTIONARY: Readonly<Record<string, string>> = {
   transfer_from: '{recipient} transferred {amount} to {to}',
   transfer_to_vesting: "{from} initiated 'Power Up' on {amount} to {to}",
   withdraw_route_to: '{recipient} set withdraw route to {to_account}',
+  notification_obl_offer_publish: '{author} published {kind} {name}',
+  notification_obl_offer_update: '{author} updated {kind} {name}',
+  notification_obl_offer_retire: '{author} retired {kind} {name}',
+  notification_obl_contract_sign:
+    '{signer} signed contract {contractId} ({provider} / {client})',
+  notification_obl_service_order_create:
+    '{creator} created service order {serviceOrderId}',
+  notification_obl_report_create: '{author} created report {reportId}',
+  notification_obl_invoice_issue:
+    '{issuer} issued invoice {invoiceId} to {debtor} ({amountUsd} USD)',
+  notification_obl_payment_declare:
+    '{payer} declared payment {amountUsd} USD to {receiver}',
+  notification_obl_payment_confirm:
+    '{receiver} confirmed payment {amountUsd} USD from {payer}',
+  notification_obl_dispute_open:
+    '{disputant} opened dispute {disputeId} on invoice {invoiceId}',
+  notification_obl_dispute_resolve:
+    '{resolver} resolved dispute {disputeId} ({amountUsd} USD)',
 } as const;

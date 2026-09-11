@@ -27,5 +27,6 @@ export function mapFormToBroadcastPayload(
     my_like: form.my_like,
     minimal_transfer: form.minimal_transfer,
     messages: form.messages,
+    obl: form.obl,
   };
 }

@@ -1,5 +1,5 @@
 import { OBJECT_TYPES, parseOblUsdAmount, type OblUsdAmountKind } from '@opden-data-layer/core';
-import type { JsonValue } from '@opden-data-layer/odl-db-types';
+import type { JsonValue, OblDisputeRule } from '@opden-data-layer/odl-db-types';
 
 export function asJsonValue(value: unknown): JsonValue {
   return JSON.parse(JSON.stringify(value)) as JsonValue;
@@ -28,4 +28,27 @@ export function isServiceRefType(objectType: string, kind: 'offer' | 'request'):
 
 export function isLegalRefType(objectType: string): boolean {
   return objectType === OBJECT_TYPES.LEGAL_DOCUMENT;
+}
+
+export function authorizedDisputeResolver(contract: {
+  dispute_rule: OblDisputeRule;
+  arbiter: string | null;
+  provider: string;
+  client: string;
+} | null): string | null {
+  if (!contract) {
+    return null;
+  }
+  if (contract.dispute_rule === 'client') {
+    return contract.client;
+  }
+  if (contract.dispute_rule === 'provider') {
+    return contract.provider;
+  }
+  return contract.arbiter;
+}
+
+export function sumUsdAmounts(amounts: readonly string[]): string {
+  const total = amounts.reduce((sum, amount) => sum + Number(amount), 0);
+  return total.toFixed(8);
 }

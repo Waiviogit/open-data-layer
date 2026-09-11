@@ -2,6 +2,7 @@ import type { OdlEventContext } from '../../odl-shared';
 import type { OblRepository } from '../../../repositories/obl.repository';
 import { ReportCreateHandler } from './report-create.handler';
 import { OblContract } from '@opden-data-layer/odl-db-types';
+import { mockOblNotifications } from '../obl-notification.service.spec-helpers';
 
 const contract: OblContract = {
   contract_id: 'c-1',
@@ -41,6 +42,7 @@ describe('ReportCreateHandler', () => {
   let findServiceOrder: jest.Mock;
   let findContract: jest.Mock;
   let insertReport: jest.Mock;
+  let oblNotifications: ReturnType<typeof mockOblNotifications>;
 
   beforeEach(() => {
     findReport = jest.fn().mockResolvedValue(null);
@@ -50,12 +52,16 @@ describe('ReportCreateHandler', () => {
     });
     findContract = jest.fn().mockResolvedValue(contract);
     insertReport = jest.fn().mockResolvedValue(undefined);
-    handler = new ReportCreateHandler({
-      findReport,
-      findServiceOrder,
-      findContract,
-      insertReport,
-    } as unknown as OblRepository);
+    oblNotifications = mockOblNotifications();
+    handler = new ReportCreateHandler(
+      {
+        findReport,
+        findServiceOrder,
+        findContract,
+        insertReport,
+      } as unknown as OblRepository,
+      oblNotifications.service,
+    );
   });
 
   it('resolves contract from service order when only service_order_id given', async () => {
@@ -75,6 +81,10 @@ describe('ReportCreateHandler', () => {
         author: 'bob',
       }),
     );
+    expect(oblNotifications.emit).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ type: 'obl_report_create', actor: 'bob' }),
+    );
   });
 
   it('rejects inconsistent contract_id and service_order_id', async () => {
@@ -88,6 +98,7 @@ describe('ReportCreateHandler', () => {
       ctx('alice'),
     );
     expect(insertReport).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).not.toHaveBeenCalled();
   });
 
   it('rejects author who is not a contract party', async () => {
@@ -100,6 +111,7 @@ describe('ReportCreateHandler', () => {
       ctx('carol'),
     );
     expect(insertReport).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).not.toHaveBeenCalled();
   });
 
   it('skips when report already exists', async () => {
@@ -113,6 +125,7 @@ describe('ReportCreateHandler', () => {
       ctx('alice'),
     );
     expect(insertReport).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).not.toHaveBeenCalled();
   });
 
   it('skips when service order not found', async () => {
@@ -126,5 +139,6 @@ describe('ReportCreateHandler', () => {
       ctx('alice'),
     );
     expect(insertReport).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).not.toHaveBeenCalled();
   });
 });

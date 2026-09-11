@@ -160,6 +160,11 @@ export function NotificationSettingsForm({
           checked={form.messages}
           onChange={setBool('messages')}
         />
+        <CheckboxField
+          label={t('notification_settings_obl')}
+          checked={form.obl}
+          onChange={setBool('obl')}
+        />
       </SettingsSection>
 
       <SettingsSection title={t('wallet_transactions')}>

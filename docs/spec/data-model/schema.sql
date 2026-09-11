@@ -260,7 +260,9 @@ CREATE TABLE user_notification_settings (
   claim_reward           BOOLEAN NOT NULL DEFAULT FALSE,
   claimed_object_updates BOOLEAN NOT NULL DEFAULT TRUE,
   group_id_control       BOOLEAN NOT NULL DEFAULT TRUE,
-  followed_user_threads  BOOLEAN NOT NULL DEFAULT TRUE
+  followed_user_threads  BOOLEAN NOT NULL DEFAULT TRUE,
+  messages               BOOLEAN NOT NULL DEFAULT TRUE,
+  obl                    BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 -- ---------------------------------------------------------------------------

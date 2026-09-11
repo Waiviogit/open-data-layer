@@ -378,6 +378,7 @@ export interface UserNotificationSettingsTable {
   group_id_control: boolean;
   followed_user_threads: boolean;
   messages: boolean;
+  obl: boolean;
 }
 
 export type UserNotificationSettings = Selectable<UserNotificationSettingsTable>;

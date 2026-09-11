@@ -27,6 +27,7 @@ export function defaultUserNotificationSettingsView(): UserNotificationSettingsV
     my_like: false,
     minimal_transfer: 0,
     messages: true,
+    obl: true,
   };
 }
 

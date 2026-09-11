@@ -2,6 +2,7 @@ import type { OdlEventContext } from '../../odl-shared';
 import type { OblRepository } from '../../../repositories/obl.repository';
 import { InvoiceIssueHandler } from './invoice-issue.handler';
 import { OblContract } from '@opden-data-layer/odl-db-types';
+import { mockOblNotifications } from '../obl-notification.service.spec-helpers';
 
 const governingContract: OblContract = {
   contract_id: 'c-1',
@@ -46,6 +47,7 @@ describe('InvoiceIssueHandler', () => {
   let insertLedger: jest.Mock;
   let findServiceOrder: jest.Mock;
   let findReport: jest.Mock;
+  let oblNotifications: ReturnType<typeof mockOblNotifications>;
 
   beforeEach(() => {
     findInvoice = jest.fn().mockResolvedValue(null);
@@ -57,6 +59,7 @@ describe('InvoiceIssueHandler', () => {
     findServiceOrder = jest.fn();
     findReport = jest.fn();
     runInTransaction = jest.fn(async (fn: (trx: unknown) => Promise<void>) => fn({}));
+    oblNotifications = mockOblNotifications();
     handler = new InvoiceIssueHandler({
       findInvoice,
       findContract,
@@ -67,7 +70,7 @@ describe('InvoiceIssueHandler', () => {
       insertLedger,
       findServiceOrder,
       findReport,
-    } as unknown as OblRepository);
+    } as unknown as OblRepository, oblNotifications.service);
   });
 
   it('issues classic single invoice when pair ledger exists', async () => {
@@ -97,6 +100,19 @@ describe('InvoiceIssueHandler', () => {
       expect.anything(),
     );
     expect(insertLedger).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        type: 'obl_invoice_issue',
+        actor: 'alice',
+        payload: expect.objectContaining({
+          invoiceId: 'inv-1',
+          issuer: 'alice',
+          debtor: 'bob',
+          beneficiaries: ['alice'],
+        }),
+      }),
+    );
   });
 
   it('issues pending line when pair ledger does not exist', async () => {
@@ -152,6 +168,7 @@ describe('InvoiceIssueHandler', () => {
       ctx('organizer'),
     );
     expect(insertInvoice).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).not.toHaveBeenCalled();
   });
 
   it('issues multi invoice with multiple lines', async () => {
@@ -178,6 +195,16 @@ describe('InvoiceIssueHandler', () => {
         expect.objectContaining({ beneficiary: 'referral', role: 'referral_fee' }),
       ]),
       expect.anything(),
+    );
+    expect(oblNotifications.emit).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        type: 'obl_invoice_issue',
+        payload: expect.objectContaining({
+          amountUsd: '6.00000000',
+          beneficiaries: ['winner', 'referral'],
+        }),
+      }),
     );
   });
 

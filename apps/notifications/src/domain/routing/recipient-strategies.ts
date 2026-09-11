@@ -320,6 +320,110 @@ export class ChannelMessagingRecipientStrategy implements RecipientStrategy {
 }
 
 @Injectable()
+export class OblRecipientStrategy implements RecipientStrategy {
+  private readonly types = new Set<AnyNotificationEvent['type']>([
+    'obl_offer_publish',
+    'obl_offer_update',
+    'obl_offer_retire',
+    'obl_contract_sign',
+    'obl_service_order_create',
+    'obl_report_create',
+    'obl_invoice_issue',
+    'obl_payment_declare',
+    'obl_payment_confirm',
+    'obl_dispute_open',
+    'obl_dispute_resolve',
+  ]);
+
+  supports(type: AnyNotificationEvent['type']): boolean {
+    return this.types.has(type);
+  }
+
+  async resolveRecipients(event: AnyNotificationEvent): Promise<string[]> {
+    switch (event.type) {
+      case 'obl_offer_publish':
+      case 'obl_offer_update':
+        return uniqueAccounts(
+          event.actor,
+          event.payload.author,
+          event.payload.arbiter,
+        );
+      case 'obl_offer_retire':
+        return uniqueAccounts(event.actor, event.payload.author);
+      case 'obl_contract_sign':
+        return uniqueAccounts(
+          event.actor,
+          event.payload.provider,
+          event.payload.client,
+        );
+      case 'obl_service_order_create':
+        return uniqueAccounts(
+          event.actor,
+          event.payload.provider,
+          event.payload.client,
+        );
+      case 'obl_report_create':
+        return uniqueAccounts(
+          event.actor,
+          event.payload.provider,
+          event.payload.client,
+        );
+      case 'obl_invoice_issue':
+        return uniqueAccounts(
+          event.actor,
+          event.payload.issuer,
+          event.payload.debtor,
+          event.payload.beneficiaries,
+        );
+      case 'obl_payment_declare':
+      case 'obl_payment_confirm':
+        return uniqueAccounts(
+          event.actor,
+          event.payload.payer,
+          event.payload.receiver,
+        );
+      case 'obl_dispute_open':
+      case 'obl_dispute_resolve':
+        return uniqueAccounts(
+          event.actor,
+          event.payload.disputant,
+          event.payload.resolver,
+          event.payload.debtor,
+          event.payload.beneficiaries,
+        );
+      default:
+        return [];
+    }
+  }
+}
+
+function uniqueAccounts(
+  ...values: Array<string | null | undefined | readonly string[]>
+): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const value of values) {
+    const items = Array.isArray(value) ? value : [value];
+    for (const item of items) {
+      if (typeof item !== 'string') {
+        continue;
+      }
+      const trimmed = item.trim();
+      if (!trimmed) {
+        continue;
+      }
+      const key = trimmed.toLowerCase();
+      if (seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      out.push(trimmed);
+    }
+  }
+  return out;
+}
+
+@Injectable()
 export class RecipientStrategyRegistry {
   constructor(
     private readonly direct: DirectRecipientStrategy,
@@ -329,6 +433,7 @@ export class RecipientStrategyRegistry {
     private readonly userBell: UserBellRecipientStrategy,
     private readonly threadAuthorFollower: ThreadAuthorFollowerRecipientStrategy,
     private readonly channelMessaging: ChannelMessagingRecipientStrategy,
+    private readonly obl: OblRecipientStrategy,
   ) {}
 
   private strategies(): RecipientStrategy[] {
@@ -340,6 +445,7 @@ export class RecipientStrategyRegistry {
       this.userBell,
       this.threadAuthorFollower,
       this.channelMessaging,
+      this.obl,
     ];
   }
 

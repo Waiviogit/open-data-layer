@@ -51,6 +51,7 @@ export class UserNotificationSettingsRepository {
           my_like: data.my_like,
           minimal_transfer: data.minimal_transfer,
           messages: data.messages,
+          obl: data.obl,
         }),
       )
       .execute();

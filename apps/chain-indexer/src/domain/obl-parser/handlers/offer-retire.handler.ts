@@ -2,13 +2,17 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OblRepository } from '../../../repositories/obl.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
 import { offerRetirePayloadSchema } from '../obl-envelope.schema';
+import { OblNotificationService } from '../obl-notification.service';
 
 @Injectable()
 export class OfferRetireHandler implements OdlActionHandler {
   readonly action = 'offer_retire';
   private readonly logger = new Logger(OfferRetireHandler.name);
 
-  constructor(private readonly oblRepository: OblRepository) {}
+  constructor(
+    private readonly oblRepository: OblRepository,
+    private readonly oblNotifications: OblNotificationService,
+  ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
     const parsed = offerRetirePayloadSchema.safeParse(payload);
@@ -32,5 +36,18 @@ export class OfferRetireHandler implements OdlActionHandler {
     }
 
     await this.oblRepository.retireAllOfferVersions(latest.offer_id);
+
+    this.oblNotifications.emit(ctx, {
+      type: 'obl_offer_retire',
+      objectId: null,
+      actor: data.author,
+      payload: {
+        offerId: latest.offer_id,
+        version: latest.version,
+        kind: latest.kind,
+        name: latest.name,
+        author: latest.author,
+      },
+    });
   }
 }

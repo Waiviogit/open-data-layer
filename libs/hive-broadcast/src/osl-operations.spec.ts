@@ -51,6 +51,7 @@ describe('osl-operations', () => {
         my_like: false,
         minimal_transfer: 5,
         messages: true,
+        obl: true,
       },
     });
     expect(op.id).toBe('osl-mainnet');
@@ -64,6 +65,7 @@ describe('osl-operations', () => {
       minimal_transfer: 5,
       downvote: false,
       messages: true,
+      obl: true,
     });
   });
 

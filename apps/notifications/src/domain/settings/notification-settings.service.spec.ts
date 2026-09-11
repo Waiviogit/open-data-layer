@@ -368,4 +368,26 @@ describe('NotificationSettingsService', () => {
 
     expect(service.isAllowed(settings, event, null)).toBe(true);
   });
+
+  it('blocks obl_invoice_issue when obl setting is false', () => {
+    const settings = baseSettings({ obl: false });
+    const event = {
+      type: 'obl_invoice_issue',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'alice',
+      payload: {
+        invoiceId: 'inv-1',
+        issuer: 'alice',
+        debtor: 'bob',
+        beneficiaries: ['alice'],
+        amountUsd: '10.00000000',
+        contractId: null,
+      },
+    } as AnyNotificationEvent;
+
+    expect(service.isAllowed(settings, event, null)).toBe(false);
+  });
 });

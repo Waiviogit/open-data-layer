@@ -172,6 +172,86 @@ export function minimalNotificationEventPayload(
         encrypted: false,
         objectName: 'Shop',
       };
+    case 'obl_offer_publish':
+    case 'obl_offer_update':
+      return {
+        offerId: 'offer-1',
+        version: 1,
+        kind: 'offer',
+        name: 'API',
+        author: 'alice',
+        arbiter: null,
+      };
+    case 'obl_offer_retire':
+      return {
+        offerId: 'offer-1',
+        version: 1,
+        kind: 'offer',
+        name: 'API',
+        author: 'alice',
+      };
+    case 'obl_contract_sign':
+      return {
+        contractId: 'c-1',
+        offerId: 'offer-1',
+        provider: 'alice',
+        client: 'bob',
+        signer: 'bob',
+      };
+    case 'obl_service_order_create':
+      return {
+        serviceOrderId: 'so-1',
+        contractId: 'c-1',
+        creator: 'alice',
+        provider: 'alice',
+        client: 'bob',
+      };
+    case 'obl_report_create':
+      return {
+        reportId: 'r-1',
+        contractId: 'c-1',
+        author: 'alice',
+        provider: 'alice',
+        client: 'bob',
+      };
+    case 'obl_invoice_issue':
+      return {
+        invoiceId: 'inv-1',
+        issuer: 'alice',
+        debtor: 'bob',
+        beneficiaries: ['alice'],
+        amountUsd: '10.00000000',
+        contractId: 'c-1',
+      };
+    case 'obl_payment_declare':
+    case 'obl_payment_confirm':
+      return {
+        paymentId: 'pay-1',
+        payer: 'bob',
+        receiver: 'alice',
+        amountUsd: '10.00000000',
+        state: type === 'obl_payment_confirm' ? 'confirmed' : 'pending',
+      };
+    case 'obl_dispute_open':
+      return {
+        disputeId: 'd-1',
+        invoiceId: 'inv-1',
+        disputant: 'bob',
+        resolver: 'alice',
+        debtor: 'bob',
+        beneficiaries: ['alice'],
+        amountUsd: '5.00000000',
+      };
+    case 'obl_dispute_resolve':
+      return {
+        disputeId: 'd-1',
+        invoiceId: 'inv-1',
+        disputant: 'bob',
+        resolver: 'alice',
+        debtor: 'bob',
+        beneficiaries: ['alice'],
+        amountUsd: '5.00000000',
+      };
     case 'trx_processed':
       return {};
     default:

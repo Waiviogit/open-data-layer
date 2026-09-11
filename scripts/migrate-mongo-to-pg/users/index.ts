@@ -406,6 +406,8 @@ class MongoUsersMigrator {
       claimed_object_updates: true,
       group_id_control: true,
       followed_user_threads: true,
+      messages: true,
+      obl: true,
     });
     this.stats.notificationRowsBuffered += 1;
 

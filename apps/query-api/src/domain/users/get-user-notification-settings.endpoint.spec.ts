@@ -50,6 +50,8 @@ describe('GetUserNotificationSettingsEndpoint', () => {
       claimed_object_updates: true,
       group_id_control: true,
       followed_user_threads: true,
+      messages: true,
+      obl: true,
     });
     const result = await endpoint.execute('alice', 'alice');
     expect(result.follow).toBe(false);

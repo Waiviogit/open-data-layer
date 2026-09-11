@@ -47,6 +47,17 @@ export const NOTIFICATION_EVENT_TYPES = [
   'message_direct',
   'message_group',
   'bell_object_message',
+  'obl_offer_publish',
+  'obl_offer_update',
+  'obl_offer_retire',
+  'obl_contract_sign',
+  'obl_service_order_create',
+  'obl_report_create',
+  'obl_invoice_issue',
+  'obl_payment_declare',
+  'obl_payment_confirm',
+  'obl_dispute_open',
+  'obl_dispute_resolve',
   'trx_processed',
 ] as const;
 
@@ -308,6 +319,90 @@ export interface NotificationPayloadMap {
     author: string;
     encrypted: boolean;
     objectName?: string | null;
+  };
+  obl_offer_publish: {
+    offerId: string;
+    version: number;
+    kind: 'offer' | 'request';
+    name: string;
+    author: string;
+    arbiter: string | null;
+  };
+  obl_offer_update: {
+    offerId: string;
+    version: number;
+    kind: 'offer' | 'request';
+    name: string;
+    author: string;
+    arbiter: string | null;
+  };
+  obl_offer_retire: {
+    offerId: string;
+    version: number;
+    kind: 'offer' | 'request';
+    name: string;
+    author: string;
+  };
+  obl_contract_sign: {
+    contractId: string;
+    offerId: string;
+    provider: string;
+    client: string;
+    signer: string;
+  };
+  obl_service_order_create: {
+    serviceOrderId: string;
+    contractId: string;
+    creator: string;
+    provider: string;
+    client: string;
+  };
+  obl_report_create: {
+    reportId: string;
+    contractId: string;
+    author: string;
+    provider: string;
+    client: string;
+  };
+  obl_invoice_issue: {
+    invoiceId: string;
+    issuer: string;
+    debtor: string;
+    beneficiaries: string[];
+    amountUsd: string;
+    contractId: string | null;
+  };
+  obl_payment_declare: {
+    paymentId: string;
+    payer: string;
+    receiver: string;
+    amountUsd: string;
+    state: string;
+  };
+  obl_payment_confirm: {
+    paymentId: string;
+    payer: string;
+    receiver: string;
+    amountUsd: string;
+    state: string;
+  };
+  obl_dispute_open: {
+    disputeId: string;
+    invoiceId: string;
+    disputant: string;
+    resolver: string | null;
+    debtor: string;
+    beneficiaries: string[];
+    amountUsd: string;
+  };
+  obl_dispute_resolve: {
+    disputeId: string;
+    invoiceId: string;
+    disputant: string;
+    resolver: string;
+    debtor: string;
+    beneficiaries: string[];
+    amountUsd: string;
   };
   trx_processed: Record<string, never>;
 }

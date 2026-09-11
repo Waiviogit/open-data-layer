@@ -6,7 +6,8 @@ export type NotificationSettingsView = Omit<UserNotificationSettings, 'account'>
 /**
  * Applied to registered ODL accounts that have no `user_notification_settings` row.
  * Mirrors the column defaults of `user_notification_settings`
- * (see libs/migrations/src/postgres/odl/00001_odl_schema.ts and 00050_user_notification_settings_columns.ts),
+ * (see libs/migrations/src/postgres/odl/00001_odl_schema.ts, 00050_user_notification_settings_columns.ts,
+ * 00056_user_notification_settings_messages.ts, 00063_user_notification_settings_obl.ts),
  * matching the legacy Mongoose defaults of `UserNotificationsSchema`.
  */
 export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettingsView = {
@@ -30,4 +31,5 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettingsView = {
   group_id_control: true,
   followed_user_threads: true,
   messages: true,
+  obl: true,
 };

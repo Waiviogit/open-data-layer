@@ -22,7 +22,7 @@ updated_at: 2026-07-30
 
 1. Title + back link to `/notifications` (`OptimisticNavLink`)
 2. Telegram intro (same env props as feed page)
-3. Form sections: Community actions (includes **Direct and group messages** / `messages` toggle), Wallet transactions, My actions, Security alerts (display-only, always on)
+3. Form sections: Community actions (includes **Direct and group messages** / `messages` and **Business** / `obl` toggles), Wallet transactions, My actions, Security alerts (display-only, always on)
 
 ## Read path
 

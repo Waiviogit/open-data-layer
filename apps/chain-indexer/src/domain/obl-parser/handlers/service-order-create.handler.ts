@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OblRepository } from '../../../repositories/obl.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
 import { serviceOrderCreatePayloadSchema } from '../obl-envelope.schema';
+import { OblNotificationService } from '../obl-notification.service';
 import { asJsonValue } from '../obl.utils';
 
 @Injectable()
@@ -10,7 +11,10 @@ export class ServiceOrderCreateHandler implements OdlActionHandler {
   readonly action = 'service_order_create';
   private readonly logger = new Logger(ServiceOrderCreateHandler.name);
 
-  constructor(private readonly oblRepository: OblRepository) {}
+  constructor(
+    private readonly oblRepository: OblRepository,
+    private readonly oblNotifications: OblNotificationService,
+  ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
     const parsed = serviceOrderCreatePayloadSchema.safeParse(payload);
@@ -52,6 +56,19 @@ export class ServiceOrderCreateHandler implements OdlActionHandler {
       created_event_seq: ctx.eventSeq,
       transaction_id: ctx.transactionId,
       created_at: hiveBlockTimestampToDate(ctx.timestamp),
+    });
+
+    this.oblNotifications.emit(ctx, {
+      type: 'obl_service_order_create',
+      objectId: null,
+      actor: data.creator,
+      payload: {
+        serviceOrderId: data.service_order_id,
+        contractId: contract.contract_id,
+        creator: data.creator,
+        provider: contract.provider,
+        client: contract.client,
+      },
     });
   }
 }

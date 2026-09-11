@@ -4,7 +4,8 @@ import { z } from 'zod';
 import { OblRepository } from '../../../repositories/obl.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
 import { invoiceIssuePayloadSchema } from '../obl-envelope.schema';
-import { normalizePair, toUsdString, asJsonValue } from '../obl.utils';
+import { OblNotificationService } from '../obl-notification.service';
+import { normalizePair, toUsdString, asJsonValue, sumUsdAmounts } from '../obl.utils';
 
 type NormalizedLine = {
   beneficiary: string;
@@ -17,7 +18,10 @@ export class InvoiceIssueHandler implements OdlActionHandler {
   readonly action = 'invoice_issue';
   private readonly logger = new Logger(InvoiceIssueHandler.name);
 
-  constructor(private readonly oblRepository: OblRepository) {}
+  constructor(
+    private readonly oblRepository: OblRepository,
+    private readonly oblNotifications: OblNotificationService,
+  ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
     const parsed = invoiceIssuePayloadSchema.safeParse(payload);
@@ -119,6 +123,20 @@ export class InvoiceIssueHandler implements OdlActionHandler {
       }
 
       await this.oblRepository.insertObligationLines(obligationLines, trx);
+    });
+
+    this.oblNotifications.emit(ctx, {
+      type: 'obl_invoice_issue',
+      objectId: null,
+      actor: data.issuer,
+      payload: {
+        invoiceId: data.invoice_id,
+        issuer: data.issuer,
+        debtor: data.debtor,
+        beneficiaries: [...new Set(lines.map((line) => line.beneficiary))],
+        amountUsd: sumUsdAmounts(lines.map((line) => line.amountUsd)),
+        contractId: data.contract_id ?? null,
+      },
     });
   }
 

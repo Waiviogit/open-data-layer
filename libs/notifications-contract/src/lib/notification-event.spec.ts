@@ -22,6 +22,8 @@ describe('NotificationEvent contract', () => {
     expect(NOTIFICATION_EVENT_TYPES.length).toBeGreaterThan(5);
     expect(NOTIFICATION_EVENT_TYPES).toContain('follow');
     expect(NOTIFICATION_EVENT_TYPES).toContain('transfer_in');
+    expect(NOTIFICATION_EVENT_TYPES).toContain('obl_invoice_issue');
+    expect(NOTIFICATION_EVENT_TYPES).toContain('obl_contract_sign');
   });
 
   it('accepts legacy update_vote_cast payload without updateType or authorPermlink', () => {
@@ -143,6 +145,26 @@ describe('NotificationEvent contract', () => {
         symbolIn: 'DEC',
         symbolOutQuantity: '0.25',
         symbolInQuantity: '148.48',
+      },
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it('accepts obl_invoice_issue payload', () => {
+    const parsed = notificationEventSchema.safeParse({
+      type: 'obl_invoice_issue',
+      occurredAt: '2026-04-16T10:00:00.000Z',
+      blockNum: 1,
+      trxId: 'abc',
+      objectId: null,
+      actor: 'alice',
+      payload: {
+        invoiceId: 'inv-1',
+        issuer: 'alice',
+        debtor: 'bob',
+        beneficiaries: ['alice'],
+        amountUsd: '10.00000000',
+        contractId: 'c-1',
       },
     });
     expect(parsed.success).toBe(true);

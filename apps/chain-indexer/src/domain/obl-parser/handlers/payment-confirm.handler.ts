@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OblRepository } from '../../../repositories/obl.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
 import { paymentConfirmPayloadSchema } from '../obl-envelope.schema';
+import { OblNotificationService } from '../obl-notification.service';
 import { normalizePair, toUsdString, asJsonValue } from '../obl.utils';
 
 @Injectable()
@@ -10,7 +11,10 @@ export class PaymentConfirmHandler implements OdlActionHandler {
   readonly action = 'payment_confirm';
   private readonly logger = new Logger(PaymentConfirmHandler.name);
 
-  constructor(private readonly oblRepository: OblRepository) {}
+  constructor(
+    private readonly oblRepository: OblRepository,
+    private readonly oblNotifications: OblNotificationService,
+  ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
     const parsed = paymentConfirmPayloadSchema.safeParse(payload);
@@ -48,6 +52,18 @@ export class PaymentConfirmHandler implements OdlActionHandler {
       await this.oblRepository.updatePayment(data.declare_payment_id, {
         state: 'confirmed',
         amount_usd: confirmUsd,
+      });
+      this.oblNotifications.emit(ctx, {
+        type: 'obl_payment_confirm',
+        objectId: null,
+        actor: data.receiver,
+        payload: {
+          paymentId: data.declare_payment_id,
+          payer: pending.payer,
+          receiver: data.receiver,
+          amountUsd: confirmUsd,
+          state: 'confirmed',
+        },
       });
       return;
     }
@@ -88,6 +104,19 @@ export class PaymentConfirmHandler implements OdlActionHandler {
       created_event_seq: ctx.eventSeq,
       transaction_id: ctx.transactionId,
       created_at: createdAt,
+    });
+
+    this.oblNotifications.emit(ctx, {
+      type: 'obl_payment_confirm',
+      objectId: null,
+      actor: data.receiver,
+      payload: {
+        paymentId: data.payment_id,
+        payer: data.payer,
+        receiver: data.receiver,
+        amountUsd: confirmUsd,
+        state: 'confirmed',
+      },
     });
   }
 }

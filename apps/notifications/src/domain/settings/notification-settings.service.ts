@@ -28,6 +28,7 @@ type SettingsColumn = keyof Pick<
   | 'group_id_control'
   | 'followed_user_threads'
   | 'messages'
+  | 'obl'
 >;
 
 const TYPE_TO_SETTING: Partial<Record<NotificationEventType, SettingsColumn>> = {
@@ -57,6 +58,17 @@ const TYPE_TO_SETTING: Partial<Record<NotificationEventType, SettingsColumn>> = 
   update_vote_cast: 'claimed_object_updates',
   message_direct: 'messages',
   message_group: 'messages',
+  obl_offer_publish: 'obl',
+  obl_offer_update: 'obl',
+  obl_offer_retire: 'obl',
+  obl_contract_sign: 'obl',
+  obl_service_order_create: 'obl',
+  obl_report_create: 'obl',
+  obl_invoice_issue: 'obl',
+  obl_payment_declare: 'obl',
+  obl_payment_confirm: 'obl',
+  obl_dispute_open: 'obl',
+  obl_dispute_resolve: 'obl',
 };
 
 const MINIMAL_TRANSFER_TYPES = new Set<NotificationEventType>([

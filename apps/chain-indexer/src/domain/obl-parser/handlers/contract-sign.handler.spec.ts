@@ -2,6 +2,7 @@ import type { OdlEventContext } from '../../odl-shared';
 import type { OblRepository } from '../../../repositories/obl.repository';
 import { ContractSignHandler } from './contract-sign.handler';
 import { OblOffer } from '@opden-data-layer/odl-db-types';
+import { mockOblNotifications } from '../obl-notification.service.spec-helpers';
 
 const baseOffer: OblOffer = {
   offer_id: 'offer-1',
@@ -46,6 +47,7 @@ describe('ContractSignHandler', () => {
   let runInTransaction: jest.Mock;
   let insertContract: jest.Mock;
   let promotePendingLinesForPair: jest.Mock;
+  let oblNotifications: ReturnType<typeof mockOblNotifications>;
 
   beforeEach(() => {
     findOfferVersion = jest.fn();
@@ -55,6 +57,7 @@ describe('ContractSignHandler', () => {
     runInTransaction = jest.fn(async (fn: (trx: unknown) => Promise<void>) => fn({}));
     insertContract = jest.fn().mockResolvedValue(undefined);
     promotePendingLinesForPair = jest.fn();
+    oblNotifications = mockOblNotifications();
     handler = new ContractSignHandler({
       findOfferVersion,
       findContract,
@@ -64,7 +67,7 @@ describe('ContractSignHandler', () => {
       insertContract,
       insertLedger: jest.fn(),
       promotePendingLinesForPair,
-    } as unknown as OblRepository);
+    } as unknown as OblRepository, oblNotifications.service);
   });
 
   it('rejects when provider does not match offer author', async () => {
@@ -98,6 +101,19 @@ describe('ContractSignHandler', () => {
     );
     expect(runInTransaction).toHaveBeenCalled();
     expect(insertContract).toHaveBeenCalled();
+    expect(oblNotifications.emit).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        type: 'obl_contract_sign',
+        actor: 'bob',
+        payload: expect.objectContaining({
+          contractId: 'c-1',
+          provider: 'alice',
+          client: 'bob',
+          signer: 'bob',
+        }),
+      }),
+    );
   });
 
   it('rejects duplicate contract for same offer and pair', async () => {
@@ -118,6 +134,7 @@ describe('ContractSignHandler', () => {
       ctx('bob'),
     );
     expect(insertContract).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).not.toHaveBeenCalled();
   });
 
   it('stores metadata on contract insert', async () => {

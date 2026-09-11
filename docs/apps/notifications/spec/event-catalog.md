@@ -109,6 +109,23 @@ Emitted from **chain-indexer** `MessageCreateHandler` after `message_create` is 
 
 Message text is **never** included in the payload.
 
+## OBL (Open Business Layer)
+
+Emitted from **chain-indexer** OBL handlers after a successful persist. See [OBL lifecycle notifications](../../../spec/obl/notifications.md).
+
+| Type | Payload highlights | Typical recipients |
+|------|-------------------|-------------------|
+| `obl_offer_publish` / `obl_offer_update` | `offerId`, `version`, `kind`, `name`, `author`, `arbiter` | Author + arbiter |
+| `obl_offer_retire` | `offerId`, `version`, `kind`, `name`, `author` | Author |
+| `obl_contract_sign` | `contractId`, `offerId`, `provider`, `client`, `signer` | Provider and client |
+| `obl_service_order_create` | `serviceOrderId`, `contractId`, `creator`, `provider`, `client` | Contract parties |
+| `obl_report_create` | `reportId`, `contractId`, `author`, `provider`, `client` | Contract parties |
+| `obl_invoice_issue` | `invoiceId`, `issuer`, `debtor`, `beneficiaries`, `amountUsd`, `contractId` | Issuer, debtor, beneficiaries |
+| `obl_payment_declare` / `obl_payment_confirm` | `paymentId`, `payer`, `receiver`, `amountUsd`, `state` | Payer and receiver |
+| `obl_dispute_open` / `obl_dispute_resolve` | `disputeId`, `invoiceId`, `disputant`, `resolver`, `debtor`, `beneficiaries`, `amountUsd` | Invoice parties + resolver |
+
+`objectId` is always `null`. Self-actions (`issuer === debtor`) notify once.
+
 ## Settings gating
 
 `apps/notifications` maps each type to a column on `user_notification_settings` and applies `minimal_transfer` (USD) for inbound transfers via `@opden-data-layer/currency`. If USD rates are unavailable, transfer notifications are **not** dropped.
@@ -125,6 +142,7 @@ Message text is **never** included in the payload.
 | `group_id_control` | `object_update`, `object_update_reject` | when `payload.updateType === productGroupId`, `false` → block |
 | `followed_user_threads` | `bell_thread`, `thread_author_follower` | `false` → block |
 | `messages` | `message_direct`, `message_group` | `false` → block |
+| `obl` | all `obl_*` types | `false` → block |
 
 `bell_object_message` is **not** gated by `messages` (object bell only). `object_status_change` is **not** gated by user settings (column removed in migration `00050`).
 

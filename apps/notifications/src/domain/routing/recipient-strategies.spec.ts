@@ -1,5 +1,5 @@
 import type { AnyNotificationEvent } from '@opden-data-layer/notifications-contract';
-import { DirectRecipientStrategy } from './recipient-strategies';
+import { DirectRecipientStrategy, OblRecipientStrategy } from './recipient-strategies';
 
 describe('DirectRecipientStrategy', () => {
   const strategy = new DirectRecipientStrategy();
@@ -114,5 +114,165 @@ describe('DirectRecipientStrategy', () => {
       },
     } as AnyNotificationEvent);
     expect(recipients).toEqual(['nervi']);
+  });
+});
+
+describe('OblRecipientStrategy', () => {
+  const strategy = new OblRecipientStrategy();
+
+  it('notifies author and arbiter on offer publish', async () => {
+    const recipients = await strategy.resolveRecipients({
+      type: 'obl_offer_publish',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'alice',
+      payload: {
+        offerId: 'offer-1',
+        version: 1,
+        kind: 'offer',
+        name: 'API',
+        author: 'alice',
+        arbiter: 'carol',
+      },
+    } as AnyNotificationEvent);
+    expect(recipients).toEqual(['alice', 'carol']);
+  });
+
+  it('dedupes invoice parties case-insensitively', async () => {
+    const recipients = await strategy.resolveRecipients({
+      type: 'obl_invoice_issue',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'alice',
+      payload: {
+        invoiceId: 'inv-1',
+        issuer: 'alice',
+        debtor: 'Alice',
+        beneficiaries: ['alice', 'bob'],
+        amountUsd: '10.00000000',
+        contractId: null,
+      },
+    } as AnyNotificationEvent);
+    expect(recipients).toEqual(['alice', 'bob']);
+  });
+
+  it('includes contract parties on sign', async () => {
+    const recipients = await strategy.resolveRecipients({
+      type: 'obl_contract_sign',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'bob',
+      payload: {
+        contractId: 'c-1',
+        offerId: 'offer-1',
+        provider: 'alice',
+        client: 'bob',
+        signer: 'bob',
+      },
+    } as AnyNotificationEvent);
+    expect(recipients).toEqual(['bob', 'alice']);
+  });
+
+  it('includes actor even when omitted from payload parties', async () => {
+    const recipients = await strategy.resolveRecipients({
+      type: 'obl_offer_retire',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'dave',
+      payload: {
+        offerId: 'offer-1',
+        version: 1,
+        kind: 'offer',
+        name: 'API',
+        author: 'alice',
+      },
+    } as AnyNotificationEvent);
+    expect(recipients).toEqual(['dave', 'alice']);
+  });
+
+  it('notifies author only on offer retire', async () => {
+    const recipients = await strategy.resolveRecipients({
+      type: 'obl_offer_retire',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'alice',
+      payload: {
+        offerId: 'offer-1',
+        version: 2,
+        kind: 'offer',
+        name: 'API',
+        author: 'alice',
+      },
+    } as AnyNotificationEvent);
+    expect(recipients).toEqual(['alice']);
+  });
+
+  it('notifies contract parties on service order create', async () => {
+    const recipients = await strategy.resolveRecipients({
+      type: 'obl_service_order_create',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'alice',
+      payload: {
+        serviceOrderId: 'so-1',
+        contractId: 'c-1',
+        creator: 'alice',
+        provider: 'alice',
+        client: 'bob',
+      },
+    } as AnyNotificationEvent);
+    expect(recipients).toEqual(['alice', 'bob']);
+  });
+
+  it('notifies payer and receiver on payment declare', async () => {
+    const recipients = await strategy.resolveRecipients({
+      type: 'obl_payment_declare',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'bob',
+      payload: {
+        paymentId: 'pay-1',
+        payer: 'bob',
+        receiver: 'alice',
+        amountUsd: '10.00000000',
+        state: 'pending',
+      },
+    } as AnyNotificationEvent);
+    expect(recipients).toEqual(['bob', 'alice']);
+  });
+
+  it('drops null resolver on dispute open', async () => {
+    const recipients = await strategy.resolveRecipients({
+      type: 'obl_dispute_open',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'bob',
+      payload: {
+        disputeId: 'd-1',
+        invoiceId: 'inv-1',
+        disputant: 'bob',
+        resolver: null,
+        debtor: 'bob',
+        beneficiaries: ['alice'],
+        amountUsd: '7.00000000',
+      },
+    } as AnyNotificationEvent);
+    expect(recipients).toEqual(['bob', 'alice']);
   });
 });

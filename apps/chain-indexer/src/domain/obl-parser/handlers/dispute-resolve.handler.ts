@@ -4,6 +4,7 @@ import { OblDisputeRule } from '@opden-data-layer/odl-db-types';
 import { OblRepository } from '../../../repositories/obl.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
 import { disputeResolvePayloadSchema } from '../obl-envelope.schema';
+import { OblNotificationService } from '../obl-notification.service';
 import { toUsdString } from '../obl.utils';
 
 function sumAmountUsd(lines: readonly { amount_usd: string }[]): string {
@@ -16,7 +17,10 @@ export class DisputeResolveHandler implements OdlActionHandler {
   readonly action = 'dispute_resolve';
   private readonly logger = new Logger(DisputeResolveHandler.name);
 
-  constructor(private readonly oblRepository: OblRepository) {}
+  constructor(
+    private readonly oblRepository: OblRepository,
+    private readonly oblNotifications: OblNotificationService,
+  ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
     const parsed = disputeResolvePayloadSchema.safeParse(payload);
@@ -122,6 +126,21 @@ export class DisputeResolveHandler implements OdlActionHandler {
         { state: 'resolved', final_amount_usd: finalUsd },
         trx,
       );
+    });
+
+    this.oblNotifications.emit(ctx, {
+      type: 'obl_dispute_resolve',
+      objectId: null,
+      actor: data.resolver,
+      payload: {
+        disputeId: data.dispute_id,
+        invoiceId: dispute.invoice_id,
+        disputant: dispute.disputant,
+        resolver: data.resolver,
+        debtor: invoice.debtor,
+        beneficiaries: [...new Set(lines.map((line) => line.beneficiary))],
+        amountUsd: finalUsd,
+      },
     });
   }
 

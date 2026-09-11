@@ -29,6 +29,7 @@ Registered in `RecipientStrategyRegistry` (`domain/routing/`):
 | **UserBell** | `bell_post`, `bell_reblog`, `bell_follow`, `bell_object_post`, `bell_thread` | `user_subscriptions.bell` subscribers or object bell followers |
 | **ThreadAuthorFollower** | `thread_author_follower` | `payload.mentions` + account bell subscribers of `payload.author` |
 | **ChannelMessaging** | `message_direct`, `message_group`, `bell_object_message` | Channel members minus author (DM/group); object bell followers minus author (`bell_object_message`) |
+| **Obl** | `obl_*` | Unique involved accounts from payload (including actor) |
 
 First matching strategy wins. `object_created` is intentionally dropped (use `object_update`). `trx_processed` pushes to WS subscribers for `trxId` only.
 

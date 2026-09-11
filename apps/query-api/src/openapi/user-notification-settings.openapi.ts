@@ -30,6 +30,7 @@ const userNotificationSettingsViewSchema = registry.register(
     my_like: z.boolean(),
     minimal_transfer: z.number(),
     messages: z.boolean(),
+    obl: z.boolean(),
   }),
 );
 

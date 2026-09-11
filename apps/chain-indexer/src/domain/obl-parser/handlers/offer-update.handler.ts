@@ -4,6 +4,7 @@ import { ObjectsCoreRepository } from '../../../repositories';
 import { OblRepository } from '../../../repositories/obl.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
 import { offerUpdatePayloadSchema } from '../obl-envelope.schema';
+import { OblNotificationService } from '../obl-notification.service';
 import { isLegalRefType, isServiceRefType, asJsonValue } from '../obl.utils';
 
 @Injectable()
@@ -14,6 +15,7 @@ export class OfferUpdateHandler implements OdlActionHandler {
   constructor(
     private readonly oblRepository: OblRepository,
     private readonly objectsCoreRepository: ObjectsCoreRepository,
+    private readonly oblNotifications: OblNotificationService,
   ) {}
 
   async handle(payload: Record<string, unknown>, ctx: OdlEventContext): Promise<void> {
@@ -83,6 +85,20 @@ export class OfferUpdateHandler implements OdlActionHandler {
       created_event_seq: ctx.eventSeq,
       transaction_id: ctx.transactionId,
       created_at: hiveBlockTimestampToDate(ctx.timestamp),
+    });
+
+    this.oblNotifications.emit(ctx, {
+      type: 'obl_offer_update',
+      objectId: null,
+      actor: latest.author,
+      payload: {
+        offerId: latest.offer_id,
+        version: latest.version + 1,
+        kind: latest.kind,
+        name: data.name ?? latest.name,
+        author: latest.author,
+        arbiter,
+      },
     });
   }
 }

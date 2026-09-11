@@ -2,6 +2,7 @@ import type { OdlEventContext } from '../../odl-shared';
 import type { OblRepository } from '../../../repositories/obl.repository';
 import { PaymentConfirmHandler } from './payment-confirm.handler';
 import { OblPayment } from '@opden-data-layer/odl-db-types';
+import { mockOblNotifications } from '../obl-notification.service.spec-helpers';
 
 const pendingPayment: OblPayment = {
   payment_id: 'pay-declare',
@@ -44,11 +45,15 @@ describe('PaymentConfirmHandler', () => {
       state: 'confirmed',
     });
     const updatePayment = jest.fn();
+    const oblNotifications = mockOblNotifications();
 
-    const handler = new PaymentConfirmHandler({
-      findPayment,
-      updatePayment,
-    } as unknown as OblRepository);
+    const handler = new PaymentConfirmHandler(
+      {
+        findPayment,
+        updatePayment,
+      } as unknown as OblRepository,
+      oblNotifications.service,
+    );
 
     await handler.handle(
       {
@@ -61,6 +66,7 @@ describe('PaymentConfirmHandler', () => {
     );
 
     expect(updatePayment).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).not.toHaveBeenCalled();
   });
 
   it('confirms declare row with partial amount and does not insert remainder', async () => {
@@ -68,11 +74,12 @@ describe('PaymentConfirmHandler', () => {
     const updatePayment = jest.fn().mockResolvedValue(undefined);
     const insertPayment = jest.fn().mockResolvedValue(undefined);
 
+    const oblNotifications = mockOblNotifications();
     const handler = new PaymentConfirmHandler({
       findPayment,
       updatePayment,
       insertPayment,
-    } as unknown as OblRepository);
+    } as unknown as OblRepository, oblNotifications.service);
 
     await handler.handle(
       {
@@ -89,6 +96,20 @@ describe('PaymentConfirmHandler', () => {
       amount_usd: '40.00000000',
     });
     expect(insertPayment).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        type: 'obl_payment_confirm',
+        actor: 'alice',
+        payload: expect.objectContaining({
+          paymentId: 'pay-declare',
+          payer: 'bob',
+          receiver: 'alice',
+          amountUsd: '40.00000000',
+          state: 'confirmed',
+        }),
+      }),
+    );
   });
 
   it('confirms declare row with over-amount and does not insert excess row', async () => {
@@ -100,7 +121,7 @@ describe('PaymentConfirmHandler', () => {
       findPayment,
       updatePayment,
       insertPayment,
-    } as unknown as OblRepository);
+    } as unknown as OblRepository, mockOblNotifications().service);
 
     await handler.handle(
       {
@@ -124,11 +145,12 @@ describe('PaymentConfirmHandler', () => {
     const findLedgerStartedSeq = jest.fn().mockResolvedValue(BigInt(10));
     const insertPayment = jest.fn().mockResolvedValue(undefined);
 
+    const oblNotifications = mockOblNotifications();
     const handler = new PaymentConfirmHandler({
       findPayment,
       findLedgerStartedSeq,
       insertPayment,
-    } as unknown as OblRepository);
+    } as unknown as OblRepository, oblNotifications.service);
 
     await handler.handle(
       {
@@ -149,6 +171,20 @@ describe('PaymentConfirmHandler', () => {
           receiver_only_confirm: true,
           note: 'Cash received',
         },
+      }),
+    );
+    expect(oblNotifications.emit).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        type: 'obl_payment_confirm',
+        actor: 'alice',
+        payload: expect.objectContaining({
+          paymentId: 'pay-recv-only',
+          payer: 'bob',
+          receiver: 'alice',
+          amountUsd: '25.00000000',
+          state: 'confirmed',
+        }),
       }),
     );
   });

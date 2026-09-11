@@ -2,6 +2,7 @@ import type { OdlEventContext } from '../../odl-shared';
 import type { OblRepository } from '../../../repositories/obl.repository';
 import { ServiceOrderCreateHandler } from './service-order-create.handler';
 import { OblContract } from '@opden-data-layer/odl-db-types';
+import { mockOblNotifications } from '../obl-notification.service.spec-helpers';
 
 const contract: OblContract = {
   contract_id: 'c-1',
@@ -40,16 +41,21 @@ describe('ServiceOrderCreateHandler', () => {
   let findServiceOrder: jest.Mock;
   let findContract: jest.Mock;
   let insertServiceOrder: jest.Mock;
+  let oblNotifications: ReturnType<typeof mockOblNotifications>;
 
   beforeEach(() => {
     findServiceOrder = jest.fn().mockResolvedValue(null);
     findContract = jest.fn().mockResolvedValue(contract);
     insertServiceOrder = jest.fn().mockResolvedValue(undefined);
-    handler = new ServiceOrderCreateHandler({
-      findServiceOrder,
-      findContract,
-      insertServiceOrder,
-    } as unknown as OblRepository);
+    oblNotifications = mockOblNotifications();
+    handler = new ServiceOrderCreateHandler(
+      {
+        findServiceOrder,
+        findContract,
+        insertServiceOrder,
+      } as unknown as OblRepository,
+      oblNotifications.service,
+    );
   });
 
   it('inserts service order when creator is a contract party', async () => {
@@ -71,6 +77,10 @@ describe('ServiceOrderCreateHandler', () => {
         client: 'bob',
       }),
     );
+    expect(oblNotifications.emit).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ type: 'obl_service_order_create', actor: 'alice' }),
+    );
   });
 
   it('rejects creator mismatch with ctx', async () => {
@@ -83,6 +93,7 @@ describe('ServiceOrderCreateHandler', () => {
       ctx('bob'),
     );
     expect(insertServiceOrder).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).not.toHaveBeenCalled();
   });
 
   it('rejects creator who is not a contract party', async () => {
@@ -95,6 +106,7 @@ describe('ServiceOrderCreateHandler', () => {
       ctx('carol'),
     );
     expect(insertServiceOrder).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).not.toHaveBeenCalled();
   });
 
   it('skips when service order already exists', async () => {
@@ -108,6 +120,7 @@ describe('ServiceOrderCreateHandler', () => {
       ctx('bob'),
     );
     expect(insertServiceOrder).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).not.toHaveBeenCalled();
   });
 
   it('skips when contract not found', async () => {
@@ -121,5 +134,6 @@ describe('ServiceOrderCreateHandler', () => {
       ctx('alice'),
     );
     expect(insertServiceOrder).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).not.toHaveBeenCalled();
   });
 });

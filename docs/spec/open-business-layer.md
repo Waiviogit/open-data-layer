@@ -16,6 +16,7 @@ related:
   - docs/spec/obl/reports.md
   - docs/apps/chain-indexer/spec/obl-parser.md
   - docs/apps/query-api/spec/obl.md
+  - docs/spec/obl/notifications.md
 ---
 
 # Open Business Layer (OBL)
@@ -54,6 +55,7 @@ Catalog ODL objects remain on `odl-mainnet` / `odl-testnet`.
 | [disputes.md](obl/disputes.md) | Dispute open/resolve rules |
 | [service-orders.md](obl/service-orders.md) | Immutable service orders |
 | [reports.md](obl/reports.md) | Immutable reports |
+| [notifications.md](obl/notifications.md) | Lifecycle notifications for OBL actions |
 
 ## App specs
 

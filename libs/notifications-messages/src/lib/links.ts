@@ -33,6 +33,39 @@ export function inboxPath(username: string, channelId: string): string {
   return `/@${encodeURIComponent(username)}/messages?channel=${encodeURIComponent(channelId)}`;
 }
 
+export function oblPublicOfferPath(
+  kind: 'offer' | 'request',
+  offerId: string,
+  version: number,
+): string {
+  const base = kind === 'request' ? '/requests' : '/offers';
+  return `${base}/${encodeURIComponent(offerId)}/versions/${version}`;
+}
+
+export function oblContractPath(contractId: string): string {
+  return `/business/contracts/${encodeURIComponent(contractId)}`;
+}
+
+export function oblServiceOrderPath(serviceOrderId: string): string {
+  return `/business/service-orders/${encodeURIComponent(serviceOrderId)}`;
+}
+
+export function oblReportPath(reportId: string): string {
+  return `/business/reports/${encodeURIComponent(reportId)}`;
+}
+
+export function oblInvoicePath(invoiceId: string): string {
+  return `/business/invoices/${encodeURIComponent(invoiceId)}`;
+}
+
+export function oblDisputePath(disputeId: string): string {
+  return `/business/disputes/${encodeURIComponent(disputeId)}`;
+}
+
+export function oblRelationshipPath(account: string): string {
+  return `/business/relationships/${encodeURIComponent(account)}`;
+}
+
 export type WalletTabType = 'WAIV' | 'HIVE' | 'ENGINE';
 
 /** Maps token/currency symbol to web wallet tab — legacy getWalletType parity. */
