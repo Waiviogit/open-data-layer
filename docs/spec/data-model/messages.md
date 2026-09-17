@@ -62,3 +62,23 @@ Migration: `00061_messages_linked_object_ids.ts`
 Index-time only — **not** broadcast on chain. DM/group channels always store `{}` even if the body contains object links.
 
 Messages are **not** stored in `object_updates`.
+
+## Activity dedup (object channels)
+
+Migration: `00064_messages_activity_dedup.ts`
+
+| Column | Purpose |
+|--------|---------|
+| `source_platform` / `source_id` | Origin platform identity; both null or both set |
+| `text_simhash` | `BIGINT` SimHash of original caption (agent-supplied) |
+| `image_phashes` | `BIGINT[]` pHashes of original images |
+| `fingerprint_v` | Algorithm version; rows of different versions are never compared |
+| `dup_group_id` | Cluster root `message_id`; equals `message_id` on canonical rows |
+
+Indexes:
+
+- `uq_messages_source` unique on `(channel_id, source_platform, source_id)` where platform set
+- `idx_messages_dedup_window` on `(channel_id, COALESCE(original_created_at_unix, created_at_unix) DESC)` where `fingerprint_v IS NOT NULL`
+- `idx_messages_dup_group` on `(dup_group_id)`
+
+Deleting a cluster root promotes the earliest remaining member to root and repoints members in the same transaction.

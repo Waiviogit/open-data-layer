@@ -20,7 +20,8 @@ tags: [query-api, messaging]
 | GET | `/query/v1/channels/by-alias/{alias}` | Resolve `dm:` / `obj:` aliases |
 | POST | `/query/v1/channels/{id}/messages` | Keyset cursor `(created_at_unix, event_seq)` |
 | GET | `/query/v1/objects/{object_id}/channel` | Default object channel meta |
-| POST | `/query/v1/objects/{object_id}/channel/messages` | Public read; native channel **optional**; unions native + mention rows; governance + viewer mute filters; keyset cursor `(COALESCE(original_created_at_unix, created_at_unix), event_seq)` |
+| POST | `/query/v1/objects/{object_id}/channel/messages` | Public read; native channel **optional**; unions native + mention rows; governance + viewer mute filters; keyset cursor `(COALESCE(original_created_at_unix, created_at_unix), event_seq)`; optional `include_duplicates` (default false — canonical rows only) |
+| POST | `/query/v1/objects/{object_id}/channel/messages/dedup-check` | Preflight duplicate check before broadcasting archival imports; echoes fingerprint |
 | GET | `/query/v1/users/{account}/memo-public-key` | Public memo key for encryption; 404 if account missing |
 
 ## Message DTO encryption fields
@@ -33,6 +34,9 @@ tags: [query-api, messaging]
 | `encryption` | `{ v, mode, to }` or `null` |
 | `updated_at_unix` | Unix seconds when author last edited plaintext body, or `null` |
 | `source_object` | `{ object_id, name }` when the message appears on an object Activity feed via `linked_object_ids` (mention cross-post); `null` on native-channel rows |
+| `source` | `{ platform, id }` from on-chain import metadata, or `null` |
+| `duplicate_of` | Cluster root `message_id` when this row is a near-duplicate member; `null` on canonical rows |
+| `duplicate_count` | Number of rows sharing the cluster root (including the canonical row) |
 
 Server **never** decrypts. Channel list preview: encrypted last message → `last_message_preview: null`, `last_message_encrypted: true` (ciphertext never in preview).
 
@@ -75,3 +79,35 @@ Dissolved channels (`dissolved_at_unix` set) return 404 and are excluded from `G
 Response: `{ results: [{ account, addable, reason? }] }` where `reason` is one of `muted_by_viewer`, `muted_viewer`, `governance_muted`, `already_member`, `group_full`.
 
 Max group size: **100** members (including creator).
+
+## Activity dedup preflight
+
+`POST /query/v1/objects/{object_id}/channel/messages/dedup-check`
+
+Body (at least one of `source`, `original_text`, `text_simhash`, `image_phashes`):
+
+```json
+{
+  "source": { "platform": "instagram", "id": "ABC123" },
+  "original_text": "ORIGINAL caption before rewriting",
+  "original_created_at_unix": 1700000000
+}
+```
+
+Response:
+
+```json
+{
+  "duplicate": false,
+  "reason": null,
+  "match": null,
+  "fingerprint": { "v": 1, "text_simhash": "…", "normalized_length": 120 },
+  "candidates_scanned": 3
+}
+```
+
+- `404` — unknown object
+- `duplicate: false` — not a duplicate (distinct from transport errors)
+- `fingerprint` echo — use the same `text_simhash` + `fp_v` when broadcasting
+
+MCP: `check_object_activity_duplicate`. Algorithm: [activity-fingerprint.md](../../../spec/osl/activity-fingerprint.md).

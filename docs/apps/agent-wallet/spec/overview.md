@@ -87,7 +87,8 @@ Leo object threads (Reviews > Threads) are **not** built by agent-wallet — see
 | `ipfs_upload_file` | `{ cid }` — ODL envelope JSON via `/upload/file` (optional `account`; max 10 MiB) |
 | `wallet_broadcast` / `wallet_broadcast_status` | mode-aware broadcast (HAS or local keys; optional `account` signer) |
 | `osl_build_channel_create` | group / object `channel_create` envelope |
-| `osl_build_message_create` | plaintext `message_create` |
+| `osl_activity_fingerprint` | SimHash of original caption (no network; for archival imports) |
+| `osl_build_message_create` | plaintext `message_create` (optional `source` for archival imports) |
 | `osl_build_encrypted_message_create` | encrypted `message_create` (local memo only) |
 | `osl_memo_encrypt` / `osl_memo_decrypt` | memo crypto helpers |
 | `notifications_pull` / `notifications_status` | WS notification bridge for inbound messaging |

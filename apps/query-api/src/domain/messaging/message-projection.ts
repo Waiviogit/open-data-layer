@@ -11,6 +11,11 @@ export type MessageSourceObjectDto = {
   name: string;
 };
 
+export type MessageSourceDto = {
+  platform: string;
+  id: string;
+};
+
 export type MessageDto = {
   message_id: string;
   channel_id: string;
@@ -27,6 +32,9 @@ export type MessageDto = {
   original_created_at_unix: number | null;
   updated_at_unix: number | null;
   source_object: MessageSourceObjectDto | null;
+  source: MessageSourceDto | null;
+  duplicate_of: string | null;
+  duplicate_count: number;
 };
 
 export function mapMessageToDto(
@@ -35,6 +43,7 @@ export function mapMessageToDto(
     requestedObjectId?: string;
     channelObjectId?: string | null;
     sourceNameByObjectId?: ReadonlyMap<string, string>;
+    duplicateCount?: number;
   },
 ): MessageDto {
   const encryption: MessageEncryptionDto | null =
@@ -63,6 +72,14 @@ export function mapMessageToDto(
     source_object = { object_id: channelObjectId, name };
   }
 
+  const source: MessageSourceDto | null =
+    row.source_platform != null && row.source_id != null
+      ? { platform: row.source_platform, id: row.source_id }
+      : null;
+
+  const duplicateCount = options?.duplicateCount ?? 1;
+  const isCanonical = row.message_id === row.dup_group_id;
+
   return {
     message_id: row.message_id,
     channel_id: row.channel_id,
@@ -79,6 +96,9 @@ export function mapMessageToDto(
     original_created_at_unix: row.original_created_at_unix,
     updated_at_unix: row.updated_at_unix,
     source_object,
+    source,
+    duplicate_of: isCanonical ? null : row.dup_group_id,
+    duplicate_count: duplicateCount,
   };
 }
 

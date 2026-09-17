@@ -19,4 +19,10 @@ describe('AGENT_WALLET_MCP_INSTRUCTIONS', () => {
     expect(AGENT_WALLET_MCP_INSTRUCTIONS).toContain('canSignLocally');
     expect(AGENT_WALLET_MCP_INSTRUCTIONS).toContain('has_broadcast with keyType active');
   });
+
+  it('documents object activity fingerprint and obj-ch channel ids', () => {
+    expect(AGENT_WALLET_MCP_INSTRUCTIONS).toContain('osl_activity_fingerprint');
+    expect(AGENT_WALLET_MCP_INSTRUCTIONS).toContain('check_object_activity_duplicate');
+    expect(AGENT_WALLET_MCP_INSTRUCTIONS).toContain('obj-ch-{objectId}');
+  });
 });

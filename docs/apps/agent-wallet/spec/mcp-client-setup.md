@@ -96,6 +96,7 @@ mcp_servers:
         - wallet_accounts
         - notifications_pull
         - notifications_status
+        - osl_activity_fingerprint
         - osl_build_message_create
         - osl_build_message_update
         - osl_build_message_delete

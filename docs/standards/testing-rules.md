@@ -92,7 +92,7 @@ End-to-end tests interact with the application as a user would. They should depe
 
 Use them for a limited number of critical user journeys because they are slower, more expensive, less precise diagnostically, and more fragile than lower-level tests.
 
-When E2E tests need Postgres locally, **do not connect to or mutate the dev database** (`.env`, local Docker Compose, or any database used for day-to-day development). Spin up a **dedicated test instance** instead. Use **`test`** for both the **database name** and **password** so test config cannot accidentally reuse dev credentials. CI may use its own credentials and setup.
+When E2E tests need Postgres locally, **do not connect to or mutate the dev database** (`.env`, local Docker Compose, or any database used for day-to-day development). Spin up a **dedicated test instance** instead. Use **`test`** for both the **database name** and **password** so test config cannot accidentally reuse dev credentials. CI may use its own credentials and setup. Migration constraint specs use the disposable harness in [test-postgres-harness.md](./test-postgres-harness.md) (`pnpm test:db`).
 
 ### Choosing the test distribution
 

@@ -1,0 +1,18 @@
+services:
+  postgres-test:
+    image: postgis/postgis:18-3.6
+    ports:
+      - '127.0.0.1:${POSTGRES_TEST_PORT:-55432}:5432'
+    environment:
+      POSTGRES_DB: test
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+    tmpfs:
+      - /var/lib/postgresql
+    command: >-
+      postgres -c fsync=off -c full_page_writes=off -c synchronous_commit=off
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U test -d test']
+      interval: 2s
+      timeout: 3s
+      retries: 30

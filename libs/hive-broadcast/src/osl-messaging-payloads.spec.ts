@@ -125,6 +125,61 @@ describe('osl-messaging-payloads', () => {
     expect(payload).not.toHaveProperty('quote_json');
   });
 
+  it('includes source with fingerprint fields when set', () => {
+    expect(
+      buildMessageCreatePayload({
+        channelId: 'obj-ch-rest-1',
+        body: 'rewritten caption',
+        originalCreatedAtUnix: 1_700_000_000,
+        source: {
+          platform: 'instagram',
+          id: 'ABC123',
+          fpV: 1,
+          textSimhash: '0f0f0f0f0f0f0f0f',
+          imagePHashes: ['aabbccddeeff0011'],
+        },
+      }),
+    ).toEqual({
+      channel_id: 'obj-ch-rest-1',
+      body: 'rewritten caption',
+      original_created_at_unix: 1_700_000_000,
+      source: {
+        platform: 'instagram',
+        id: 'ABC123',
+        fp_v: 1,
+        text_simhash: '0f0f0f0f0f0f0f0f',
+        image_phashes: ['aabbccddeeff0011'],
+      },
+    });
+  });
+
+  it('omits source when unset', () => {
+    const payload = buildMessageCreatePayload({ channelId: 'ch-1', body: 'hello' });
+    expect(payload).not.toHaveProperty('source');
+  });
+
+  it('TC-043: omits empty fingerprint fields from source (platform+id only)', () => {
+    expect(
+      buildMessageCreatePayload({
+        channelId: 'obj-ch-rest-1',
+        body: 'rewritten caption',
+        source: {
+          platform: 'instagram',
+          id: 'ABC123',
+          textSimhash: null,
+          imagePHashes: [],
+        },
+      }),
+    ).toEqual({
+      channel_id: 'obj-ch-rest-1',
+      body: 'rewritten caption',
+      source: {
+        platform: 'instagram',
+        id: 'ABC123',
+      },
+    });
+  });
+
   it('buildMessageUpdatePayload trims body and never emits encrypted_body', () => {
     const payload = buildMessageUpdatePayload({
       channelId: 'ch-1',

@@ -1,0 +1,14 @@
+{
+  "name": "@opden-data-layer/test-postgres",
+  "version": "0.0.1",
+  "private": true,
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "@opden-data-layer/odl-db-types": "workspace:*",
+    "kysely": "^0.28.17",
+    "pg": "^8.20.0",
+    "tslib": "^2.3.0"
+  }
+}

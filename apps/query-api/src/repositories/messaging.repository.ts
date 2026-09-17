@@ -9,6 +9,20 @@ import type { ChannelCursorPayload, MessageCursorPayload } from '../domain/messa
 
 export type ObjectActivityMessageRow = Message & {
   channel_object_id: string | null;
+  duplicate_count: number;
+};
+
+export type ActivityDedupCandidateRow = {
+  message_id: string;
+  dup_group_id: string;
+  text_simhash: bigint | null;
+  image_phashes: bigint[];
+  sort_time_unix: number;
+  event_seq: bigint;
+  source_platform: string | null;
+  source_id: string | null;
+  author: string;
+  body: string | null;
 };
 
 @Injectable()
@@ -66,6 +80,14 @@ export class MessagingRepository {
       .where('channel_aliases.alias', '=', alias)
       .executeTakeFirst();
     return row;
+  }
+
+  async findById(messageId: string): Promise<Message | undefined> {
+    return this.db
+      .selectFrom('messages')
+      .selectAll()
+      .where('message_id', '=', messageId)
+      .executeTakeFirst();
   }
 
   async findObjectChannel(objectId: string): Promise<Channel | undefined> {
@@ -271,25 +293,95 @@ export class MessagingRepository {
     return query.execute();
   }
 
+  async findObjectMessageBySource(
+    channelId: string,
+    platform: string,
+    sourceId: string,
+  ): Promise<Message | undefined> {
+    return this.db
+      .selectFrom('messages')
+      .selectAll()
+      .where('channel_id', '=', channelId)
+      .where('source_platform', '=', platform)
+      .where('source_id', '=', sourceId)
+      .executeTakeFirst();
+  }
+
+  async listActivityDedupCandidates(
+    channelId: string,
+    fingerprintV: number,
+    fromUnix: number,
+    toUnix: number,
+  ): Promise<ActivityDedupCandidateRow[]> {
+    const rows = await this.db
+      .selectFrom('messages')
+      .select([
+        'message_id',
+        'dup_group_id',
+        'text_simhash',
+        'image_phashes',
+        'event_seq',
+        'source_platform',
+        'source_id',
+        'author',
+        'body',
+      ])
+      .select(
+        sql<number>`COALESCE(original_created_at_unix, created_at_unix)`.as(
+          'sort_time_unix',
+        ),
+      )
+      .where('channel_id', '=', channelId)
+      .where('fingerprint_v', '=', fingerprintV)
+      .where(
+        sql<boolean>`COALESCE(original_created_at_unix, created_at_unix) BETWEEN ${fromUnix} AND ${toUnix}`,
+      )
+      .execute();
+
+    return rows.map((row) => ({
+      message_id: row.message_id,
+      dup_group_id: row.dup_group_id,
+      text_simhash: row.text_simhash,
+      image_phashes: row.image_phashes ?? [],
+      sort_time_unix: Number(row.sort_time_unix),
+      event_seq: row.event_seq,
+      source_platform: row.source_platform,
+      source_id: row.source_id,
+      author: row.author,
+      body: row.body,
+    }));
+  }
+
   async listObjectActivityMessages(
     objectId: string,
     excludedAuthors: readonly string[],
     cursor: MessageCursorPayload | null,
     limitPlusOne: number,
     forContextViewer?: string,
+    includeDuplicates = false,
   ): Promise<ObjectActivityMessageRow[]> {
     const sortTime = sql`COALESCE(m.original_created_at_unix, m.created_at_unix)`;
+    const duplicateCount = sql<number>`(
+      SELECT COUNT(*)::int
+      FROM messages d
+      WHERE d.dup_group_id = m.dup_group_id
+    )`.as('duplicate_count');
 
     let query = this.db
       .selectFrom('messages as m')
       .innerJoin('channels as c', 'c.channel_id', 'm.channel_id')
       .selectAll('m')
       .select('c.object_id as channel_object_id')
+      .select(duplicateCount)
       .where('c.kind', '=', 'object')
       .where(sql<boolean>`(c.object_id = ${objectId} OR ${objectId} = ANY(m.linked_object_ids))`)
       .orderBy(sortTime, 'desc')
       .orderBy('m.event_seq', 'desc')
       .limit(limitPlusOne);
+
+    if (!includeDuplicates) {
+      query = query.where(sql<boolean>`m.message_id = m.dup_group_id`);
+    }
 
     if (excludedAuthors.length > 0) {
       query = query.where('m.author', 'not in', excludedAuthors as string[]);

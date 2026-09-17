@@ -5,6 +5,7 @@ import {
   blockTimestampToUnixSeconds,
   buildDmAlias,
   buildDmChannelId,
+  ACTIVITY_DEDUP_WINDOW_SEC,
   buildOslMessageId,
   CHANNEL_ACCESS,
   CHANNEL_KINDS,
@@ -18,8 +19,13 @@ import { MessagesRepository } from '../../../repositories/messages.repository';
 import { ObjectsCoreRepository } from '../../../repositories/objects-core.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
 import { NotificationEmitterService } from '../../notification-adapter/notification-emitter.service';
-import { messageCreatePayloadSchema } from '../osl-envelope.schema';
+import {
+  messageCreatePayloadSchema,
+  type MessageCreatePayload,
+} from '../osl-envelope.schema';
+import { parseMessageSourceForObjectChannel } from '../parse-message-source';
 import { resolveOriginalCreatedAtUnix } from '../resolve-original-created-at-unix';
+import { resolveDupGroupId } from '../resolve-activity-dedup';
 
 @Injectable()
 export class MessageCreateHandler implements OdlActionHandler {
@@ -143,8 +149,21 @@ export class MessageCreateHandler implements OdlActionHandler {
       data.encrypted_body,
     );
 
+    const activityFields = await this.resolveActivityFields({
+      channelKind: channel.kind,
+      channelId: channelId!,
+      messageId,
+      source: data.source,
+      originalCreatedAtUnix,
+      createdAtUnix,
+    });
+    if (activityFields === 'skip') {
+      return;
+    }
+
+    let inserted = false;
     await this.channelsRepository.runInTransaction(async (trx) => {
-      await this.messagesRepository.insertMessage(
+      inserted = await this.messagesRepository.insertMessage(
         {
           message_id: messageId,
           channel_id: channelId!,
@@ -161,6 +180,12 @@ export class MessageCreateHandler implements OdlActionHandler {
           attachments: (data.attachments as JsonValue | undefined) ?? null,
           mentions,
           linked_object_ids: linkedObjectIds,
+          source_platform: activityFields.source_platform,
+          source_id: activityFields.source_id,
+          text_simhash: activityFields.text_simhash,
+          image_phashes: activityFields.image_phashes,
+          fingerprint_v: activityFields.fingerprint_v,
+          dup_group_id: activityFields.dup_group_id,
           original_created_at_unix: originalCreatedAtUnix,
           updated_at_unix: null,
           created_at_unix: createdAtUnix,
@@ -169,10 +194,98 @@ export class MessageCreateHandler implements OdlActionHandler {
         },
         trx,
       );
-      await this.channelsRepository.updateLastMessageAt(channelId!, createdAtUnix, trx);
+      if (inserted) {
+        await this.channelsRepository.updateLastMessageAt(channelId!, createdAtUnix, trx);
+      }
     });
 
+    if (!inserted) {
+      return;
+    }
+
     this.emitMessageNotification(channel, channelId!, messageId, data, ctx, linkedObjectIds);
+  }
+
+  private async resolveActivityFields(input: {
+    channelKind: string;
+    channelId: string;
+    messageId: string;
+    source: MessageCreatePayload['source'];
+    originalCreatedAtUnix: number | null;
+    createdAtUnix: number;
+  }): Promise<
+    | 'skip'
+    | {
+        source_platform: string | null;
+        source_id: string | null;
+        text_simhash: bigint | null;
+        image_phashes: bigint[];
+        fingerprint_v: number | null;
+        dup_group_id: string;
+      }
+  > {
+    const defaults = {
+      source_platform: null as string | null,
+      source_id: null as string | null,
+      text_simhash: null as bigint | null,
+      image_phashes: [] as bigint[],
+      fingerprint_v: null as number | null,
+      dup_group_id: input.messageId,
+    };
+
+    if (input.channelKind !== CHANNEL_KINDS[2]) {
+      return defaults;
+    }
+
+    const parsed = parseMessageSourceForObjectChannel(input.source);
+    if (parsed == null) {
+      return defaults;
+    }
+
+    const existing = await this.messagesRepository.findBySource(
+      input.channelId,
+      parsed.platform,
+      parsed.sourceId,
+    );
+    if (existing) {
+      this.logger.warn(
+        `message_create: source ${parsed.platform}/${parsed.sourceId} already exists on channel '${input.channelId}'; skipping`,
+      );
+      return 'skip';
+    }
+
+    const sortUnix = input.originalCreatedAtUnix ?? input.createdAtUnix;
+    let dupGroupId = input.messageId;
+
+    if (parsed.fingerprintV != null) {
+      const fromUnix = sortUnix - ACTIVITY_DEDUP_WINDOW_SEC;
+      const toUnix = sortUnix + ACTIVITY_DEDUP_WINDOW_SEC;
+      const candidates = await this.messagesRepository.listDedupCandidates(
+        input.channelId,
+        parsed.fingerprintV,
+        fromUnix,
+        toUnix,
+      );
+      dupGroupId = resolveDupGroupId({
+        messageId: input.messageId,
+        incoming: {
+          fingerprintV: parsed.fingerprintV,
+          textSimhash: parsed.textSimhash,
+          imagePhashes: parsed.imagePhashes,
+          sourceTimeUnix: sortUnix,
+        },
+        candidates,
+      });
+    }
+
+    return {
+      source_platform: parsed.platform,
+      source_id: parsed.sourceId,
+      text_simhash: parsed.textSimhash,
+      image_phashes: parsed.imagePhashes,
+      fingerprint_v: parsed.fingerprintV,
+      dup_group_id: dupGroupId,
+    };
   }
 
   private async resolveLinkedObjectIdsForChannel(

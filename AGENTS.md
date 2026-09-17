@@ -228,7 +228,7 @@ Full agent testing rules: [`docs/standards/testing-rules.md`](docs/standards/tes
 
 - Jest with `ts-jest`. Unit tests: `*.spec.ts` co-located with source.
 - E2E tests: separate Nx project `apps/<app>-e2e/src/`.
-- **E2E database (local)**: never connect to or mutate the dev Postgres (`.env`, local Docker Compose). Spin up a dedicated test instance; use **`test`** for both database name and password. CI may use its own setup.
+- **E2E database (local)**: never connect to or mutate the dev Postgres (`.env`, local Docker Compose). Spin up a dedicated test instance; use **`test`** for both database name and password. CI may use its own setup. Integration harness: [`docs/standards/test-postgres-harness.md`](docs/standards/test-postgres-harness.md).
 - **HTTP in E2E**: use the built-in **`fetch` API** for HTTP calls. Do not add **axios** (or similar HTTP client libraries) — not used in this repo.
 - Domain/business logic must be unit-testable without NestJS container. Mock infrastructure.
 - Test behavior, not implementation.

@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
 import {
+  activityDedupCheckBodySchema,
   channelListQuerySchema,
   messageHistoryBodySchema,
 } from '../../domain/messaging/schemas/messaging.schema';
@@ -125,20 +126,57 @@ export function registerChannelTools(server: McpServer, deps: McpToolDeps): void
           object_id: z.string().min(1),
           limit: messageHistoryBodySchema.shape.limit,
           cursor: messageHistoryBodySchema.shape.cursor,
+          include_duplicates: messageHistoryBodySchema.shape.include_duplicates,
         }),
       ),
     },
     async (args) => {
       const ctx = pickMcpContext(args);
-      const { object_id, limit, cursor } = args;
+      const { object_id, limit, cursor, include_duplicates } = args;
       const result = await deps.getObjectChannelMessages.execute(
         object_id,
-        { limit, cursor },
+        { limit, cursor, include_duplicates },
         ctx.governanceObjectIdFromHeader,
         ctx.viewerAccount,
       );
       if (!result) {
         return toolError(`Object channel not found: ${object_id}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'check_object_activity_duplicate',
+    {
+      description: catalogDescription('check_object_activity_duplicate'),
+      inputSchema: withMcpLocaleContext(
+        z.object({
+          object_id: z.string().min(1),
+          source: activityDedupCheckBodySchema.shape.source,
+          original_text: activityDedupCheckBodySchema.shape.original_text.describe(
+            'ORIGINAL author caption before rewriting — not the broadcast body',
+          ),
+          text_simhash: activityDedupCheckBodySchema.shape.text_simhash,
+          fp_v: activityDedupCheckBodySchema.shape.fp_v,
+          image_phashes: activityDedupCheckBodySchema.shape.image_phashes,
+          original_created_at_unix:
+            activityDedupCheckBodySchema.shape.original_created_at_unix,
+        }),
+      ),
+    },
+    async (args) => {
+      const { object_id, ...rawBody } = args;
+      const parsed = activityDedupCheckBodySchema.safeParse(rawBody);
+      if (!parsed.success) {
+        return toolError(parsed.error.message);
+      }
+      const result = await deps.checkObjectActivityDuplicate.execute(
+        object_id,
+        parsed.data,
+      );
+      if (!result) {
+        return toolError(`Object not found: ${object_id}`);
       }
       return jsonToolResult(result);
     },

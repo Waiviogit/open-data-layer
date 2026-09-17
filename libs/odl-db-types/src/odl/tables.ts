@@ -1536,6 +1536,18 @@ export interface MessagesTable {
   mentions: string[];
   /** Object ids mentioned in body (`/object/` + hashtags); object channels only. */
   linked_object_ids: string[];
+  /** Origin platform for imported activity (object channels only). */
+  source_platform: string | null;
+  /** Origin post id on the source platform. */
+  source_id: string | null;
+  /** SimHash of the original author caption, supplied by the importing agent. */
+  text_simhash: ColumnType<bigint | null, bigint | null | undefined, bigint | null>;
+  /** pHashes of original images, supplied by the importing agent. */
+  image_phashes: ColumnType<bigint[], bigint[] | undefined, bigint[]>;
+  /** Fingerprint algorithm version; rows of different versions are never compared. */
+  fingerprint_v: number | null;
+  /** Cluster root message id; equals message_id for canonical rows. */
+  dup_group_id: string;
   /** Original publish time for archival object activity (display only). */
   original_created_at_unix: number | null;
   /** Reserved for future message editing — unused until edit support lands. */

@@ -91,6 +91,7 @@ import {
   OblRelationshipsService,
 } from '../domain/obl';
 import {
+  CheckActivityDuplicateEndpoint,
   GetChannelsEndpoint,
   GetChannelByIdEndpoint,
   GetChannelByAliasEndpoint,
@@ -187,6 +188,7 @@ export class McpService {
     private readonly getChannelMessages: GetChannelMessagesEndpoint,
     private readonly getObjectChannel: GetObjectChannelEndpoint,
     private readonly getObjectChannelMessages: GetObjectChannelMessagesEndpoint,
+    private readonly checkObjectActivityDuplicate: CheckActivityDuplicateEndpoint,
     private readonly getMemoPublicKey: GetMemoPublicKeyEndpoint,
   ) {}
 
@@ -270,6 +272,7 @@ export class McpService {
       getChannelMessages: this.getChannelMessages,
       getObjectChannel: this.getObjectChannel,
       getObjectChannelMessages: this.getObjectChannelMessages,
+      checkObjectActivityDuplicate: this.checkObjectActivityDuplicate,
       getMemoPublicKey: this.getMemoPublicKey,
     };
   }

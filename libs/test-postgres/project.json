@@ -1,0 +1,19 @@
+{
+  "name": "test-postgres",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/test-postgres/src",
+  "projectType": "library",
+  "tags": ["type:lib", "scope:shared"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/test-postgres",
+        "main": "libs/test-postgres/src/index.ts",
+        "tsConfig": "libs/test-postgres/tsconfig.lib.json",
+        "assets": ["libs/test-postgres/*.md"]
+      }
+    }
+  }
+}

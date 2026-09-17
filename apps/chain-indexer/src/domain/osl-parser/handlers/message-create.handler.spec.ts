@@ -1,9 +1,24 @@
-import { CHANNEL_KINDS } from '@opden-data-layer/core';
+import {
+  CHANNEL_KINDS,
+  computeActivityFingerprint,
+  formatPHashHex,
+} from '@opden-data-layer/core';
 import { MessageCreateHandler } from './message-create.handler';
 import type { ChannelsRepository } from '../../../repositories/channels.repository';
 import type { MessagesRepository } from '../../../repositories/messages.repository';
 import type { ObjectsCoreRepository } from '../../../repositories/objects-core.repository';
 import type { NotificationEmitterService } from '../../notification-adapter/notification-emitter.service';
+
+const LONG_CAPTION =
+  'Our seasonal tasting menu features locally sourced ingredients prepared by our award winning chef team every evening';
+
+const OBJECT_CHANNEL = {
+  channel_id: 'obj-ch-1',
+  kind: CHANNEL_KINDS[2],
+  object_id: 'obj-1',
+  title: null,
+  dissolved_at_unix: null,
+};
 
 describe('MessageCreateHandler notifications', () => {
   const baseCtx = {
@@ -36,7 +51,9 @@ describe('MessageCreateHandler notifications', () => {
     const messages = {
       tombstoneExists: jest.fn().mockResolvedValue(false),
       findById: jest.fn().mockResolvedValue(null),
-      insertMessage: jest.fn().mockResolvedValue(undefined),
+      insertMessage: jest.fn().mockResolvedValue(true),
+      findBySource: jest.fn().mockResolvedValue(undefined),
+      listDedupCandidates: jest.fn().mockResolvedValue([]),
       ...overrides.messages,
     } as unknown as MessagesRepository;
 
@@ -518,5 +535,170 @@ describe('MessageCreateHandler notifications', () => {
     );
 
     expect(messages.insertMessage).not.toHaveBeenCalled();
+  });
+
+  it('TC-016: skips insert when exact source already exists on object channel', async () => {
+    const { handler, messages } = makeHandler({
+      channels: {
+        findById: jest.fn().mockResolvedValue(OBJECT_CHANNEL),
+      },
+      messages: {
+        findBySource: jest.fn().mockResolvedValue({
+          message_id: 'existing-1',
+          source_platform: 'instagram',
+          source_id: 'ABC123',
+        }),
+      },
+    });
+
+    await handler.handle(
+      {
+        channel_id: 'obj-ch-1',
+        body: 'rewritten',
+        source: {
+          platform: 'instagram',
+          id: 'ABC123',
+          fp_v: 1,
+          text_simhash: '9528595b27876241',
+        },
+      },
+      baseCtx,
+    );
+
+    expect(messages.insertMessage).not.toHaveBeenCalled();
+  });
+
+  it('TC-017: stores source platform, text_simhash, and fingerprint_v on object channel', async () => {
+    const simhash = computeActivityFingerprint(LONG_CAPTION).textSimhash!;
+    const { handler, messages } = makeHandler({
+      channels: {
+        findById: jest.fn().mockResolvedValue(OBJECT_CHANNEL),
+      },
+    });
+
+    await handler.handle(
+      {
+        channel_id: 'obj-ch-1',
+        body: 'rewritten',
+        original_created_at_unix: 1_700_000_000,
+        source: {
+          platform: 'instagram',
+          id: 'ABC123',
+          fp_v: 1,
+          text_simhash: formatPHashHex(simhash),
+        },
+      },
+      baseCtx,
+    );
+
+    expect(messages.insertMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source_platform: 'instagram',
+        source_id: 'ABC123',
+        text_simhash: simhash,
+        fingerprint_v: 1,
+      }),
+      expect.anything(),
+    );
+  });
+
+  it('TC-018: ignores source fields on DM channels', async () => {
+    const { handler, messages } = makeHandler({
+      channels: {
+        findById: jest.fn().mockResolvedValue({
+          channel_id: 'dm-1',
+          kind: CHANNEL_KINDS[0],
+          object_id: null,
+          title: null,
+          dissolved_at_unix: null,
+        }),
+      },
+    });
+
+    await handler.handle(
+      {
+        channel_id: 'dm-1',
+        body: 'hello',
+        source: {
+          platform: 'instagram',
+          id: 'ABC123',
+          fp_v: 1,
+          text_simhash: '9528595b27876241',
+        },
+      },
+      baseCtx,
+    );
+
+    expect(messages.findBySource).not.toHaveBeenCalled();
+    expect(messages.insertMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source_platform: null,
+        source_id: null,
+        text_simhash: null,
+        fingerprint_v: null,
+        dup_group_id: 'tx-1-0-0-0',
+      }),
+      expect.anything(),
+    );
+  });
+
+  it('TC-019: joins dup cluster when dedup candidate matches', async () => {
+    const simhash = computeActivityFingerprint(LONG_CAPTION).textSimhash!;
+    const { handler, messages } = makeHandler({
+      channels: {
+        findById: jest.fn().mockResolvedValue(OBJECT_CHANNEL),
+      },
+      messages: {
+        listDedupCandidates: jest.fn().mockResolvedValue([
+          {
+            message_id: 'existing-root',
+            dup_group_id: 'existing-root',
+            text_simhash: simhash,
+            image_phashes: [],
+            sort_time_unix: 1_700_000_000,
+            event_seq: BigInt(1),
+          },
+        ]),
+      },
+    });
+
+    await handler.handle(
+      {
+        channel_id: 'obj-ch-1',
+        body: 'rewritten',
+        original_created_at_unix: 1_700_000_000,
+        source: {
+          platform: 'instagram',
+          id: 'NEW456',
+          fp_v: 1,
+          text_simhash: formatPHashHex(simhash),
+        },
+      },
+      baseCtx,
+    );
+
+    expect(messages.insertMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        dup_group_id: 'existing-root',
+      }),
+      expect.anything(),
+    );
+  });
+
+  it('TC-022: does not throw when insertMessage hits unique constraint', async () => {
+    const { handler, messages, notificationEmitter } = makeHandler({
+      channels: {
+        findById: jest.fn().mockResolvedValue(OBJECT_CHANNEL),
+      },
+      messages: {
+        insertMessage: jest.fn().mockResolvedValue(false),
+      },
+    });
+
+    await expect(
+      handler.handle({ channel_id: 'obj-ch-1', body: 'hello' }, baseCtx),
+    ).resolves.toBeUndefined();
+
+    expect(notificationEmitter.emitWithContext).not.toHaveBeenCalled();
   });
 });

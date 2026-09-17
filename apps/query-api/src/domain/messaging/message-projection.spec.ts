@@ -1,9 +1,21 @@
 import { mapMessageToDto, resolveLastMessagePreview } from './message-projection';
 
+function activityDefaults(messageId: string) {
+  return {
+    source_platform: null,
+    source_id: null,
+    text_simhash: null,
+    image_phashes: [] as bigint[],
+    fingerprint_v: null,
+    dup_group_id: messageId,
+  };
+}
+
 describe('message-projection', () => {
   it('maps encrypted row to MessageDto with encryption object', () => {
     const dto = mapMessageToDto({
       message_id: 'm1',
+      ...activityDefaults('m1'),
       channel_id: 'c1',
       author: 'alice',
       body: null,
@@ -56,6 +68,7 @@ describe('message-projection', () => {
   it('maps updated_at_unix on DTO', () => {
     const dto = mapMessageToDto({
       message_id: 'm1',
+      ...activityDefaults('m1'),
       channel_id: 'c1',
       author: 'alice',
       body: 'hello',
@@ -84,6 +97,7 @@ describe('message-projection', () => {
     const dto = mapMessageToDto(
       {
         message_id: 'm1',
+        ...activityDefaults('m1'),
         channel_id: 'obj-ch-rest',
         author: 'alice',
         body: 'see dish',
@@ -115,5 +129,70 @@ describe('message-projection', () => {
       object_id: 'rest-1',
       name: 'The Broken Whisk',
     });
+  });
+
+  it('TC-040/041: projects source and duplicate fields', () => {
+    const canonical = mapMessageToDto(
+      {
+        message_id: 'root-1',
+        ...activityDefaults('root-1'),
+        source_platform: 'instagram',
+        source_id: 'ABC123',
+        channel_id: 'obj-ch-1',
+        author: 'alice',
+        body: 'hello',
+        encrypted_body: null,
+        encryption_mode: null,
+        encrypted_to: null,
+        encryption_v: null,
+        encryption_meta: null,
+        overflow_ref: null,
+        reply_to: null,
+        quote_json: null,
+        attachments: null,
+        mentions: [],
+        linked_object_ids: [],
+        original_created_at_unix: null,
+        updated_at_unix: null,
+        created_at_unix: 100,
+        event_seq: BigInt(1),
+        transaction_id: 'tx1',
+        search_vector: null,
+      },
+      { duplicateCount: 3 },
+    );
+    expect(canonical.source).toEqual({ platform: 'instagram', id: 'ABC123' });
+    expect(canonical.duplicate_of).toBeNull();
+    expect(canonical.duplicate_count).toBe(3);
+
+    const member = mapMessageToDto(
+      {
+        message_id: 'm-2',
+        ...activityDefaults('m-2'),
+        dup_group_id: 'root-1',
+        channel_id: 'obj-ch-1',
+        author: 'alice',
+        body: 'dup',
+        encrypted_body: null,
+        encryption_mode: null,
+        encrypted_to: null,
+        encryption_v: null,
+        encryption_meta: null,
+        overflow_ref: null,
+        reply_to: null,
+        quote_json: null,
+        attachments: null,
+        mentions: [],
+        linked_object_ids: [],
+        original_created_at_unix: null,
+        updated_at_unix: null,
+        created_at_unix: 101,
+        event_seq: BigInt(2),
+        transaction_id: 'tx2',
+        search_vector: null,
+      },
+      { duplicateCount: 1 },
+    );
+    expect(member.duplicate_of).toBe('root-1');
   });
 });

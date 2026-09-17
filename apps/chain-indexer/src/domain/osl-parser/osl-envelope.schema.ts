@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import {
+  ACTIVITY_MAX_IMAGE_PHASHES,
+  ACTIVITY_SOURCE_PLATFORMS,
   imageCidOrUrlJsonSchema,
   MAX_GROUP_CHANNEL_CREATE_INVITEES,
 } from '@opden-data-layer/core';
@@ -196,6 +198,19 @@ export const messageCreatePayloadSchema = z
     attachments: z.array(z.record(z.string(), z.unknown())).optional(),
     mentions: z.array(hiveAccountSchema).optional(),
     original_created_at_unix: z.number().int().optional(),
+    source: z
+      .object({
+        platform: z.enum(ACTIVITY_SOURCE_PLATFORMS),
+        id: z.string().min(1).max(256),
+        fp_v: z.number().int().min(1).optional(),
+        text_simhash: z.string().regex(/^[0-9a-f]{16}$/i).optional(),
+        image_phashes: z
+          .array(z.string().regex(/^[0-9a-f]{16}$/i))
+          .max(ACTIVITY_MAX_IMAGE_PHASHES)
+          .optional(),
+      })
+      .strict()
+      .optional(),
   })
   .strict()
   .superRefine((data, ctx) => {
@@ -237,6 +252,18 @@ export const messageCreatePayloadSchema = z
         code: z.ZodIssueCode.custom,
         message: 'Provide peer or members, not both',
       });
+    }
+    const source = data.source;
+    if (source != null) {
+      const hasFingerprint =
+        source.text_simhash != null || (source.image_phashes?.length ?? 0) > 0;
+      if (hasFingerprint && source.fp_v == null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'source.fp_v is required when text_simhash or image_phashes is set',
+          path: ['source', 'fp_v'],
+        });
+      }
     }
   });
 

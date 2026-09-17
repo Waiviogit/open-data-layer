@@ -23,6 +23,7 @@ ODL build decision table:
 - NEW object → odl_build_object_create (always includes object_create; check suggestIpfsBatch / perOpBytes when warnings)
 - EXISTING object, one field (avatar image, title, description, …) → odl_build_update_create
 - EXISTING object, gallery photo → odl_build_gallery_item (pass existingGalleryAlbumNames from resolve_object fields.imageGallery)
+- Social post (Instagram/Facebook) onto an EXISTING object → osl_activity_fingerprint → query-api check_object_activity_duplicate → if not duplicate, osl_build_message_create with channelId "obj-ch-{objectId}", originalCreatedAtUnix, and source → wallet_broadcast
 - Hive root post (article, companion post, recipe walkthrough) → hive_build_post (author may be a grantor — see posting authority above) → wallet_broadcast
 - Grant/revoke posting authority → hive_build_posting_authority_grant → wallet_broadcast when canSignLocally; HAS grantor session → has_broadcast with keyType active
 - Avatar on existing object: ipfs_upload_image → odl_build_update_create({ updateType: "image", value: { cid } }) → wallet_broadcast
@@ -48,5 +49,11 @@ Credential separation:
 - ~/.odl/accounts.json — local Hive WIF keys (preferred over env)
 - ~/.odl/waivio-auth/<account>.json — Waivio refresh token per account (access JWT stays in memory)
 - Env fallback HIVE_* keys — used only when accounts.json is missing or unreadable; never persisted
+
+Object activity (archival imports):
+- Object channels are public-read; no membership required. Create the channel first with osl_build_channel_create({ kind: "object", objectId }) only when it does not exist.
+- Plaintext only — encrypted bodies are rejected by the indexer on object channels.
+- The fingerprint comes from the ORIGINAL author caption (osl_activity_fingerprint or query-api dedup-check original_text), never from your rewritten body.
+- Duplicate preflight lives on the query-api MCP server (check_object_activity_duplicate), not in agent-wallet.
 
 Security: binds 127.0.0.1 only; MCP requires Authorization: Bearer. Tool responses never include JWT, HAS secrets, or WIF keys.`;

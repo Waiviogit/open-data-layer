@@ -4,8 +4,16 @@ import {
   encryptEphemeralOneWay,
 } from '@opden-data-layer/hive-memo-crypto';
 
+import {
+  computeActivityFingerprint,
+  formatPHashHex,
+} from '@opden-data-layer/core';
+
 import { OslMessagingService } from './osl-messaging.service';
 import { LocalKeysService } from './local-keys.service';
+
+const LONG_CAPTION =
+  'Our seasonal tasting menu features locally sourced ingredients prepared by our award winning chef team every evening';
 
 describe('OslMessagingService', () => {
   const demo = demoMemoKeyPair('osl-messaging-service-spec');
@@ -171,6 +179,41 @@ describe('OslMessagingService', () => {
     });
     const op = result.ops[0] as { id: string };
     expect(op.id).toBe('osl-testnet');
+  });
+
+  it('activityFingerprint matches core test vectors', () => {
+    const fromService = service.activityFingerprint(LONG_CAPTION);
+    const fromCore = computeActivityFingerprint(LONG_CAPTION);
+    expect(fromService.v).toBe(fromCore.v);
+    expect(fromService.textSimhash).toBe(
+      fromCore.textSimhash != null ? formatPHashHex(fromCore.textSimhash) : null,
+    );
+    expect(fromService.normalizedLength).toBe(fromCore.normalizedLength);
+  });
+
+  it('buildMessageCreate forwards source metadata into the payload', () => {
+    const result = service.buildMessageCreate({
+      creator: 'alice',
+      channelId: 'obj-ch-rest-1',
+      body: 'rewritten caption',
+      originalCreatedAtUnix: 1_700_000_000,
+      source: {
+        platform: 'instagram',
+        id: 'ABC123',
+        fpV: 1,
+        textSimhash: '0f0f0f0f0f0f0f0f',
+      },
+    });
+    const op = result.ops[0] as { json: string };
+    const parsed = JSON.parse(op.json) as {
+      events: { payload: { source?: Record<string, unknown> } }[];
+    };
+    expect(parsed.events[0]?.payload.source).toEqual({
+      platform: 'instagram',
+      id: 'ABC123',
+      fp_v: 1,
+      text_simhash: '0f0f0f0f0f0f0f0f',
+    });
   });
 
   it('buildEncryptedMessageCreate uses osl custom_json id and supports ephemeral without memo key', async () => {

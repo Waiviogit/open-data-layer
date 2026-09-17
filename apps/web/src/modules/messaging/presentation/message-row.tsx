@@ -305,6 +305,14 @@ export function MessageRow({
           ) : null}
           {bodyNode}
           <p className="mt-1 text-caption text-muted">{timeCaption}</p>
+          {activityCaption && (message.duplicate_count ?? 1) > 1 ? (
+            <p className="mt-0.5 text-caption text-muted">
+              {t('object_activity_duplicate_badge').replace(
+                '{count}',
+                String((message.duplicate_count ?? 1) - 1),
+              )}
+            </p>
+          ) : null}
         </div>
 
         {!outgoing ? desktopActions : null}

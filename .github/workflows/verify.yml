@@ -241,6 +241,40 @@ jobs:
       - name: Typecheck apps/web (tsc --noEmit)
         run: pnpm nx run web:typecheck
 
+  migrations-db:
+    name: Migrations — Postgres integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: paths
+        with:
+          filters: |
+            migrations:
+              - 'libs/migrations/**'
+              - 'libs/test-postgres/**'
+              - 'docker-compose.test.yml'
+
+      - uses: pnpm/action-setup@v4
+        if: steps.paths.outputs.migrations == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.paths.outputs.migrations == 'true'
+        with:
+          node-version: '24'
+          cache: pnpm
+
+      - name: Install dependencies
+        if: steps.paths.outputs.migrations == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Migrations integration tests
+        if: steps.paths.outputs.migrations == 'true'
+        env:
+          POSTGRES_TEST_URL: postgres://test:test@127.0.0.1:55432/test
+        run: pnpm test:db
+
   osv-scan-pr:
     name: OSV vulnerability scan (PR — new vulns only)
     if: github.event_name == 'pull_request'

@@ -26,7 +26,29 @@ related:
 { "channel_id": "dm-…", "body": "hello" }
 ```
 
-Object channels may optionally include **`original_created_at_unix`** (integer unix seconds) — the original publish time for archival content (Instagram, Facebook, reviews). Display metadata only; does not affect feed sort. Ignored on DM/group channels. Invalid or out-of-range values are dropped at index time (message still inserted).
+Object channels may optionally include **`original_created_at_unix`** (integer unix seconds) — the original publish time for archival content (Instagram, Facebook, reviews). Display metadata only; dedup window uses this timestamp when present. Ignored on DM/group channels. Invalid or out-of-range values are dropped at index time (message still inserted).
+
+Object channels may include **`source`** — platform identity and fingerprint of the **original** post (not the rewritten `body`):
+
+```json
+{
+  "channel_id": "obj-ch-product-1",
+  "body": "Rewritten caption for the object activity feed",
+  "original_created_at_unix": 1262304000,
+  "source": {
+    "platform": "instagram",
+    "id": "ABC123",
+    "fp_v": 1,
+    "text_simhash": "0f0f0f0f0f0f0f0f"
+  }
+}
+```
+
+- **Object channels only** — `source` is ignored (stored as null) on DM/group.
+- **`fp_v` required** when `text_simhash` or `image_phashes` is present; payload rejected otherwise.
+- **Exact skip:** if `(channel_id, platform, id)` already exists → no insert (warn + skip). Tombstones do not reserve the slot (re-import after delete is allowed in v1).
+- **Fuzzy cluster:** near-duplicate fingerprints within 72h join `dup_group_id` (see [activity-fingerprint.md](./activity-fingerprint.md)).
+- **`message_update`** never changes `source_*`, `text_simhash`, or `dup_group_id` — fingerprint describes the source post, not the rewrite.
 
 ```json
 {

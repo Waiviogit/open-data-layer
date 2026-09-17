@@ -6,7 +6,7 @@ type: skill
 status: active
 scope: platform
 tags: [osl, messaging, agent-wallet, query-api, encryption, notifications]
-updated_at: 2026-08-20
+updated_at: 2026-09-17
 related:
   - docs/skills/hive-blockchain-broadcast.md
   - docs/skills/hive-has-agent-wallet.md
@@ -84,7 +84,8 @@ Payloads **never** include message body or ciphertext — always follow with `ge
 | `get_channel_by_alias` | Resolve `dm:` / `obj:` aliases |
 | `get_channel_messages` | History for a channel (`channel_id`, optional `for_context`) |
 | `get_object_channel` | Object default channel meta |
-| `get_object_channel_messages` | Public object feed (governance + mute filters) |
+| `get_object_channel_messages` | Public object feed (governance + mute filters; optional `include_duplicates`) |
+| `check_object_activity_duplicate` | Preflight before any archival object-channel post |
 | `get_memo_public_key` | Recipient memo public key before encrypt |
 
 HTTP parity: [osl-messaging API](../apps/query-api/spec/osl-messaging.md).
@@ -101,7 +102,20 @@ Works with **HAS** (`has_broadcast`) or **local keys** (`wallet_broadcast`):
 2. `wallet_broadcast` or `has_broadcast` → poll status
 3. Confirm via `notifications_pull` or `get_channel_messages`
 
-For **object activity archival posts** (Instagram, Facebook, reviews), pass `originalCreatedAtUnix` (unix seconds) on object channel sends. Do **not** use it on DM/group — the indexer ignores it there.
+### Archival imports (Instagram, Facebook, reviews)
+
+The fingerprint is taken from the **original author's caption**, never from your rewritten `body`.
+
+1. `check_object_activity_duplicate({ object_id, source: { platform, id }, original_text: <original caption>, image_phashes?, original_created_at_unix })` (query-api MCP)
+2. `duplicate: true` → do not broadcast; log `match.message_id` and `reason`
+3. `duplicate: false` → rewrite the text, then `osl_build_message_create({ creator, channelId: "obj-ch-{objectId}", body: <rewritten>, originalCreatedAtUnix, source: { platform, id, fpV, textSimhash, imagePHashes } })` using the `fingerprint` echoed in step 1
+4. Broadcast and confirm via `get_object_channel_messages`
+
+On **agent-wallet**: `osl_activity_fingerprint({ originalText })` can supply `textSimhash` + `fp_v` for step 1 instead of sending `original_text`.
+
+Canonical `source.id`: Instagram → **shortcode** (`/p/{code}/`); Facebook → post id; TikTok/X/YouTube → native id.
+
+Pass `originalCreatedAtUnix` (unix seconds) on object channel sends. Do **not** use it on DM/group — the indexer ignores it there. The indexer also rejects exact `(platform, id)` duplicates independently — losing a race costs one wasted transaction.
 
 DM bootstrap: omit `channel_id`, pass `peer` — indexer creates the DM channel.
 
@@ -173,9 +187,10 @@ Details: [encryption-future.md](../spec/osl/encryption-future.md).
 2. `notifications_pull({ waitMs: 30000 })` when waiting for inbound
 3. `get_channel_messages` / `get_object_channel_messages` for bodies
 4. `osl_memo_decrypt` when `encrypted_body` present and viewer may decrypt
-5. `osl_build_message_create`, `osl_build_message_update`, `osl_build_message_delete`, or `osl_build_encrypted_message_create`
-6. `wallet_broadcast` / `has_broadcast` after user/policy approval
-7. Poll broadcast status; optionally `notifications_pull` for delivery hint
+5. For archival object activity: `check_object_activity_duplicate` before `osl_build_message_create`
+6. `osl_build_message_create`, `osl_build_message_update`, `osl_build_message_delete`, or `osl_build_encrypted_message_create`
+7. `wallet_broadcast` / `has_broadcast` after user/policy approval
+8. Poll broadcast status; optionally `notifications_pull` for delivery hint
 
 ## Hermes integration (optional)
 

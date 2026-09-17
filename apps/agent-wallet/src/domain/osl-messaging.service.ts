@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  computeActivityFingerprint,
+  formatPHashHex,
+  normalizeOriginalText,
+} from '@opden-data-layer/core';
+import {
   buildEncryptedMessageCreatePayload,
   buildGroupChannelCreatePayload,
   buildMessageCreatePayload,
@@ -81,6 +86,23 @@ export class OslMessagingService {
     return this.singleOpBuildResult(op);
   }
 
+  activityFingerprint(originalText: string): {
+    v: number;
+    textSimhash: string | null;
+    normalizedLength: number;
+    normalizedPreview: string;
+  } {
+    const computed = computeActivityFingerprint(originalText);
+    const normalized = normalizeOriginalText(originalText);
+    return {
+      v: computed.v,
+      textSimhash:
+        computed.textSimhash != null ? formatPHashHex(computed.textSimhash) : null,
+      normalizedLength: computed.normalizedLength,
+      normalizedPreview: normalized.slice(0, 120),
+    };
+  }
+
   buildMessageCreate(input: {
     creator: string;
     channelId?: string;
@@ -89,6 +111,13 @@ export class OslMessagingService {
     originalCreatedAtUnix?: number | null;
     replyTo?: string;
     quoteJson?: { author: string; body: string };
+    source?: {
+      platform: string;
+      id: string;
+      fpV?: number;
+      textSimhash?: string | null;
+      imagePHashes?: string[];
+    };
   }): BuildResult {
     const creator = normalizeHiveAccount(input.creator);
     const payload = buildMessageCreatePayload({
@@ -98,6 +127,7 @@ export class OslMessagingService {
       originalCreatedAtUnix: input.originalCreatedAtUnix,
       replyTo: input.replyTo,
       quoteJson: input.quoteJson,
+      source: input.source,
     });
     const op = buildOslMessageCreateOp({
       id: this.config.get('oslCustomJsonId', { infer: true }),

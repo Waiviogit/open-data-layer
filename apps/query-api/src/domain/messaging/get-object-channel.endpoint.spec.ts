@@ -103,6 +103,7 @@ describe('GetObjectChannelMessagesEndpoint', () => {
       null,
       21,
       undefined,
+      false,
     );
   });
 

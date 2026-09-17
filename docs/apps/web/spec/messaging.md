@@ -97,6 +97,8 @@ After send, the web client invalidates Activity cache tags for `/object/` slugs 
 
 **Original publish date:** Activity compose (+) menu includes **Date** (object Activity only — not inbox DMs; disabled while replying/editing). User picks date+time via air-datepicker; a chip shows the selection until send or clear. Optional `original_created_at_unix` is included on `message_create`. Feed bubbles show “Originally {datetime}” when stamped; otherwise time-only from `created_at_unix`. Activity **sort order** and **day grouping** use `COALESCE(original_created_at_unix, created_at_unix)` (local calendar day chips). Unstamped replies sort by publication time. Reply quotes to image-only parents show a left thumbnail instead of raw `![](url)` markdown.
 
+**Near-duplicate imports:** query-api returns canonical rows only (`duplicate_count` on each item). When `duplicate_count > 1`, Activity bubbles show “Also imported {count} times” (`count = duplicate_count - 1`). No client-side collapsing.
+
 Per [channels.md](../../../spec/osl/channels.md), object channels require explicit `channel_create` before `message_create`. The UI uses deterministic `buildObjectChannelId(objectId)` → `obj-ch-{objectId}` for the pending channel.
 
 | State | First send |

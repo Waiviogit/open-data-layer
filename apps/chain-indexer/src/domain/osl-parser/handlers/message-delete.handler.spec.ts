@@ -22,6 +22,7 @@ describe('MessageDeleteHandler', () => {
     channel_id: 'ch-1',
     author: 'alice',
     body: 'hello',
+    dup_group_id: 'tx-0-0-0',
   };
 
   function makeHandler(overrides: Partial<MessagesRepository> = {}) {
@@ -29,6 +30,9 @@ describe('MessageDeleteHandler', () => {
       tombstoneExists: jest.fn().mockResolvedValue(false),
       findById: jest.fn().mockResolvedValue(plainRow),
       deleteAndTombstone: jest.fn().mockResolvedValue(undefined),
+      runInTransaction: jest.fn(async (fn: (trx: unknown) => Promise<void>) => fn({})),
+      listClusterMembers: jest.fn().mockResolvedValue([]),
+      repointDupGroup: jest.fn().mockResolvedValue(undefined),
       ...overrides,
     } as unknown as MessagesRepository;
 
@@ -43,14 +47,17 @@ describe('MessageDeleteHandler', () => {
       baseCtx,
     );
 
-    expect(messages.deleteAndTombstone).toHaveBeenCalledWith({
-      message_id: 'tx-0-0-0',
-      channel_id: 'ch-1',
-      deleted_by: 'alice',
-      deleted_at_unix: blockTimestampToUnixSeconds(baseCtx.timestamp),
-      event_seq: BigInt(2),
-      transaction_id: 'tx-1',
-    });
+    expect(messages.deleteAndTombstone).toHaveBeenCalledWith(
+      {
+        message_id: 'tx-0-0-0',
+        channel_id: 'ch-1',
+        deleted_by: 'alice',
+        deleted_at_unix: blockTimestampToUnixSeconds(baseCtx.timestamp),
+        event_seq: BigInt(2),
+        transaction_id: 'tx-1',
+      },
+      expect.anything(),
+    );
   });
 
   it('skips when non-author deletes', async () => {
@@ -105,5 +112,56 @@ describe('MessageDeleteHandler', () => {
     );
 
     expect(messages.deleteAndTombstone).not.toHaveBeenCalled();
+  });
+
+  it('TC-024: promotes successor when cluster root is deleted', async () => {
+    const rootRow = {
+      message_id: 'root-1',
+      channel_id: 'ch-1',
+      author: 'alice',
+      body: 'hello',
+      dup_group_id: 'root-1',
+    };
+    const { handler, messages } = makeHandler({
+      findById: jest.fn().mockResolvedValue(rootRow),
+      listClusterMembers: jest.fn().mockResolvedValue([
+        { message_id: 'root-1', dup_group_id: 'root-1' },
+        { message_id: 'member-2', dup_group_id: 'root-1' },
+      ]),
+    });
+
+    await handler.handle(
+      { channel_id: 'ch-1', message_id: 'root-1' },
+      baseCtx,
+    );
+
+    expect(messages.deleteAndTombstone).toHaveBeenCalled();
+    expect(messages.repointDupGroup).toHaveBeenCalledWith(
+      'root-1',
+      'member-2',
+      expect.anything(),
+    );
+  });
+
+  it('TC-025: skips promotion when deleted message is not cluster root', async () => {
+    const memberRow = {
+      message_id: 'member-2',
+      channel_id: 'ch-1',
+      author: 'alice',
+      body: 'hello',
+      dup_group_id: 'root-1',
+    };
+    const { handler, messages } = makeHandler({
+      findById: jest.fn().mockResolvedValue(memberRow),
+    });
+
+    await handler.handle(
+      { channel_id: 'ch-1', message_id: 'member-2' },
+      baseCtx,
+    );
+
+    expect(messages.deleteAndTombstone).toHaveBeenCalled();
+    expect(messages.listClusterMembers).not.toHaveBeenCalled();
+    expect(messages.repointDupGroup).not.toHaveBeenCalled();
   });
 });

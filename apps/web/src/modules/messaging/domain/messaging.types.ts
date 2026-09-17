@@ -56,6 +56,11 @@ export type MessageSourceObject = {
   name: string;
 };
 
+export type MessageSource = {
+  platform: string;
+  id: string;
+};
+
 export type MessageItem = {
   message_id: string;
   channel_id: string;
@@ -72,6 +77,10 @@ export type MessageItem = {
   original_created_at_unix: number | null;
   updated_at_unix: number | null;
   source_object: MessageSourceObject | null;
+  /** Present on query-api message rows; omitted in older fixtures. */
+  source?: MessageSource | null;
+  duplicate_of?: string | null;
+  duplicate_count?: number;
 };
 
 export type MessageHistoryPage = {

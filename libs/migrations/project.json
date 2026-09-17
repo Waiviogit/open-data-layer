@@ -4,7 +4,13 @@
   "sourceRoot": "libs/migrations/src",
   "projectType": "library",
   "tags": [],
-  "implicitDependencies": ["core"],
+  "implicitDependencies": ["core", "test-postgres", "odl-db-types"],
   "// targets": "to see all targets run: nx show project migrations --web",
-  "targets": {}
+  "targets": {
+    "test": {
+      "options": {
+        "passWithNoTests": true
+      }
+    }
+  }
 }

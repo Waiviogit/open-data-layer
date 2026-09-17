@@ -84,9 +84,13 @@ export class GetObjectChannelMessagesEndpoint {
 
     const excludedAuthors = dedupeStrings([...governance.muted, ...viewerMutes]);
 
+    const includeDuplicates = body.for_context
+      ? false
+      : (body.include_duplicates ?? false);
+
     return this.fetchObjectActivityMessages(
       trimmedId,
-      body,
+      { ...body, include_duplicates: includeDuplicates },
       excludedAuthors,
       body.for_context ? viewerTrimmed : undefined,
     );
@@ -111,6 +115,7 @@ export class GetObjectChannelMessagesEndpoint {
       cursorPayload,
       limitPlusOne,
       forContextViewer,
+      body.include_duplicates ?? false,
     );
 
     const hasMore = rows.length > limit;
@@ -131,6 +136,7 @@ export class GetObjectChannelMessagesEndpoint {
         requestedObjectId: objectId,
         channelObjectId: row.channel_object_id,
         sourceNameByObjectId,
+        duplicateCount: row.duplicate_count,
       }),
     );
 

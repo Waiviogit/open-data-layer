@@ -474,6 +474,30 @@ export function registerAgentWalletTools(
   );
 
   server.registerTool(
+    'osl_activity_fingerprint',
+    {
+      description:
+        'Compute SimHash fingerprint from the ORIGINAL author caption before rewriting. No network or keys required.',
+      inputSchema: z.object({
+        originalText: z
+          .string()
+          .min(1)
+          .describe(
+            'ORIGINAL author caption/title from the source platform — never your rewritten text',
+          ),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = deps.oslMessaging.activityFingerprint(args.originalText);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
     'osl_build_message_create',
     {
       description:
@@ -489,6 +513,15 @@ export function registerAgentWalletTools(
           .object({
             author: z.string().min(1),
             body: z.string(),
+          })
+          .optional(),
+        source: z
+          .object({
+            platform: z.string().min(1),
+            id: z.string().min(1),
+            fpV: z.number().int().optional(),
+            textSimhash: z.string().optional(),
+            imagePHashes: z.array(z.string()).optional(),
           })
           .optional(),
       }),

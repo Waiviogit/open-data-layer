@@ -569,6 +569,14 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/osl-messaging.md',
   },
   {
+    name: 'check_object_activity_duplicate',
+    description:
+      'Preflight duplicate check for archival object activity before broadcasting message_create.',
+    httpEquivalent:
+      'POST /query/v1/objects/:object_id/channel/messages/dedup-check',
+    specPath: 'docs/apps/query-api/spec/osl-messaging.md',
+  },
+  {
     name: 'get_memo_public_key',
     description: 'Public memo key for a Hive account (encrypt/decrypt addressing).',
     httpEquivalent: 'GET /query/v1/users/:account/memo-public-key',

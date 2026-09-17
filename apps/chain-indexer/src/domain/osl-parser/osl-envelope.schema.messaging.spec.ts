@@ -67,6 +67,19 @@ describe('messageCreatePayloadSchema', () => {
     }
   });
 
+  it('TC-021: rejects source with text_simhash but missing fp_v', () => {
+    const result = messageCreatePayloadSchema.safeParse({
+      channel_id: 'obj-ch-1',
+      body: 'archived post',
+      source: {
+        platform: 'instagram',
+        id: 'ABC123',
+        text_simhash: '9528595b27876241',
+      },
+    });
+    expect(result.success).toBe(false);
+  });
+
   it('rejects non-integer original_created_at_unix', () => {
     expect(
       messageCreatePayloadSchema.safeParse({

@@ -15,6 +15,7 @@ import {
   ValidateGroupInviteesEndpoint,
 } from './validate-members.endpoint';
 import { GetMemoPublicKeyEndpoint } from './get-memo-public-key.endpoint';
+import { CheckActivityDuplicateEndpoint } from './check-activity-duplicate.endpoint';
 
 @Module({
   imports: [RepositoriesModule, GovernanceModule],
@@ -25,6 +26,7 @@ import { GetMemoPublicKeyEndpoint } from './get-memo-public-key.endpoint';
     GetChannelMessagesEndpoint,
     GetObjectChannelEndpoint,
     GetObjectChannelMessagesEndpoint,
+    CheckActivityDuplicateEndpoint,
     MarkChannelReadEndpoint,
     ValidateChannelMembersEndpoint,
     ValidateGroupInviteesEndpoint,
@@ -37,6 +39,7 @@ import { GetMemoPublicKeyEndpoint } from './get-memo-public-key.endpoint';
     GetChannelMessagesEndpoint,
     GetObjectChannelEndpoint,
     GetObjectChannelMessagesEndpoint,
+    CheckActivityDuplicateEndpoint,
     MarkChannelReadEndpoint,
     ValidateChannelMembersEndpoint,
     ValidateGroupInviteesEndpoint,

@@ -61,13 +61,20 @@ export function buildMessageCreatePayload(input: {
   originalCreatedAtUnix?: number | null;
   replyTo?: string;
   quoteJson?: { author: string; body: string };
-}): Record<string, string | number | Record<string, unknown>> {
+  source?: {
+    platform: string;
+    id: string;
+    fpV?: number;
+    textSimhash?: string | null;
+    imagePHashes?: string[];
+  };
+}): Record<string, unknown> {
   const body = input.body.trim();
   const stamp =
     input.originalCreatedAtUnix != null && input.originalCreatedAtUnix > 0
       ? Math.trunc(input.originalCreatedAtUnix)
       : null;
-  const base: Record<string, string | number | Record<string, unknown>> = { body };
+  const base: Record<string, unknown> = { body };
   if (input.channelId) {
     base['channel_id'] = input.channelId;
   } else if (input.peer) {
@@ -83,6 +90,27 @@ export function buildMessageCreatePayload(input: {
   }
   if (input.quoteJson) {
     base['quote_json'] = input.quoteJson;
+  }
+  if (input.source != null) {
+    const sourcePayload: Record<string, unknown> = {
+      platform: input.source.platform,
+      id: input.source.id,
+    };
+    if (input.source.fpV != null) {
+      sourcePayload['fp_v'] = input.source.fpV;
+    }
+    if (input.source.textSimhash != null && input.source.textSimhash.trim() !== '') {
+      sourcePayload['text_simhash'] = input.source.textSimhash.trim().toLowerCase();
+    }
+    const imagePhashes = (input.source.imagePHashes ?? []).filter(
+      (hex) => hex.trim().length > 0,
+    );
+    if (imagePhashes.length > 0) {
+      sourcePayload['image_phashes'] = imagePhashes.map((hex) =>
+        hex.trim().toLowerCase(),
+      );
+    }
+    base['source'] = sourcePayload;
   }
   return base;
 }

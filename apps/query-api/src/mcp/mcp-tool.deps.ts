@@ -70,6 +70,7 @@ import type { GetChannelsEndpoint } from '../domain/messaging/get-channels.endpo
 import type { GetChannelByIdEndpoint } from '../domain/messaging/get-channel-by-id.endpoint';
 import type { GetChannelByAliasEndpoint } from '../domain/messaging/get-channel-by-alias.endpoint';
 import type { GetChannelMessagesEndpoint } from '../domain/messaging/get-channel-messages.endpoint';
+import type { CheckActivityDuplicateEndpoint } from '../domain/messaging/check-activity-duplicate.endpoint';
 import type {
   GetObjectChannelEndpoint,
   GetObjectChannelMessagesEndpoint,
@@ -173,5 +174,6 @@ export interface McpToolDeps {
   getChannelMessages: GetChannelMessagesEndpoint;
   getObjectChannel: GetObjectChannelEndpoint;
   getObjectChannelMessages: GetObjectChannelMessagesEndpoint;
+  checkObjectActivityDuplicate: CheckActivityDuplicateEndpoint;
   getMemoPublicKey: GetMemoPublicKeyEndpoint;
 }

@@ -43,13 +43,37 @@ export class MessageDeleteHandler implements OdlActionHandler {
     }
 
     const deletedAtUnix = blockTimestampToUnixSeconds(ctx.timestamp);
-    await this.messagesRepository.deleteAndTombstone({
+    const tombstone = {
       message_id,
       channel_id,
       deleted_by: ctx.creator,
       deleted_at_unix: deletedAtUnix,
       event_seq: ctx.eventSeq,
       transaction_id: ctx.transactionId,
+    };
+
+    const isClusterRoot = message.dup_group_id === message.message_id;
+    if (!isClusterRoot) {
+      await this.messagesRepository.deleteAndTombstone(tombstone);
+      return;
+    }
+
+    await this.messagesRepository.runInTransaction(async (trx) => {
+      const members = await this.messagesRepository.listClusterMembers(
+        message.dup_group_id,
+        trx,
+      );
+      const survivors = members.filter((m) => m.message_id !== message_id);
+      await this.messagesRepository.deleteAndTombstone(tombstone, trx);
+      if (survivors.length === 0) {
+        return;
+      }
+      const successor = survivors[0]!;
+      await this.messagesRepository.repointDupGroup(
+        message.dup_group_id,
+        successor.message_id,
+        trx,
+      );
     });
   }
 }

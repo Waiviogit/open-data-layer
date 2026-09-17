@@ -68,6 +68,9 @@ const baseMessage: MessageItem = {
   original_created_at_unix: null,
   updated_at_unix: null,
   source_object: null,
+  source: null,
+  duplicate_of: null,
+  duplicate_count: 1,
 };
 
 function messageWithBody(

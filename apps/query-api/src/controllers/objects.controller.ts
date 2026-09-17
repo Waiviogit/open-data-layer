@@ -73,14 +73,20 @@ import {
   type UserBlogFeedResponse,
 } from '../domain/feed';
 import {
+  CheckActivityDuplicateEndpoint,
   GetObjectChannelEndpoint,
   GetObjectChannelMessagesEndpoint,
 } from '../domain/messaging';
 import {
+  activityDedupCheckBodySchema,
   messageHistoryBodySchema,
+  type ActivityDedupCheckBody,
   type MessageHistoryBody,
 } from '../domain/messaging/schemas/messaging.schema';
-import type { MessageHistoryResponseDto } from '../domain/messaging';
+import type {
+  ActivityDedupCheckDto,
+  MessageHistoryResponseDto,
+} from '../domain/messaging';
 import type { ChannelDetailDto } from '../domain/messaging/get-channel-by-id.endpoint';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
 import { ReqLocale } from '../http/locale-header.decorator';
@@ -109,6 +115,7 @@ export class ObjectsController {
     private readonly getObjectOptions: GetObjectOptionsEndpoint,
     private readonly getObjectChannelEndpoint: GetObjectChannelEndpoint,
     private readonly getObjectChannelMessagesEndpoint: GetObjectChannelMessagesEndpoint,
+    private readonly checkActivityDuplicate: CheckActivityDuplicateEndpoint,
   ) {}
 
   @Get(':objectId/exists')
@@ -473,6 +480,19 @@ export class ObjectsController {
     );
     if (!result) {
       throw new NotFoundException(`Object channel not found: ${objectId}`);
+    }
+    return result;
+  }
+
+  @Post(':objectId/channel/messages/dedup-check')
+  async checkObjectActivityDuplicate(
+    @Param('objectId') rawObjectId: string,
+    @Body(new ZodBodyPipe(activityDedupCheckBodySchema)) body: ActivityDedupCheckBody,
+  ): Promise<ActivityDedupCheckDto> {
+    const objectId = decodeURIComponent(rawObjectId);
+    const result = await this.checkActivityDuplicate.execute(objectId, body);
+    if (!result) {
+      throw new NotFoundException(`Object not found: ${objectId}`);
     }
     return result;
   }

@@ -90,7 +90,8 @@
       "@opden-data-layer/odl-db-types": ["./libs/odl-db-types/src/index.ts"],
       "@opden-data-layer/hive-memo-crypto": [
         "./libs/hive-memo-crypto/src/index.ts"
-      ]
+      ],
+      "@opden-data-layer/test-postgres": ["./libs/test-postgres/src/index.ts"]
     },
     "strict": false,
     "noUncheckedSideEffectImports": false,
