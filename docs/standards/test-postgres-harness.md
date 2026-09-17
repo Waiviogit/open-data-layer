@@ -2,7 +2,7 @@
 id: docs-standards-test-postgres-harness
 title: Test Postgres harness
 description: Local disposable Postgres for migration integration specs.
-type: standard
+type: spec
 status: active
 scope: platform
 tags: [testing, postgres]
