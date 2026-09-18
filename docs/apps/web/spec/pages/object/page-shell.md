@@ -91,6 +91,7 @@ Gated by hero Edit toggle + `viewerUsername` from server.
 | Related / Similar / Add-On feeds | [routes/ref-feeds.md](routes/ref-feeds.md) |
 | Category objects feed | [routes/category-feed.md](routes/category-feed.md) |
 | Recipe left rail | [routes/recipe-left-rail.md](routes/recipe-left-rail.md) |
+| Social links (left rail) | [routes/social-links.md](routes/social-links.md) |
 | Governance left rail | [routes/governance-left-rail.md](routes/governance-left-rail.md) |
 | Edit mode | [routes/edit-mode.md](routes/edit-mode.md) |
 | Right rail | [routes/right-rail.md](routes/right-rail.md) |

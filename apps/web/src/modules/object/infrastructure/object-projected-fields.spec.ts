@@ -604,6 +604,37 @@ describe('object-projected-fields', () => {
     expect(linkKindPublicIconSrc('linkedin')).toContain('social/linkedin.svg');
   });
 
+  it('passes through full URLs in link rows without platform prefix', () => {
+    const instagramUrl = 'https://www.instagram.com/whitegarden_restaurant/';
+    const v: ProjectedObjectView = {
+      object_id: 'x',
+      object_type: 'business',
+      semantic_type: null,
+      weight: null,
+      fields: {
+        link: [
+          { type: 'instagram', value: instagramUrl },
+          { type: 'instagram', value: 'whitegarden_restaurant' },
+        ],
+      },
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+      hasExclusiveOwnership: false,
+    };
+    expect(projectedObjectLinkRows(v)).toEqual([
+      {
+        iconSrc: '/images/icons/social/instagram.svg',
+        label: 'Instagram',
+        href: instagramUrl,
+      },
+      {
+        iconSrc: '/images/icons/social/instagram.svg',
+        label: 'Instagram',
+        href: 'https://instagram.com/whitegarden_restaurant',
+      },
+    ]);
+  });
+
   it('reads parent from fields.parent projected RefSummary', () => {
     const v: ProjectedObjectView = {
       object_id: 'child',

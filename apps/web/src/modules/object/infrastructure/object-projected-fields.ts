@@ -1,5 +1,7 @@
 import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
 
+import { resolveSocialLinkHref } from '../domain/resolve-social-link-href';
+
 import type {
   ProjectedGalleryAlbumView,
   ProjectedGalleryPhotoView,
@@ -1545,39 +1547,7 @@ export function linkKindDisplayLabel(kind: ProjectedObjectLinkKind | string): st
 
 /** External profile URL for a social link (mirrors legacy `socialTransformers`). */
 export function buildLinkHref(kind: ProjectedObjectLinkKind | string, value: string): string {
-  const v = encodeURIComponent(value);
-  switch (kind) {
-    case 'facebook':
-      return `https://www.facebook.com/${v}`;
-    case 'twitter':
-      return `https://x.com/${v}`;
-    case 'youtube':
-      return `https://www.youtube.com/@${v}`;
-    case 'tiktok':
-      return `https://www.tiktok.com/@${v}`;
-    case 'reddit':
-      return `https://www.reddit.com/user/${v}`;
-    case 'linkedin':
-      return `https://www.linkedin.com/in/${v}`;
-    case 'telegram':
-      return `https://t.me/${v}`;
-    case 'whatsapp':
-      return `https://wa.me/${v}`;
-    case 'pinterest':
-      return `https://www.pinterest.com/${v}`;
-    case 'twitch':
-      return `https://www.twitch.tv/${v}`;
-    case 'snapchat':
-      return `https://www.snapchat.com/add/${v}`;
-    case 'instagram':
-      return `https://instagram.com/${v}`;
-    case 'github':
-      return `https://github.com/${v}`;
-    case 'hive':
-      return `https://peakd.com/@${v}`;
-    default:
-      return `https://${v}`;
-  }
+  return resolveSocialLinkHref(kind, value);
 }
 
 export type ProjectedObjectLinkRow = {
