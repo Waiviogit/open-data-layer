@@ -2,6 +2,11 @@ import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
 
 import { getProxyImageUrl } from './image/get-proxy-image-url';
+import {
+  isProviderEmbedSrc,
+  mediaEmbedIframeHtml,
+  parseMediaEmbedUrl,
+} from './media-embed';
 import { linkifyBareImageUrls, linkifyHiveMentions } from './social-content-html';
 
 /**
@@ -19,8 +24,6 @@ const MARKDOWN_LEAD =
   /^(?:\[!\[|#+\s|>\s|(?:-\s|\d+\.\s|\*\s|\|\s))/m;
 
 const THREE_SPEAK_VIDEO_ID = '[^&\\s<>"\')]+';
-
-const YOUTUBE_ID = '[a-zA-Z0-9_-]{11}';
 
 function stripTrailingHtmlFooter(raw: string): string {
   return raw.replace(TRAILING_HTML_FOOTER, '').trim();
@@ -98,23 +101,6 @@ export function convertMarkdownImages(html: string): string {
   );
 }
 
-function extractYoutubeVideoId(url: string): string | null {
-  const fromWatch = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
-  if (fromWatch) {
-    return fromWatch[1] ?? null;
-  }
-  const fromShort = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
-  if (fromShort) {
-    return fromShort[1] ?? null;
-  }
-  return null;
-}
-
-function youtubeIframeHtml(videoId: string): string {
-  const src = `https://www.youtube.com/embed/${videoId}`;
-  return `<div class="blog-post-youtube-embed"><iframe src="${src}" title="YouTube video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe></div>`;
-}
-
 function threeSpeakIframeHtml(videoIdRaw: string): string {
   let videoId = videoIdRaw;
   try {
@@ -177,44 +163,36 @@ export function embedThreeSpeakInBody(html: string): string {
   return out;
 }
 
-export function embedYouTubeUrls(html: string): string {
-  if (!html.includes('youtube') && !html.includes('youtu.be')) {
+/**
+ * Replace Instagram / YouTube `<a href>` and leftover bare URLs with iframes.
+ * Skip already-embed srcs so existing iframe `src` values are not nested.
+ */
+export function embedMediaUrls(html: string): string {
+  const lower = html.toLowerCase();
+  if (
+    !lower.includes('youtube') &&
+    !lower.includes('youtu.be') &&
+    !lower.includes('instagram.com')
+  ) {
     return html;
   }
 
   let out = html;
 
   out = out.replace(
-    new RegExp(
-      `<a\\s+[^>]*href=["'](https?:\\/\\/(?:www\\.)?youtube\\.com\\/watch\\?[^"']*v=(${YOUTUBE_ID})[^"']*)["'][^>]*>[\\s\\S]*?<\\/a>`,
-      'gi',
-    ),
-    (_m, _href: string, id: string) => youtubeIframeHtml(id),
-  );
-  out = out.replace(
-    new RegExp(
-      `<a\\s+[^>]*href=["'](https?:\\/\\/youtu\\.be\\/(${YOUTUBE_ID})[^"']*)["'][^>]*>[\\s\\S]*?<\\/a>`,
-      'gi',
-    ),
-    (_m, _href: string, id: string) => youtubeIframeHtml(id),
+    /<a\s+[^>]*href=["']([^"']+)["'][^>]*>[\s\S]*?<\/a>/gi,
+    (match, href: string) => {
+      const parsed = parseMediaEmbedUrl(href);
+      return parsed ? mediaEmbedIframeHtml(parsed) : match;
+    },
   );
 
-  const watchUrl = /https?:\/\/(?:www\.)?youtube\.com\/watch\?[^\s<"&]+/gi;
-  const shortUrl = /https?:\/\/youtu\.be\/[^\s<"&]+/gi;
-
-  out = out.replace(watchUrl, (url) => {
-    if (url.includes('/embed/')) {
+  out = out.replace(/https?:\/\/[^\s<"']+/gi, (url) => {
+    if (isProviderEmbedSrc(url)) {
       return url;
     }
-    const id = extractYoutubeVideoId(url);
-    return id ? youtubeIframeHtml(id) : url;
-  });
-  out = out.replace(shortUrl, (url) => {
-    if (url.includes('/embed/')) {
-      return url;
-    }
-    const id = extractYoutubeVideoId(url);
-    return id ? youtubeIframeHtml(id) : url;
+    const parsed = parseMediaEmbedUrl(url);
+    return parsed ? mediaEmbedIframeHtml(parsed) : url;
   });
 
   return out;
@@ -251,6 +229,7 @@ const POST_BODY_SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
       'height',
       'allowfullscreen',
       'frameborder',
+      'scrolling',
       'title',
       'allow',
       'loading',
@@ -268,6 +247,8 @@ const POST_BODY_SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     'play.3speak.tv',
     'www.dailymotion.com',
     'embed.twitch.tv',
+    'www.instagram.com',
+    'instagram.com',
   ],
   transformTags: {
     img: (tagName, attribs) => {
@@ -297,7 +278,7 @@ export function sanitizePostBodyHtml(raw: string): string {
     ? parsed
     : linkifyBareImageUrls(parsed);
   const intermediate = linkifyHiveMentions(
-    embedYouTubeUrls(embedThreeSpeakInBody(convertMarkdownImages(withImages))),
+    embedMediaUrls(embedThreeSpeakInBody(convertMarkdownImages(withImages))),
   );
   return sanitizeHtml(intermediate, POST_BODY_SANITIZE_OPTIONS);
 }

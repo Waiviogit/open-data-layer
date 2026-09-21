@@ -31,4 +31,21 @@ describe('sanitizePostBodyHtml (integration, real marked)', () => {
     expect(html).not.toContain('[Support via Discord]');
     expect(html).not.toContain('[Watch on 3Speak]');
   });
+
+  it('embeds Instagram post URL from markdown into a sanitized iframe', () => {
+    const body =
+      'WHITE GARDEN invites guests to enjoy sunny summer days with delicious dishes, refreshing drinks, and a relaxed outdoor atmosphere.\n\nhttps://www.instagram.com/p/DcncWF8DaIb/';
+
+    expect(postBodyLooksLikeHtml(body)).toBe(false);
+
+    const html = sanitizePostBodyHtml(body);
+    expect(html).toContain('WHITE GARDEN');
+    expect(html).toContain('blog-post-instagram-embed');
+    expect(html).toContain(
+      'src="https://www.instagram.com/p/DcncWF8DaIb/embed"',
+    );
+    expect(html).not.toContain(
+      'href="https://www.instagram.com/p/DcncWF8DaIb/"',
+    );
+  });
 });

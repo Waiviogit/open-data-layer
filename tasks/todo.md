@@ -1,25 +1,23 @@
-# SVG → lucide-react icon adapter
+# Activity Instagram/YouTube embeds
 
 ## Checklist
 
-- [x] Install `lucide-react` (root + `@opden-data-layer/web`)
-- [x] Add `optimizePackageImports: ['lucide-react']` in `next.config.js`
-- [x] Create `apps/web/src/icons` module (registry, lucide pack, custom pack, named API)
-- [x] Migrate all inline SVG in modules/shared (64 files)
-- [x] Delete 12 legacy icon shim files
-- [x] Unit/integration tests (`icon.spec.tsx`, `registry.spec.ts`, `icons-single-source.spec.ts`, `icons-server-safe.spec.tsx`)
-- [x] E2E smoke (`apps/web-e2e/src/icons-smoke.spec.ts`)
-- [x] ESLint guards (no lucide-react outside packs; no inline svg in features)
-- [x] Docs: `docs/apps/web/spec/icons.md`, `apps/web/AGENTS.md` Icons section
+- [x] `media-embed.ts` — parse Instagram p/reel/tv + YouTube watch/shorts/youtu.be
+- [x] Wire `embedMediaUrls` into `sanitizePostBodyHtml`; allow instagram.com iframes; CSS
+- [x] Enable editor Insert Video URL panel
+- [x] Tests + post-article / messaging / editor docs
+- [x] `pnpm nx test web --testPathPatterns="media-embed|post-body-html-pipeline|insert-editor-media-url"`
+- [x] `pnpm typecheck:web`
+- [x] `pnpm check:web-i18n-utf8`
 
 ## Review
 
-**Changes:** Introduced `@/icons` adapter over lucide-react with ~80 semantic names, custom pack for brand/colored/special glyphs, migrated 124 inline SVG usages, removed duplicate shim files.
+**Changes:** Shared `parseMediaEmbedUrl` turns Instagram `/p|/reel|/tv` and YouTube (watch, youtu.be, shorts) URLs into iframes inside `sanitizePostBodyHtml`. Object Activity already used that pipeline, so WHITE GARDEN-style bodies (text + IG URL) now render a player. Insert → Video is enabled: paste URL, store as markdown link.
 
 **Verification:**
-- `pnpm typecheck:web` — pass
-- `pnpm nx test web --testPathPatterns=icons` — 31 tests pass
-- `pnpm nx lint web` — pre-existing 7 errors (unrelated); new icon ESLint rules active, no svg/lucide violations in features
-- `pnpm nx run web:verify-production-build` — pass
+- 28 tests pass (`media-embed`, `post-body-html-pipeline`, `insert-editor-media-url`)
+- `pnpm typecheck:web` pass
+- locale UTF-8 check pass
+- Browser Activity page not exercised (dev server not running)
 
-**Follow-up:** Manual light/dark smoke on header, feed story actions, editor toolbar, object left rail, wallet history.
+**Follow-up:** TikTok / Vimeo URL→iframe still out of scope. Instagram iframe may show a login wall when logged out of IG.

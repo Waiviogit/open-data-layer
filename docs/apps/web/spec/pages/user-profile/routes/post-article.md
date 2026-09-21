@@ -46,7 +46,8 @@ Server-side `sanitizePostHtml` (`apps/web/src/shared/infrastructure/sanitize-pos
 - Markdown bodies pass through **`marked`** (`gfm`, `breaks`), then embed transforms and sanitize.
 - **Peakd 3Speak prefix:** markdown linked-image preview `[![](poster)](https://3speak.tv/watch?v=…)` and `▶ [Watch on 3Speak](…)` are stripped before markdown parse; the matching iframe is **prepended after** `marked` so headings and links in the body still render.
 - **3Speak in HTML bodies:** linked poster `<a><img></a>`, `data-linked-url`, or bare watch URLs become `.blog-post-3speak-embed` iframes (`play.3speak.tv/…&mode=iframe&layout=desktop`). Video id capture excludes trailing `)` from markdown link syntax.
-- Standalone **YouTube** watch / `youtu.be` URLs are replaced with an embed iframe inside `.blog-post-youtube-embed` (styles in `apps/web/src/app/global.css`).
+- Standalone **YouTube** watch / `youtu.be` / **shorts** URLs are replaced with an embed iframe inside `.blog-post-youtube-embed` (styles in `apps/web/src/app/global.css`).
+- Standalone **Instagram** `/p/` `/reel/` `/tv/` URLs (not profile URLs) are replaced with `.blog-post-instagram-embed` iframes (`https://www.instagram.com/{p|reel|tv}/{code}/embed`). Detection lives in `media-embed.ts` and is shared with object Activity bodies.
 
 Feed story cards still use `Story` for previews; full post views do **not** show a separate hero video above the body — video appears inline from the body content (or from the Peakd prefix preprocess).
 

@@ -396,7 +396,7 @@
     overflow: hidden;
   }
 
-  /* Injected by sanitize-post-html for YouTube URLs in post body */
+  /* Injected by sanitize-post-html for YouTube / 3Speak / Instagram URLs in body */
   .blog-post-youtube-embed {
     @apply relative my-4 aspect-video w-full max-w-full overflow-hidden rounded-btn border border-border bg-black;
   }
@@ -411,6 +411,16 @@
 
   .blog-post-3speak-embed iframe {
     @apply absolute inset-0 h-full w-full border-0;
+  }
+
+  .blog-post-instagram-embed {
+    @apply relative my-4 w-full max-w-[540px] overflow-hidden rounded-btn border border-border bg-bg;
+    min-height: 540px;
+  }
+
+  .blog-post-instagram-embed iframe {
+    @apply w-full border-0;
+    min-height: 540px;
   }
 
   /**

@@ -1229,6 +1229,8 @@
   "editor_insert_table": "Table",
   "editor_insert_title": "Insert",
   "editor_insert_video": "Video",
+  "editor_insert_video_invalid": "Paste a YouTube or Instagram post URL.",
+  "editor_insert_video_placeholder": "YouTube or Instagram URL",
   "editor_last_drafts": "Last drafts",
   "editor_last_drafts_empty": "No drafts yet.",
   "editor_last_drafts_show_more": "Show more",

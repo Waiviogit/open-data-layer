@@ -103,4 +103,55 @@ describe('sanitizePostBodyHtml', () => {
     expect(html).not.toContain('javascript:');
     expect(html).not.toContain('alert(1)');
   });
+
+  it('embeds an Instagram post URL after surrounding text', () => {
+    const html = sanitizePostBodyHtml(
+      'WHITE GARDEN invites guests to enjoy sunny summer days.\n\nhttps://www.instagram.com/p/DcncWF8DaIb/',
+    );
+    expect(html).toContain('blog-post-instagram-embed');
+    expect(html).toContain(
+      'src="https://www.instagram.com/p/DcncWF8DaIb/embed"',
+    );
+    expect(html).toContain('WHITE GARDEN');
+  });
+
+  it('embeds Instagram href links and leaves profile URLs as links', () => {
+    const embedded = sanitizePostBodyHtml(
+      '<p><a href="https://www.instagram.com/p/DcncWF8DaIb/">https://www.instagram.com/p/DcncWF8DaIb/</a></p>',
+    );
+    expect(embedded).toContain('blog-post-instagram-embed');
+    expect(embedded).not.toContain(
+      '<a href="https://www.instagram.com/p/DcncWF8DaIb/"',
+    );
+
+    const profile = sanitizePostBodyHtml(
+      '<p><a href="https://www.instagram.com/whitegarden_restaurant/">ig</a></p>',
+    );
+    expect(profile).not.toContain('blog-post-instagram-embed');
+    expect(profile).toContain(
+      'href="https://www.instagram.com/whitegarden_restaurant/"',
+    );
+  });
+
+  it('embeds YouTube watch and shorts URLs', () => {
+    const watch = sanitizePostBodyHtml(
+      'See https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    );
+    expect(watch).toContain('blog-post-youtube-embed');
+    expect(watch).toContain('src="https://www.youtube.com/embed/dQw4w9WgXcQ"');
+
+    const shorts = sanitizePostBodyHtml(
+      'https://www.youtube.com/shorts/abcdefghijk',
+    );
+    expect(shorts).toContain('blog-post-youtube-embed');
+    expect(shorts).toContain('src="https://www.youtube.com/embed/abcdefghijk"');
+  });
+
+  it('does not nest a second iframe around an existing YouTube embed src', () => {
+    const html = sanitizePostBodyHtml(
+      '<p><iframe src="https://www.youtube.com/embed/abcdefghijk" title="YouTube video"></iframe></p>',
+    );
+    expect(html.match(/<iframe/g)?.length).toBe(1);
+    expect(html).not.toContain('blog-post-youtube-embed');
+  });
 });

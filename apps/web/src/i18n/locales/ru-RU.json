@@ -1212,6 +1212,8 @@
   "editor_insert_table": "Таблица",
   "editor_insert_title": "Вставка",
   "editor_insert_video": "Видео",
+  "editor_insert_video_invalid": "Вставьте ссылку на YouTube или пост Instagram.",
+  "editor_insert_video_placeholder": "Ссылка на YouTube или Instagram",
   "editor_last_drafts": "Last drafts",
   "editor_last_drafts_empty": "No drafts yet.",
   "editor_last_drafts_show_more": "Show more",

@@ -39,6 +39,7 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import { insertObjectLinkAtSelection } from '../../application/insert-editor-object-link';
 import { EditorInlineObjectSearch } from './editor-inline-object-search';
 import { EditorInsertPhotoPanel } from './editor-insert-photo-panel';
+import { EditorInsertVideoPanel } from './editor-insert-video-panel';
 
 const INSERT_BTN_SIZE_PX = 40;
 const INSERT_BTN_RADIUS = INSERT_BTN_SIZE_PX / 2;
@@ -269,7 +270,9 @@ export function EditorInsertCaretOverlay({
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [objectSearchOpen, setObjectSearchOpen] = useState(false);
-  const [insertView, setInsertView] = useState<'grid' | 'photo' | 'date'>('grid');
+  const [insertView, setInsertView] = useState<
+    'grid' | 'photo' | 'date' | 'video'
+  >('grid');
   const [buttonTop, setButtonTop] = useState(12);
   const [insertPanelCoords, setInsertPanelCoords] = useState<{
     top: number;
@@ -302,6 +305,15 @@ export function EditorInsertCaretOverlay({
     },
     [editor, onObjectLinkedFromEditor],
   );
+
+  const openVideoPanel = useCallback(() => {
+    editor.getEditorState().read(() => {
+      const sel = $getSelection();
+      savedSelectionRef.current =
+        $isRangeSelection(sel) ? sel.clone() : null;
+    });
+    setInsertView('video');
+  }, [editor]);
 
   const openObjectSearch = useCallback(() => {
     editor.getEditorState().read(() => {
@@ -592,7 +604,7 @@ export function EditorInsertCaretOverlay({
             aria-labelledby={insertTitleId}
           >
             <div className="mb-3 flex items-center gap-2">
-              {insertView === 'photo' || insertView === 'date' ? (
+              {insertView === 'photo' || insertView === 'date' || insertView === 'video' ? (
                 <button
                   type="button"
                   className="text-body-sm text-accent hover:underline"
@@ -606,13 +618,31 @@ export function EditorInsertCaretOverlay({
                   ? t('editor_insert_photo')
                   : insertView === 'date'
                     ? t('editor_insert_date')
-                    : t('editor_insert_title')}
+                    : insertView === 'video'
+                      ? t('editor_insert_video')
+                      : t('editor_insert_title')}
               </h2>
             </div>
 
             {insertView === 'photo' ? (
               <EditorInsertPhotoPanel
                 onInserted={() => {
+                  setOpen(false);
+                  setInsertView('grid');
+                }}
+              />
+            ) : insertView === 'video' ? (
+              <EditorInsertVideoPanel
+                restoreSelection={() => {
+                  const saved = savedSelectionRef.current;
+                  if (saved) {
+                    editor.update(() => {
+                      $setSelection(saved);
+                    });
+                  }
+                }}
+                onInserted={() => {
+                  savedSelectionRef.current = null;
                   setOpen(false);
                   setInsertView('grid');
                 }}
@@ -627,12 +657,13 @@ export function EditorInsertCaretOverlay({
               <div className="grid grid-cols-2 gap-2">
                 {INSERT_ITEMS.map(({ labelKey, Icon }) => {
                   const isPhoto = labelKey === 'editor_insert_photo';
+                  const isVideo = labelKey === 'editor_insert_video';
                   const isObject = labelKey === 'editor_insert_object';
                   const isDate = labelKey === 'editor_insert_date';
                   if (isDate && !enableOriginalCreatedAt) {
                     return null;
                   }
-                  const enabled = isPhoto || isObject || isDate;
+                  const enabled = isPhoto || isVideo || isObject || isDate;
                   return (
                     <button
                       key={labelKey}
@@ -648,11 +679,13 @@ export function EditorInsertCaretOverlay({
                       onClick={
                         isPhoto
                           ? () => setInsertView('photo')
-                          : isObject
-                            ? () => openObjectSearch()
-                            : isDate
-                              ? () => setInsertView('date')
-                              : undefined
+                          : isVideo
+                            ? () => openVideoPanel()
+                            : isObject
+                              ? () => openObjectSearch()
+                              : isDate
+                                ? () => setInsertView('date')
+                                : undefined
                       }
                     >
                       <Icon className="text-fg-secondary" size={22} />
