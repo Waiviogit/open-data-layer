@@ -43,6 +43,8 @@ const messages = {
   discover_select_type: 'Select type',
   discover_search_object_types: 'Search object types',
   discover_objects_menu: 'Objects',
+  object_create_group_popular: 'Popular',
+  discover_all_types_menu: 'All types',
   discover_users_menu: 'Users',
   discover_all_users: 'All users',
   discover_no_results: 'No results found.',
@@ -75,7 +77,7 @@ describe('DiscoverTypeSheet', () => {
 
   it('navigates to selected type preserving query and sort', () => {
     renderSheet();
-    fireEvent.click(screen.getByRole('option', { name: 'Book' }));
+    fireEvent.click(screen.getAllByRole('option', { name: 'Book' })[0]);
     expect(navigateInstant).toHaveBeenCalledWith({
       href: '/discover?type=book&q=sushi&sort=newest',
       method: 'replace',
@@ -83,11 +85,19 @@ describe('DiscoverTypeSheet', () => {
     });
   });
 
-  it('marks only the active type as selected', () => {
+  it('marks the active type in Popular and All types', () => {
     renderSheet({ objectType: 'restaurant' });
     const selected = screen.getAllByRole('option', { selected: true });
-    expect(selected).toHaveLength(1);
-    expect(selected[0]).toHaveTextContent('Restaurant');
+    expect(selected).toHaveLength(2);
+    expect(selected.every((option) => option.textContent?.includes('Restaurant'))).toBe(true);
+    expect(selected[0]?.querySelector('svg')).not.toBeNull();
+    expect(selected[0]?.className).toContain('bg-accent-soft');
+  });
+
+  it('lists Popular above Users and All types', () => {
+    renderSheet();
+    const headings = screen.getAllByText(/Popular|Users|All types/);
+    expect(headings.map((el) => el.textContent)).toEqual(['Popular', 'Users', 'All types']);
   });
 
   it('filters object types by partial label match', () => {

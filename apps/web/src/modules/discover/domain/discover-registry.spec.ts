@@ -1,7 +1,10 @@
 import {
+  DISCOVER_POPULAR_OBJECT_TYPES,
   getRatingDimensionNamesForObjectType,
   getTagCategoryNamesForObjectType,
   listDiscoverObjectTypes,
+  listDiscoverPopularObjectTypes,
+  matchesDiscoverTypeSearch,
   objectTypeHasTagCategoryFilters,
   objectTypeSupportsGeo,
 } from './discover-registry';
@@ -11,6 +14,16 @@ describe('discover-registry', () => {
     const types = listDiscoverObjectTypes();
     expect(types).toContain('product');
     expect(types.length).toBeGreaterThan(10);
+  });
+
+  it('lists popular types in sidebar order', () => {
+    expect(listDiscoverPopularObjectTypes()).toEqual([...DISCOVER_POPULAR_OBJECT_TYPES]);
+  });
+
+  it('matches type search against key and spaced label', () => {
+    expect(matchesDiscoverTypeSearch('service_offered', 'offered')).toBe(true);
+    expect(matchesDiscoverTypeSearch('restaurant', 'prod')).toBe(false);
+    expect(matchesDiscoverTypeSearch('product', '')).toBe(true);
   });
 
   it('product has tag category filters', () => {

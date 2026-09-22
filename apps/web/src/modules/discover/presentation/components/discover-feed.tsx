@@ -26,7 +26,6 @@ export type DiscoverFeedProps = {
   onRequireLogin?: () => void;
   showFilters: boolean;
   showMap: boolean;
-  showChooseTypePrompt: boolean;
   mobileTab: DiscoverMobileTab;
   onMobileTabChange: (tab: DiscoverMobileTab) => void;
   onOpenTypeSheet: () => void;
@@ -49,7 +48,6 @@ export function DiscoverFeed({
   onRequireLogin,
   showFilters,
   showMap,
-  showChooseTypePrompt,
   mobileTab,
   onMobileTabChange,
   onOpenTypeSheet,
@@ -110,12 +108,6 @@ export function DiscoverFeed({
           map={map}
         />
       </div>
-
-      {showChooseTypePrompt ? (
-        <p className="hidden py-8 text-body text-fg-secondary lg:block">
-          {t('discover_choose_type_prompt')}
-        </p>
-      ) : null}
 
       {usersMode ? (
         <DiscoverUserFeed q={q} />

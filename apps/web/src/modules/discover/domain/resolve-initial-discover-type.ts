@@ -1,5 +1,7 @@
 import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
 
+import { DEFAULT_DISCOVER_OBJECT_TYPE } from './discover-registry';
+
 export type ResolveInitialDiscoverTypeInput = {
   objectType: string | null;
   usersMode: boolean;
@@ -8,7 +10,6 @@ export type ResolveInitialDiscoverTypeInput = {
 
 export type ResolveInitialDiscoverTypeResult =
   | { action: 'navigate'; type: string }
-  | { action: 'openTypeSheet' }
   | { action: 'none' };
 
 function isValidRegistryObjectType(type: string): boolean {
@@ -28,5 +29,5 @@ export function resolveInitialDiscoverType(
     return { action: 'navigate', type: remembered };
   }
 
-  return { action: 'openTypeSheet' };
+  return { action: 'navigate', type: DEFAULT_DISCOVER_OBJECT_TYPE };
 }

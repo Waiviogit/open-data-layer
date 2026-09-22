@@ -50,20 +50,12 @@ test.describe('Discover mobile', () => {
     });
   });
 
-  test('forces first-time visitor to choose object type', async ({ page }) => {
+  test('defaults first-time visitor to product', async ({ page }) => {
     await page.goto('/discover');
 
-    const typeSheet = page.getByRole('dialog');
-    await expect(typeSheet).toBeVisible();
-    await expect(typeSheet.getByRole('option', { name: 'Restaurant' })).toBeVisible();
-
-    await Promise.all([
-      page.waitForURL(/\/discover\?type=restaurant/, { timeout: 15_000 }),
-      typeSheet.getByRole('option', { name: 'Restaurant' }).click(),
-    ]);
-
-    await expect(typeSheet).toBeHidden();
-    await expect(page.getByRole('button', { name: /Restaurant/i })).toBeVisible();
+    await expect(page).toHaveURL(/type=product/);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /Product/i })).toBeVisible();
   });
 
   test('skips picker for returning visitor with remembered type cookie', async ({ page, context }) => {
@@ -133,5 +125,15 @@ test.describe('Discover desktop', () => {
     await expect(page.getByRole('heading', { name: 'Filters', level: 2 })).toBeVisible();
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.getByText('E2E Discover Restaurant')).toBeVisible();
+  });
+
+  test('defaults to product and shows Popular above Users', async ({ page }) => {
+    await page.goto('/discover');
+
+    await expect(page).toHaveURL(/type=product/);
+    await expect(page.getByRole('heading', { name: 'Popular', level: 2 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Users', level: 2 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'All types', level: 2 })).toBeVisible();
+    await expect(page.getByPlaceholder('Find object type')).toBeVisible();
   });
 });

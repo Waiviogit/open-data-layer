@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, icons, ui]
-updated_at: 2026-08-31
+updated_at: 2026-09-22
 related:
   - docs/apps/web/spec/images.md
   - apps/web/AGENTS.md
@@ -68,6 +68,8 @@ Social: `thumb-up`, `thumb-down`, `comment`, `reblog`, `bell`, `star`, `heart`, 
 Editor: `bold`, `italic`, `link`, `code`, `table`, `image`, `video`, `emoji`, `play`
 
 Meta / wallet: `clock`, `calendar`, `mail`, `map-pin`, `globe`, `phone`, `dollar`, `zap`, `hash`, `wallet`, `book`, `book-open`, `check-circle`, `arrow-left-right`, `arrow-up-down`, `trending-up`, `lock`, `lock-open`, `info`, `smartphone`, `qr-code`, `maximize`, `minimize`, `locate`, `layout-grid`, `file-text`, `shopping-cart`, `shopping-bag`, `award`
+
+Discover types: `package`, `building`, `utensils`, `utensils-crossed`, `cup-soda`, `share`, `landmark`, `list`, `briefcase`, `puzzle`, `rss`, `store`, `map`, `chef-hat`, `hand-helping`, `hand`, `sparkles`
 
 Custom-only: `brand-facebook`, `brand-x`, `hive-savings-shield`, `hbd-savings-shield`, `wallet-power-lightning`, `reward-flashlight`, `weight-scale`, `dimensions`, `wallet-savings-shield`
 

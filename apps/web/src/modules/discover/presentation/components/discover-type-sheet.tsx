@@ -4,11 +4,19 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { formatObjectTypeLabel } from '@/modules/app-header/domain/search-nav-list';
-import { CheckIcon, SearchIcon } from '@/icons';
+import { CheckIcon, Icon, SearchIcon } from '@/icons';
 import { ModalShell, useInstantNavigation } from '@/shared/presentation';
 
 import { buildDiscoverHref } from '../../domain/discover-url';
-import { listDiscoverObjectTypes } from '../../domain/discover-registry';
+import {
+  listDiscoverObjectTypes,
+  listDiscoverPopularObjectTypes,
+  matchesDiscoverTypeSearch,
+} from '../../domain/discover-registry';
+import {
+  DISCOVER_USERS_ICON,
+  iconForDiscoverObjectType,
+} from '../../domain/discover-type-icons';
 import { writeDiscoverObjectTypeCookie } from '../../domain/discover-type-cookie';
 
 export type DiscoverTypeSheetProps = {
@@ -20,12 +28,39 @@ export type DiscoverTypeSheetProps = {
   sort: 'newest' | 'oldest' | 'rank';
 };
 
-function matchesTypeSearch(type: string, query: string): boolean {
-  const needle = query.trim().toLowerCase();
-  if (!needle) {
-    return true;
-  }
-  return formatObjectTypeLabel(type).toLowerCase().includes(needle);
+function optionClassName(active: boolean): string {
+  return [
+    'flex w-full items-center justify-between gap-2 px-2 py-3 text-start text-body transition-colors',
+    active
+      ? 'bg-accent-soft font-weight-label text-accent'
+      : 'text-fg hover:bg-ghost-surface',
+  ].join(' ');
+}
+
+function DiscoverTypeOption({
+  type,
+  active,
+  onSelect,
+}: {
+  type: string;
+  active: boolean;
+  onSelect: (type: string) => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="option"
+      aria-selected={active}
+      className={optionClassName(active)}
+      onClick={() => onSelect(type)}
+    >
+      <span className="inline-flex min-w-0 items-center gap-2">
+        <Icon name={iconForDiscoverObjectType(type)} size="sm" className="shrink-0" />
+        <span className="truncate">{formatObjectTypeLabel(type)}</span>
+      </span>
+      {active ? <CheckIcon size={18} className="shrink-0 text-accent" /> : null}
+    </button>
+  );
 }
 
 export function DiscoverTypeSheet({
@@ -41,10 +76,16 @@ export function DiscoverTypeSheet({
   const [searchQuery, setSearchQuery] = useState('');
 
   const types = useMemo(() => listDiscoverObjectTypes(), []);
-  const visibleTypes = useMemo(
-    () => types.filter((type) => matchesTypeSearch(type, searchQuery)),
+  const popularTypes = useMemo(() => listDiscoverPopularObjectTypes(), []);
+  const filteredPopular = useMemo(
+    () => popularTypes.filter((type) => matchesDiscoverTypeSearch(type, searchQuery)),
+    [popularTypes, searchQuery],
+  );
+  const filteredAll = useMemo(
+    () => types.filter((type) => matchesDiscoverTypeSearch(type, searchQuery)),
     [types, searchQuery],
   );
+  const showNoResults = filteredPopular.length === 0 && filteredAll.length === 0;
 
   useEffect(() => {
     if (!open) {
@@ -92,55 +133,70 @@ export function DiscoverTypeSheet({
       }
     >
       <div className="px-gutter pb-gutter">
-        <p className="mb-2 text-caption font-weight-label uppercase tracking-loose text-fg-tertiary">
-          {t('discover_objects_menu')}
-        </p>
-        {visibleTypes.length === 0 ? (
-          <p className="py-4 text-body-sm text-fg-secondary">{t('discover_no_results')}</p>
-        ) : (
-          <ul className="divide-y divide-border border-y border-border">
-            {visibleTypes.map((type) => {
-              const active = !usersMode && objectType === type;
-              return (
-                <li key={type}>
-                  <button
-                    type="button"
-                    role="option"
-                    aria-selected={active}
-                    className={[
-                      'flex w-full items-center justify-between px-2 py-3 text-start text-body transition-colors',
-                      active ? 'font-weight-label text-accent' : 'text-fg hover:bg-ghost-surface',
-                    ].join(' ')}
-                    onClick={() => selectObjectType(type)}
-                  >
-                    <span>{formatObjectTypeLabel(type)}</span>
-                    {active ? <CheckIcon size={18} className="shrink-0 text-accent" /> : null}
-                  </button>
+        {filteredPopular.length > 0 ? (
+          <section>
+            <p className="mb-2 text-caption font-weight-label uppercase tracking-loose text-fg-tertiary">
+              {t('object_create_group_popular')}
+            </p>
+            <ul className="divide-y divide-border border-y border-border">
+              {filteredPopular.map((type) => (
+                <li key={`popular-${type}`}>
+                  <DiscoverTypeOption
+                    type={type}
+                    active={!usersMode && objectType === type}
+                    onSelect={selectObjectType}
+                  />
                 </li>
-              );
-            })}
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        <section className={filteredPopular.length > 0 ? 'mt-6' : undefined}>
+          <p className="mb-2 text-caption font-weight-label uppercase tracking-loose text-fg-tertiary">
+            {t('discover_users_menu')}
+          </p>
+          <ul className="divide-y divide-border border-y border-border">
+            <li>
+              <button
+                type="button"
+                role="option"
+                aria-selected={usersMode}
+                className={optionClassName(usersMode)}
+                onClick={selectUsers}
+              >
+                <span className="inline-flex min-w-0 items-center gap-2">
+                  <Icon name={DISCOVER_USERS_ICON} size="sm" className="shrink-0" />
+                  <span>{t('discover_all_users')}</span>
+                </span>
+                {usersMode ? <CheckIcon size={18} className="shrink-0 text-accent" /> : null}
+              </button>
+            </li>
           </ul>
-        )}
-        <p className="mb-2 mt-6 text-caption font-weight-label uppercase tracking-loose text-fg-tertiary">
-          {t('discover_users_menu')}
-        </p>
-        <ul className="divide-y divide-border border-y border-border">
-          <li>
-            <button
-              type="button"
-              role="option"
-              aria-selected={usersMode}
-              className={[
-                'flex w-full items-center justify-between px-2 py-3 text-start text-body transition-colors',
-                usersMode ? 'font-weight-label text-accent' : 'text-fg hover:bg-ghost-surface',
-              ].join(' ')}
-              onClick={selectUsers}
-            >
-              <span>{t('discover_all_users')}</span>
-              {usersMode ? <CheckIcon size={18} className="shrink-0 text-accent" /> : null}
-            </button>
-          </li>
-        </ul>
+        </section>
+
+        {filteredAll.length > 0 ? (
+          <section className="mt-6">
+            <p className="mb-2 text-caption font-weight-label uppercase tracking-loose text-fg-tertiary">
+              {t('discover_all_types_menu')}
+            </p>
+            <ul className="divide-y divide-border border-y border-border">
+              {filteredAll.map((type) => (
+                <li key={`all-${type}`}>
+                  <DiscoverTypeOption
+                    type={type}
+                    active={!usersMode && objectType === type}
+                    onSelect={selectObjectType}
+                  />
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        {showNoResults ? (
+          <p className="py-4 text-body-sm text-fg-secondary">{t('discover_no_results')}</p>
+        ) : null}
       </div>
     </ModalShell>
   );

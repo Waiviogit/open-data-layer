@@ -8,7 +8,7 @@ related:
 type: spec
 status: active
 scope: web
-updated_at: 2026-09-01
+updated_at: 2026-09-22
 ---
 
 # Discover page (`/discover`)
@@ -21,13 +21,13 @@ Hub chrome: under `(app)/(hub)` with FEED / DISCOVER / MARKET section nav (`AppS
 
 | URL | Mode |
 |-----|------|
-| `/discover` (no `type`, no `users`) | Unselected — mobile opens type picker; desktop shows prompt in feed column |
+| `/discover` (no `type`, no `users`) | Redirects to remembered `discover_object_type` cookie, otherwise `type=product`. Other query params (`q`, `tags`, `sort`, `box`, `map`) are preserved. |
 | `/discover?type={object_type}` | Object feed for one registry type |
 | `/discover?type=all` | Mixed object-type feed (no `object_type` sent to query-api) |
 | `/discover?users=1` | User list (optional `q` prefix search) |
 | `q`, `tags`, `sort`, `box`, `map` | Shared query params |
 
-There is **no implicit default** object type (previously `product`). Bare `/discover` means nothing selected until the user picks a type or has a remembered type cookie.
+Bare `/discover` always resolves to a type. A valid remembered cookie wins; first-time visitors land on **Product**. The automatic redirect does not write the cookie.
 
 ### Map area (`box`)
 
@@ -51,14 +51,25 @@ Geo-capable registry types (`restaurant`, `place`, `business`, `person`, `servic
 
 ### Remembered object type
 
-Cookie `discover_object_type` stores the last picked registry object type (client write on type selection; server read on page load). Returning visitors with a valid cookie are replace-navigated to `/discover?type={remembered}`. The cookie is never set for `users` mode or `type=all`.
+Cookie `discover_object_type` stores the last picked registry object type (client write on type selection in the desktop sidebar or mobile type sheet; server read on page load). Returning visitors with a valid cookie are redirected to `/discover?type={remembered}`. The cookie is never set for `users` mode, `type=all`, or the automatic Product default.
 
 ## Mobile layout (< `lg`)
 
-- **Type button** — accent label (`text-section`) in feed header; opens bottom sheet (`ModalShell variant="sheet"`) with searchable object-type list + All users. No duplicate "Discover" label on mobile.
+- **Type button** — accent label (`text-section`) in feed header; opens bottom sheet (`ModalShell variant="sheet"`). Same sections as the desktop sidebar: Popular, Users, All types, each row with the same glyph. Active row uses `bg-accent-soft`. Search filters Popular and All types; Users stays visible. No duplicate "Discover" label on mobile.
 - **Filters** — `+ Filter` opens filter bottom sheet (tag categories only; same data as desktop right column). Active chips shown inline; toggles apply immediately via URL replace. No "Filters" section heading.
 - **List / Map** — geo types show underline sub-nav (`List` | `Map`) below filters. **List** shows the object feed + `Sort: …` dropdown. **Map** shows inline map (`DiscoverMapPanel variant="feed"`) with Search area, zoom, locate, and expand-to-fullscreen. Expanding opens the fullscreen map modal; **Search area** writes `box` to the URL.
-- Desktop three-column layout (sidebar / feed / filters) unchanged at `lg+`; sidebar and desktop filter column hidden on mobile. Map rail stacks above the filters column when the type supports geo.
+- Desktop three-column layout (sidebar / feed / filters) at `lg+`; sidebar and desktop filter column hidden on mobile. Map rail stacks above the filters column when the type supports geo.
+
+## Desktop sidebar (`lg+`)
+
+Left column, top to bottom:
+
+1. **Find object type** — filters Popular and All types by label. While searching, the 10-item All types cap is skipped and empty type sections hide. Users stays visible. No matches show `discover_no_results`.
+2. **Popular** — `product`, `business`, `restaurant`, `person`, `book`.
+3. **Users** — All users (above the full type list).
+4. **All types** — alphabetical registry list, first 10, then Show more. A type can appear in both Popular and All types; the active row is accent in both when both are visible. Selecting a Popular type does not expand All types. Selecting a type that exists only in the hidden tail does expand All types.
+
+Each type row and the Users row show a 14px glyph from `@/icons`. The active row uses `bg-accent-soft` (`--color-accent-soft`, 10% accent) with `text-accent`. `bg-accent/10` does not paint because `--color-accent` is a hex CSS variable.
 
 ## API (via BFF)
 

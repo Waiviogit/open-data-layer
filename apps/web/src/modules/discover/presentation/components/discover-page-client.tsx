@@ -75,9 +75,6 @@ function DiscoverPageContent({
     }
   }, [showMap, mobileTab]);
 
-  const showChooseTypePrompt =
-    !usersMode && objectType == null && isDesktop;
-
   useEffect(() => {
     if (isDesktop) {
       setTypeSheetOpen(false);
@@ -96,13 +93,15 @@ function DiscoverPageContent({
     });
 
     if (resolution.action === 'navigate') {
-      const href = buildDiscoverHref({ type: resolution.type, q, sort });
+      const href = buildDiscoverHref({
+        type: resolution.type,
+        q,
+        tags,
+        sort,
+        box,
+        map: mapFromUrl,
+      });
       navigateInstant({ href, method: 'replace', scroll: false });
-      return;
-    }
-
-    if (resolution.action === 'openTypeSheet' && !isDesktop) {
-      setTypeSheetOpen(true);
     }
   }, [
     mounted,
@@ -110,9 +109,11 @@ function DiscoverPageContent({
     usersMode,
     rememberedObjectType,
     q,
+    tags,
     sort,
+    box,
+    mapFromUrl,
     navigateInstant,
-    isDesktop,
   ]);
 
   const filterObjectType =
@@ -162,7 +163,7 @@ function DiscoverPageContent({
 
   return (
     <div className="mx-auto w-full max-w-container-page px-gutter pt-section-y-sm sm:px-gutter-sm">
-      <div className="grid items-start gap-4 lg:grid-cols-[minmax(10rem,12rem)_minmax(0,1fr)_minmax(12rem,15rem)]">
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(12rem,14rem)_minmax(0,1fr)_minmax(12rem,15rem)]">
         <DiscoverSidebar usersMode={usersMode} objectType={objectType} q={q} sort={sort} />
         <div className="relative z-10 min-w-0">
           {isNavigating ? (
@@ -183,7 +184,6 @@ function DiscoverPageContent({
             onRequireLogin={openLogin}
             showFilters={showFilters}
             showMap={showMap}
-            showChooseTypePrompt={showChooseTypePrompt}
             mobileTab={mobileTab}
             onMobileTabChange={setMobileTab}
             onOpenTypeSheet={() => setTypeSheetOpen(true)}

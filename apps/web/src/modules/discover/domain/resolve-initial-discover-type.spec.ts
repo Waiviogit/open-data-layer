@@ -11,14 +11,14 @@ describe('resolveInitialDiscoverType', () => {
     ).toEqual({ action: 'navigate', type: 'restaurant' });
   });
 
-  it('opens type sheet when remembered type is invalid', () => {
+  it('navigates to product when remembered type is invalid', () => {
     expect(
       resolveInitialDiscoverType({
         objectType: null,
         usersMode: false,
         remembered: 'not-a-type',
       }),
-    ).toEqual({ action: 'openTypeSheet' });
+    ).toEqual({ action: 'navigate', type: 'product' });
   });
 
   it('does nothing when URL already has a type', () => {
@@ -41,13 +41,13 @@ describe('resolveInitialDiscoverType', () => {
     ).toEqual({ action: 'none' });
   });
 
-  it('opens type sheet when no remembered type', () => {
+  it('navigates to product when no remembered type', () => {
     expect(
       resolveInitialDiscoverType({
         objectType: null,
         usersMode: false,
         remembered: null,
       }),
-    ).toEqual({ action: 'openTypeSheet' });
+    ).toEqual({ action: 'navigate', type: 'product' });
   });
 });
