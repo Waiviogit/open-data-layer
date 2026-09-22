@@ -10,6 +10,8 @@ export type ChannelListItem = {
   display_title: string | null;
   list_title: string | null;
   peer: string | null;
+  /** Hive metadata avatar for `peer`. Null when the account has no profile image. */
+  peer_avatar_url?: string | null;
   members: string[];
   last_message_at_unix: number | null;
   unread_count: number;
@@ -27,6 +29,8 @@ export type ChannelListPage = {
 export type ChannelMemberView = {
   account: string;
   role: 'admin' | 'member';
+  /** Hive metadata avatar. Omitted on optimistic rows until the channel detail refresh. */
+  avatar_url?: string | null;
 };
 
 export type ChannelLeavePolicy = {

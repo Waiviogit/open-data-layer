@@ -4,10 +4,7 @@ import { useIpfsContentBaseUrl } from '@/config/ipfs-content-base-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { UserAvatar } from '@/shared/presentation';
 
-import {
-  hiveAvatarUrl,
-  resolveChannelImageUrl,
-} from '../domain/messaging.helpers';
+import { resolveChannelImageUrl } from '../domain/messaging.helpers';
 import type { ChannelListItem } from '../domain/messaging.types';
 import { LockIcon } from '@/icons';
 
@@ -67,7 +64,7 @@ export function MessagingChannelRow({
       {channel.kind === 'direct' && channel.peer ? (
         <UserAvatar
           username={channel.peer}
-          avatarUrl={hiveAvatarUrl(channel.peer)}
+          avatarUrl={channel.peer_avatar_url ?? null}
           displayName={channel.peer}
           size={44}
         />

@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { AccountsCurrentRepository } from '../../repositories/accounts-current.repository';
 import { MessagingRepository } from '../../repositories/messaging.repository';
 import {
   decodeChannelCursor,
@@ -10,6 +11,7 @@ import {
   buildDmPeer,
   memberAccounts,
 } from './channel-projection';
+import { loadAccountAvatarUrls } from './load-account-avatar-urls';
 
 export type ChannelListItemDto = {
   channel_id: string;
@@ -17,6 +19,7 @@ export type ChannelListItemDto = {
   display_title: string | null;
   list_title: string | null;
   peer: string | null;
+  peer_avatar_url: string | null;
   members: string[];
   last_message_at_unix: number | null;
   unread_count: number;
@@ -33,7 +36,10 @@ export type ChannelListResponseDto = {
 
 @Injectable()
 export class GetChannelsEndpoint {
-  constructor(private readonly messagingRepo: MessagingRepository) {}
+  constructor(
+    private readonly messagingRepo: MessagingRepository,
+    private readonly accountsRepo: AccountsCurrentRepository,
+  ) {}
 
   async execute(
     viewer: string,
@@ -95,6 +101,7 @@ export class GetChannelsEndpoint {
         display_title: displayTitle,
         list_title: listTitle,
         peer,
+        peer_avatar_url: null,
         members: accounts,
         last_message_at_unix: channel.last_message_at_unix,
         unread_count: unreadCount,
@@ -102,6 +109,14 @@ export class GetChannelsEndpoint {
         last_message_preview: lastMessage.preview,
         last_message_encrypted: lastMessage.encrypted,
       });
+    }
+
+    const avatarUrls = await loadAccountAvatarUrls(
+      this.accountsRepo,
+      items.flatMap((item) => (item.peer ? [item.peer] : [])),
+    );
+    for (const item of items) {
+      item.peer_avatar_url = item.peer ? (avatarUrls.get(item.peer) ?? null) : null;
     }
 
     const last = page[page.length - 1];

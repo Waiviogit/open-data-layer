@@ -22,6 +22,7 @@ export type MessagingMessageListProps = {
   messages: MessageItem[];
   viewerUsername: string | null;
   showAuthorNames?: boolean;
+  scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
   topSentinelRef?: React.RefObject<HTMLDivElement | null>;
   loadingOlder?: boolean;
   onReply?: (message: MessageItem) => void;
@@ -33,6 +34,7 @@ export function MessagingMessageList({
   messages,
   viewerUsername,
   showAuthorNames = false,
+  scrollContainerRef,
   topSentinelRef,
   loadingOlder = false,
   onReply,
@@ -100,7 +102,10 @@ export function MessagingMessageList({
 
   return (
     <>
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-3">
+      <div
+        ref={scrollContainerRef}
+        className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-3"
+      >
         {topSentinelRef ? <div ref={topSentinelRef} aria-hidden className="h-px w-full" /> : null}
         {loadingOlder ? (
           <p className="py-2 text-center text-caption text-muted">{t('messaging_loading_older')}</p>

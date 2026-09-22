@@ -3,6 +3,7 @@ import type { ChannelMember } from '@opden-data-layer/odl-db-types';
 export type ChannelMemberView = {
   account: string;
   role: 'admin' | 'member';
+  avatar_url: string | null;
 };
 
 export type ChannelLeavePolicy = {
@@ -27,10 +28,14 @@ export function memberAccounts(members: ChannelMember[]): string[] {
   return members.map((m) => m.account);
 }
 
-export function mapMembersWithRoles(members: ChannelMember[]): ChannelMemberView[] {
+export function mapMembersWithRoles(
+  members: ChannelMember[],
+  avatarUrls?: ReadonlyMap<string, string | null>,
+): ChannelMemberView[] {
   return members.map((member) => ({
     account: member.account,
     role: member.role === 'admin' ? 'admin' : 'member',
+    avatar_url: avatarUrls?.get(member.account) ?? null,
   }));
 }
 

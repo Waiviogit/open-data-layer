@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
@@ -61,6 +61,9 @@ import { EditGroupModal } from './edit-group-modal';
 import { LeaveGroupModal } from './leave-group-modal';
 import { NewMessageModal } from './new-message-modal';
 
+/** Stay pinned when the user is already this close to the latest message. */
+const MESSAGE_LIST_NEAR_BOTTOM_PX = 80;
+
 export type MessagingInboxClientProps = {
   viewerUsername: string;
   accountName: string;
@@ -105,8 +108,11 @@ export function MessagingInboxClient({
   const [loadingOlder, startOlderTransition] = useTransition();
   const [composeIntent, setComposeIntent] = useState<MessagingComposeIntent>(null);
   const [composeEditorKey, setComposeEditorKey] = useState(0);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const topSentinelRef = useRef<HTMLDivElement>(null);
+  const olderAnchorRef = useRef<{ height: number; top: number } | null>(null);
+  const pinnedChannelRef = useRef<string | null>(null);
+  const listMetricsRef = useRef<{ channelId: string | null; scrollHeight: number } | null>(null);
 
   const refreshAfterSend = useCallback(() => {
     router.refresh();
@@ -289,9 +295,57 @@ export function MessagingInboxClient({
     initialPeer,
   ]);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages.length, activeChannelId]);
+  useLayoutEffect(() => {
+    const el = listRef.current;
+    if (!el) {
+      pinnedChannelRef.current = null;
+      listMetricsRef.current = null;
+      return;
+    }
+
+    const anchor = olderAnchorRef.current;
+    if (anchor) {
+      const delta = el.scrollHeight - anchor.height;
+      if (delta !== 0) {
+        el.scrollTop = anchor.top + delta;
+      }
+      if (loadingOlder) {
+        olderAnchorRef.current = { height: el.scrollHeight, top: el.scrollTop };
+      } else {
+        olderAnchorRef.current = null;
+      }
+      listMetricsRef.current = { channelId: activeChannelId, scrollHeight: el.scrollHeight };
+      return;
+    }
+
+    const messagesMatchChannel =
+      messages.length === 0 ||
+      !activeChannelId ||
+      messages.every((message) => message.channel_id === activeChannelId);
+    const prev = listMetricsRef.current;
+    const heightGrowth =
+      prev == null ? 0 : Math.max(0, el.scrollHeight - prev.scrollHeight);
+    const distanceBeforeGrowth =
+      el.scrollHeight - el.scrollTop - el.clientHeight - heightGrowth;
+    const wasNearBottom = distanceBeforeGrowth <= MESSAGE_LIST_NEAR_BOTTOM_PX;
+    const shouldInitialPin =
+      messagesMatchChannel &&
+      messages.length > 0 &&
+      pinnedChannelRef.current !== activeChannelId;
+    const shouldStick =
+      messagesMatchChannel &&
+      wasNearBottom &&
+      pinnedChannelRef.current === activeChannelId;
+
+    if (shouldInitialPin || shouldStick) {
+      el.scrollTop = el.scrollHeight;
+    }
+    if (shouldInitialPin && activeChannelId) {
+      pinnedChannelRef.current = activeChannelId;
+    }
+
+    listMetricsRef.current = { channelId: activeChannelId, scrollHeight: el.scrollHeight };
+  }, [activeChannelId, loadingOlder, messages]);
 
   const markReadForMessages = useCallback(
     async (items: MessageItem[]) => {
@@ -380,6 +434,10 @@ export function MessagingInboxClient({
     if (!activeChannelId || !messagesCursor || loadingOlder) {
       return;
     }
+    const el = listRef.current;
+    if (el) {
+      olderAnchorRef.current = { height: el.scrollHeight, top: el.scrollTop };
+    }
     startOlderTransition(async () => {
       const page = await loadOlderChannelMessagesAction(activeChannelId, messagesCursor);
       setMessages((prev) => [...page.items, ...prev]);
@@ -390,7 +448,8 @@ export function MessagingInboxClient({
 
   useEffect(() => {
     const node = topSentinelRef.current;
-    if (!node || !hasMoreMessages) {
+    const root = listRef.current;
+    if (!node || !root || !hasMoreMessages) {
       return;
     }
     const observer = new IntersectionObserver(
@@ -399,7 +458,7 @@ export function MessagingInboxClient({
           loadOlder();
         }
       },
-      { rootMargin: '100px' },
+      { root, rootMargin: '100px' },
     );
     observer.observe(node);
     return () => observer.disconnect();
@@ -541,13 +600,13 @@ export function MessagingInboxClient({
                 messages={messages}
                 viewerUsername={viewerUsername}
                 showAuthorNames={showAuthorNames}
+                scrollContainerRef={listRef}
                 topSentinelRef={topSentinelRef}
                 loadingOlder={loadingOlder}
                 onReply={handleReply}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
               />
-              <div ref={bottomRef} aria-hidden className="h-px" />
               <MessagingComposeBar
                 editorKey={composeEditorKey}
                 channelKind={composeChannelKind}

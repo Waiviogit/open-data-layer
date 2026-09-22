@@ -38,6 +38,10 @@ Left rail: **Messages** header, scrollable channel list, **New message** as a fu
 
 Internal scroll lives in list/message/members panels; column shells use `overflow-hidden` flex columns so footers align across all three columns.
 
+Profile inbox opens a thread pinned to the latest message (`scrollTop = scrollHeight` on the message list). Sending or a refresh keeps that pin when the reader is already near the bottom. Loading older pages (top sentinel) keeps the current viewport. Object Activity stays newest-at-top and is not pinned.
+
+DM rows and the About roster use query-api avatar URLs (`peer_avatar_url`, member `avatar_url`) from Hive profile metadata. When that URL is null, `UserAvatar` falls back to the sized Hive CDN image, then the placeholder. New-message search still uses search `profile_image`.
+
 Outgoing message bubbles use `bg-accent-soft` + `text-fg` (see [theme.md](./theme.md)).
 
 ## API mapping

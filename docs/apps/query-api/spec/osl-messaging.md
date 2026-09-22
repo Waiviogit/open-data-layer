@@ -44,6 +44,7 @@ Server **never** decrypts. Channel list preview: encrypted last message → `las
 
 - `display_title` = peer account for viewer
 - `list_title` = sorted members joined with ` & `
+- `peer_avatar_url` = peer avatar from `accounts_current` via `avatarUrlFromJoinedAccountRow` (`posting_json_metadata.profile.profile_image`, then `json_metadata`, then `profile_image`). `null` for groups and when the account has no image.
 
 ## Object channel feed
 
@@ -61,7 +62,7 @@ Object activity message history is ordered by `COALESCE(original_created_at_unix
 
 | Field | Description |
 |-------|-------------|
-| `members[]` | `{ account, role: "admin" \| "member" }`. For `kind=object` always `[]` (no membership roster). |
+| `members[]` | `{ account, role: "admin" \| "member", avatar_url }`. `avatar_url` uses the same Hive metadata resolution as `peer_avatar_url`. For `kind=object` always `[]` (no membership roster). |
 | `viewer_role` | Viewer's role or `null` |
 | `leave_policy` | `{ can_leave, requires_successor, eligible_successors[] }` |
 

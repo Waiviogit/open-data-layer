@@ -1,7 +1,9 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Channel, ChannelMember } from '@opden-data-layer/odl-db-types';
 
+import { AccountsCurrentRepository } from '../../repositories/accounts-current.repository';
 import { MessagingRepository } from '../../repositories/messaging.repository';
+import { loadAccountAvatarUrls } from './load-account-avatar-urls';
 import {
   buildDmListTitle,
   buildDmPeer,
@@ -29,7 +31,10 @@ export type ChannelDetailDto = {
 
 @Injectable()
 export class GetChannelByIdEndpoint {
-  constructor(private readonly messagingRepo: MessagingRepository) {}
+  constructor(
+    private readonly messagingRepo: MessagingRepository,
+    private readonly accountsRepo: AccountsCurrentRepository,
+  ) {}
 
   async execute(
     channelId: string,
@@ -60,15 +65,20 @@ export class GetChannelByIdEndpoint {
       }
     }
 
-    return this.project(channel, members, viewer);
+    const avatarUrls = await loadAccountAvatarUrls(
+      this.accountsRepo,
+      members.map((member) => member.account),
+    );
+    return this.project(channel, members, viewer, avatarUrls);
   }
 
   private project(
     channel: Channel,
     members: ChannelMember[],
-    viewer?: string,
+    viewer: string | undefined,
+    avatarUrls: ReadonlyMap<string, string | null>,
   ): ChannelDetailDto {
-    const memberViews = mapMembersWithRoles(members);
+    const memberViews = mapMembersWithRoles(members, avatarUrls);
     const accounts = memberViews.map((member) => member.account);
     let displayTitle: string | null = channel.title;
     let listTitle: string | null = channel.title;

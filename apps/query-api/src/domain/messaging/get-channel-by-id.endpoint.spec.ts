@@ -1,5 +1,6 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { GetChannelByIdEndpoint } from './get-channel-by-id.endpoint';
+import type { AccountsCurrentRepository } from '../../repositories/accounts-current.repository';
 import type { MessagingRepository } from '../../repositories/messaging.repository';
 
 describe('GetChannelByIdEndpoint', () => {
@@ -28,14 +29,18 @@ describe('GetChannelByIdEndpoint', () => {
     access: 'public_read',
   };
 
-  function makeEndpoint(messaging: Partial<MessagingRepository>) {
+  function makeEndpoint(
+    messaging: Partial<MessagingRepository>,
+    findByNames: jest.Mock = jest.fn().mockResolvedValue([]),
+  ) {
     const repo = {
       findChannelById: jest.fn(),
       listMembers: jest.fn(),
       isMember: jest.fn(),
       ...messaging,
     } as unknown as MessagingRepository;
-    return { endpoint: new GetChannelByIdEndpoint(repo), repo };
+    const accounts = { findByNames } as unknown as AccountsCurrentRepository;
+    return { endpoint: new GetChannelByIdEndpoint(repo, accounts), repo, accounts };
   }
 
   it('returns null when channel not found', async () => {
@@ -76,8 +81,53 @@ describe('GetChannelByIdEndpoint', () => {
     const result = await endpoint.execute('grp-1', 'alice');
 
     expect(repo.listMembers).toHaveBeenCalledWith('grp-1');
-    expect(result?.members).toEqual([{ account: 'alice', role: 'admin' }]);
+    expect(result?.members).toEqual([{ account: 'alice', role: 'admin', avatar_url: null }]);
     expect(result?.viewer_role).toBe('admin');
+  });
+
+  it('attaches Hive metadata avatars to members', async () => {
+    const members = [
+      {
+        channel_id: 'grp-1',
+        account: 'alice',
+        role: 'admin',
+        joined_at_unix: 1,
+        last_read_at_unix: null,
+      },
+      {
+        channel_id: 'grp-1',
+        account: 'bob',
+        role: 'member',
+        joined_at_unix: 2,
+        last_read_at_unix: null,
+      },
+    ];
+    const findByNames = jest.fn().mockResolvedValue([
+      {
+        name: 'bob',
+        posting_json_metadata: JSON.stringify({
+          profile: { profile_image: 'https://img.test/bob.jpg' },
+        }),
+        json_metadata: null,
+        profile_image: null,
+      },
+    ]);
+    const { endpoint, accounts } = makeEndpoint(
+      {
+        findChannelById: jest.fn().mockResolvedValue(groupChannel),
+        listMembers: jest.fn().mockResolvedValue(members),
+        isMember: jest.fn().mockResolvedValue(true),
+      },
+      findByNames,
+    );
+
+    const result = await endpoint.execute('grp-1', 'alice');
+
+    expect(accounts.findByNames).toHaveBeenCalledWith(['alice', 'bob']);
+    expect(result?.members).toEqual([
+      { account: 'alice', role: 'admin', avatar_url: null },
+      { account: 'bob', role: 'member', avatar_url: 'https://img.test/bob.jpg' },
+    ]);
   });
 
   it('skips listMembers and returns empty members for object channels', async () => {

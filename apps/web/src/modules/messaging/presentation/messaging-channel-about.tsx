@@ -6,10 +6,7 @@ import { useIpfsContentBaseUrl } from '@/config/ipfs-content-base-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { UserAvatar } from '@/shared/presentation';
 
-import {
-  hiveAvatarUrl,
-  resolveChannelImageUrl,
-} from '../domain/messaging.helpers';
+import { resolveChannelImageUrl } from '../domain/messaging.helpers';
 import type { ChannelDetail } from '../domain/messaging.types';
 import {
   MESSAGING_COLUMN_FOOTER_INNER_CLASS,
@@ -36,6 +33,10 @@ export function MessagingChannelAbout({
   const contentBaseUrl = useIpfsContentBaseUrl();
   const title = channel.display_title ?? channel.title ?? channel.channel_id;
   const imageUrl = resolveChannelImageUrl(channel.image, contentBaseUrl);
+  const peerAvatarUrl =
+    channel.peer == null
+      ? null
+      : (channel.members.find((member) => member.account === channel.peer)?.avatar_url ?? null);
   const isGroupAdmin = channel.kind === 'group' && channel.viewer_role === 'admin';
   const canLeave = channel.kind === 'group' && channel.leave_policy.can_leave;
   const showMemberRoster = channel.kind !== 'object';
@@ -57,7 +58,7 @@ export function MessagingChannelAbout({
             <div className="mx-auto">
               <UserAvatar
                 username={channel.peer}
-                avatarUrl={hiveAvatarUrl(channel.peer)}
+                avatarUrl={peerAvatarUrl}
                 displayName={channel.peer}
                 size={72}
               />
@@ -105,7 +106,7 @@ export function MessagingChannelAbout({
                 >
                   <UserAvatar
                     username={member.account}
-                    avatarUrl={hiveAvatarUrl(member.account)}
+                    avatarUrl={member.avatar_url ?? null}
                     displayName={member.account}
                     size={32}
                   />
