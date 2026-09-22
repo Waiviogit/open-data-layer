@@ -1,7 +1,7 @@
 ---
 id: web-pages-object-routes-right-rail
 title: Object page — right rail
-description: "Right column on the object detail page (`lg+`):"
+description: "Right column on the object detail page (`lg+`), also stacked on mobile Details landing:"
 tags: [web, page, object, layout]
 related:
   - docs/apps/web/spec/pages/object/page-shell.md
@@ -19,12 +19,12 @@ updated_at: 2026-06-10
 
 ## Scope
 
-Right column on the object detail page (`lg+`):
+Right column on the object detail page (`lg+`). The same view-mode blocks also stack on the **mobile Details landing** (below `lg`, `standardView` only — see [page-shell.md](../page-shell.md) § Mobile stacking):
 
-- **View mode** (default): Related, Similar, Add-On, Field references (person/business sources), and Followers preview blocks. Full lists live in the **center column** on dedicated primary-tab routes.
-- **Edit mode** (logged-in viewer, hero Edit toggle): **Preview** and **Object completeness** only — same panels as [object create](../../object-create/page.md) (`ObjectPreviewPanel`, `ObjectHealthPanel`). Related / Similar / Add-On / Field references / Followers are not shown.
+- **View mode** (default): Related, Similar, Add-On, Field references (person/business sources), Experts, and Followers preview blocks. Full lists live in the **center column** on dedicated primary-tab routes.
+- **Edit mode** (logged-in viewer, hero Edit toggle): **Preview** and **Object completeness** only — same panels as [object create](../../object-create/page.md) (`ObjectPreviewPanel`, `ObjectHealthPanel`). Related / Similar / Add-On / Field references / Followers are not shown. Edit rail stays desktop-only.
 
-Hidden in **Instagram** shell mode (`shell-hide-instagram`), same as profile right rail.
+Hidden in **Instagram** shell mode at `lg+` (`shell-hide-instagram`), same as profile right rail. Below `lg`, shell-mode chrome does not apply, so the lists show on mobile Details.
 
 ## Layout
 

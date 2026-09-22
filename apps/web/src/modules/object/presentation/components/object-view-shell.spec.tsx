@@ -90,7 +90,25 @@ describe('ObjectViewShell mobile stack', () => {
     expect(screen.getByTestId('object-center-column')).not.toHaveClass('hidden');
   });
 
-  it('keeps desktop left and right rails hidden below lg', () => {
+  it('standardView shows the right rail below lg', () => {
+    render(
+      <ObjectViewShell
+        hero={<div>Hero</div>}
+        leftRail={leftRail}
+        center={center}
+        rightRail={rightRail}
+        mobileLayout="standardView"
+        mobileSocialSlot={social}
+      />,
+    );
+
+    const rightColumn = screen.getByTestId('object-right-rail-column');
+    expect(rightColumn).not.toHaveClass('hidden');
+    expect(rightColumn).toHaveClass('min-w-0');
+    expect(screen.getByTestId('right-rail').closest('.hidden')).toBeNull();
+  });
+
+  it('keeps the desktop left rail hidden below lg on standardView', () => {
     const { container } = render(
       <ObjectViewShell
         hero={<div>Hero</div>}
@@ -103,10 +121,41 @@ describe('ObjectViewShell mobile stack', () => {
     );
 
     const grid = container.querySelector('.shell-object-page-grid')!;
-    const columns = grid.children;
-    expect(columns[0]).toHaveClass('hidden', 'lg:block');
-    expect(columns[2]).toHaveClass('hidden', 'lg:block');
-    expect(screen.getByTestId('right-rail').closest('.hidden')).toBeTruthy();
+    expect(grid.children[0]).toHaveClass('hidden', 'lg:block');
+  });
+
+  it('hides the right rail below lg outside standardView', () => {
+    const { rerender } = render(
+      <ObjectViewShell
+        hero={<div>Hero</div>}
+        leftRail={leftRail}
+        center={center}
+        rightRail={rightRail}
+        mobileLayout="centerOnly"
+        mobileSocialSlot={social}
+      />,
+    );
+
+    expect(screen.getByTestId('object-right-rail-column')).toHaveClass(
+      'hidden',
+      'lg:block',
+    );
+
+    rerender(
+      <ObjectViewShell
+        hero={<div>Hero</div>}
+        leftRail={leftRail}
+        center={center}
+        rightRail={rightRail}
+        mobileLayout="standardEdit"
+        mobileSocialSlot={social}
+      />,
+    );
+
+    expect(screen.getByTestId('object-right-rail-column')).toHaveClass(
+      'hidden',
+      'lg:block',
+    );
   });
 
   it('mobile Details copies include Instagram rail hide', () => {

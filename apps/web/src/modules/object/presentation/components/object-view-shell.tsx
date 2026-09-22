@@ -14,7 +14,7 @@ export type ObjectViewShellProps = {
   rightRail: ReactNode;
   /** Mobile stacking mode below `lg`; desktop layout is unchanged. */
   mobileLayout?: ObjectMobileCenterLayout;
-  /** Reviews / followers / experts previews for standard-object mobile Details landing. */
+  /** Reviews preview for standard-object mobile Details landing. */
   mobileSocialSlot?: ReactNode;
 };
 
@@ -46,6 +46,7 @@ export function ObjectViewShell({
   const showMobileSocial =
     mobileLayout === 'standardView' && mobileSocialSlot != null;
   const showMobileDetailsAfterCenter = mobileLayout === 'specialEdit';
+  const hideRightRailOnMobile = mobileLayout !== 'standardView';
 
   return (
     <div className="flex min-w-0 flex-col gap-card-padding">
@@ -90,7 +91,10 @@ export function ObjectViewShell({
           ) : null}
         </main>
 
-        <div className="hidden min-w-0 lg:block">
+        <div
+          className={hideRightRailOnMobile ? 'hidden min-w-0 lg:block' : 'min-w-0'}
+          data-testid="object-right-rail-column"
+        >
           <div className="shell-hide-instagram lg:contents">{rightRail}</div>
         </div>
       </div>

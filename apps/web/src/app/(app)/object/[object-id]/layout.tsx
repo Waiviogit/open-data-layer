@@ -53,10 +53,7 @@ export default async function ObjectDetailLayout({
     <Suspense fallback={null}>
       <ObjectPageMobileSocialSection
         objectId={objectId}
-        locale={locale}
         viewerUsername={viewerUsername}
-        followersTabCount={followersTabCount}
-        expertsTabCount={expertsTabCount}
       />
     </Suspense>
   ) : undefined;

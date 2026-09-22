@@ -99,7 +99,7 @@ Managed in `apps/web/src/modules/object/presentation/components/object-primary-c
 activePrimarySegment === ''   → Menu landing (host types without Details tab): defaultNestedContent or root listItems / page body
 activePrimarySegment === 'details' → Details tab: nested menu catalog when present, else description + preview gallery
                                 Breadcrumbs visible when nestedStack.length > 0 or defaultNestedContent exists
-                                On mobile (< lg), standard objects show left-rail Details + social previews instead of nested center content — see [page-shell.md](page-shell.md) § Mobile stacking
+                                On mobile (< lg), standard objects show left-rail Details, reviews, and the view-mode right-rail lists instead of nested center content — see [page-shell.md](page-shell.md) § Mobile stacking
 activePrimarySegment === 'reviews' → Reviews column (Write-review prompt + sub-nav for `default` type)
                                      No defaultNestedContent injected
 activePrimarySegment === 'widget'  → Widget embed (`ObjectWidgetContent`) for widget host objects

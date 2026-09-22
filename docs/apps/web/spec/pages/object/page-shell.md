@@ -51,13 +51,11 @@ Desktop keeps the three-column grid. On mobile the center column composes a vert
 
 | Condition | Mobile stack |
 |-----------|--------------|
-| Standard object (`objectTypeHasDetailsTab`) + **Details** landing (clean `/object/:id`, no `?path=`) + **view** | Left-rail **Details** blocks, then up to 5 reviews / 5 followers / 5 experts (each with Show more). Nested menu/description in center is **hidden** on mobile (shown at `lg+` only). |
-| Same + **edit** | Left-rail **Details** only (edit `+` / grouped sections). No social previews; center hidden on mobile. |
-| Standard + other primary tab or `?path=` drill-down | Center tab content only (unchanged). |
+| Standard object (`objectTypeHasDetailsTab`) + **Details** landing (clean `/object/:id`, no `?path=`) + **view** | Left-rail **Details** blocks, then up to 5 reviews, then the view-mode right rail (Related / Similar / Add-On / field references / experts / followers, each with Show more when the section has items). Nested menu/description in center is **hidden** on mobile (shown at `lg+` only). |
+| Same + **edit** | Left-rail **Details** only (edit `+` / grouped sections). No reviews or right-rail lists; center hidden on mobile. |
+| Standard + other primary tab or `?path=` drill-down | Center tab content only (unchanged). Right-rail lists stay desktop-only. |
 | Special host (`list`, `widget`, `page`, …) + **view** | Center host content only (list / page / widget). Widget embeds are **untrusted on-chain HTML** — rendered only inside sandboxed iframes (`ObjectWidgetContent`; no `allow-same-origin`, no parent `innerHTML`). |
 | Special host + **edit** + host landing tab | Center host content (with list edit tools when applicable), then left-rail **Details** below. |
-
-Related / Similar / Add-On right-rail blocks remain desktop-only.
 
 ## Browse vs edit mode
 
