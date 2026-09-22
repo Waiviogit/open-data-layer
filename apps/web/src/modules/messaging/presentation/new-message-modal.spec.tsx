@@ -84,7 +84,11 @@ describe('NewMessageModal', () => {
     fireEvent.click(screen.getByRole('button', { name: /bob/i }));
     fireEvent.click(screen.getByRole('button', { name: 'Start chat' }));
 
-    expect(onStartChat).toHaveBeenCalledWith({ peers: ['bob'], title: undefined });
+    expect(onStartChat).toHaveBeenCalledWith({
+      peers: ['bob'],
+      title: undefined,
+      peerAvatarUrl: null,
+    });
     expect(screen.queryByText('Group name')).not.toBeInTheDocument();
   });
 
@@ -119,6 +123,7 @@ describe('NewMessageModal', () => {
     expect(onStartChat).toHaveBeenCalledWith({
       peers: ['bob', 'carol'],
       title: 'Team',
+      peerAvatarUrl: undefined,
     });
   });
 });

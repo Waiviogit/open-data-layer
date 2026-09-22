@@ -11,6 +11,8 @@ import { hiveAvatarUrl } from '../domain/messaging.helpers';
 export type NewMessageStartChatInput = {
   peers: string[];
   title?: string;
+  /** Search `profile_image` for a single peer. Already resolved; not a new lookup. */
+  peerAvatarUrl?: string | null;
 };
 
 export type NewMessageModalProps = {
@@ -118,6 +120,7 @@ export function NewMessageModal({
     await onStartChat({
       peers,
       title: peers.length >= 2 && title.length > 0 ? title : undefined,
+      peerAvatarUrl: peers.length === 1 ? (selected[0]?.profile_image ?? null) : undefined,
     });
   }, [canStart, groupTitle, onStartChat, selected]);
 

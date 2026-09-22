@@ -15,6 +15,7 @@ import {
   mergeChannelListItems,
 } from '../domain/messaging.helpers';
 import type { ChannelListItem } from '../domain/messaging.types';
+import { rememberDraftPeerAvatar } from '../infrastructure/draft-peer-avatar';
 import {
   mergeViewerChannels,
   patchChannelListItem,
@@ -83,12 +84,13 @@ export function MessagingChannelListRail({
   );
 
   const handleStartChat = useCallback(
-    async (input: { peers: string[]; title?: string }) => {
+    async (input: { peers: string[]; title?: string; peerAvatarUrl?: string | null }) => {
       const action = await resolveStartChatAction(accountName, viewerUsername, input);
       if (action.kind === 'noop') {
         return;
       }
       if (action.kind === 'dm') {
+        rememberDraftPeerAvatar(action.peer, input.peerAvatarUrl ?? null);
         router.push(action.href);
         setNewMessageOpen(false);
         return;

@@ -40,6 +40,10 @@ import {
   markChannelReadAction,
 } from '../infrastructure/messaging.actions';
 import {
+  draftPeerAvatar,
+  rememberDraftPeerAvatar,
+} from '../infrastructure/draft-peer-avatar';
+import {
   buildMessagesHref,
   dispatchMessagingChannelUpdated,
   dispatchMessagingChannelLeft,
@@ -200,12 +204,13 @@ export function MessagingInboxClient({
   });
 
   const handleStartChat = useCallback(
-    async (input: { peers: string[]; title?: string }) => {
+    async (input: { peers: string[]; title?: string; peerAvatarUrl?: string | null }) => {
       const action = await resolveStartChatAction(accountName, viewerUsername, input);
       if (action.kind === 'noop') {
         return;
       }
       if (action.kind === 'dm') {
+        rememberDraftPeerAvatar(action.peer, input.peerAvatarUrl ?? null);
         router.push(action.href);
         setNewMessageOpen(false);
         return;
@@ -265,7 +270,11 @@ export function MessagingInboxClient({
         peer: initialPeer,
         members: [
           { account: viewerUsername, role: 'member' },
-          { account: initialPeer, role: 'member' },
+          {
+            account: initialPeer,
+            role: 'member',
+            avatar_url: draftPeerAvatar(initialPeer) ?? null,
+          },
         ],
         viewer_role: null,
         leave_policy: EMPTY_LEAVE_POLICY,

@@ -10,6 +10,7 @@ import { useUpdateGroupChannel } from '../application/use-update-group-channel';
 import { useAddGroupMembers } from '../application/use-add-group-members';
 import type { ChannelDetail } from '../domain/messaging.types';
 import { loadProfileChannelAboutAction } from '../infrastructure/messaging.actions';
+import { applyDraftPeerAvatar } from '../infrastructure/draft-peer-avatar';
 import {
   dispatchMessagingChannelUpdated,
   dispatchMessagingChannelLeft,
@@ -103,7 +104,7 @@ export function MessagingProfileAboutRail({
     void loadProfileChannelAboutAction({ channel, peer })
       .then((next) => {
         if (!cancelled) {
-          setDetail(next);
+          setDetail(next ? applyDraftPeerAvatar(next) : next);
         }
       })
       .finally(() => {
