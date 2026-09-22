@@ -156,9 +156,13 @@ function buildSocialLinkPrefixes(view: ResolvedObjectView): string[] {
     }
     const base = SOCIAL_LINK_BASE[type];
     if (base) {
-      prefixes.push(`${base}${value}`);
-      if (type === 'facebook') {
-        prefixes.push(`https://www.facebook.com/${value}`);
+      if (value.startsWith('http://') || value.startsWith('https://')) {
+        prefixes.push(value);
+      } else {
+        prefixes.push(`${base}${value}`);
+        if (type === 'facebook') {
+          prefixes.push(`https://www.facebook.com/${value}`);
+        }
       }
       continue;
     }

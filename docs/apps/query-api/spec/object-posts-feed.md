@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: query-api
 tags: [query-api, object-posts-feed]
-updated_at: 2026-07-02
+updated_at: 2026-09-22
 related:
   - docs/apps/query-api/spec/overview.md
   - docs/apps/query-api/spec/object-threads-feed.md
@@ -37,7 +37,7 @@ Governance loads these update types for scope building: `newsFeed`, `pin`, `remo
 1. **Regular objects** — posts matching **any** of (OR):
    - Linked via `post_objects` to the object, group siblings (`meta_group_id`), or relisted sources (`status` update `relisted` → this object).
    - `link` object type: `post_links.url` prefix-matches object `url` (LIKE with escaped `%`/`_`).
-   - Business-like types (support `walletAddress`): social `link` channel URLs (`SOCIAL_LINK_BASE` map), `website` link prefixes, HIVE/HBD wallet `post_mentions`.
+   - Business-like types (support `walletAddress`): social `link` channel URLs (`SOCIAL_LINK_BASE` map), `website` link prefixes, HIVE/HBD wallet `post_mentions`. A stored `http(s)` `link.value` is the prefix as-is; a profile name is prefixed with `SOCIAL_LINK_BASE`.
 2. **`newsfeed` objects** — `newsFeed` update filter (`allow_list`, `ignore_list`, `type_list`, `authors`). Empty allow rule with no `type_list`/`authors` scopes to posts linked to the newsfeed object (legacy `author_permlink` default).
 3. **Exclusions** — `pin` and `remove` update refs excluded from the main query via `(author, permlink)` tuple; pinned rows are re-fetched and prepended on page 1.
 4. **Hashtag** — `post_languages` filter from request locale; see [post-languages.md](../../../spec/data-model/post-languages.md).

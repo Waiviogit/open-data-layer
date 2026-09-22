@@ -5,6 +5,7 @@ import {
   UPDATE_GEO,
   UPDATE_IMAGE,
   UPDATE_INGREDIENTS,
+  UPDATE_LINK,
   UPDATE_MENU_ITEM,
   UPDATE_NAME,
   UPDATE_OBJECT_CONTROL,
@@ -305,6 +306,32 @@ describe('update-value-form.utils', () => {
     if (result.success) {
       expect(result.value).toEqual(['flour', 'sugar']);
     }
+  });
+
+  it('validateUpdateValue accepts link URL and profile name', () => {
+    const url = validateUpdateValue(UPDATE_LINK, {
+      type: 'instagram',
+      value: 'https://www.instagram.com/whitegarden_restaurant/',
+    });
+    expect(url.success).toBe(true);
+    if (url.success) {
+      expect(url.value).toEqual({
+        type: 'instagram',
+        value: 'https://www.instagram.com/whitegarden_restaurant/',
+      });
+    }
+
+    const profile = validateUpdateValue(UPDATE_LINK, {
+      type: 'hive',
+      value: '@acc',
+    });
+    expect(profile.success).toBe(true);
+    if (profile.success) {
+      expect(profile.value).toEqual({ type: 'hive', value: 'acc' });
+    }
+
+    const fields = getJsonFieldDescriptors(UPDATE_LINK.schema);
+    expect(fields?.find((field) => field.key === 'value')?.kind).toBe('string');
   });
 
   it('validateUpdateValue rejects empty ingredients', () => {

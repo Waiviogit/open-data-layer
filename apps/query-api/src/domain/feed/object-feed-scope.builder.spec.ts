@@ -340,6 +340,47 @@ describe('buildObjectPostFeedScope', () => {
     expect(scope.mentionAccounts).toEqual(['alice']);
   });
 
+  it('uses an absolute social link URL as the prefix', () => {
+    const view = baseView({
+      fields: {
+        [UPDATE_TYPES.LINK]: {
+          update_type: UPDATE_TYPES.LINK,
+          cardinality: 'multi',
+          values: [
+            {
+              update_id: 'l-url',
+              update_type: UPDATE_TYPES.LINK,
+              creator: 'alice',
+              locale: null,
+              created_at_unix: 1,
+              event_seq: BigInt(1),
+              value_text: null,
+              value_geo: null,
+              value_json: { type: 'twitter', value: 'https://x.com/waivio' },
+              validity_status: 'VALID',
+              validity_tier: 'baseline',
+              decisive_vote_event_seq: null,
+              approve_percent: 100,
+              field_weight: null,
+              rank_score: null,
+              rank_context: null,
+              rank_decisive_event_seq: null,
+            },
+          ],
+        },
+      },
+    });
+
+    const scope = buildObjectPostFeedScope({
+      view,
+      linkedObjectIds: ['obj-1'],
+      mutedAuthors: [],
+      locale: 'en-US',
+    });
+
+    expect(scope.linkUrlPrefixes).toEqual(['https://x.com/waivio']);
+  });
+
   it('sets newsFeedAuthorsOnly false when authors list is empty', () => {
     const view = baseView({
       object_type: 'newsfeed',
