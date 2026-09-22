@@ -1030,6 +1030,11 @@ export function projectedObjectControl(o: ProjectedObjectView): string | null {
   return readString(o.fields.objectControl) ?? null;
 }
 
+/** Winning `productGroupId` text from the projected object view. */
+export function projectedProductGroupId(o: ProjectedObjectView): string | null {
+  return readString(o.fields.productGroupId) ?? null;
+}
+
 export type ProjectedInheritsFromEntry = {
   objectId: string;
   scope: string[];

@@ -104,6 +104,7 @@ export const ABOUT_SECTION_BLOCK_ORDER = [
   'email',
   'walletAddress',
   'identifier',
+  'productGroupId',
   'objectControl',
   'admins',
   'moderators',

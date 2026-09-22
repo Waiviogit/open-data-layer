@@ -253,6 +253,12 @@ export type ObjectLeftRailBlock =
       rows: { type: string; value: string }[];
     }
   | {
+      kind: 'productGroupId';
+      headingLabel: string;
+      /** From projected `productGroupId` update (single text). */
+      text: string;
+    }
+  | {
       kind: 'image';
       headingLabel: string;
       /** Current avatar URL, or null when not set. */

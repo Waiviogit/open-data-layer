@@ -74,6 +74,21 @@ describe('edit-field-groups', () => {
     );
   });
 
+  it('places productGroupId in the object group after identifier', () => {
+    expect(resolveEditGroup(UPDATE_TYPES.PRODUCT_GROUP_ID, 'product')).toBe('object');
+
+    const order = resolveEditModeUpdateTypes('product', [
+      UPDATE_TYPES.IDENTIFIER,
+      UPDATE_TYPES.PRODUCT_GROUP_ID,
+      UPDATE_TYPES.STATUS,
+    ]);
+    expect(order.indexOf(UPDATE_TYPES.PRODUCT_GROUP_ID)).toBe(
+      order.indexOf(UPDATE_TYPES.IDENTIFIER) + 1,
+    );
+    expect(EDIT_GROUP_FIELD_ORDER.object).toContain(UPDATE_TYPES.PRODUCT_GROUP_ID);
+    expect(EDIT_GROUP_FIELD_ORDER.commerce).not.toContain(UPDATE_TYPES.PRODUCT_GROUP_ID);
+  });
+
   it('keeps price in commerce for product', () => {
     const withPrice = resolveEditModeUpdateTypes('product', [
       UPDATE_TYPES.IMAGE_GALLERY_ITEM,

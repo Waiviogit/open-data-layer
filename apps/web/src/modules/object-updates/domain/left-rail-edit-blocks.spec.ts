@@ -60,6 +60,27 @@ describe('mergeLeftRailBlocksForEditMode', () => {
     expect(merged.find((b) => b.kind === 'name')).toEqual(viewBlocks[0]);
   });
 
+  it('places an empty productGroupId slot immediately after identifier', () => {
+    const merged = mergeLeftRailBlocksForEditMode(
+      [],
+      [UPDATE_TYPES.IDENTIFIER, UPDATE_TYPES.PRODUCT_GROUP_ID],
+      'product',
+    );
+    const kinds = merged.map((b) => b.kind);
+    const identifierIdx = kinds.indexOf('identifier');
+    const groupIdx = kinds.indexOf('productGroupId');
+
+    expect(identifierIdx).toBeGreaterThanOrEqual(0);
+    expect(groupIdx).toBe(identifierIdx + 1);
+
+    const group = merged[groupIdx];
+    expect(group?.kind).toBe('productGroupId');
+    if (group?.kind === 'productGroupId') {
+      expect(group.text).toBe('');
+      expect(group.headingLabel).toBe('Product Group ID');
+    }
+  });
+
   it('places gallery before commerce options for product type', () => {
     const merged = mergeLeftRailBlocksForEditMode([], productSupported, 'product');
     const kinds = merged.map((b) => b.kind);

@@ -148,6 +148,11 @@ function appendLeftRailBlock(
         });
       }
       break;
+    case 'productGroupId':
+      if (block.text.trim()) {
+        pushEntry(fields, counters, UPDATE_TYPES.PRODUCT_GROUP_ID, block.text);
+      }
+      break;
     case 'menuItems':
     case 'rating':
     case 'link':

@@ -879,6 +879,22 @@ export function ObjectLeftRailPanel({
                 onViewUpdates={makeOnViewUpdates('identifier')}
               />
             );
+          case 'productGroupId':
+            return (
+              <div key={`productGroupId-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailScalarFieldSection
+                  headingLabel={block.headingLabel}
+                  text={block.text}
+                  editToolbar={
+                    editContext ? (
+                      <LeftRailEditToolbar
+                        {...editToolbarProps('productGroupId', block.headingLabel)}
+                      />
+                    ) : undefined
+                  }
+                />
+              </div>
+            );
           case 'link':
             return (
               <div key={`link-${index}`} className={LEFT_RAIL_SECTION_CLASS}>

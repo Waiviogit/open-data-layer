@@ -9,6 +9,7 @@ import {
   sortListItemsListsFirst,
   projectedGeoLatLon,
   projectedIdentifierRows,
+  projectedProductGroupId,
   projectedMenuItems,
   projectedSortCustom,
   projectedTagCategorySections,
@@ -398,6 +399,22 @@ describe('object-projected-fields', () => {
     hasExclusiveOwnership: false,
     };
     expect(projectedIdentifierRows(v)).toEqual([{ type: 'TEST', value: '25011012' }]);
+  });
+
+  it('parses productGroupId from projected fields.productGroupId', () => {
+    const v: ProjectedObjectView = {
+      object_id: 'x',
+      object_type: 'product',
+      semantic_type: null,
+      weight: null,
+      fields: {
+        productGroupId: 'acme-phone-x',
+      },
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+      hasExclusiveOwnership: false,
+    };
+    expect(projectedProductGroupId(v)).toBe('acme-phone-x');
   });
 
   it('uses embedded object name as displayTitle when title is missing', () => {

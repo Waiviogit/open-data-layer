@@ -6,6 +6,15 @@ import {
 } from './object-left-rail-order';
 
 describe('resolveEditModeLeftRailBlockOrder', () => {
+  it('places productGroupId immediately after identifier for product edit order', () => {
+    const order = resolveEditModeLeftRailBlockOrder('product');
+    const identifierIdx = order.indexOf('identifier');
+    const groupIdx = order.indexOf('productGroupId');
+
+    expect(identifierIdx).toBeGreaterThanOrEqual(0);
+    expect(groupIdx).toBe(identifierIdx + 1);
+  });
+
   it('places gallery before commerce options for product', () => {
     const order = resolveEditModeLeftRailBlockOrder('product');
     const galleryIdx = order.indexOf('gallery');

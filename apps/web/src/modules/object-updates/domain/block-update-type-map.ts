@@ -51,6 +51,7 @@ export const BLOCK_KIND_TO_UPDATE_TYPES: Record<ObjectLeftRailBlockKind, readonl
   email: [UPDATE_TYPES.EMAIL],
   walletAddress: [UPDATE_TYPES.WALLET_ADDRESS],
   identifier: [UPDATE_TYPES.IDENTIFIER],
+  productGroupId: [UPDATE_TYPES.PRODUCT_GROUP_ID],
   link: [UPDATE_TYPES.LINK],
   sortCustom: [UPDATE_TYPES.SORT_CUSTOM],
   promotion: [UPDATE_TYPES.PROMOTION],

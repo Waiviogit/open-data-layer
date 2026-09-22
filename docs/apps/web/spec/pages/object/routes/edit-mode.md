@@ -8,7 +8,7 @@ related:
 type: spec
 status: active
 scope: web
-updated_at: 2026-06-10
+updated_at: 2026-09-22
 ---
 
 # Object edit mode (left rail updates)
@@ -68,6 +68,8 @@ Example restaurant edit groups (supported slots only):
 | CONTACT | Website, Social links, Phone, Email |
 | PAYMENTS | Wallet |
 | OBJECT | Identifier, Status |
+
+**Product / book / service:** the OBJECT group also includes **Product Group ID** immediately after Identifier. View mode shows the same block after Identifiers when `fields.productGroupId` is set, and hides it when empty.
 
 Other types use the same taxonomy; type-specific blocks appear only when supported (e.g. **product** → commerce cluster after gallery; **list** → catalog ops after gallery; **recipe** → recipe group after commerce). View-mode stacks (`RECIPE_ABOUT_SECTION_BLOCK_ORDER`, product navigate cluster, etc.) are **not** used for edit ordering.
 

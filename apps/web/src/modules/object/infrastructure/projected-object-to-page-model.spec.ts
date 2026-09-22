@@ -262,6 +262,38 @@ describe('projectedObjectWithCountsToPageModel product left-rail order', () => {
     }
   });
 
+  it('places productGroupId immediately after identifier on product pages', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'prod-1',
+      object_type: 'product',
+      semantic_type: 'schema:Product',
+      weight: 1,
+      fields: {
+        name: 'Widget',
+        identifier: [{ type: 'SKU', value: 'ABC' }],
+        productGroupId: 'acme-phone-x',
+      },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...baseCounts,
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    const identifierIdx = kinds.indexOf('identifier');
+    const groupIdx = kinds.indexOf('productGroupId');
+
+    expect(identifierIdx).toBeGreaterThanOrEqual(0);
+    expect(groupIdx).toBe(identifierIdx + 1);
+
+    const groupBlock = model.leftRailBlocks[groupIdx];
+    expect(groupBlock?.kind).toBe('productGroupId');
+    if (groupBlock?.kind === 'productGroupId') {
+      expect(groupBlock.text).toBe('acme-phone-x');
+      expect(groupBlock.headingLabel).toBe('Product Group ID');
+    }
+  });
+
   it('places size after productWeight on product pages', () => {
     const api: ProjectedObjectWithCountsView = {
       object_id: 'prod-1',

@@ -75,6 +75,8 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
       return { kind: 'walletAddress', headingLabel, items: [] };
     case 'identifier':
       return { kind: 'identifier', headingLabel, rows: [] };
+    case 'productGroupId':
+      return { kind: 'productGroupId', headingLabel, text: '' };
     case 'status':
       return { kind: 'status', headingLabel };
     case 'compareAtPrice':

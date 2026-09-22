@@ -55,6 +55,7 @@ import {
   projectedLeftRailPreviewGallery,
   projectedGalleryImageUrls,
   projectedIdentifierRows,
+  projectedProductGroupId,
   projectedGeoLatLon,
   projectedListItems,
   projectedMenuItems,
@@ -769,6 +770,17 @@ function appendAboutSectionBlock(
           kind: 'identifier',
           headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.identifier,
           rows: identifiers,
+        });
+      }
+      break;
+    }
+    case 'productGroupId': {
+      const text = projectedProductGroupId(viewLike);
+      if (text) {
+        blocks.push({
+          kind: 'productGroupId',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.productGroupId,
+          text,
         });
       }
       break;
