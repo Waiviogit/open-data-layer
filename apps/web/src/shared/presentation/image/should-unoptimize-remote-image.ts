@@ -13,9 +13,16 @@ const HOSTS_SKIP_IMAGE_OPTIMIZATION = new Set([
   'images-eu.ssl-images-amazon.com',
 ]);
 
+const IPFS_GATEWAY_IMAGE_PATH = '/ipfs-gateway/content/image/';
+
 export function shouldUnoptimizeRemoteImage(src: string): boolean {
   if (!src || src.startsWith('/') || src.startsWith('data:')) {
     return false;
+  }
+  // First-party gateway bytes. Next's optimizer fetch often fails; onError then
+  // swaps UserAvatar onto the Hive CDN, which does not have this image.
+  if (src.includes(IPFS_GATEWAY_IMAGE_PATH)) {
+    return true;
   }
   try {
     const hostname = new URL(src).hostname.toLowerCase();

@@ -13,12 +13,16 @@ export async function loadAccountAvatarUrls(
     return urls;
   }
 
-  const rows = await accounts.findByNames(unique);
-  for (const name of unique) {
-    urls.set(name, null);
-  }
+  const lookupNames = [
+    ...new Set(unique.flatMap((name) => [name, name.toLowerCase()])),
+  ];
+  const rows = await accounts.findByNames(lookupNames);
+  const byLower = new Map<string, string | null>();
   for (const row of rows) {
-    urls.set(row.name, avatarUrlFromJoinedAccountRow(row));
+    byLower.set(row.name.toLowerCase(), avatarUrlFromJoinedAccountRow(row));
+  }
+  for (const name of unique) {
+    urls.set(name, byLower.get(name.toLowerCase()) ?? null);
   }
   return urls;
 }

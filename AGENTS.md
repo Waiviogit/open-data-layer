@@ -93,6 +93,10 @@ Full routing table: [`docs/standards/core-imports.md`](docs/standards/core-impor
 - Domain-specific constants (object types, field names, supposed updates, translations) belong in `@opden-data-layer/domain-constants` when it exists.
 - Keep `@opden-data-layer/common` generic (utilities, non-domain). Keep `@opden-data-layer/clients` free of domain business rules.
 
+### Account avatars
+
+One resolver for every Hive account picture: `avatarUrlFromJoinedAccountRow` in `apps/query-api/src/domain/users/resolve-avatar-url-from-hive-metadata.ts`. Order is `posting_json_metadata.profile.profile_image`, then `json_metadata.profile.profile_image`, then the `accounts_current.profile_image` column. Batch lookups go through `loadAccountAvatarUrls` (case-insensitive). Do not add a second parser, a profile-endpoint fetch, or `images.hive.blog/u/…` when that URL is missing. Web renders the returned URL with `UserAvatar`; Hive CDN is only its fallback when the field is null.
+
 ### Strategy-Based Decomposition
 
 - Split large orchestrator services into a thin orchestrator + strategy classes implementing a common interface (e.g. `supports(context)` / `execute(context)`).

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { useLoginModal } from '@/modules/auth';
+import { UserAvatar } from '@/shared/presentation';
 
 import { useSendMessage } from '../application/use-send-message';
 import { useSendEncryptedMessage } from '../application/use-send-encrypted-message';
@@ -572,6 +573,12 @@ export function MessagingInboxClient({
     [];
 
   const composePeer = pendingPeer ?? channelDetail?.peer ?? activeChannel?.peer ?? null;
+  const headerAvatarUrl =
+    composeChannelKind === 'direct' && composePeer
+      ? (channelDetail?.members.find((member) => member.account === composePeer)?.avatar_url ??
+        activeChannel?.peer_avatar_url ??
+        null)
+      : null;
 
   const showAuthorNames = channelDetail?.kind === 'group';
 
@@ -585,16 +592,26 @@ export function MessagingInboxClient({
         chat={
           activeChannelId || pendingPeer ? (
             <div className="flex min-h-0 flex-1 flex-col">
-              <div className="border-b border-border px-4 py-3">
-                <h3 className="truncate font-weight-strong text-fg">{chatTitle}</h3>
-                {channelDetail?.kind === 'group' && channelDetail.members.length ? (
-                  <p className="text-caption text-muted">
-                    {t('messaging_members_count').replace(
-                      '{count}',
-                      String(channelDetail.members.length),
-                    )}
-                  </p>
+              <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+                {composeChannelKind === 'direct' && composePeer ? (
+                  <UserAvatar
+                    username={composePeer}
+                    avatarUrl={headerAvatarUrl}
+                    displayName={chatTitle}
+                    size={36}
+                  />
                 ) : null}
+                <div className="min-w-0">
+                  <h3 className="truncate font-weight-strong text-fg">{chatTitle}</h3>
+                  {channelDetail?.kind === 'group' && channelDetail.members.length ? (
+                    <p className="text-caption text-muted">
+                      {t('messaging_members_count').replace(
+                        '{count}',
+                        String(channelDetail.members.length),
+                      )}
+                    </p>
+                  ) : null}
+                </div>
               </div>
               <MessagingMessageList
                 messages={messages}

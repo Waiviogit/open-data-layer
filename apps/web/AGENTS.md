@@ -192,6 +192,7 @@ Use **`header`** / **`footer`** slots on `ModalShell` for chrome that must stay 
 
 ## Images
 
+- **Account avatars:** do not resolve them in the web app. Pass the query-api URL (`avatarUrlFromJoinedAccountRow` — see root [`AGENTS.md`](../../AGENTS.md#account-avatars)) into `UserAvatar`. Do not call `images.hive.blog/u/…` or `GET /users/:name/profile` as a second source. Hive CDN is only the `UserAvatar` fallback when that URL is null.
 - **`next/image`** for user-facing raster (avatars, feed thumbnails, covers).
 - **UI glyphs** → `@/icons`. **`<img>`** for static brand/crypto assets and decorative graphics not in the registry.
 - Markdown/HTML body images may use **`<img loading="lazy">`**.

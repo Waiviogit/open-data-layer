@@ -68,6 +68,10 @@ src/
 - MCP is not REST — do **not** add OpenAPI fragments for `/query/mcp`.
 - Spec: `docs/apps/query-api/spec/mcp.md`; routing skill: `docs/skills/query-api-mcp-routing.md`.
 
+## Account avatars
+
+Do not parse `profile_image` inline. Use `avatarUrlFromJoinedAccountRow` (`apps/query-api/src/domain/users/resolve-avatar-url-from-hive-metadata.ts`): posting metadata, then `json_metadata`, then the `profile_image` column. Several accounts: `loadAccountAvatarUrls`. Profile's live chain metadata is the only extra input, and it goes through the same function. See root [`AGENTS.md`](../../AGENTS.md#account-avatars).
+
 ## Modules
 
 - Feature `*.module.ts` files import `RepositoriesModule` and, when needed, `GovernanceModule` and `@opden-data-layer/objects-domain` — follow existing modules as templates.
