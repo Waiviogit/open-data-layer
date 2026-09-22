@@ -45,4 +45,11 @@ describe('UpdateRawJsonToggle', () => {
     );
     expect(screen.queryByText(/bafyTest/)).not.toBeInTheDocument();
   });
+
+  it('shows formatted JSON immediately without a toggle in always mode', () => {
+    render(<UpdateRawJsonToggle value={{ album: 'Photos', cid: 'bafyTest' }} mode="always" />);
+
+    expect(screen.queryByRole('button', { name: /object_updates_view_json/ })).not.toBeInTheDocument();
+    expect(screen.getByText(/bafyTest/)).toBeInTheDocument();
+  });
 });

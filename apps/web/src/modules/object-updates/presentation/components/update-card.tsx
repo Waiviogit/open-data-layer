@@ -22,7 +22,10 @@ import { labelForUpdateType } from '@/modules/object/domain/object-update-labels
 import { ObjectThumbnail, StatHoverTooltip, UserAvatar } from '@/shared/presentation';
 
 import type { ObjectUpdateFeedItemView } from '../../application/dto/object-updates-feed.dto';
-import { resolveUpdateRawViewValue } from '../../application/resolve-update-raw-view-value';
+import {
+  isCollapsedRawJsonUpdate,
+  resolveUpdateRawViewValue,
+} from '../../application/resolve-update-raw-view-value';
 import { OBJECT_UPDATES_MIN_APPROVAL_PERCENT } from '../../constants';
 
 import { UpdateApprovalStatusBlock } from './update-approval-status-block';
@@ -83,6 +86,7 @@ export function UpdateCard({
   const creatorProfileHref = profileHrefForUsername(item.creator);
   const privilegedVote = item.decisive_privileged_vote;
   const rawViewValue = resolveUpdateRawViewValue(item);
+  const rawJsonMode = isCollapsedRawJsonUpdate(item.update_type) ? 'toggle' : 'always';
 
   const voteDisabled = pending || confirming;
 
@@ -184,7 +188,7 @@ export function UpdateCard({
 
       <div className="mt-3 border-t border-border pt-3">
         {rawViewValue != null ? (
-          <UpdateRawJsonToggle value={rawViewValue}>
+          <UpdateRawJsonToggle value={rawViewValue} mode={rawJsonMode}>
             {({ button, panel }) => (
               <>
                 <div className="flex flex-wrap items-center gap-2">

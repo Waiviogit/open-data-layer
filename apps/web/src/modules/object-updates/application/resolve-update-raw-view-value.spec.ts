@@ -1,4 +1,9 @@
-import { resolveUpdateRawViewValue } from './resolve-update-raw-view-value';
+import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
+
+import {
+  isCollapsedRawJsonUpdate,
+  resolveUpdateRawViewValue,
+} from './resolve-update-raw-view-value';
 
 describe('resolveUpdateRawViewValue', () => {
   it('prefers value_json when both are set', () => {
@@ -27,4 +32,22 @@ describe('resolveUpdateRawViewValue', () => {
       }),
     ).toBeNull();
   });
+});
+
+describe('isCollapsedRawJsonUpdate', () => {
+  it.each([
+    UPDATE_TYPES.IMAGE,
+    UPDATE_TYPES.IMAGE_BACKGROUND,
+    UPDATE_TYPES.IMAGE_GALLERY_ITEM,
+    UPDATE_TYPES.GEO,
+  ])('collapses raw JSON for %s', (updateType) => {
+    expect(isCollapsedRawJsonUpdate(updateType)).toBe(true);
+  });
+
+  it.each([UPDATE_TYPES.IMAGE_GALLERY, UPDATE_TYPES.ADDRESS, UPDATE_TYPES.MAP_OBJECTS_LIST])(
+    'shows raw JSON immediately for %s',
+    (updateType) => {
+      expect(isCollapsedRawJsonUpdate(updateType)).toBe(false);
+    },
+  );
 });

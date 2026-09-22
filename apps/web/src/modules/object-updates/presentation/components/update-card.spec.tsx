@@ -160,6 +160,41 @@ describe('UpdateCard raw JSON toggle', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('shows JSON immediately for json updates without a toggle', () => {
+    render(
+      <UpdateCard
+        item={galleryItem({
+          update_type: UPDATE_TYPES.ADDRESS,
+          value_json: { street: 'Main', city: 'Vancouver' },
+        })}
+        showLocaleBadge={false}
+      />,
+    );
+
+    expect(
+      screen.queryByRole('button', { name: /object_updates_view_json/ }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText(/Vancouver/)).toBeInTheDocument();
+  });
+
+  it('does not show a JSON toggle for imageGallery text updates', () => {
+    render(
+      <UpdateCard
+        item={galleryItem({
+          update_type: UPDATE_TYPES.IMAGE_GALLERY,
+          value_text: 'Photos',
+          value_json: null,
+        })}
+        showLocaleBadge={false}
+      />,
+    );
+
+    expect(
+      screen.queryByRole('button', { name: /object_updates_view_json/ }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/bafyTest/)).not.toBeInTheDocument();
+  });
+
   it('shows JSON toggle for geo updates with latitude and longitude', () => {
     const valueGeo = { latitude: 49.28, longitude: -123.12 };
 

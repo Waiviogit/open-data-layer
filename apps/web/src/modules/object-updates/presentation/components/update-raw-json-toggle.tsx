@@ -11,15 +11,25 @@ export type UpdateRawJsonToggleSlots = {
   panel: ReactNode;
 };
 
+export type UpdateRawJsonToggleMode = 'toggle' | 'always';
+
 export type UpdateRawJsonToggleProps = {
   value: unknown;
   className?: string;
+  mode?: UpdateRawJsonToggleMode;
   children?: (slots: UpdateRawJsonToggleSlots) => ReactNode;
 };
 
-export function UpdateRawJsonToggle({ value, className, children }: UpdateRawJsonToggleProps) {
+export function UpdateRawJsonToggle({
+  value,
+  className,
+  mode = 'toggle',
+  children,
+}: UpdateRawJsonToggleProps) {
   const { t } = useI18n();
   const [expanded, setExpanded] = useState(false);
+  const alwaysVisible = mode === 'always';
+  const shown = alwaysVisible || expanded;
 
   const jsonBlock = useMemo(() => formatUpdateRawJson(value), [value]);
 
@@ -27,7 +37,7 @@ export function UpdateRawJsonToggle({ value, className, children }: UpdateRawJso
     return null;
   }
 
-  const button = (
+  const button = alwaysVisible ? null : (
     <button
       type="button"
       aria-expanded={expanded}
@@ -41,7 +51,7 @@ export function UpdateRawJsonToggle({ value, className, children }: UpdateRawJso
     </button>
   );
 
-  const panel = expanded ? (
+  const panel = shown ? (
     <pre className="mt-2 max-h-80 overflow-auto rounded-btn border border-border bg-surface-alt p-3 font-mono text-caption text-fg">
       <code>{jsonBlock}</code>
     </pre>
