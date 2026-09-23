@@ -17,12 +17,15 @@ const YOUTUBE_ID_PATTERNS: RegExp[] = [
   /youtu\.be\/([a-zA-Z0-9_-]{11})\b/,
   /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})\b/,
   /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})\b/,
+  /youtube\.com\/live\/([a-zA-Z0-9_-]{11})\b/,
   /m\.youtube\.com\/watch\?[^#\s]*?v=([a-zA-Z0-9_-]{11})\b/,
+  /m\.youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})\b/,
   /youtube-nocookie\.com\/embed\/([a-zA-Z0-9_-]{11})\b/,
 ];
 
+/** Public id, optional unlisted privacy hash (`vimeo.com/{id}/{hash}`). */
 const VIMEO_ID_PATTERN =
-  /(?:vimeo\.com\/(?:video\/)?|player\.vimeo\.com\/video\/)(\d+)/;
+  /(?:vimeo\.com\/(?:video\/)?|player\.vimeo\.com\/video\/)(\d+)(?:\/([A-Za-z0-9]+))?/;
 
 const THREE_SPEAK_BODY_PATTERN =
   /(?:https?:\/\/)?(?:www\.)?3speak\.(?:tv|online)\/(?:watch|embed)\?[^"'\s]*\bv=([^&\s<>"')]+)/i;
@@ -48,9 +51,21 @@ function extractYouTubeId(url: string): string | null {
   return null;
 }
 
-function extractVimeoId(url: string): string | null {
+function extractVimeoRef(url: string): { id: string; hash: string | null } | null {
   const m = url.match(VIMEO_ID_PATTERN);
-  return m?.[1] ?? null;
+  if (!m?.[1]) {
+    return null;
+  }
+  const pathHash = m[2]?.trim() || null;
+  if (pathHash) {
+    return { id: m[1], hash: pathHash };
+  }
+  try {
+    const parsed = new URL(url.startsWith('http') ? url : `https://${url}`);
+    return { id: m[1], hash: parsed.searchParams.get('h') };
+  } catch {
+    return { id: m[1], hash: null };
+  }
 }
 
 function decodeThreeSpeakVideoId(raw: string): string | null {
@@ -102,9 +117,28 @@ function buildYouTubeEmbedUrl(videoId: string, autoplay: boolean): string {
   return `https://www.youtube.com/embed/${videoId}${params}`;
 }
 
-function buildVimeoEmbedUrl(videoId: string, autoplay: boolean): string {
-  const params = autoplay ? '?autoplay=1' : '';
-  return `https://player.vimeo.com/video/${videoId}${params}`;
+function buildVimeoEmbedUrl(
+  videoId: string,
+  autoplay: boolean,
+  privacyHash?: string | null,
+): string {
+  const params = new URLSearchParams();
+  if (privacyHash) {
+    params.set('h', privacyHash);
+  }
+  if (autoplay) {
+    params.set('autoplay', '1');
+  }
+  const qs = params.toString();
+  return `https://player.vimeo.com/video/${videoId}${qs ? `?${qs}` : ''}`;
+}
+
+function vimeoPrivacyHashFromEmbed(embedUrl: string): string | null {
+  const query = embedUrl.split('?')[1];
+  if (!query) {
+    return null;
+  }
+  return new URLSearchParams(query).get('h');
 }
 
 function buildDTubeEmbedUrl(videoId: string): string {
@@ -132,13 +166,13 @@ export function parseVideoUrl(url: string): ParsedVideoPreview | null {
     };
   }
 
-  const vimeoId = extractVimeoId(normalized);
-  if (vimeoId) {
+  const vimeo = extractVimeoRef(normalized);
+  if (vimeo) {
     return {
       provider: 'vimeo',
-      videoId: vimeoId,
-      embedUrl: buildVimeoEmbedUrl(vimeoId, false),
-      thumbnailUrl: `https://vumbnail.com/${vimeoId}.jpg`,
+      videoId: vimeo.id,
+      embedUrl: buildVimeoEmbedUrl(vimeo.id, false, vimeo.hash),
+      thumbnailUrl: `https://vumbnail.com/${vimeo.id}.jpg`,
     };
   }
 
@@ -174,7 +208,11 @@ export function buildVideoEmbedUrl(
     case 'youtube':
       return buildYouTubeEmbedUrl(preview.videoId, autoplay);
     case 'vimeo':
-      return buildVimeoEmbedUrl(preview.videoId, autoplay);
+      return buildVimeoEmbedUrl(
+        preview.videoId,
+        autoplay,
+        vimeoPrivacyHashFromEmbed(preview.embedUrl),
+      );
     case '3speak':
       return buildThreeSpeakEmbedUrl(preview.videoId);
     case 'dtube':

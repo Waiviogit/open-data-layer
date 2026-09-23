@@ -114,6 +114,7 @@ export function ImageGalleryItemForm({
         onChange={handleImageChange}
         label={t('object_create_image_zone_title')}
         editorConfig={imageEditorConfigForUpdateType(UPDATE_TYPES.IMAGE_GALLERY_ITEM)}
+        acceptVideoLinks
       />
     </div>
   );

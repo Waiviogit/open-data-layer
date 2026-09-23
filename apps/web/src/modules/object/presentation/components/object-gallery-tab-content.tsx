@@ -19,7 +19,7 @@ import type { ProjectedGalleryAlbumView } from '../../domain/object-page.types';
 import type { RelatedAlbumPreviewView } from '../../domain/related-album.types';
 import { fetchObjectRelatedAlbumPreviewAction } from '../../infrastructure/object-related-album.actions';
 import { GalleryAlbumCardSkeleton } from './gallery-skeletons';
-import { GalleryMediaItem } from './gallery-media-item';
+import { GalleryMediaItem, isGalleryVideoUrl } from './gallery-media-item';
 
 export type ObjectGalleryTabContentProps = {
   objectId: string;
@@ -196,6 +196,9 @@ export function ObjectGalleryTabContent({
                     key={`${photo.url}-${index}`}
                     type="button"
                     className="relative aspect-square overflow-hidden rounded-btn border border-border bg-surface/60 hover:border-accent/40"
+                    aria-label={
+                      isGalleryVideoUrl(photo.url) ? t('play_video') : undefined
+                    }
                     onClick={() => onOpenPhoto?.(album, index)}
                   >
                     <GalleryMediaItem

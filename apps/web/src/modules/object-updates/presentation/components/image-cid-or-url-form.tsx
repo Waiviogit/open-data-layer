@@ -15,6 +15,9 @@ import { useIpfsImageUpload } from '@/shared/application';
 import { base64ToBlob } from '@/shared/application/base64-to-blob';
 import { fetchImageForEditor } from '@/modules/object-create/infrastructure/actions/fetch-image-for-editor.action';
 
+import { parseVideoUrl } from '@/shared/infrastructure/video-preview';
+import { VideoPreviewPlayer } from '@/shared/presentation/components/video-preview-player';
+
 import { useGlobalImagePaste } from '@/modules/object-updates/application/use-global-image-paste';
 
 export type ImageCidOrUrlFormProps = {
@@ -23,6 +26,8 @@ export type ImageCidOrUrlFormProps = {
   label?: string;
   hideLegend?: boolean;
   editorConfig?: ImageEditorConfig;
+  /** Gallery items store a share link instead of importing it as an image. */
+  acceptVideoLinks?: boolean;
 };
 
 type EditorSource = {
@@ -64,6 +69,7 @@ export function ImageCidOrUrlForm({
   label,
   hideLegend = false,
   editorConfig,
+  acceptVideoLinks = false,
 }: ImageCidOrUrlFormProps) {
   const { t } = useI18n();
   const contentBaseUrl = useIpfsContentBaseUrl();
@@ -78,6 +84,7 @@ export function ImageCidOrUrlForm({
 
   const previewUrl =
     localPreviewUrl ?? previewUrlFromValue(value, contentBaseUrl);
+  const videoPreview = previewUrl ? parseVideoUrl(previewUrl) : null;
   const hasImage = Boolean(previewUrl) && !editorSource;
   const isSquarePreview = editorConfig?.aspectRatio === 1;
 
@@ -171,6 +178,14 @@ export function ImageCidOrUrlForm({
   const handleIncomingUrl = useCallback(
     (url: string) => {
       const trimmed = url.trim();
+      if (acceptVideoLinks && parseVideoUrl(trimmed)) {
+        closeEditor();
+        setEditorLoadError(null);
+        clearError();
+        setLocalPreviewUrl(trimmed);
+        onChange({ url: trimmed });
+        return;
+      }
       const gatewayCid = extractCidFromContentGatewayUrl(trimmed);
       if (gatewayCid && contentBaseUrl) {
         onUploaded({
@@ -185,7 +200,7 @@ export function ImageCidOrUrlForm({
       }
       importFromUrl(trimmed);
     },
-    [contentBaseUrl, editorConfig, importFromUrl, onUploaded, openEditorWithUrl],
+    [acceptVideoLinks, clearError, closeEditor, contentBaseUrl, editorConfig, importFromUrl, onChange, onUploaded, openEditorWithUrl],
   );
 
   const { markActive } = useGlobalImagePaste({
@@ -272,18 +287,29 @@ export function ImageCidOrUrlForm({
               .filter(Boolean)
               .join(' ')}
           >
-            <img
-              src={previewUrl ?? ''}
-              alt=""
-              className={
-                isSquarePreview
-                  ? 'aspect-square w-full object-cover'
-                  : 'max-h-64 min-h-[14rem] w-full object-contain'
-              }
-            />
+            {videoPreview && previewUrl ? (
+              <div className="relative aspect-square w-full">
+                <VideoPreviewPlayer
+                  source={previewUrl}
+                  variant="gallery"
+                  previewOnly
+                  className="size-full"
+                />
+              </div>
+            ) : (
+              <img
+                src={previewUrl ?? ''}
+                alt=""
+                className={
+                  isSquarePreview
+                    ? 'aspect-square w-full object-cover'
+                    : 'max-h-64 min-h-[14rem] w-full object-contain'
+                }
+              />
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            {editorConfig ? (
+            {editorConfig && !videoPreview ? (
               <button
                 type="button"
                 className={ACTION_LINK_CLASS}

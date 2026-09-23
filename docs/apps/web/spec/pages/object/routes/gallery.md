@@ -10,7 +10,7 @@ related:
 type: spec
 status: active
 scope: web
-updated_at: 2026-06-17
+updated_at: 2026-09-23
 ---
 
 # Object page — Gallery tab
@@ -76,14 +76,14 @@ Zod: `projectedObjectViewSchema.galleryAlbums` in `feed-story.dto.ts`; Related r
 ### On-chain album detail (`ObjectGalleryTabContent`, `activeAlbumName` set)
 
 - Toolbar: **Back to albums**, **Add new image**.
-- 2-column photo grid with per-item loading skeleton (`GalleryImage`) or video poster (`VideoPreviewPlayer` when the item URL is YouTube, Vimeo, 3Speak, or DTube).
+- 2-column photo grid. Photos use `GalleryImage`. YouTube, Vimeo, 3Speak, and DTube URLs show a poster and a non-interactive play glyph (no iframe in the grid, album cover, or description carousel). Opening an item mounts that host's embed iframe immediately, with `referrerpolicy=strict-origin-when-cross-origin`. There is no in-app play or close-video control.
 - Empty / unknown album: `gallery_list_empty` + back link.
 
 ### Full-screen viewer (`ObjectGalleryViewer`)
 
 - Opened from photo grid on object page layer.
 - **Mobile gestures (Photos-app style):** at 1x, swipe left/right changes photo; swipe down closes; double-tap zooms to 2x at the tap point. While zoomed, drag pans the image; double-tap resets zoom. Prev/next arrow buttons are hidden below `md`; swipe handles navigation on mobile.
-- Video URLs: poster + inline iframe playback; zoom and **Set as avatar** are hidden for video items. Swipe left/right and swipe-down-close still work on the poster.
+- Video URLs: the host embed iframe on open. Zoom and **Set as avatar** are hidden for video items. Swipe left/right and swipe-down-close still work outside the iframe.
 - Related album: `isVirtualRelatedAlbum` — hides vote/add controls; shows post author link.
 - On-chain photos (non-avatar, with `update_id`): footer shows validity vote controls plus **Set gallery rank** button → **`GalleryRankModal`** (slider 0–10000, step **100**, default max; Confirm broadcasts `rank_vote`). Read-only **Current rank** shows decisive `rank_score` (winner semantics, not average). Guests are prompted to sign in on trigger click. While rank modal is open, gallery viewer ignores Escape. See [vote-semantics.md](../../../../../../spec/vote-semantics.md) §B.
 - **`imageGalleryItem` update cards** on the object Updates tab use the same **Set gallery rank** button + modal (including items without image preview URLs).
@@ -102,6 +102,8 @@ Uses `AddUpdateModal` (`mode: 'generic'`):
 | Add image (in album) | `imageGalleryItem` | `{ album, url: '', cid: '' }` with `lockGalleryAlbum: true` |
 
 After broadcast: `revalidateObjectAfterBroadcast` + router refresh (modal default).
+
+Pasting a YouTube, Vimeo, 3Speak, or DTube share link into **Add new image** stores `{ album, url }` and skips the image editor and IPFS import. The form previews the poster. Any other URL still goes through the image importer. Avatar and background fields do not take the video shortcut.
 
 ---
 

@@ -102,7 +102,8 @@ export function VideoPreviewPlayer({
   const embedUrl = preview?.embedUrl ?? null;
   const previewMediaUrl = useVideoPreviewThumbnail(embedUrl, staticThumbnailUrl ?? preview?.thumbnailUrl);
   const previewMediaDisplayUrl = previewMediaUrl ? getImagePathPost(previewMediaUrl) : null;
-  const canPlay = Boolean(embedUrl) && !previewOnly;
+  const canPlay = Boolean(embedUrl) && !previewOnly && variant !== 'viewer';
+  const showHostEmbed = variant === 'viewer' && !previewOnly && Boolean(embedUrl);
   const showInlineVideo = canPlay && playing;
 
   useEffect(() => {
@@ -120,7 +121,21 @@ export function VideoPreviewPlayer({
   }
 
   const classes = variantClasses(variant);
-  const iframeTitle = title?.trim() ? `${title.trim()} — video` : t('play_video');
+  const iframeTitle = title?.trim() ? `${title.trim()} — video` : 'Video';
+
+  const previewPlayGlyph = previewOnly ? (
+    <span
+      className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center"
+      aria-hidden
+    >
+      <span className="inline-flex items-center justify-center rounded-circle bg-overlay/80 p-3 shadow-card">
+        <PlayIcon
+          size={variant === 'viewer' ? 32 : 28}
+          className="ml-0.5 text-accent-fg"
+        />
+      </span>
+    </span>
+  ) : null;
 
   if (variant === 'tile') {
     return (
@@ -153,7 +168,7 @@ export function VideoPreviewPlayer({
     );
   }
 
-  const wrapperClass = showInlineVideo
+  const wrapperClass = showInlineVideo || showHostEmbed
     ? [classes.playingWrapper, className].filter(Boolean).join(' ')
     : [classes.wrapper, className].filter(Boolean).join(' ');
 
@@ -166,12 +181,22 @@ export function VideoPreviewPlayer({
 
   return (
     <div className={wrapperClass}>
-      {showInlineVideo && embedUrl ? (
+      {showHostEmbed && embedUrl ? (
+        <iframe
+          title={iframeTitle}
+          src={embedUrl}
+          className="absolute inset-0 h-full w-full border-0 bg-black"
+          referrerPolicy="strict-origin-when-cross-origin"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+        />
+      ) : showInlineVideo && embedUrl ? (
         <>
           <iframe
             title={iframeTitle}
             src={buildVideoEmbedUrl(preview, { autoplay: true })}
             className="absolute inset-0 h-full w-full border-0 bg-black"
+            referrerPolicy="strict-origin-when-cross-origin"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
           />
@@ -185,10 +210,11 @@ export function VideoPreviewPlayer({
         </>
       ) : posterFailed ? (
         <div
-          className={`flex ${classes.minHeight} w-full items-center justify-center text-caption text-muted`}
+          className={`relative flex ${classes.minHeight} w-full items-center justify-center text-caption text-muted`}
           role="status"
         >
           {t('video_preview_unavailable')}
+          {previewPlayGlyph}
         </div>
       ) : previewMediaDisplayUrl ? (
         <div className={variant === 'feed' ? 'relative w-full' : 'relative size-full'}>
@@ -202,6 +228,7 @@ export function VideoPreviewPlayer({
             decoding="async"
             onError={() => setPosterFailed(true)}
           />
+          {previewPlayGlyph}
           {canPlay ? (
             <button
               type="button"
@@ -220,6 +247,12 @@ export function VideoPreviewPlayer({
               </span>
             </button>
           ) : null}
+        </div>
+      ) : previewOnly ? (
+        <div
+          className={`relative flex ${classes.minHeight} w-full items-center justify-center`}
+        >
+          {previewPlayGlyph}
         </div>
       ) : canPlay ? (
         <div

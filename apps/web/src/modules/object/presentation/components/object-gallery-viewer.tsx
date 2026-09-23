@@ -112,7 +112,6 @@ export function ObjectGalleryViewer({
   const [voteError, setVoteError] = useState<string | null>(null);
   const [addAlbumPending, setAddAlbumPending] = useState<string | null>(null);
   const [rankModalOpen, setRankModalOpen] = useState(false);
-  const [videoPlaying, setVideoPlaying] = useState(false);
   const [addAlbumError, setAddAlbumError] = useState<string | null>(null);
   const [optimisticAlbumAdds, setOptimisticAlbumAdds] = useState<ReadonlySet<string>>(
     () => new Set(),
@@ -166,11 +165,9 @@ export function ObjectGalleryViewer({
     setActiveIndex(initialIndex);
     setZoom(1);
     setPan({ x: 0, y: 0 });
-    setVideoPlaying(false);
   }, [initialIndex, album.name]);
 
   useEffect(() => {
-    setVideoPlaying(false);
     setZoom(1);
     setPan({ x: 0, y: 0 });
   }, [activeIndex, currentPhoto?.url]);
@@ -233,7 +230,6 @@ export function ObjectGalleryViewer({
     }
     setZoom(1);
     setPan({ x: 0, y: 0 });
-    setVideoPlaying(false);
     setActiveIndex((i) => (i - 1 + count) % count);
   }, [count]);
 
@@ -243,7 +239,6 @@ export function ObjectGalleryViewer({
     }
     setZoom(1);
     setPan({ x: 0, y: 0 });
-    setVideoPlaying(false);
     setActiveIndex((i) => (i + 1) % count);
   }, [count]);
 
@@ -656,8 +651,6 @@ export function ObjectGalleryViewer({
               priority
               variant="viewer"
               imageClassName="object-contain"
-              playing={videoPlaying}
-              onPlayingChange={setVideoPlaying}
             />
           </div>
         </div>

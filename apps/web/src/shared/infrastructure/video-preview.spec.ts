@@ -85,6 +85,87 @@ describe('parseVideoUrl', () => {
     expect(parseVideoUrl('https://cdn.example.com/photo.jpg')).toBeNull();
   });
 
+  it('rewrites a YouTube live share link to the official embed', () => {
+    expect(parseVideoUrl('https://www.youtube.com/live/abcdefghijk')).toEqual({
+      provider: 'youtube',
+      videoId: 'abcdefghijk',
+      embedUrl: 'https://www.youtube.com/embed/abcdefghijk',
+      thumbnailUrl: 'https://img.youtube.com/vi/abcdefghijk/hqdefault.jpg',
+    });
+  });
+
+  it('rewrites a mobile YouTube shorts share link', () => {
+    expect(parseVideoUrl('https://m.youtube.com/shorts/abcdefghijk')).toEqual({
+      provider: 'youtube',
+      videoId: 'abcdefghijk',
+      embedUrl: 'https://www.youtube.com/embed/abcdefghijk',
+      thumbnailUrl: 'https://img.youtube.com/vi/abcdefghijk/hqdefault.jpg',
+    });
+  });
+
+  it('rewrites a YouTube Music watch share link', () => {
+    expect(parseVideoUrl('https://music.youtube.com/watch?v=abcdefghijk')).toEqual({
+      provider: 'youtube',
+      videoId: 'abcdefghijk',
+      embedUrl: 'https://www.youtube.com/embed/abcdefghijk',
+      thumbnailUrl: 'https://img.youtube.com/vi/abcdefghijk/hqdefault.jpg',
+    });
+  });
+
+  it('rewrites an unlisted Vimeo share link with the privacy hash', () => {
+    expect(parseVideoUrl('https://vimeo.com/123456789/a1b2c3d4')?.embedUrl).toBe(
+      'https://player.vimeo.com/video/123456789?h=a1b2c3d4',
+    );
+  });
+
+  it('rewrites a DTube /v/ share link to the DTube embed', () => {
+    expect(parseVideoUrl('https://d.tube/v/alice/my-video')).toEqual({
+      provider: 'dtube',
+      videoId: 'alice/my-video',
+      embedUrl: 'https://emb.d.tube/#!/alice/my-video',
+      thumbnailUrl: null,
+    });
+  });
+
+  it('leaves out-of-scope hosts unclassified', () => {
+    const urls = [
+      'https://www.tiktok.com/@name/video/1',
+      'https://www.twitch.tv/videos/1',
+      'https://www.dailymotion.com/video/x7tgad0',
+      'https://rumble.com/v1-example.html',
+      'https://odysee.com/@a:b/c',
+      'https://www.instagram.com/reel/AbC/',
+    ];
+    for (const url of urls) {
+      expect(parseVideoUrl(url)).toBeNull();
+    }
+  });
+
+  it('rejects an empty share string', () => {
+    expect(parseVideoUrl('')).toBeNull();
+    expect(parseVideoUrl('   ')).toBeNull();
+  });
+
+  it('rejects a YouTube id that is not 11 characters', () => {
+    expect(parseVideoUrl('https://www.youtube.com/live/abcdefghij')).toBeNull();
+    expect(parseVideoUrl('https://www.youtube.com/live/abcdefghijkl')).toBeNull();
+  });
+
+  it('does not treat a YouTube poster URL as a video', () => {
+    expect(
+      parseVideoUrl('https://img.youtube.com/vi/abcdefghijk/hqdefault.jpg'),
+    ).toBeNull();
+  });
+
+  it('drops share-sheet query junk from a YouTube live link', () => {
+    expect(parseVideoUrl('https://www.youtube.com/live/abcdefghijk?si=sharetoken')).toEqual({
+      provider: 'youtube',
+      videoId: 'abcdefghijk',
+      embedUrl: 'https://www.youtube.com/embed/abcdefghijk',
+      thumbnailUrl: 'https://img.youtube.com/vi/abcdefghijk/hqdefault.jpg',
+    });
+  });
+
   it('returns null for path traversal in 3Speak watch param', () => {
     expect(parseVideoUrl('https://3speak.tv/watch?v=..%2Fevil')).toBeNull();
   });
