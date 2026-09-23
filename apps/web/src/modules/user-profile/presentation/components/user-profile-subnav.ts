@@ -43,7 +43,7 @@ export function getSubmenuVariant(pathname: string): UserMenuSubmenuVariant {
   if (isFeedSectionActive(rest)) {
     return 'feed';
   }
-  if (head === 'transfers') {
+  if (head === 'transfers' || head === 'permissions') {
     return 'wallet';
   }
   if (

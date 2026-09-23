@@ -15,11 +15,7 @@ import {
   UserPermissionsAuthorityType,
 } from '../../application/dto/user-permissions.dto';
 import { GrantAuthorityModal } from './grant-authority-modal';
-import {
-  PermissionsSortControl,
-  PermissionsTabLinks,
-  PermissionsTypeFilter,
-} from './permissions-controls';
+import { PermissionsFilterBar, PermissionsTabLinks } from './permissions-controls';
 import { UserPermissionsRow } from './user-permissions-row';
 
 export type UserPermissionsListProps = {
@@ -109,21 +105,9 @@ export function UserPermissionsList({
           </div>
         ) : null}
 
-        <PermissionsTypeFilter />
-
-        {showGrantedChrome && isOwner ? (
-          <button
-            type="button"
-            onClick={() => setGrantOpen(true)}
-            className="rounded-btn bg-accent px-4 py-2 text-body-sm font-weight-label text-on-accent"
-          >
-            {t('permissions_add_authority')}
-          </button>
-        ) : null}
-
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-          <PermissionsSortControl />
-        </div>
+        <PermissionsFilterBar
+          onGrant={showGrantedChrome && isOwner ? () => setGrantOpen(true) : undefined}
+        />
 
         {items.length === 0 ? (
           <p className="text-body-sm text-muted">{t('permissions_list_empty')}</p>

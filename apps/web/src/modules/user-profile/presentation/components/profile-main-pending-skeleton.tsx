@@ -81,7 +81,11 @@ function ProfileObjectListPendingSkeleton() {
 export function ProfileMainPendingSkeleton() {
   const { pathname } = useEffectiveProfileNav();
   const variant = getSubmenuVariant(pathname);
+  const head = getSegmentsAfterAccount(pathname)[0] ?? '';
 
+  if (head === 'permissions') {
+    return <ProfileSectionPendingSkeleton />;
+  }
   if (variant === 'wallet') {
     return <TransfersWalletLoadingSkeleton />;
   }
@@ -95,7 +99,6 @@ export function ProfileMainPendingSkeleton() {
     return <ProfileSectionPendingSkeleton />;
   }
 
-  const head = getSegmentsAfterAccount(pathname)[0] ?? '';
   if (head === 'user-shop' || head === 'recipe') {
     return <ProfileShopPendingSkeleton />;
   }

@@ -8,7 +8,7 @@ import { ClaimRewardsSidebarCard } from '@/modules/user-wallet/presentation/comp
 import { ActivityFiltersFromUrl } from '@/modules/user-activity/presentation/components/activity-filters';
 import { isUserProfileActivityTab } from '@/modules/user-activity/domain/activity-filters-url';
 import { MessagingProfileAboutRail } from '@/modules/messaging/presentation/messaging-profile-about-rail';
-import { isUserProfileTransfersTab } from '../../domain/profile-transfers-url';
+import { isUserProfileWalletSection } from '../../domain/profile-transfers-url';
 import { PROFILE_FILTER_RAIL_STICKY_CLASS } from '@/shared/presentation/layout';
 import { isUserProfileMessagesTab } from './profile-path';
 import { isUserProfilePostsTab } from '../../domain/profile-post-filters-url';
@@ -82,7 +82,7 @@ function RightSidebarContent({ accountName, viewerUsername }: RightSidebarProps)
     );
   }
 
-  if (isUserProfileTransfersTab(pathname)) {
+  if (isUserProfileWalletSection(pathname)) {
     return (
       <aside
         className={[

@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, page, user-profile, routing, layout]
-updated_at: 2026-06-10
+updated_at: 2026-09-23
 related:
   - docs/apps/web/spec/overview.md
   - docs/apps/web/spec/pages/index.md
@@ -41,10 +41,9 @@ user-profile/[name]/layout.tsx          validate name + load profile (404 if mis
   (profile)/layout.tsx                  UserProfileHeroClient + social counts provider
     (main)/layout.tsx                   three-column shell (left parallel route + main + right rail)
       @leftSidebar/*                    category nav for shop/recipe (parallel route)
-      page.tsx, threads/, followers/, …
+      page.tsx, threads/, followers/, transfers/, permissions/, …
     about/layout.tsx                    main + right rail only
     map/layout.tsx                      single column
-    permissions/layout.tsx              single column
     transfers/waiv-table/layout.tsx     single column
   (article)/layout.tsx                  full-width post article (no profile hero grid)
     post/[permlink]/page.tsx
@@ -55,7 +54,6 @@ user-profile/[name]/layout.tsx          validate name + load profile (404 if mis
 | [`(main)/layout.tsx`](../../../../../apps/web/src/app/(app)/user-profile/[name]/(profile)/(main)/layout.tsx) | `shell-profile-grid`: left `@leftSidebar` (sticky) + center `main` + `RightSidebar` at `lg+`. Twitter shell mode swaps left rail to vertical `UserMenuVerticalRail`. |
 | [`about/layout.tsx`](../../../../../apps/web/src/app/(app)/user-profile/[name]/(profile)/about/layout.tsx) | No left rail; main + right sidebar. |
 | [`map/layout.tsx`](../../../../../apps/web/src/app/(app)/user-profile/[name]/(profile)/map/layout.tsx) | Single full-width column (no sidebars). |
-| [`permissions/layout.tsx`](../../../../../apps/web/src/app/(app)/user-profile/[name]/(profile)/permissions/layout.tsx) | Single full-width column (no sidebars). |
 | [`transfers/waiv-table/layout.tsx`](../../../../../apps/web/src/app/(app)/user-profile/[name]/(profile)/transfers/waiv-table/layout.tsx) | Single column for wallet table. |
 
 ## Persistent regions
@@ -66,7 +64,7 @@ user-profile/[name]/layout.tsx          validate name + load profile (404 if mis
 | Primary nav | `UserMenu` in hero | See [user-menu.md](components/user-menu.md) |
 | Left rail | `@leftSidebar` → `ProfileAccountSidebar` on default routes; category nav on shop/recipe; `FavoritesTypeNav` on favorites; vertical `UserMenu` in twitter mode | Hidden below `lg` |
 | Center | Route `page.tsx` children | — |
-| Right rail | `RightSidebar` | Hidden on `map`, `waiv-table`; hidden below `lg` on `(main)` |
+| Right rail | `RightSidebar` | Hidden on `map`, `waiv-table`; hidden below `lg` on `(main)`. Wallet actions and the market panel also show on `/permissions`. |
 
 ## Module layout
 

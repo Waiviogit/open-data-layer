@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, user-profile, hive, authority]
-updated_at: 2026-09-11
+updated_at: 2026-09-23
 related:
   - docs/apps/web/spec/pages/user-profile/overview.md
   - docs/apps/query-api/spec/user-account-auths-endpoint.md
@@ -17,7 +17,7 @@ related:
 
 Route: `/@{username}/permissions` (internal: `/user-profile/{name}/permissions`).
 
-Full-width layout under the profile hero (same shell family as map — no left/right rails).
+Wallet section of the profile `(main)` shell: center column under the wallet submenu, with the wallet right rail (transfer actions and market). The Wallet primary tab stays active. Currency tabs stay on `/transfers?type=`; Authorizations is this path.
 
 ## Tabs
 
@@ -27,6 +27,8 @@ Full-width layout under the profile hero (same shell family as map — no left/r
 | **Received Authorities** | `GET .../authority-grantors` | View only |
 
 Query params: `tab=granted|received` (default granted), `type=posting|active|owner` (omit = all), `sort=rank|followers|a-z|recency` (default `a-z`).
+
+The list card matches the object updates bar: authority type is a single filter select, sort sits on the next row, and **Grant authority** (plus control) shows only for the profile owner on **Granted**.
 
 ## Hive semantics
 
@@ -38,7 +40,7 @@ Full protocol reference: [hive-account-authority.md](../../../../../../spec/hive
 
 ## Entry
 
-Logged-in account menu → **Permissions** (after Wallet). Other profiles are viewable; grant/revoke only when `viewer === profile`.
+Wallet submenu → **Authorizations** on any profile (`/@{username}/permissions`). Logged-in account menu → **Permissions** still opens the signed-in account. Grant/revoke only when `viewer === profile`.
 
 ## Grant / revoke
 

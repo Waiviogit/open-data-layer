@@ -95,7 +95,7 @@ function isActive(
     case 'favorites':
       return head === 'favorites';
     case 'transfers':
-      return head === 'transfers';
+      return head === 'transfers' || head === 'permissions';
     case 'followers':
       return (
         head === 'followers' ||
@@ -123,6 +123,44 @@ function subNavLinkClass(active: boolean, vertical: boolean) {
     return profileSectionVerticalLinkClass(active, true);
   }
   return profileSectionTabClass(active, 'sub');
+}
+
+function WalletSubmenuLinks({
+  base,
+  vertical,
+  onPermissions,
+  walletType,
+}: {
+  base: string;
+  vertical: boolean;
+  onPermissions: boolean;
+  walletType: string;
+}) {
+  const { t } = useI18n();
+  return (
+    <>
+      {WALLET_TYPES.map((type) => (
+        <UserProfileNavLink
+          key={type}
+          href={`${base}/transfers?type=${type}`}
+          method="replace"
+          className={subNavLinkClass(!onPermissions && walletType === type, vertical)}
+        >
+          {type === 'WAIV'
+            ? t('waiv_wallet')
+            : type === 'HIVE'
+              ? t('hive_wallet')
+              : t('hive_engine_wallet')}
+        </UserProfileNavLink>
+      ))}
+      <UserProfileNavLink
+        href={`${base}/permissions`}
+        className={subNavLinkClass(onPermissions, vertical)}
+      >
+        {t('wallet_authorizations')}
+      </UserProfileNavLink>
+    </>
+  );
 }
 
 function SocialSubmenuLinkLabel({
@@ -255,6 +293,7 @@ function UserMenuInner({
   const base = `/@${accountName}`;
   const walletType = getWalletTypeFromSearch(search);
   const submenuVariant = getSubmenuVariant(pathname);
+  const onPermissions = (rest[0] ?? '') === 'permissions';
   const socialCounts = useUserProfileSocialCounts();
 
   const items: {
@@ -348,19 +387,12 @@ function UserMenuInner({
         rowClass={HORIZONTAL_TAB_NAV_SUB_ROW_CLASS}
         bleed={submenuBleed}
       >
-        {WALLET_TYPES.map((type) => {
-          const href = `${base}/transfers?type=${type}`;
-          return (
-            <UserProfileNavLink
-              key={type}
-              href={href}
-              method="replace"
-              className={subNavLinkClass(walletType === type, false)}
-            >
-              {type === 'WAIV' ? t('waiv_wallet') : type === 'HIVE' ? t('hive_wallet') : t('hive_engine_wallet')}
-            </UserProfileNavLink>
-          );
-        })}
+        <WalletSubmenuLinks
+          base={base}
+          vertical={false}
+          onPermissions={onPermissions}
+          walletType={walletType}
+        />
       </HorizontalTabNavShell>
     ) : submenuVariant === 'followers' ? (
       <HorizontalTabNavShell
@@ -420,19 +452,12 @@ function UserMenuInner({
 
         {submenuVariant === 'wallet' ? (
           <nav className="flex flex-col gap-0.5" aria-label={t('user_profile_submenu_wallet_aria')}>
-            {WALLET_TYPES.map((type) => {
-              const href = `${base}/transfers?type=${type}`;
-              return (
-                <UserProfileNavLink
-                  key={type}
-                  href={href}
-                  method="replace"
-                  className={subNavLinkClass(walletType === type, true)}
-                >
-                  {type === 'WAIV' ? t('waiv_wallet') : type === 'HIVE' ? t('hive_wallet') : t('hive_engine_wallet')}
-                </UserProfileNavLink>
-              );
-            })}
+            <WalletSubmenuLinks
+              base={base}
+              vertical
+              onPermissions={onPermissions}
+              walletType={walletType}
+            />
           </nav>
         ) : null}
 

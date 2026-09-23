@@ -6,13 +6,14 @@ type: spec
 status: active
 scope: web
 tags: [web, page, user-profile, components]
-updated_at: 2026-06-10
+updated_at: 2026-09-23
 related:
   - docs/apps/web/spec/overview.md
   - docs/apps/web/spec/pages/user-profile/profile-shell.md
   - docs/apps/web/spec/pages/index.md
   - docs/apps/web/spec/pages/user-profile/routes/feed.md
   - docs/apps/web/spec/pages/user-profile/routes/transfers.md
+  - docs/apps/web/spec/pages/user-profile/routes/permissions.md
   - docs/apps/web/spec/pages/user-profile/routes/social-graph.md
   - docs/apps/web/spec/pages/user-profile/routes/expertise.md
 ---
@@ -48,7 +49,7 @@ Shown when `getSubmenuVariant(pathname)` returns a variant (see `user-profile-su
 | Primary active | Secondary links | Route spec |
 |----------------|-----------------|------------|
 | Posts (default feed) | `/@:name`, `/threads`, `/comments`, `/mentions`, `/activity` | [feed.md](../routes/feed.md) |
-| Wallet (`/transfers`) | `?type=WAIV`, `?type=HIVE`, `?type=ENGINE` | [transfers.md](../routes/transfers.md) |
+| Wallet (`/transfers`, `/permissions`) | `?type=WAIV`, `?type=HIVE`, `?type=ENGINE`, `/@:name/permissions` | [transfers.md](../routes/transfers.md), [permissions.md](../routes/permissions.md) |
 | Followers section | `/followers`, `/following`, `/following-objects` (counts from social context) | [social-graph.md](../routes/social-graph.md) |
 | Expertise | `/expertise-hashtags`, `/expertise-objects` | [expertise.md](../routes/expertise.md) |
 
@@ -58,7 +59,7 @@ WAIV table page (`/@:name/transfers/waiv-table`) may use a separate `tab` query 
 
 | Param | Where | Effect |
 |-------|-------|--------|
-| `type` | `/transfers` and wallet submenu | Active wallet tab; default `WAIV` when missing (`getWalletTypeFromSearch`) |
+| `type` | `/transfers` and wallet currency links | Active WAIV / HIVE / ENGINE tab; default `WAIV` when missing (`getWalletTypeFromSearch`). Not used on `/permissions`. |
 | `tab` | `/transfers/waiv-table` only | In-page WAIV table tabs (not header submenu) |
 
 ## inputs
@@ -87,6 +88,7 @@ WAIV table page (`/@:name/transfers/waiv-table`) may use a separate `tab` query 
 - [profile-shell.md](../profile-shell.md)
 - [feed.md](../routes/feed.md)
 - [transfers.md](../routes/transfers.md)
+- [permissions.md](../routes/permissions.md)
 - [social-graph.md](../routes/social-graph.md)
 - [expertise.md](../routes/expertise.md)
 
@@ -104,6 +106,6 @@ integration_contract_submenus:
   input_data: same as primary; child paths and query per route specs above.
   emitted_actions: Navigation via Link on secondary row.
   controlled_by_state: Router pathname + URLSearchParams (wallet type).
-  affected_by_route: feed, social-graph, transfers, expertise children.
+  affected_by_route: feed, social-graph, transfers, permissions, expertise children.
   affected_by_query: type on /transfers; tab on waiv-table page only.
 ```
