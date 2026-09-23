@@ -199,7 +199,38 @@ describe('object-options-section.utils', () => {
         mode: 'swatch',
       });
       expect(className).toContain('size-[50px]');
+      expect(className).toContain('rounded-card');
+      expect(className).toContain('border-2');
+      expect(className).toContain('border-fg');
+      expect(className).not.toContain('rounded-btn');
       expect(className).not.toContain('px-2');
+      expect(className).not.toContain('border-black');
+    });
+
+    it('uses a thicker accent border for the selected swatch', () => {
+      const e = entry({ category: 'Color', value: 'Red', objectId: 'current' });
+      const className = optionButtonClassName({
+        ...baseArgs,
+        entry: e,
+        isSelected: true,
+        mode: 'swatch',
+      });
+      expect(className).toContain('border-2');
+      expect(className).toContain('border-accent');
+      expect(className).not.toContain('border-dashed');
+    });
+
+    it('uses a dashed fg border for an incompatible swatch', () => {
+      const e = entry({ category: 'Color', value: 'Blue', objectId: 'other' });
+      const className = optionButtonClassName({
+        ...baseArgs,
+        entry: e,
+        isSelected: false,
+        mode: 'swatch',
+      });
+      expect(className).toContain('border-2');
+      expect(className).toContain('border-dashed');
+      expect(className).toContain('border-fg');
     });
   });
 });

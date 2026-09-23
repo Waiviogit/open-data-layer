@@ -29,10 +29,9 @@ export type ObjectGalleryCarouselProps = {
 const VIDEO_FRAME_ASPECT = 16 / 9;
 
 const CAROUSEL_CONTROL_CLASS =
-  'inline-flex w-4 shrink-0 items-center justify-center self-center text-display leading-none text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
+  'absolute top-1/2 z-[1] inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-btn border border-border bg-bg text-section leading-none text-fg shadow-card transition-colors hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
 
-const CAROUSEL_CONTROL_DISABLED_CLASS =
-  'pointer-events-none opacity-40';
+const CAROUSEL_CONTROL_DISABLED_CLASS = 'pointer-events-none opacity-40';
 
 export function ObjectGalleryCarousel({
   photos,
@@ -199,8 +198,8 @@ export function ObjectGalleryCarousel({
     ? `${CAROUSEL_CONTROL_CLASS} ${CAROUSEL_CONTROL_DISABLED_CLASS}`
     : CAROUSEL_CONTROL_CLASS;
   const frameClassName = [
-    'relative min-w-0 flex-1 overflow-hidden rounded-btn border border-border touch-pan-y select-none',
-    onPhotoClick ? 'cursor-pointer transition-colors hover:border-accent/40' : '',
+    'relative block w-full min-w-0 overflow-hidden rounded-btn touch-pan-y select-none',
+    onPhotoClick ? 'cursor-pointer' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -230,12 +229,38 @@ export function ObjectGalleryCarousel({
     </div>
   );
 
+  const photoControl = onPhotoClick ? (
+    <button
+      type="button"
+      className={frameClassName}
+      aria-label={t('gallery')}
+      onClick={handleFrameClick}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchCancel}
+    >
+      {photoFrame}
+    </button>
+  ) : (
+    <div
+      className={frameClassName}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchCancel}
+    >
+      {photoFrame}
+    </div>
+  );
+
   return (
-    <div className="mt-3 flex items-center gap-0">
+    <div className="relative mt-3">
+      {photoControl}
       {showControls ? (
         <button
           type="button"
-          className={controlClassName}
+          className={`${controlClassName} left-1`}
           aria-label={t('object_detail_gallery_prev')}
           disabled={isPreviewActive}
           onClick={goPrev}
@@ -243,34 +268,10 @@ export function ObjectGalleryCarousel({
           ‹
         </button>
       ) : null}
-      {onPhotoClick ? (
-        <button
-          type="button"
-          className={frameClassName}
-          aria-label={t('gallery')}
-          onClick={handleFrameClick}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onTouchCancel={handleTouchCancel}
-        >
-          {photoFrame}
-        </button>
-      ) : (
-        <div
-          className={frameClassName}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onTouchCancel={handleTouchCancel}
-        >
-          {photoFrame}
-        </div>
-      )}
       {showControls ? (
         <button
           type="button"
-          className={controlClassName}
+          className={`${controlClassName} right-1`}
           aria-label={t('object_detail_gallery_next')}
           disabled={isPreviewActive}
           onClick={goNext}

@@ -106,6 +106,37 @@ describe('projectedObjectWithCountsToPageModel gallery', () => {
     expect(model.previewGallery).toHaveLength(1);
   });
 
+  it('keeps an avatar-only left-rail gallery for product so option hover has a frame', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'test-obj',
+      object_type: 'product',
+      semantic_type: 'schema:Product',
+      weight: 1,
+      fields: { name: 'Paddle' },
+      previewGallery: [
+        { url: 'https://example.com/avatar.jpg', rankScore: 100, isAvatar: true },
+      ],
+      galleryAlbums: [],
+      followers_count: 0,
+      posts_count: 0,
+      updates_count: 0,
+      favorited_by_count: 0,
+      supervised_count: 0,
+      exclusive_count: 0,
+      is_following: false,
+      viewer_bell: false,
+      update_type_counts: {},
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const galleryBlock = model.leftRailBlocks.find((block) => block.kind === 'gallery');
+
+    expect(galleryBlock).toMatchObject({
+      kind: 'gallery',
+      photos: [{ url: 'https://example.com/avatar.jpg', rankScore: 100, isAvatar: true }],
+    });
+  });
+
   it('left-rail gallery block excludes avatar rows from carousel photos', () => {
     const api: ProjectedObjectWithCountsView = {
       object_id: 'test-obj',

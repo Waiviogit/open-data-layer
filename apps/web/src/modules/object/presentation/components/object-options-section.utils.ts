@@ -112,22 +112,23 @@ export function optionButtonClassName(args: {
       otherSelections.some((opt) => (optionsBack[opt.value] ?? []).includes(id)),
     );
 
-  const base =
-    mode === 'swatch'
-      ? 'inline-flex size-[50px] shrink-0 items-center justify-center overflow-hidden rounded-btn p-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus'
-      : 'inline-flex min-h-[2.25rem] min-w-[2.25rem] items-center justify-center rounded-btn px-2 text-body-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
+  const isSwatch = mode === 'swatch';
+  const base = isSwatch
+    ? 'inline-flex size-[50px] shrink-0 items-center justify-center overflow-hidden rounded-card border-2 p-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus'
+    : 'inline-flex min-h-[2.25rem] min-w-[2.25rem] items-center justify-center rounded-btn border px-2 text-body-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus';
+  const neutralBorder = isSwatch ? 'border-fg' : 'border-black';
 
   if (isSelected) {
     return [
       base,
-      'border border-accent font-weight-strong text-accent',
+      'border-accent font-weight-strong text-accent',
       isOwnObject ? 'bg-bg' : 'bg-bg text-muted',
     ].join(' ');
   }
 
   if (isOwnObject || isCompatibleCombo) {
-    return [base, 'border border-black font-weight-body text-fg'].join(' ');
+    return [base, `${neutralBorder} font-weight-body text-fg`].join(' ');
   }
 
-  return [base, 'border border-dashed border-black text-muted'].join(' ');
+  return [base, `border-dashed ${neutralBorder} text-muted`].join(' ');
 }

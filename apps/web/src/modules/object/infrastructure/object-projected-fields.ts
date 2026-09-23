@@ -1,5 +1,6 @@
 import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
 
+import { isOptionsObjectType } from '../domain/object-left-rail-order';
 import { resolveSocialLinkHref } from '../domain/resolve-social-link-href';
 
 import type {
@@ -1969,11 +1970,23 @@ export function projectedPreviewGallery(o: ProjectedObjectView): ProjectedGaller
   }));
 }
 
-/** Left-rail gallery carousel: omit avatar-only preview (hero already shows avatar). */
+/**
+ * Left-rail gallery carousel.
+ * Non-avatar photos only, except options types (`product`, `book`, `service`):
+ * an avatar-only preview stays so option hover has a frame.
+ */
 export function projectedLeftRailPreviewGallery(
   o: ProjectedObjectView,
 ): ProjectedGalleryPhotoView[] {
-  return projectedPreviewGallery(o).filter((photo) => !photo.isAvatar);
+  const photos = projectedPreviewGallery(o);
+  const content = photos.filter((photo) => !photo.isAvatar);
+  if (content.length > 0) {
+    return content;
+  }
+  if (isOptionsObjectType(o.object_type ?? '') && photos.length > 0) {
+    return photos;
+  }
+  return [];
 }
 
 function projectedGalleryImageUrlsFromFields(o: ProjectedObjectView, max = 8): string[] {

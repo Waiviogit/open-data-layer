@@ -67,6 +67,19 @@ describe('ObjectGalleryCarousel preview mode', () => {
     expect(screen.getByRole('button', { name: 'Next photo' })).toBeDisabled();
   });
 
+  it('overlays prev/next on the photo instead of nesting them in the photo button', () => {
+    render(
+      <I18nProvider locale="en-US" messages={messages}>
+        <ObjectGalleryCarousel photos={photos} onPhotoClick={jest.fn()} />
+      </I18nProvider>,
+    );
+
+    const frameButton = screen.getByRole('button', { name: 'Gallery' });
+    const prev = screen.getByRole('button', { name: 'Previous photo' });
+    expect(frameButton.contains(prev)).toBe(false);
+    expect(prev.className).toContain('absolute');
+  });
+
   it('uses object-contain for preview images', () => {
     renderCarousel('https://example.com/avatar.jpg');
 

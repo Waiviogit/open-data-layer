@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, page, object, options]
-updated_at: 2026-08-10
+updated_at: 2026-09-23
 related:
   - docs/apps/web/spec/pages/object/data-loading.md
   - docs/apps/web/spec/pages/object/page-shell.md
@@ -31,8 +31,8 @@ Loaded in parallel with resolve — see [data-loading](../data-loading.md). Mapp
 | -------- | ------ |
 | Block heading | `t('object_field_options')` (not hardcoded English) |
 | Category order | **Color** first, then categories with image swatches, then alphabetical |
-| Image swatch | Only when `option.image` is set — **not** sibling `imageUrl` alone (Size stays text buttons). **50×50px** square, `object-contain` (legacy `Options.less`) |
-| Borders | Selected: accent; own/compatible: solid `border-black`; other variants: dashed `border-black` |
+| Image swatch | Only when `option.image` is set — **not** sibling `imageUrl` alone (Size stays text buttons). **50×50px** square (`rounded-card`, not `rounded-btn`), `object-contain` (legacy `Options.less`) |
+| Borders | Swatches: `border-2`. Selected: `border-accent`. Own/compatible: solid `border-fg`. Other variants: dashed `border-fg`. Text buttons stay 1px: accent / solid `border-black` / dashed `border-black` |
 | Selection | Current object’s values from API; no fake selection from `values[0]` when the object has no value in that category |
 | Navigation | `router.push` to compatible sibling `object_id`; section **remounts** via `key={currentObjectId}` after navigation so selection/borders reset |
 | Hover preview | Mouse-over or keyboard focus on an option temporarily updates **gallery avatar** (`imageUrl`, fallback `image`), **price** (`entry.price`), and **category label** (hovered value); clears on leave/blur; click still navigates. Avatar swaps inside the **existing gallery frame** (`object-contain`, locked aspect ratio, carousel controls stay mounted) — no layout shift |

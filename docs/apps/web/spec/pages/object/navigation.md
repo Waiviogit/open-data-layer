@@ -11,7 +11,7 @@ related:
 type: spec
 status: active
 scope: web
-updated_at: 2026-06-10
+updated_at: 2026-09-23
 ---
 
 # Object page — navigation & transitions
@@ -139,7 +139,7 @@ Proxy rewrites to `?tab=description`. Center column uses `ObjectDescriptionBody`
 - Up to **15** photos from `model.previewGallery` (query-api `buildGalleryAlbums` — legacy `getGallery.js` / `preview_gallery`) interleaved after each paragraph; leftover photos appended at the bottom (legacy `DescriptionPage.js` #5485).
 - Typography matches `ObjectPageBody` (page content styles).
 
-Left rail **Description** button links here when description text or gallery preview exists. Gallery block shows `ObjectGalleryCarousel` (looped prev/next) from `previewGallery` **excluding avatar-only rows** — hidden when every preview photo is the object avatar.
+Left rail **Description** button links here when description text or gallery preview exists. Gallery block shows `ObjectGalleryCarousel` (looped prev/next, arrows overlaid on the photo) from `previewGallery`, excluding avatar rows when other photos exist. For `product`, `book`, and `service`, an avatar-only preview stays so option hover has a frame. Other types hide the block when every preview photo is the object avatar.
 
 **Known gap:** legacy merged Related post photos into description and sidebar; ODL serves Related only on the [Gallery tab](routes/gallery.md). API: [object-related-album.md](../../../../../query-api/spec/object-related-album.md).
 
