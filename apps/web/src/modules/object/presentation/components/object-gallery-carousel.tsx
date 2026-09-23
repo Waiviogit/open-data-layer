@@ -28,6 +28,7 @@ export type ObjectGalleryCarouselProps = {
 
 const VIDEO_FRAME_ASPECT = 16 / 9;
 
+/** Solid `bg-bg`: opacity modifiers do not apply to hex theme tokens, so `bg-bg/80` paints transparent. */
 const CAROUSEL_CONTROL_CLASS =
   'absolute top-1/2 z-[1] inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-btn border border-border bg-bg text-section leading-none text-fg shadow-card transition-colors hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
 
