@@ -1,11 +1,18 @@
 import {
   clampPan,
+  clampZoom,
   GALLERY_SWIPE_HORIZONTAL_THRESHOLD_PX,
   GALLERY_SWIPE_VERTICAL_THRESHOLD_PX,
+  GALLERY_VIEWER_MAX_ZOOM,
+  GALLERY_VIEWER_MIN_ZOOM,
+  GALLERY_VIEWER_WHEEL_ZOOM_SENSITIVITY,
   isDoubleTapCandidate,
   panForZoomAtPoint,
+  panForZoomChange,
   resolveSwipeAxis,
   shouldCommitSwipe,
+  zoomFromPinchDistance,
+  zoomFromWheelDelta,
 } from './gallery-viewer-gestures';
 
 describe('gallery-viewer-gestures', () => {
@@ -29,20 +36,26 @@ describe('gallery-viewer-gestures', () => {
   describe('shouldCommitSwipe', () => {
     it('matches resolved axis', () => {
       expect(
-        shouldCommitSwipe('horizontal', -GALLERY_SWIPE_HORIZONTAL_THRESHOLD_PX, 0),
+        shouldCommitSwipe(
+          'horizontal',
+          -GALLERY_SWIPE_HORIZONTAL_THRESHOLD_PX,
+          0,
+        ),
       ).toBe(true);
       expect(
         shouldCommitSwipe('vertical', 0, GALLERY_SWIPE_VERTICAL_THRESHOLD_PX),
       ).toBe(true);
-      expect(shouldCommitSwipe('horizontal', 0, GALLERY_SWIPE_VERTICAL_THRESHOLD_PX)).toBe(
-        false,
-      );
+      expect(
+        shouldCommitSwipe('horizontal', 0, GALLERY_SWIPE_VERTICAL_THRESHOLD_PX),
+      ).toBe(false);
     });
   });
 
   describe('clampPan', () => {
     it('returns zero pan at 1x zoom', () => {
-      expect(clampPan({ x: 100, y: 100 }, 1, { width: 400, height: 300 })).toEqual({
+      expect(
+        clampPan({ x: 100, y: 100 }, 1, { width: 400, height: 300 }),
+      ).toEqual({
         x: 0,
         y: 0,
       });
@@ -56,6 +69,142 @@ describe('gallery-viewer-gestures', () => {
         x: 200,
         y: -100,
       });
+    });
+  });
+
+  describe('clampZoom', () => {
+    it('clamps to the viewer range and rejects non-finite values', () => {
+      expect(clampZoom(1)).toBe(1);
+      expect(clampZoom(0.1)).toBe(GALLERY_VIEWER_MIN_ZOOM);
+      expect(clampZoom(8)).toBe(GALLERY_VIEWER_MAX_ZOOM);
+      expect(clampZoom(Number.NaN)).toBe(GALLERY_VIEWER_MIN_ZOOM);
+    });
+  });
+
+  describe('zoomFromPinchDistance', () => {
+    it('scales zoom by the finger-distance ratio', () => {
+      expect(
+        zoomFromPinchDistance({
+          startZoom: 1,
+          startDistance: 100,
+          distance: 200,
+        }),
+      ).toBe(2);
+    });
+
+    it('clamps when the pinch would leave the viewer range', () => {
+      expect(
+        zoomFromPinchDistance({
+          startZoom: 2,
+          startDistance: 100,
+          distance: 400,
+        }),
+      ).toBe(GALLERY_VIEWER_MAX_ZOOM);
+      expect(
+        zoomFromPinchDistance({
+          startZoom: 1,
+          startDistance: 100,
+          distance: 20,
+        }),
+      ).toBe(GALLERY_VIEWER_MIN_ZOOM);
+    });
+
+    it('keeps the start zoom when distance is unusable', () => {
+      expect(
+        zoomFromPinchDistance({
+          startZoom: 1.5,
+          startDistance: 0,
+          distance: 40,
+        }),
+      ).toBe(1.5);
+    });
+  });
+
+  describe('zoomFromWheelDelta', () => {
+    it('zooms in on negative delta and out on positive delta', () => {
+      const zoomIn = zoomFromWheelDelta({
+        zoom: 1,
+        deltaY: -100,
+        deltaMode: 0,
+      });
+      const zoomOut = zoomFromWheelDelta({
+        zoom: 1,
+        deltaY: 100,
+        deltaMode: 0,
+      });
+
+      expect(zoomIn).toBeCloseTo(
+        Math.exp(100 * GALLERY_VIEWER_WHEEL_ZOOM_SENSITIVITY),
+      );
+      expect(zoomOut).toBeCloseTo(
+        Math.exp(-100 * GALLERY_VIEWER_WHEEL_ZOOM_SENSITIVITY),
+      );
+      expect(zoomIn).toBeGreaterThan(1);
+      expect(zoomOut).toBeLessThan(1);
+    });
+
+    it('treats line and page delta modes as pixel equivalents', () => {
+      expect(
+        zoomFromWheelDelta({ zoom: 1, deltaY: -1, deltaMode: 1 }),
+      ).toBeCloseTo(zoomFromWheelDelta({ zoom: 1, deltaY: -16, deltaMode: 0 }));
+      expect(
+        zoomFromWheelDelta({ zoom: 1, deltaY: -1, deltaMode: 2 }),
+      ).toBeCloseTo(GALLERY_VIEWER_MAX_ZOOM);
+    });
+
+    it('clamps at the viewer limits', () => {
+      expect(zoomFromWheelDelta({ zoom: 3, deltaY: -500, deltaMode: 0 })).toBe(
+        GALLERY_VIEWER_MAX_ZOOM,
+      );
+      expect(zoomFromWheelDelta({ zoom: 0.5, deltaY: 500, deltaMode: 0 })).toBe(
+        GALLERY_VIEWER_MIN_ZOOM,
+      );
+    });
+  });
+
+  describe('panForZoomChange', () => {
+    it('matches panForZoomAtPoint when starting from 1x and zero pan', () => {
+      const stageSize = { width: 400, height: 400 };
+      const focal = { x: 300, y: 200 };
+
+      expect(
+        panForZoomChange({
+          focal,
+          stageSize,
+          fromZoom: 1,
+          toZoom: 2,
+          pan: { x: 0, y: 0 },
+        }),
+      ).toEqual(panForZoomAtPoint({ tap: focal, stageSize, zoom: 2 }));
+    });
+
+    it('keeps the focal point stable when zoom changes from an existing pan', () => {
+      const stageSize = { width: 400, height: 400 };
+
+      expect(
+        panForZoomChange({
+          focal: { x: 300, y: 200 },
+          stageSize,
+          fromZoom: 2,
+          toZoom: 3,
+          pan: { x: -40, y: 10 },
+        }),
+      ).toEqual({
+        x: -140,
+        y: 10,
+      });
+    });
+
+    it('returns zero pan when the next zoom is 1x or below', () => {
+      expect(
+        panForZoomChange({
+          focal: { x: 300, y: 200 },
+          stageSize: { width: 400, height: 400 },
+          fromZoom: 2,
+          toZoom: 1,
+          pan: { x: -40, y: 10 },
+        }),
+      ).toEqual({ x: 0, y: 0 });
     });
   });
 

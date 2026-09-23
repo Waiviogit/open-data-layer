@@ -2,20 +2,46 @@
  * @jest-environment jsdom
  */
 import type { ComponentProps } from 'react';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 
 import { I18nProvider } from '@/i18n/providers/i18n-provider';
 
 import type { ProjectedGalleryAlbumView } from '../../domain/object-page.types';
 import { ObjectGalleryViewer } from './object-gallery-viewer';
 
-jest.mock('@/shared/presentation', () => ({
-  ModalShell: ({ children }: { children: import('react').ReactNode }) => (
-    <div data-testid="gallery-viewer-shell">{children}</div>
-  ),
-  MODAL_Z_INDEX_GALLERY: 1000,
-  UserAvatar: () => null,
-}));
+jest.mock('@/shared/presentation', () => {
+  const React = require('react') as typeof import('react');
+
+  function DelayedModalShell({
+    children,
+  }: {
+    children: import('react').ReactNode;
+  }) {
+    const [show, setShow] = React.useState(false);
+
+    React.useEffect(() => {
+      setShow(true);
+    }, []);
+
+    if (!show) {
+      return null;
+    }
+
+    return <div data-testid="gallery-viewer-shell">{children}</div>;
+  }
+
+  return {
+    ModalShell: DelayedModalShell,
+    MODAL_Z_INDEX_GALLERY: 1000,
+    UserAvatar: () => null,
+  };
+});
 
 jest.mock('./gallery-media-item', () => ({
   GalleryMediaItem: ({ src }: { src: string }) => (
@@ -42,34 +68,51 @@ jest.mock('@/modules/notifications', () => ({
   awaitTrxConfirmation: jest.fn(),
 }));
 
-jest.mock('@/shared/infrastructure/query/revalidate-after-broadcast.server', () => ({
-  revalidateObjectAfterBroadcast: jest.fn(),
-}));
+jest.mock(
+  '@/shared/infrastructure/query/revalidate-after-broadcast.server',
+  () => ({
+    revalidateObjectAfterBroadcast: jest.fn(),
+  }),
+);
 
 jest.mock('@/shared/infrastructure/query/refresh-after-broadcast', () => ({
   refreshAfterBroadcast: jest.fn(),
 }));
 
-jest.mock('@/app/(app)/object/[object-id]/gallery/gallery-approval.actions', () => ({
-  fetchGalleryApprovalStatsAction: jest.fn().mockResolvedValue({ byUpdateId: {}, byUrl: {} }),
-}));
+jest.mock(
+  '@/app/(app)/object/[object-id]/gallery/gallery-approval.actions',
+  () => ({
+    fetchGalleryApprovalStatsAction: jest
+      .fn()
+      .mockResolvedValue({ byUpdateId: {}, byUrl: {} }),
+  }),
+);
 
 jest.mock('@opden-data-layer/hive-broadcast', () => ({
   buildGalleryItemBroadcastOp: jest.fn(),
   buildOdlUpdateVoteOp: jest.fn(),
 }));
 
-jest.mock('@/modules/object-updates/application/broadcast-odl-op-with-overflow', () => ({
-  broadcastOdlOpWithOverflow: jest.fn(),
-}));
+jest.mock(
+  '@/modules/object-updates/application/broadcast-odl-op-with-overflow',
+  () => ({
+    broadcastOdlOpWithOverflow: jest.fn(),
+  }),
+);
 
-jest.mock('@/modules/object-updates/presentation/components/add-update-modal', () => ({
-  AddUpdateModal: () => null,
-}));
+jest.mock(
+  '@/modules/object-updates/presentation/components/add-update-modal',
+  () => ({
+    AddUpdateModal: () => null,
+  }),
+);
 
-jest.mock('@/modules/object-updates/presentation/components/update-vote-controls', () => ({
-  UpdateVoteControls: () => null,
-}));
+jest.mock(
+  '@/modules/object-updates/presentation/components/update-vote-controls',
+  () => ({
+    UpdateVoteControls: () => null,
+  }),
+);
 
 jest.mock('./gallery-rank-trigger-button', () => ({
   GalleryRankTriggerButton: () => null,
@@ -87,12 +130,22 @@ const messages = {
 const album: ProjectedGalleryAlbumView = {
   name: 'Photos',
   items: [
-    { url: 'https://example.com/photo-1.jpg', rankScore: null, isAvatar: false },
-    { url: 'https://example.com/photo-2.jpg', rankScore: null, isAvatar: false },
+    {
+      url: 'https://example.com/photo-1.jpg',
+      rankScore: null,
+      isAvatar: false,
+    },
+    {
+      url: 'https://example.com/photo-2.jpg',
+      rankScore: null,
+      isAvatar: false,
+    },
   ],
 };
 
-function renderViewer(overrides: Partial<ComponentProps<typeof ObjectGalleryViewer>> = {}) {
+function renderViewer(
+  overrides: Partial<ComponentProps<typeof ObjectGalleryViewer>> = {},
+) {
   const onClose = jest.fn();
 
   render(
@@ -117,7 +170,20 @@ function renderViewer(overrides: Partial<ComponentProps<typeof ObjectGalleryView
 }
 
 function getStage(): HTMLElement {
-  return screen.getByTestId('gallery-viewer-image').parentElement!.parentElement!;
+  return screen.getByTestId('gallery-viewer-image').parentElement!
+    .parentElement!;
+}
+
+function readTransform(): string {
+  return (
+    screen.getByTestId('gallery-viewer-image').parentElement?.style.transform ??
+    ''
+  );
+}
+
+function readScale(): number {
+  const match = /scale\(([^)]+)\)/.exec(readTransform());
+  return match ? Number(match[1]) : 1;
 }
 
 function ensurePointerEventPolyfill() {
@@ -249,7 +315,9 @@ describe('ObjectGalleryViewer gestures', () => {
     const { onClose } = renderViewer();
     const stage = getStage();
 
-    swipe(stage, { x: 200, y: 100 }, { x: 200, y: 220 });
+    act(() => {
+      swipe(stage, { x: 200, y: 100 }, { x: 200, y: 220 });
+    });
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });
@@ -260,7 +328,9 @@ describe('ObjectGalleryViewer gestures', () => {
 
     fireEvent.doubleClick(stage, { clientX: 300, clientY: 200 });
 
-    const transformLayer = screen.getByTestId('gallery-viewer-image').parentElement!;
+    const transformLayer = screen.getByTestId(
+      'gallery-viewer-image',
+    ).parentElement!;
     expect(transformLayer.style.transform).toContain('scale(2)');
   });
 
@@ -269,15 +339,92 @@ describe('ObjectGalleryViewer gestures', () => {
     const stage = getStage();
 
     fireEvent.doubleClick(stage, { clientX: 200, clientY: 200 });
-    swipe(stage, { x: 200, y: 100 }, { x: 200, y: 220 });
+    act(() => {
+      swipe(stage, { x: 200, y: 100 }, { x: 200, y: 220 });
+    });
 
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('pinches out to zoom the photo', () => {
+    renderViewer();
+    const stage = getStage();
+
+    act(() => {
+      dispatchPointer(stage, 'pointerdown', {
+        clientX: 100,
+        clientY: 200,
+        pointerId: 1,
+      });
+      dispatchPointer(stage, 'pointerdown', {
+        clientX: 300,
+        clientY: 200,
+        pointerId: 2,
+      });
+      dispatchPointer(stage, 'pointermove', {
+        clientX: 50,
+        clientY: 200,
+        pointerId: 1,
+      });
+      dispatchPointer(stage, 'pointermove', {
+        clientX: 350,
+        clientY: 200,
+        pointerId: 2,
+      });
+    });
+
+    expect(readTransform()).toContain('scale(1.5)');
+    expect(screen.getByTestId('gallery-viewer-image')).toHaveAttribute(
+      'src',
+      'https://example.com/photo-1.jpg',
+    );
+  });
+
+  it('zooms in and out with the mouse wheel', () => {
+    renderViewer();
+    const stage = getStage();
+
+    act(() => {
+      stage.dispatchEvent(
+        new WheelEvent('wheel', {
+          bubbles: true,
+          cancelable: true,
+          clientX: 200,
+          clientY: 200,
+          deltaY: -100,
+          deltaMode: 0,
+        }),
+      );
+    });
+
+    expect(readScale()).toBeCloseTo(Math.exp(0.25));
+
+    act(() => {
+      stage.dispatchEvent(
+        new WheelEvent('wheel', {
+          bubbles: true,
+          cancelable: true,
+          clientX: 200,
+          clientY: 200,
+          deltaY: 100,
+          deltaMode: 0,
+        }),
+      );
+    });
+
+    expect(readScale()).toBeCloseTo(1);
   });
 
   it('does not zoom on double-click for video items', () => {
     const videoAlbum: ProjectedGalleryAlbumView = {
       name: 'Videos',
-      items: [{ url: 'https://youtube.com/watch?v=abc', rankScore: null, isAvatar: false }],
+      items: [
+        {
+          url: 'https://youtube.com/watch?v=abc',
+          rankScore: null,
+          isAvatar: false,
+        },
+      ],
     };
 
     renderViewer({ album: videoAlbum, allGalleryAlbums: [videoAlbum] });
@@ -285,7 +432,40 @@ describe('ObjectGalleryViewer gestures', () => {
 
     fireEvent.doubleClick(stage, { clientX: 200, clientY: 200 });
 
-    const transformLayer = screen.getByTestId('gallery-viewer-image').parentElement!;
+    const transformLayer = screen.getByTestId(
+      'gallery-viewer-image',
+    ).parentElement!;
     expect(transformLayer.style.transform).toBe('');
+  });
+
+  it('does not zoom video items with the mouse wheel', () => {
+    const videoAlbum: ProjectedGalleryAlbumView = {
+      name: 'Videos',
+      items: [
+        {
+          url: 'https://youtube.com/watch?v=abc',
+          rankScore: null,
+          isAvatar: false,
+        },
+      ],
+    };
+
+    renderViewer({ album: videoAlbum, allGalleryAlbums: [videoAlbum] });
+    const stage = getStage();
+
+    act(() => {
+      stage.dispatchEvent(
+        new WheelEvent('wheel', {
+          bubbles: true,
+          cancelable: true,
+          clientX: 200,
+          clientY: 200,
+          deltaY: -100,
+          deltaMode: 0,
+        }),
+      );
+    });
+
+    expect(readTransform()).toBe('');
   });
 });

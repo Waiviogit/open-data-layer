@@ -1,18 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import {
-  buildOdlUpdateVoteOp,
-} from '@opden-data-layer/hive-broadcast';
+import { buildOdlUpdateVoteOp } from '@opden-data-layer/hive-broadcast';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
 import { ChevronLeftIcon, ChevronRightIcon } from '@/icons';
@@ -28,7 +20,11 @@ import { AddUpdateModal } from '@/modules/object-updates/presentation/components
 import { UpdateVoteControls } from '@/modules/object-updates/presentation/components/update-vote-controls';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
-import { ModalShell, MODAL_Z_INDEX_GALLERY, UserAvatar } from '@/shared/presentation';
+import {
+  ModalShell,
+  MODAL_Z_INDEX_GALLERY,
+  UserAvatar,
+} from '@/shared/presentation';
 
 import type { GalleryApprovalStatsIndex } from '@/modules/object/domain/gallery-approval-stats';
 import {
@@ -42,16 +38,16 @@ import {
 } from '@/modules/object/domain/gallery-photo-update-value';
 import { fetchGalleryApprovalStatsAction } from '@/app/(app)/object/[object-id]/gallery/gallery-approval.actions';
 
-import type {
-  ProjectedGalleryAlbumView,
-} from '../../domain/object-page.types';
+import type { ProjectedGalleryAlbumView } from '../../domain/object-page.types';
+import {
+  GALLERY_VIEWER_MAX_ZOOM,
+  GALLERY_VIEWER_MIN_ZOOM,
+  GALLERY_VIEWER_ZOOM_STEP,
+  clampZoom,
+} from '../../domain/gallery-viewer-gestures';
 import { useGalleryViewerGestures } from '../hooks/use-gallery-viewer-gestures';
 import { GalleryMediaItem, isGalleryVideoUrl } from './gallery-media-item';
 import { GalleryRankTriggerButton } from './gallery-rank-trigger-button';
-
-const MIN_ZOOM = 0.5;
-const MAX_ZOOM = 3;
-const ZOOM_STEP = 0.25;
 
 const hiveAvatarUrl = (creator: string): string =>
   `https://images.hive.blog/u/${encodeURIComponent(creator)}/avatar`;
@@ -100,10 +96,12 @@ export function ObjectGalleryViewer({
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [albumDropdownOpen, setAlbumDropdownOpen] = useState(false);
   const [avatarModalOpen, setAvatarModalOpen] = useState(false);
-  const [approvalStats, setApprovalStats] = useState<GalleryApprovalStatsIndex>({
-    byUpdateId: {},
-    byUrl: {},
-  });
+  const [approvalStats, setApprovalStats] = useState<GalleryApprovalStatsIndex>(
+    {
+      byUpdateId: {},
+      byUrl: {},
+    },
+  );
   const [optimisticVotes, setOptimisticVotes] = useState<
     Record<string, 'for' | 'against' | null>
   >({});
@@ -113,9 +111,9 @@ export function ObjectGalleryViewer({
   const [addAlbumPending, setAddAlbumPending] = useState<string | null>(null);
   const [rankModalOpen, setRankModalOpen] = useState(false);
   const [addAlbumError, setAddAlbumError] = useState<string | null>(null);
-  const [optimisticAlbumAdds, setOptimisticAlbumAdds] = useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
+  const [optimisticAlbumAdds, setOptimisticAlbumAdds] = useState<
+    ReadonlySet<string>
+  >(() => new Set());
   const albumDropdownRef = useRef<HTMLDivElement>(null);
 
   const photos = album.items;
@@ -145,15 +143,16 @@ export function ObjectGalleryViewer({
     [currentPhoto, optimisticAlbumAdds],
   );
   const isCurrentPhotoAvatar = currentPhoto?.isAvatar === true;
-  const isCurrentPhotoVideo = currentPhoto ? isGalleryVideoUrl(currentPhoto.url) : false;
+  const isCurrentPhotoVideo = currentPhoto
+    ? isGalleryVideoUrl(currentPhoto.url)
+    : false;
   const canSetAvatarForPhoto = canSetAvatar && !isCurrentPhotoVideo;
 
   const currentStat = currentPhoto
     ? resolveGalleryPhotoApprovalStat(currentPhoto, approvalStats)
     : EMPTY_GALLERY_APPROVAL_STAT;
 
-  const votableUpdateId =
-    currentPhoto?.update_id ?? currentStat.updateId ?? '';
+  const votableUpdateId = currentPhoto?.update_id ?? currentStat.updateId ?? '';
   const effectiveVote = votableUpdateId
     ? (optimisticVotes[votableUpdateId] ?? currentStat.viewer_vote)
     : null;
@@ -244,25 +243,26 @@ export function ObjectGalleryViewer({
 
   const zoomIn = useCallback(() => {
     setPan({ x: 0, y: 0 });
-    setZoom((z) => Math.min(MAX_ZOOM, z + ZOOM_STEP));
+    setZoom((z) => clampZoom(z + GALLERY_VIEWER_ZOOM_STEP));
   }, []);
 
   const zoomOut = useCallback(() => {
     setPan({ x: 0, y: 0 });
-    setZoom((z) => Math.max(MIN_ZOOM, z - ZOOM_STEP));
+    setZoom((z) => clampZoom(z - GALLERY_VIEWER_ZOOM_STEP));
   }, []);
 
-  const { stageRef, transformStyle, pointerHandlers } = useGalleryViewerGestures({
-    zoom,
-    setZoom,
-    pan,
-    setPan,
-    onGoNext: goNext,
-    onGoPrev: goPrev,
-    onClose,
-    zoomGesturesEnabled: !isCurrentPhotoVideo,
-    canNavigate: count > 1,
-  });
+  const { stageRef, transformStyle, pointerHandlers } =
+    useGalleryViewerGestures({
+      zoom,
+      setZoom,
+      pan,
+      setPan,
+      onGoNext: goNext,
+      onGoPrev: goPrev,
+      onClose,
+      zoomGesturesEnabled: !isCurrentPhotoVideo,
+      canNavigate: count > 1,
+    });
 
   const onSetAsAvatar = useCallback(() => {
     setAlbumDropdownOpen(false);
@@ -286,7 +286,10 @@ export function ObjectGalleryViewer({
       setAddAlbumPending(targetAlbumName);
       setAddAlbumError(null);
       try {
-        const itemValue = galleryPhotoToGalleryItemValue(targetAlbumName, currentPhoto);
+        const itemValue = galleryPhotoToGalleryItemValue(
+          targetAlbumName,
+          currentPhoto,
+        );
         const op = buildGalleryItemBroadcastOp({
           id: odlCustomJsonId,
           objectId,
@@ -313,7 +316,9 @@ export function ObjectGalleryViewer({
         );
       } catch (err) {
         setAddAlbumError(
-          err instanceof Error ? err.message : t('object_edit_validation_error'),
+          err instanceof Error
+            ? err.message
+            : t('object_edit_validation_error'),
         );
         setAddAlbumPending(null);
       }
@@ -342,8 +347,7 @@ export function ObjectGalleryViewer({
       if (votePending || voteConfirming) {
         return;
       }
-      const updateId =
-        currentPhoto?.update_id ?? currentStat.updateId;
+      const updateId = currentPhoto?.update_id ?? currentStat.updateId;
       if (!updateId) {
         return;
       }
@@ -372,13 +376,17 @@ export function ObjectGalleryViewer({
           void refreshAfterBroadcast(router, () =>
             revalidateObjectAfterBroadcast(objectId),
           ).finally(() => {
-            void fetchGalleryApprovalStatsAction(objectId).then(setApprovalStats);
+            void fetchGalleryApprovalStatsAction(objectId).then(
+              setApprovalStats,
+            );
             setVoteConfirming(false);
           });
         });
       } catch (err) {
         setVoteError(
-          err instanceof Error ? err.message : t('object_edit_validation_error'),
+          err instanceof Error
+            ? err.message
+            : t('object_edit_validation_error'),
         );
         setVotePending(false);
       }
@@ -404,335 +412,348 @@ export function ObjectGalleryViewer({
   }
 
   const galleryHeader = isReadOnlyGallery ? (
-      <header className="gallery-chrome-border grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b px-4 py-3">
-        <div aria-hidden />
-        <span className="gallery-chrome-text tabular-nums text-body-sm font-weight-label">
-          {activeIndex + 1} / {count}
-        </span>
-        <div className="flex items-center justify-end gap-2">
-          {!isCurrentPhotoVideo ? (
-            <>
-              <button
-                type="button"
-                className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-out"
-                aria-label={t('object_gallery_zoom_out')}
-                onClick={zoomOut}
-                disabled={zoom <= MIN_ZOOM}
-              />
-              <button
-                type="button"
-                className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-in"
-                aria-label={t('object_gallery_zoom_in')}
-                onClick={zoomIn}
-                disabled={zoom >= MAX_ZOOM}
-              />
-            </>
-          ) : null}
-          <button
-            type="button"
-            className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--close"
-            aria-label={t('close')}
-            onClick={onClose}
-          />
-        </div>
-      </header>
-  ) : (
-      <header className="gallery-chrome-border grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b px-4 py-3">
-        <div className="flex min-w-0 items-center justify-start gap-2">
-          {currentStat.creator ? (
-            <>
-              <Link
-                href={`/@${encodeURIComponent(currentStat.creator)}`}
-                className="inline-flex shrink-0 rounded-circle focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                aria-label={`View profile: ${currentStat.creator}`}
-                suppressHydrationWarning
-              >
-                <UserAvatar
-                  username={currentStat.creator}
-                  avatarUrl={hiveAvatarUrl(currentStat.creator)}
-                  size={32}
-                  displayName={currentStat.creator}
-                />
-              </Link>
-              <Link
-                href={`/@${encodeURIComponent(currentStat.creator)}`}
-                className="gallery-chrome-text truncate text-body-sm font-weight-label hover:underline focus-visible:rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-                suppressHydrationWarning
-              >
-                {currentStat.creator}
-              </Link>
-            </>
-          ) : null}
-        </div>
-        <div className="flex min-w-0 flex-wrap items-center justify-center gap-4 text-body-sm">
-          <span
-            className="gallery-chrome-text max-w-[16rem] truncate font-weight-label"
-            title={displayName}
-          >
-            <span className="gallery-chrome-text-muted">{t('object_gallery_viewer_related_object')}</span>{' '}
-            {displayName}
-          </span>
-          <div ref={albumDropdownRef} className="relative">
-            {isVirtualRelatedAlbum ? (
-              <span className="gallery-chrome-text text-body-sm">
-                <span className="gallery-chrome-text-muted">{t('album')}:</span> {album.name}
-              </span>
-            ) : (
-              <>
+    <header className="gallery-chrome-border grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b px-4 py-3">
+      <div aria-hidden />
+      <span className="gallery-chrome-text tabular-nums text-body-sm font-weight-label">
+        {activeIndex + 1} / {count}
+      </span>
+      <div className="flex items-center justify-end gap-2">
+        {!isCurrentPhotoVideo ? (
+          <>
             <button
               type="button"
-              className="gallery-chrome-control inline-flex items-center gap-1 px-2 py-1"
-              aria-expanded={albumDropdownOpen}
-              aria-haspopup="listbox"
-              onClick={() => setAlbumDropdownOpen((open) => !open)}
+              className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-out"
+              aria-label={t('object_gallery_zoom_out')}
+              onClick={zoomOut}
+              disabled={zoom <= GALLERY_VIEWER_MIN_ZOOM}
+            />
+            <button
+              type="button"
+              className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-in"
+              aria-label={t('object_gallery_zoom_in')}
+              onClick={zoomIn}
+              disabled={zoom >= GALLERY_VIEWER_MAX_ZOOM}
+            />
+          </>
+        ) : null}
+        <button
+          type="button"
+          className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--close"
+          aria-label={t('close')}
+          onClick={onClose}
+        />
+      </div>
+    </header>
+  ) : (
+    <header className="gallery-chrome-border grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b px-4 py-3">
+      <div className="flex min-w-0 items-center justify-start gap-2">
+        {currentStat.creator ? (
+          <>
+            <Link
+              href={`/@${encodeURIComponent(currentStat.creator)}`}
+              className="inline-flex shrink-0 rounded-circle focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              aria-label={`View profile: ${currentStat.creator}`}
+              suppressHydrationWarning
             >
-              <span className="gallery-chrome-text-muted">{t('album')}:</span>
-              <span>{album.name}</span>
-              <span aria-hidden className="text-caption">
-                {albumDropdownOpen ? '▴' : '▾'}
-              </span>
-            </button>
-            {albumDropdownOpen ? (
-              <div
-                className="absolute left-0 top-full z-10 mt-1 min-w-[12rem] overflow-hidden rounded-btn border border-border bg-surface shadow-card-float"
-                role="listbox"
-                aria-label={t('album')}
+              <UserAvatar
+                username={currentStat.creator}
+                avatarUrl={hiveAvatarUrl(currentStat.creator)}
+                size={32}
+                displayName={currentStat.creator}
+              />
+            </Link>
+            <Link
+              href={`/@${encodeURIComponent(currentStat.creator)}`}
+              className="gallery-chrome-text truncate text-body-sm font-weight-label hover:underline focus-visible:rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              suppressHydrationWarning
+            >
+              {currentStat.creator}
+            </Link>
+          </>
+        ) : null}
+      </div>
+      <div className="flex min-w-0 flex-wrap items-center justify-center gap-4 text-body-sm">
+        <span
+          className="gallery-chrome-text max-w-[16rem] truncate font-weight-label"
+          title={displayName}
+        >
+          <span className="gallery-chrome-text-muted">
+            {t('object_gallery_viewer_related_object')}
+          </span>{' '}
+          {displayName}
+        </span>
+        <div ref={albumDropdownRef} className="relative">
+          {isVirtualRelatedAlbum ? (
+            <span className="gallery-chrome-text text-body-sm">
+              <span className="gallery-chrome-text-muted">{t('album')}:</span>{' '}
+              {album.name}
+            </span>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="gallery-chrome-control inline-flex items-center gap-1 px-2 py-1"
+                aria-expanded={albumDropdownOpen}
+                aria-haspopup="listbox"
+                onClick={() => setAlbumDropdownOpen((open) => !open)}
               >
-                <div className="border-b border-border px-3 py-2 text-body-sm font-weight-label text-fg">
-                  {t('album')}
-                </div>
-                <label className="flex cursor-default items-center gap-2 px-3 py-2 text-body-sm text-fg opacity-70">
-                  <input
-                    type="checkbox"
-                    checked
-                    disabled
-                    readOnly
-                    className="size-4 shrink-0 accent-accent"
-                    aria-label={album.name}
-                  />
-                  <span>{album.name}</span>
-                </label>
-                {otherGalleryAlbums.map((targetAlbum) => {
-                  const alreadyInAlbum = photoIsInAlbum(targetAlbum);
-                  if (alreadyInAlbum) {
+                <span className="gallery-chrome-text-muted">{t('album')}:</span>
+                <span>{album.name}</span>
+                <span aria-hidden className="text-caption">
+                  {albumDropdownOpen ? '▴' : '▾'}
+                </span>
+              </button>
+              {albumDropdownOpen ? (
+                <div
+                  className="absolute left-0 top-full z-10 mt-1 min-w-[12rem] overflow-hidden rounded-btn border border-border bg-surface shadow-card-float"
+                  role="listbox"
+                  aria-label={t('album')}
+                >
+                  <div className="border-b border-border px-3 py-2 text-body-sm font-weight-label text-fg">
+                    {t('album')}
+                  </div>
+                  <label className="flex cursor-default items-center gap-2 px-3 py-2 text-body-sm text-fg opacity-70">
+                    <input
+                      type="checkbox"
+                      checked
+                      disabled
+                      readOnly
+                      className="size-4 shrink-0 accent-accent"
+                      aria-label={album.name}
+                    />
+                    <span>{album.name}</span>
+                  </label>
+                  {otherGalleryAlbums.map((targetAlbum) => {
+                    const alreadyInAlbum = photoIsInAlbum(targetAlbum);
+                    if (alreadyInAlbum) {
+                      return (
+                        <label
+                          key={targetAlbum.name}
+                          className="flex cursor-default items-center gap-2 px-3 py-2 text-body-sm text-fg opacity-70"
+                        >
+                          <input
+                            type="checkbox"
+                            checked
+                            disabled
+                            readOnly
+                            className="size-4 shrink-0 accent-accent"
+                            aria-label={targetAlbum.name}
+                          />
+                          <span className="min-w-0 flex-1 truncate">
+                            {targetAlbum.name}
+                          </span>
+                        </label>
+                      );
+                    }
                     return (
-                      <label
-                        key={targetAlbum.name}
-                        className="flex cursor-default items-center gap-2 px-3 py-2 text-body-sm text-fg opacity-70"
-                      >
-                        <input
-                          type="checkbox"
-                          checked
-                          disabled
-                          readOnly
-                          className="size-4 shrink-0 accent-accent"
-                          aria-label={targetAlbum.name}
-                        />
-                        <span className="min-w-0 flex-1 truncate">{targetAlbum.name}</span>
-                      </label>
-                    );
-                  }
-                  return (
-                    <button
-                      key={targetAlbum.name}
-                      type="button"
-                      role="option"
-                      disabled={!canAddToAlbum || addAlbumPending !== null}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-body-sm text-fg hover:bg-ghost-surface disabled:cursor-not-allowed disabled:opacity-50"
-                      onClick={() => void onAddToAlbum(targetAlbum.name)}
-                    >
-                      <span
-                        className="inline-flex size-4 shrink-0 items-center justify-center rounded-[2px] border border-border"
-                        aria-hidden
-                      />
-                      <span className="min-w-0 flex-1 truncate">{targetAlbum.name}</span>
-                      {addAlbumPending === targetAlbum.name ? (
-                        <span className="text-caption" aria-hidden>
-                          …
-                        </span>
-                      ) : null}
-                    </button>
-                  );
-                })}
-                {canSetAvatarForPhoto ? (
-                  <>
-                    <div className="border-t border-border" role="separator" />
-                    {isCurrentPhotoAvatar ? (
-                      <label className="flex cursor-default items-center gap-2 px-3 py-2 text-body-sm text-fg opacity-70">
-                        <input
-                          type="checkbox"
-                          checked
-                          disabled
-                          readOnly
-                          className="size-4 shrink-0 accent-accent"
-                          aria-label={t('object_gallery_set_as_avatar')}
-                        />
-                        <span>{t('object_gallery_set_as_avatar')}</span>
-                      </label>
-                    ) : (
                       <button
+                        key={targetAlbum.name}
                         type="button"
-                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-body-sm text-fg hover:bg-ghost-surface"
-                        onClick={onSetAsAvatar}
+                        role="option"
+                        disabled={!canAddToAlbum || addAlbumPending !== null}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-body-sm text-fg hover:bg-ghost-surface disabled:cursor-not-allowed disabled:opacity-50"
+                        onClick={() => void onAddToAlbum(targetAlbum.name)}
                       >
                         <span
                           className="inline-flex size-4 shrink-0 items-center justify-center rounded-[2px] border border-border"
                           aria-hidden
                         />
-                        <span>{t('object_gallery_set_as_avatar')}</span>
+                        <span className="min-w-0 flex-1 truncate">
+                          {targetAlbum.name}
+                        </span>
+                        {addAlbumPending === targetAlbum.name ? (
+                          <span className="text-caption" aria-hidden>
+                            …
+                          </span>
+                        ) : null}
                       </button>
-                    )}
-                  </>
-                ) : null}
-                {addAlbumError ? (
-                  <p className="border-t border-border px-3 py-2 text-caption text-error" role="alert">
-                    {addAlbumError}
-                  </p>
-                ) : null}
-              </div>
-            ) : null}
-              </>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center justify-end gap-2">
-          {!isCurrentPhotoVideo ? (
-            <>
-              <button
-                type="button"
-                className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-out"
-                aria-label={t('object_gallery_zoom_out')}
-                onClick={zoomOut}
-                disabled={zoom <= MIN_ZOOM}
-              />
-              <button
-                type="button"
-                className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-in"
-                aria-label={t('object_gallery_zoom_in')}
-                onClick={zoomIn}
-                disabled={zoom >= MAX_ZOOM}
-              />
+                    );
+                  })}
+                  {canSetAvatarForPhoto ? (
+                    <>
+                      <div
+                        className="border-t border-border"
+                        role="separator"
+                      />
+                      {isCurrentPhotoAvatar ? (
+                        <label className="flex cursor-default items-center gap-2 px-3 py-2 text-body-sm text-fg opacity-70">
+                          <input
+                            type="checkbox"
+                            checked
+                            disabled
+                            readOnly
+                            className="size-4 shrink-0 accent-accent"
+                            aria-label={t('object_gallery_set_as_avatar')}
+                          />
+                          <span>{t('object_gallery_set_as_avatar')}</span>
+                        </label>
+                      ) : (
+                        <button
+                          type="button"
+                          className="flex w-full items-center gap-2 px-3 py-2 text-left text-body-sm text-fg hover:bg-ghost-surface"
+                          onClick={onSetAsAvatar}
+                        >
+                          <span
+                            className="inline-flex size-4 shrink-0 items-center justify-center rounded-[2px] border border-border"
+                            aria-hidden
+                          />
+                          <span>{t('object_gallery_set_as_avatar')}</span>
+                        </button>
+                      )}
+                    </>
+                  ) : null}
+                  {addAlbumError ? (
+                    <p
+                      className="border-t border-border px-3 py-2 text-caption text-error"
+                      role="alert"
+                    >
+                      {addAlbumError}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
             </>
-          ) : null}
-          <button
-            type="button"
-            className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--close"
-            aria-label={t('close')}
-            onClick={onClose}
-          />
+          )}
         </div>
-      </header>
+      </div>
+      <div className="flex items-center justify-end gap-2">
+        {!isCurrentPhotoVideo ? (
+          <>
+            <button
+              type="button"
+              className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-out"
+              aria-label={t('object_gallery_zoom_out')}
+              onClick={zoomOut}
+              disabled={zoom <= GALLERY_VIEWER_MIN_ZOOM}
+            />
+            <button
+              type="button"
+              className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--zoom-in"
+              aria-label={t('object_gallery_zoom_in')}
+              onClick={zoomIn}
+              disabled={zoom >= GALLERY_VIEWER_MAX_ZOOM}
+            />
+          </>
+        ) : null}
+        <button
+          type="button"
+          className="gallery-chrome-control gallery-chrome-icon-btn gallery-chrome-icon-btn--close"
+          aria-label={t('close')}
+          onClick={onClose}
+        />
+      </div>
+    </header>
   );
 
   const galleryMain = (
-      <div className="relative flex min-h-0 flex-1 px-2">
-        {count > 1 ? (
-          <button
-            type="button"
-            className="gallery-nav-arrow absolute left-4 z-10 hidden shrink-0 items-center justify-center p-2 md:left-6 md:inline-flex"
-            aria-label={t('object_detail_gallery_prev')}
-            onClick={goPrev}
-          >
-            <ChevronLeftIcon size={30} strokeWidth={1.5} />
-          </button>
-        ) : null}
-        <div
-          ref={stageRef}
-          className="relative min-h-0 min-w-0 flex-1 touch-none select-none overflow-hidden"
-          {...pointerHandlers}
+    <div className="relative flex min-h-0 flex-1 px-2">
+      {count > 1 ? (
+        <button
+          type="button"
+          className="gallery-nav-arrow absolute left-4 z-10 hidden shrink-0 items-center justify-center p-2 md:left-6 md:inline-flex"
+          aria-label={t('object_detail_gallery_prev')}
+          onClick={goPrev}
         >
-          <div
-            className="relative size-full"
-            style={isCurrentPhotoVideo ? undefined : transformStyle}
-          >
-            <GalleryMediaItem
-              src={currentPhoto.url}
-              sizes="100vw"
-              priority
-              variant="viewer"
-              imageClassName="object-contain"
-            />
-          </div>
+          <ChevronLeftIcon size={30} strokeWidth={1.5} />
+        </button>
+      ) : null}
+      <div
+        ref={stageRef}
+        className="relative min-h-0 min-w-0 flex-1 touch-none select-none overflow-hidden"
+        {...pointerHandlers}
+      >
+        <div
+          className="relative size-full"
+          style={isCurrentPhotoVideo ? undefined : transformStyle}
+        >
+          <GalleryMediaItem
+            src={currentPhoto.url}
+            sizes="100vw"
+            priority
+            variant="viewer"
+            imageClassName="object-contain"
+          />
         </div>
-        {count > 1 ? (
-          <button
-            type="button"
-            className="gallery-nav-arrow absolute right-4 z-10 hidden shrink-0 items-center justify-center p-2 md:right-6 md:inline-flex"
-            aria-label={t('object_detail_gallery_next')}
-            onClick={goNext}
-          >
-            <ChevronRightIcon size={30} strokeWidth={1.5} />
-          </button>
-        ) : null}
       </div>
+      {count > 1 ? (
+        <button
+          type="button"
+          className="gallery-nav-arrow absolute right-4 z-10 hidden shrink-0 items-center justify-center p-2 md:right-6 md:inline-flex"
+          aria-label={t('object_detail_gallery_next')}
+          onClick={goNext}
+        >
+          <ChevronRightIcon size={30} strokeWidth={1.5} />
+        </button>
+      ) : null}
+    </div>
   );
 
-  const galleryFooter = isReadOnlyGallery
-    ? null
-    : isVirtualRelatedAlbum ? (
-      <footer className="gallery-chrome-footer flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-3">
-        {currentPhoto?.postAuthor ? (
-          <Link
-            href={`/@${encodeURIComponent(currentPhoto.postAuthor)}`}
-            className="gallery-chrome-text text-body-sm font-weight-label hover:underline"
-            suppressHydrationWarning
-          >
-            @{currentPhoto.postAuthor}
-          </Link>
-        ) : (
-          <span className="gallery-chrome-text-muted text-body-sm">{t('related')}</span>
-        )}
-      </footer>
-  ) : (
-      <footer className="gallery-chrome-footer flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <UpdateVoteControls
-            objectId={objectId}
-            updateId={votableUpdateId}
-            approvePercent={currentStat.approvePercent}
-            decisivePrivilegedVote={currentStat.decisive_privileged_vote ?? null}
-            forCount={currentStat.forCount}
-            againstCount={currentStat.againstCount}
-            forPreviewVoters={currentStat.forPreviewVoters ?? []}
-            againstPreviewVoters={currentStat.againstPreviewVoters ?? []}
-            optimisticVote={effectiveVote}
-            voteDisabled={voteDisabled || !votableUpdateId}
-            onVote={(vote) => void onVote(vote)}
-            variant="gallery"
-            layoutClassName="flex flex-wrap gap-3"
-          />
-          {currentPhoto?.update_id && !isCurrentPhotoAvatar ? (
-            <GalleryRankTriggerButton
-              variant="gallery"
-              updateId={currentPhoto.update_id}
-              objectId={objectId}
-              rankScore={currentPhoto.rankScore}
-              viewerRank={currentPhoto.viewerRank ?? null}
-              viewerUsername={viewerUsername}
-              onRequireLogin={onRequireLogin}
-              imagePreviewUrl={currentPhoto.url}
-              onOpenChange={setRankModalOpen}
-            />
-          ) : null}
-        </div>
-        <span>
-          {t('object_updates_approval')}{' '}
-          <span
-            className={`font-weight-label ${
-              meetsApprovalThreshold
-                ? 'gallery-approval-percent--approved'
-                : 'gallery-approval-percent--rejected'
-            }`}
-          >
-            {currentStat.approvePercent.toFixed(2)}%
-          </span>
+  const galleryFooter = isReadOnlyGallery ? null : isVirtualRelatedAlbum ? (
+    <footer className="gallery-chrome-footer flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-3">
+      {currentPhoto?.postAuthor ? (
+        <Link
+          href={`/@${encodeURIComponent(currentPhoto.postAuthor)}`}
+          className="gallery-chrome-text text-body-sm font-weight-label hover:underline"
+          suppressHydrationWarning
+        >
+          @{currentPhoto.postAuthor}
+        </Link>
+      ) : (
+        <span className="gallery-chrome-text-muted text-body-sm">
+          {t('related')}
         </span>
-        {voteError ? (
-          <p className="gallery-vote-error w-full text-caption" role="alert">
-            {voteError}
-          </p>
+      )}
+    </footer>
+  ) : (
+    <footer className="gallery-chrome-footer flex shrink-0 flex-wrap items-center justify-between gap-3 px-4 py-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <UpdateVoteControls
+          objectId={objectId}
+          updateId={votableUpdateId}
+          approvePercent={currentStat.approvePercent}
+          decisivePrivilegedVote={currentStat.decisive_privileged_vote ?? null}
+          forCount={currentStat.forCount}
+          againstCount={currentStat.againstCount}
+          forPreviewVoters={currentStat.forPreviewVoters ?? []}
+          againstPreviewVoters={currentStat.againstPreviewVoters ?? []}
+          optimisticVote={effectiveVote}
+          voteDisabled={voteDisabled || !votableUpdateId}
+          onVote={(vote) => void onVote(vote)}
+          variant="gallery"
+          layoutClassName="flex flex-wrap gap-3"
+        />
+        {currentPhoto?.update_id && !isCurrentPhotoAvatar ? (
+          <GalleryRankTriggerButton
+            variant="gallery"
+            updateId={currentPhoto.update_id}
+            objectId={objectId}
+            rankScore={currentPhoto.rankScore}
+            viewerRank={currentPhoto.viewerRank ?? null}
+            viewerUsername={viewerUsername}
+            onRequireLogin={onRequireLogin}
+            imagePreviewUrl={currentPhoto.url}
+            onOpenChange={setRankModalOpen}
+          />
         ) : null}
-      </footer>
+      </div>
+      <span>
+        {t('object_updates_approval')}{' '}
+        <span
+          className={`font-weight-label ${
+            meetsApprovalThreshold
+              ? 'gallery-approval-percent--approved'
+              : 'gallery-approval-percent--rejected'
+          }`}
+        >
+          {currentStat.approvePercent.toFixed(2)}%
+        </span>
+      </span>
+      {voteError ? (
+        <p className="gallery-vote-error w-full text-caption" role="alert">
+          {voteError}
+        </p>
+      ) : null}
+    </footer>
   );
 
   return (

@@ -82,8 +82,8 @@ Zod: `projectedObjectViewSchema.galleryAlbums` in `feed-story.dto.ts`; Related r
 ### Full-screen viewer (`ObjectGalleryViewer`)
 
 - Opened from photo grid on object page layer.
-- **Mobile gestures (Photos-app style):** at 1x, swipe left/right changes photo; swipe down closes; double-tap zooms to 2x at the tap point. While zoomed, drag pans the image; double-tap resets zoom. Prev/next arrow buttons are hidden below `md`; swipe handles navigation on mobile.
-- Video URLs: the host embed iframe on open. Zoom and **Set as avatar** are hidden for video items. Swipe left/right and swipe-down-close still work outside the iframe.
+- **Mobile gestures (Photos-app style):** at 1x, swipe left/right changes photo; swipe down closes; double-tap zooms to 2x at the tap point. Pinch zooms between 0.5× and 3× around the fingers. While zoomed, drag pans the image; double-tap resets zoom. Mouse wheel and trackpad pinch zoom around the cursor over the same range. Prev/next arrow buttons are hidden below `md`; swipe handles navigation on mobile.
+- Video URLs: the host embed iframe on open. Zoom controls, pinch, and wheel are disabled, and **Set as avatar** is hidden for video items. Swipe left/right and swipe-down-close still work outside the iframe.
 - Related album: `isVirtualRelatedAlbum` — hides vote/add controls; shows post author link.
 - On-chain photos (non-avatar, with `update_id`): footer shows validity vote controls plus **Set gallery rank** button → **`GalleryRankModal`** (slider 0–10000, step **100**, default max; Confirm broadcasts `rank_vote`). Read-only **Current rank** shows decisive `rank_score` (winner semantics, not average). Guests are prompted to sign in on trigger click. While rank modal is open, gallery viewer ignores Escape. See [vote-semantics.md](../../../../../../spec/vote-semantics.md) §B.
 - **`imageGalleryItem` update cards** on the object Updates tab use the same **Set gallery rank** button + modal (including items without image preview URLs).
