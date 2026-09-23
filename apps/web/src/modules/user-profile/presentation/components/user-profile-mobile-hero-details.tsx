@@ -16,12 +16,14 @@ export type UserProfileMobileHeroDetailsProps = {
   bio: string;
   sidebar: UserAccountSidebarView;
   isLoading?: boolean;
+  onCover?: boolean;
 };
 
 export function UserProfileMobileHeroDetails({
   bio,
   sidebar,
   isLoading = false,
+  onCover = false,
 }: UserProfileMobileHeroDetailsProps) {
   const { t } = useI18n();
   const website = sidebar.website ? formatWebsiteLabel(sidebar.website) : null;
@@ -50,12 +52,20 @@ export function UserProfileMobileHeroDetails({
   return (
     <div className="lg:hidden mt-2 w-full max-w-md text-center">
       {about ? (
-        <p className="line-clamp-2 text-body-sm text-muted">{about}</p>
+        <p
+          className={[
+            'line-clamp-2 text-body-sm',
+            onCover ? 'hero-on-photo-muted' : 'text-muted',
+          ].join(' ')}
+        >
+          {about}
+        </p>
       ) : null}
       {hasGrid ? (
         <div
           className={[
-            'grid grid-cols-2 gap-x-4 gap-y-1 text-caption text-muted',
+            'grid grid-cols-2 gap-x-4 gap-y-1 text-caption',
+            onCover ? 'hero-on-photo-muted' : 'text-muted',
             about ? 'mt-3' : '',
           ].join(' ')}
         >

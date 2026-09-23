@@ -196,6 +196,13 @@
     );
   }
 
+  /** Profile cover: clear at the top, darker under the identity row. */
+  .profile-cover-scrim {
+    background:
+      linear-gradient(to bottom, transparent 40%, var(--color-overlay) 100%),
+      linear-gradient(to bottom, transparent 55%, var(--color-overlay) 100%);
+  }
+
   /** Full-screen gallery viewer chrome on near-black scrim (theme-independent). */
   .gallery-scrim {
     /* Fully opaque — semi-transparent scrim let hero/page content bleed through letterbox areas and flicker during repaints. */

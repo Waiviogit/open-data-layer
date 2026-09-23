@@ -62,7 +62,7 @@ user-profile/[name]/layout.tsx          validate name + load profile (404 if mis
 
 | Region | Component | When hidden |
 |--------|-----------|-------------|
-| Hero | `UserProfileHeroClient` | `(profile)/layout.tsx` only — not on `(article)/post/*` |
+| Hero | `UserProfileHeroClient`. A cover fills the identity band down to the primary nav (min 240px) with a bottom scrim. | `(profile)/layout.tsx` only — not on `(article)/post/*` |
 | Primary nav | `UserMenu` in hero | See [user-menu.md](components/user-menu.md) |
 | Left rail | `@leftSidebar` → `ProfileAccountSidebar` on default routes; category nav on shop/recipe; `FavoritesTypeNav` on favorites; vertical `UserMenu` in twitter mode | Hidden below `lg` |
 | Center | Route `page.tsx` children | — |

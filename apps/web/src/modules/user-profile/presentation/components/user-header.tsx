@@ -45,7 +45,12 @@ export function UserHeader({
   const hiveReputation = sidebar?.hive.reputation;
 
   return (
-    <div className="relative -mt-12 flex flex-col items-center gap-4 pb-4 text-center lg:flex-row lg:items-end lg:text-left">
+    <div
+      className={[
+        'relative flex flex-col items-center gap-4 pb-4 text-center lg:flex-row lg:items-end lg:text-left',
+        hasCoverPhoto ? '' : '-mt-12',
+      ].join(' ')}
+    >
       {isHeroLoading ? (
         <div className="flex h-24 w-24 shrink-0 self-center items-center justify-center rounded-circle border-4 border-bg bg-bg shadow-card lg:self-start">
           <span className="h-8 w-8 animate-pulse rounded-circle bg-surface" />
@@ -101,11 +106,16 @@ export function UserHeader({
               ) : null}
             </div>
             {sidebar ? (
-              <UserProfileMobileHeroMeta sidebar={sidebar} />
+              <UserProfileMobileHeroMeta sidebar={sidebar} onCover={hasCoverPhoto} />
             ) : isHeroLoading ? (
               <UserProfileMobileHeroMeta sidebar={LOADING_SIDEBAR_PLACEHOLDER} isLoading />
             ) : null}
-            <p className="mt-2 hidden text-caption text-muted lg:block">
+            <p
+              className={[
+                'mt-2 hidden text-caption lg:block',
+                hasCoverPhoto ? 'hero-on-photo-muted' : 'text-muted',
+              ].join(' ')}
+            >
               <StatHoverTooltip content={t('stat_user_followers_tooltip')}>
                 <span>
                   {user.followerCount} {t('followers')}
@@ -143,7 +153,12 @@ export function UserHeader({
               <button
                 type="button"
                 onClick={onBellToggle}
-                className="rounded-btn border border-border bg-bg p-2 text-fg hover:bg-muted"
+                className={[
+                  'rounded-btn p-2',
+                  hasCoverPhoto
+                    ? 'hero-on-photo-btn'
+                    : 'border border-border bg-bg text-fg hover:bg-muted',
+                ].join(' ')}
                 aria-pressed={isBell}
                 title={isBell ? t('user_hero_bell_on') : t('user_hero_bell_off')}
                 aria-label={isBell ? t('user_hero_bell_on') : t('user_hero_bell_off')}
@@ -159,7 +174,12 @@ export function UserHeader({
         {!isHeroLoading && isSameUser ? (
           <button
             type="button"
-            className="rounded-btn border border-border px-4 py-2 text-body-sm font-weight-label text-fg hover:bg-surface"
+            className={[
+              'rounded-btn px-4 py-2 text-body-sm font-weight-label',
+              hasCoverPhoto
+                ? 'hero-on-photo-btn'
+                : 'border border-border text-fg hover:bg-surface',
+            ].join(' ')}
           >
             {t('edit_profile')}
           </button>
@@ -167,7 +187,11 @@ export function UserHeader({
       </div>
 
       {sidebar ? (
-        <UserProfileMobileHeroDetails bio={user.bio} sidebar={sidebar} />
+        <UserProfileMobileHeroDetails
+          bio={user.bio}
+          sidebar={sidebar}
+          onCover={hasCoverPhoto}
+        />
       ) : isHeroLoading ? (
         <UserProfileMobileHeroDetails
           bio={user.bio}

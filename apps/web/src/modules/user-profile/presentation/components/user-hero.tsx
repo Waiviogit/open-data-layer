@@ -1,15 +1,14 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import Image from 'next/image';
 import { useMemo } from 'react';
 
-import { shouldUnoptimizeRemoteImage } from '@/shared/presentation';
 import { ShellFullBleedBand, ShellInset } from '@/shared/presentation/layout';
 import { HIDDEN_ON_DESKTOP_CLASS, shouldHideHeroOnDesktop, useShellMode } from '@/shell-mode';
 
 import type { UserHeaderProps } from './user-header';
 import { UserHeader } from './user-header';
+import { UserHeroCoverImage } from './user-hero-cover-image';
 import { UserMenuSkeleton } from './user-menu-skeleton';
 import { UserProfileNavContext } from './user-profile-nav-context';
 
@@ -39,24 +38,30 @@ export function UserHero(props: UserHeroProps) {
       <ShellFullBleedBand className="relative overflow-x-clip">
         <div
           className={[
-            'absolute inset-x-0 top-0 h-36 overflow-hidden border-b border-border',
-            hasCoverPhoto ? 'bg-surface' : 'bg-gradient-to-br from-accent/30 to-surface',
+            'overflow-hidden border-b border-border',
+            hasCoverPhoto
+              ? 'absolute inset-0 bg-surface'
+              : 'absolute inset-x-0 top-0 h-36 bg-gradient-to-br from-accent/30 to-surface',
           ].join(' ')}
           aria-hidden={!headerProps.hasCover}
         >
           {hasCoverPhoto && headerProps.coverImage ? (
-            <Image
-              src={headerProps.coverImage}
-              alt=""
-              fill
-              priority={!hiddenOnDesktop}
-              sizes="100vw"
-              className="object-cover"
-              unoptimized={shouldUnoptimizeRemoteImage(headerProps.coverImage)}
-            />
+            <>
+              <UserHeroCoverImage
+                coverImageUrl={headerProps.coverImage}
+                priority={!hiddenOnDesktop}
+              />
+              <div className="profile-cover-scrim absolute inset-0" aria-hidden />
+            </>
           ) : null}
         </div>
-        <ShellInset className="relative z-10 pt-36">
+        <ShellInset
+          className={
+            hasCoverPhoto
+              ? 'relative z-10 flex min-h-[15rem] flex-col justify-end pt-8'
+              : 'relative z-10 pt-36'
+          }
+        >
           <UserHeader {...headerProps} />
         </ShellInset>
       </ShellFullBleedBand>
