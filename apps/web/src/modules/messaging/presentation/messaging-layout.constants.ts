@@ -1,25 +1,16 @@
 const MESSAGING_VIEWPORT_HEIGHT_CLASS =
   'h-[calc(100dvh-var(--shell-header-height,3.5rem)-var(--shell-messaging-rail-chrome,20.5rem))] max-h-[calc(100dvh-var(--shell-header-height,3.5rem)-var(--shell-messaging-rail-chrome,20.5rem))]';
 
-const MESSAGING_CENTER_VIEWPORT_HEIGHT_CLASS =
-  'h-[calc(100dvh-var(--shell-header-height,3.5rem)-var(--shell-messaging-rail-chrome,20.5rem)-var(--shell-messaging-submenu-chrome,4.5rem))] max-h-[calc(100dvh-var(--shell-header-height,3.5rem)-var(--shell-messaging-rail-chrome,20.5rem)-var(--shell-messaging-submenu-chrome,4.5rem))]';
-
-/** Side rails (object pages / standalone): top-aligned with grid row. */
+/** Side rails and the profile inbox chat share one viewport height. */
 export const MESSAGING_VIEWPORT_SHELL_CLASS = [
   'flex min-h-0 flex-col overflow-hidden',
   MESSAGING_VIEWPORT_HEIGHT_CLASS,
 ].join(' ');
 
-/** Center chat column: below Posts submenu in profile/object feed column. */
-export const MESSAGING_CENTER_VIEWPORT_SHELL_CLASS = [
-  'flex min-h-0 flex-col overflow-hidden',
-  MESSAGING_CENTER_VIEWPORT_HEIGHT_CLASS,
-].join(' ');
+/** Center chat column. Inbox is not under the Posts submenu, so it matches the side rails. */
+export const MESSAGING_CENTER_VIEWPORT_SHELL_CLASS = MESSAGING_VIEWPORT_SHELL_CLASS;
 
-/**
- * Profile messages left/right rails: full grid-column height (top-aligned with center
- * column; center chat sits below submenu + feed gap inside the same total span).
- */
+/** Profile messages left/right rails: same viewport height as the center chat. */
 export const MESSAGING_PROFILE_SIDE_RAIL_SHELL_CLASS = MESSAGING_VIEWPORT_SHELL_CLASS;
 
 /** Card shell inside viewport wrapper (list rail, about rail). */

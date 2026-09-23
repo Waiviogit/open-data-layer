@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, layout, app-header]
-updated_at: 2026-06-10
+updated_at: 2026-09-23
 related:
   - docs/apps/web/spec/overview.md
   - docs/apps/web/spec/search.md
@@ -31,17 +31,23 @@ Global chrome for the `(app)` route group: brand link, predictive search, notifi
 
 ### Logged-in account menu
 
+Groups are separated by a hairline. Disabled rows are not links (`aria-disabled`, tooltip `app_header_coming_soon`).
+
 | Item | Behavior |
 |------|----------|
 | My feed | `/@:username` |
-| Earn, Tools, Wallet | Disabled — `app_header_coming_soon` tooltip |
-| Create object | `/object-create` |
-| Drafts | `/drafts` |
-| My profile | `/@:username/about` |
+| Profile | `/@:username/about` |
 | Wallet | `/@:username/transfers?type=WAIV` |
-| Permissions | `/@:username/permissions` — [permissions route](pages/user-profile/routes/permissions.md) |
-| Settings | `/settings` |
+| Messages | `/@:username/messages` — inbox, not a Posts tab |
+| Bookmarks | Disabled |
+| Drafts | `/drafts` |
+| Vault | Disabled |
+| Orders | `/business/relationships` — OBL counterparties and balances |
+| Billing | Disabled |
+| Settings | `/settings` (locale, theme, shell). Notification prefs stay at `/notifications/settings` in the tools sidebar |
 | Logout | `POST /api/auth/logout` + `router.refresh()` |
+
+Create object, Business, and Permissions are not in this menu. `/object-create` stays reachable by URL and from the editor modal. Business discover stays on the section nav. Permissions stays on the wallet submenu.
 
 Notifications UI: [notifications.md](pages/notifications/page.md). Editor entry: [editor.md](pages/editor/page.md).
 

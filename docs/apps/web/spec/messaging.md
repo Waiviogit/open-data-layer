@@ -17,12 +17,12 @@ related:
 
 | Surface | Route / tab | Data |
 |---------|-------------|------|
-| Profile inbox | `/@viewer/messages` (Posts submenu, after Threads) | Viewer DM + group channels |
+| Profile inbox | `/@viewer/messages` (logged-in account menu) | Viewer DM + group channels |
 | Object activity | `/object/:id/reviews/activity` (Reviews → Activity) | Single object channel (plain only) |
 
 Legacy `/object/:id/messages` and `/object/:id/reviews/messages` resolve to Activity.
 
-Other users' profiles hide the Messages tab. Direct URL to another user's messages redirects to the viewer's inbox.
+Messages is not a Posts submenu tab. Direct URL to another user's messages redirects to the viewer's inbox.
 
 ## Layout
 
@@ -30,7 +30,7 @@ Profile inbox uses three columns on desktop: channel list (left rail), chat (cen
 
 | Shell | Class / variant | Notes |
 |-------|-----------------|-------|
-| Center chat | `MESSAGING_CENTER_VIEWPORT_SHELL_CLASS` | Profile inbox only |
+| Center chat | `MESSAGING_CENTER_VIEWPORT_SHELL_CLASS` | Same viewport height as the side rails. Inbox is not under the Posts submenu. |
 | Left list + right About | `MessagingViewportShell` `variant="sideRail"` | Profile inbox |
 | Object activity | Plain `FeedColumn` section | Top `ObjectActivityComposeBar`; `ObjectActivityFeedList` + bottom infinite scroll |
 

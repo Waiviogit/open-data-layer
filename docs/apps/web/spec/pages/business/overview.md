@@ -41,7 +41,7 @@ PR review: reject `#…`, `rgb(`, `text-sm`/`text-lg`, `rounded-md`, or inline c
 | `/business`, `/business/offers`, `/business/requests` (discover) | Public |
 | `/offers/.../versions/:v`, `/requests/.../versions/:v` | Public read; sign requires wallet session |
 
-Header entry: avatar menu → **Business** (`/business/offers` discover) (`logged-in-header-actions.tsx`).
+Discover stays on the section nav (Feed / Discover / Market). Logged-in account menu → **Orders** opens `/business/relationships` (`logged-in-header-actions.tsx`).
 
 ## Route map
 

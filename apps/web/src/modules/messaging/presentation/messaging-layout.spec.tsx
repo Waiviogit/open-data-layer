@@ -17,7 +17,7 @@ describe('MessagingLayout', () => {
 
     const shell = container.firstElementChild;
     expect(shell?.className).toContain(MESSAGING_CENTER_VIEWPORT_SHELL_CLASS);
-    expect(shell?.className).toContain('--shell-messaging-submenu-chrome');
+    expect(shell?.className).not.toContain('--shell-messaging-submenu-chrome');
     expect(shell?.className).not.toMatch(/72vh/);
     expect(shell?.className).not.toMatch(/42rem/);
   });

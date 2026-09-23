@@ -13,7 +13,6 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import { ChevronDownIcon, PenLineIcon } from '@/icons';
 import { businessRoutes } from '@/modules/business';
 import { NotificationBell } from '@/modules/notifications';
-import { isToolsHubPath } from '@/modules/tools';
 import { clearWalletSession } from '@/modules/auth/infrastructure';
 import { UserAvatar } from '@/shared/presentation';
 
@@ -38,6 +37,83 @@ function menuNavLinkClassName(active: boolean): string {
     .join(' ');
 }
 
+const MENU_DISABLED_CLASS =
+  'block w-full cursor-not-allowed px-3 py-2 text-start text-body-sm text-fg-secondary';
+
+type OwnProfileSection = 'feed' | 'about' | 'transfers' | 'messages';
+
+function isOwnProfileSection(
+  pathname: string,
+  username: string,
+  section: OwnProfileSection,
+): boolean {
+  const prefixes = [
+    `/@${encodeURIComponent(username)}`,
+    `/@${username}`,
+    `/user-profile/${encodeURIComponent(username)}`,
+    `/user-profile/${username}`,
+  ];
+  for (const prefix of new Set(prefixes)) {
+    if (pathname !== prefix && !pathname.startsWith(`${prefix}/`)) {
+      continue;
+    }
+    const rest = pathname.slice(prefix.length).split('/').filter(Boolean);
+    if (section === 'feed') {
+      return rest.length === 0;
+    }
+    return rest[0] === section;
+  }
+  return false;
+}
+
+function isPathActive(pathname: string, path: string): boolean {
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
+
+function AccountMenuLink({
+  href,
+  active,
+  onNavigate,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  onNavigate: () => void;
+  children: string;
+}) {
+  return (
+    <Link
+      href={href}
+      role="menuitem"
+      aria-current={active ? 'page' : undefined}
+      className={menuNavLinkClassName(active)}
+      onClick={onNavigate}
+      suppressHydrationWarning
+    >
+      {children}
+    </Link>
+  );
+}
+
+function DisabledAccountMenuItem({
+  label,
+  title,
+}: {
+  label: string;
+  title: string;
+}) {
+  return (
+    <div
+      role="menuitem"
+      aria-disabled="true"
+      title={title}
+      className={MENU_DISABLED_CLASS}
+    >
+      {label}
+    </div>
+  );
+}
+
 export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
   const { t } = useI18n();
   const router = useRouter();
@@ -49,14 +125,13 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [logoutPending, setLogoutPending] = useState(false);
 
-  const feedHref = `/@${encodeURIComponent(user.username)}`;
-  const profileAboutHref = `/@${encodeURIComponent(user.username)}/about`;
-  const profileMainPath = `/user-profile/${user.username}`;
-  const profileAboutPath = `/user-profile/${user.username}/about`;
-  const walletHref = `/@${encodeURIComponent(user.username)}/transfers?type=WAIV`;
-  const walletPathPrefix = `/@${encodeURIComponent(user.username)}/transfers`;
-  const permissionsHref = `/@${encodeURIComponent(user.username)}/permissions`;
-  const permissionsPathPrefix = `/@${encodeURIComponent(user.username)}/permissions`;
+  const username = user.username;
+  const feedHref = `/@${encodeURIComponent(username)}`;
+  const profileAboutHref = `${feedHref}/about`;
+  const messagesHref = `${feedHref}/messages`;
+  const walletHref = `${feedHref}/transfers?type=WAIV`;
+  const comingSoon = t('app_header_coming_soon');
+  const closeMenu = () => setMenuOpen(false);
 
   useEffect(() => {
     if (!menuOpen) {
@@ -152,112 +227,61 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
             aria-labelledby={`${menuId}-trigger`}
             className="absolute end-0 top-full z-[60] mt-1 min-w-[12rem] rounded-card border border-border bg-surface py-1 shadow-card"
           >
-            <Link
+            <AccountMenuLink
               href={feedHref}
-              role="menuitem"
-              aria-current={pathname === profileMainPath ? 'page' : undefined}
-              className={menuNavLinkClassName(pathname === profileMainPath)}
-              onClick={() => setMenuOpen(false)}
-              suppressHydrationWarning
+              active={isOwnProfileSection(pathname, username, 'feed')}
+              onNavigate={closeMenu}
             >
               {t('my_feed')}
-            </Link>
-            <Link
-              href="/notifications/settings"
-              role="menuitem"
-              aria-current={isToolsHubPath(pathname) ? 'page' : undefined}
-              className={menuNavLinkClassName(isToolsHubPath(pathname))}
-              onClick={() => setMenuOpen(false)}
-              suppressHydrationWarning
-            >
-              {t('settings')}
-            </Link>
-            <Link
-              href="/object-create"
-              role="menuitem"
-              aria-current={pathname === '/object-create' ? 'page' : undefined}
-              className={menuNavLinkClassName(pathname === '/object-create')}
-              onClick={() => setMenuOpen(false)}
-              suppressHydrationWarning
-            >
-              {t('create_object')}
-            </Link>
-            <Link
-              href="/drafts"
-              role="menuitem"
-              aria-current={pathname === '/drafts' ? 'page' : undefined}
-              className={menuNavLinkClassName(pathname === '/drafts')}
-              onClick={() => setMenuOpen(false)}
-              suppressHydrationWarning
-            >
-              {t('drafts')}
-            </Link>
-            <Link
-              href={businessRoutes.discoverOffers}
-              role="menuitem"
-              aria-current={
-                pathname.startsWith('/business') ||
-                pathname === '/offers' ||
-                pathname.startsWith('/offers/')
-                  ? 'page'
-                  : undefined
-              }
-              className={menuNavLinkClassName(
-                pathname.startsWith('/business') ||
-                  pathname === '/offers' ||
-                  pathname.startsWith('/offers/'),
-              )}
-              onClick={() => setMenuOpen(false)}
-              suppressHydrationWarning
-            >
-              {t('business_menu')}
-            </Link>
-            <Link
+            </AccountMenuLink>
+            <AccountMenuLink
               href={profileAboutHref}
-              role="menuitem"
-              aria-current={pathname === profileAboutPath ? 'page' : undefined}
-              className={menuNavLinkClassName(pathname === profileAboutPath)}
-              onClick={() => setMenuOpen(false)}
-              suppressHydrationWarning
+              active={isOwnProfileSection(pathname, username, 'about')}
+              onNavigate={closeMenu}
             >
               {t('my_profile')}
-            </Link>
-            <Link
+            </AccountMenuLink>
+            <AccountMenuLink
               href={walletHref}
-              role="menuitem"
-              aria-current={
-                pathname === walletPathPrefix ||
-                pathname.startsWith(`${walletPathPrefix}/`)
-                  ? 'page'
-                  : undefined
-              }
-              className={menuNavLinkClassName(
-                pathname === walletPathPrefix ||
-                  pathname.startsWith(`${walletPathPrefix}/`),
-              )}
-              onClick={() => setMenuOpen(false)}
-              suppressHydrationWarning
+              active={isOwnProfileSection(pathname, username, 'transfers')}
+              onNavigate={closeMenu}
             >
               {t('wallet')}
-            </Link>
-            <Link
-              href={permissionsHref}
-              role="menuitem"
-              aria-current={
-                pathname === permissionsPathPrefix ||
-                pathname.startsWith(`${permissionsPathPrefix}/`)
-                  ? 'page'
-                  : undefined
-              }
-              className={menuNavLinkClassName(
-                pathname === permissionsPathPrefix ||
-                  pathname.startsWith(`${permissionsPathPrefix}/`),
-              )}
-              onClick={() => setMenuOpen(false)}
-              suppressHydrationWarning
+            </AccountMenuLink>
+            <div role="separator" className="my-1 border-t border-border" />
+            <AccountMenuLink
+              href={messagesHref}
+              active={isOwnProfileSection(pathname, username, 'messages')}
+              onNavigate={closeMenu}
             >
-              {t('permissions_menu')}
-            </Link>
+              {t('messages')}
+            </AccountMenuLink>
+            <DisabledAccountMenuItem label={t('bookmarks')} title={comingSoon} />
+            <AccountMenuLink
+              href="/drafts"
+              active={isPathActive(pathname, '/drafts')}
+              onNavigate={closeMenu}
+            >
+              {t('drafts')}
+            </AccountMenuLink>
+            <DisabledAccountMenuItem label={t('vault')} title={comingSoon} />
+            <div role="separator" className="my-1 border-t border-border" />
+            <AccountMenuLink
+              href={businessRoutes.relationships}
+              active={isPathActive(pathname, businessRoutes.relationships)}
+              onNavigate={closeMenu}
+            >
+              {t('orders')}
+            </AccountMenuLink>
+            <DisabledAccountMenuItem label={t('billing')} title={comingSoon} />
+            <AccountMenuLink
+              href="/settings"
+              active={isPathActive(pathname, '/settings')}
+              onNavigate={closeMenu}
+            >
+              {t('settings')}
+            </AccountMenuLink>
+            <div role="separator" className="my-1 border-t border-border" />
             <button
               type="button"
               role="menuitem"

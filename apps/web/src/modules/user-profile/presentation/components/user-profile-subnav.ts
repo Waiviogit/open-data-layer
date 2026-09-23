@@ -7,7 +7,7 @@ export type UserMenuSubmenuVariant =
   | 'expertise'
   | null;
 
-const FEED_SUBSEGMENTS = new Set(['threads', 'messages', 'comments', 'mentions', 'activity']);
+const FEED_SUBSEGMENTS = new Set(['threads', 'comments', 'mentions', 'activity']);
 
 export function isFeedSectionActive(rest: string[]): boolean {
   if (rest.length === 0) {

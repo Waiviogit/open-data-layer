@@ -130,8 +130,6 @@
   --shell-bottom-height: 3.5rem;
   /** Profile messaging: distance from viewport top to the 3-column grid row (hero + primary nav). */
   --shell-messaging-rail-chrome: 20.5rem;
-  /** Extra center-column chrome above the chat card (Posts submenu + feed gap). */
-  --shell-messaging-submenu-chrome: 4.5rem;
 
   --scrollbar-thumb: rgb(107 114 128 / 0.45);
   --scrollbar-track: transparent;

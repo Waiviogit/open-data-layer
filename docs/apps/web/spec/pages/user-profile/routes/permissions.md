@@ -40,7 +40,7 @@ Full protocol reference: [hive-account-authority.md](../../../../../../spec/hive
 
 ## Entry
 
-Wallet submenu → **Authorizations** on any profile (`/@{username}/permissions`). Logged-in account menu → **Permissions** still opens the signed-in account. Grant/revoke only when `viewer === profile`.
+Wallet submenu → **Authorizations** on any profile (`/@{username}/permissions`). Grant/revoke only when `viewer === profile`.
 
 ## Grant / revoke
 

@@ -34,7 +34,6 @@ type UserMenuProps = {
   direction?: UserMenuDirection;
   /** Horizontal: split primary (hero) vs submenu (center column). Vertical rail always shows all. */
   rows?: UserMenuRows;
-  viewerUsername?: string | null;
 };
 
 const WALLET_TYPES = ['WAIV', 'HIVE', 'ENGINE'] as const;
@@ -208,27 +207,16 @@ function FeedSubmenuNav({
   vertical,
   className,
   bleed = 'gutter',
-  viewerUsername = null,
 }: {
   base: string;
   rest: string[];
   vertical: boolean;
   className?: string;
   bleed?: HorizontalNavBleed;
-  viewerUsername?: string | null;
 }) {
   const { t } = useI18n();
   const linkClass = (segment: 'posts' | string) =>
     subNavLinkClass(getFeedSubActive(rest, segment), vertical);
-  const showMessages =
-    viewerUsername != null &&
-    viewerUsername.trim().toLowerCase() === accountNameFromBase(base).toLowerCase();
-
-  const messagesLink = showMessages ? (
-    <UserProfileNavLink href={`${base}/messages`} className={linkClass('messages')}>
-      <ProfileFeedTabLabel label={t('messages')} tab="messages" />
-    </UserProfileNavLink>
-  ) : null;
 
   if (vertical) {
     return (
@@ -242,7 +230,6 @@ function FeedSubmenuNav({
         <UserProfileNavLink href={`${base}/threads`} className={linkClass('threads')}>
           <ProfileFeedTabLabel label={t('threads')} tab="threads" />
         </UserProfileNavLink>
-        {messagesLink}
         <UserProfileNavLink href={`${base}/comments`} className={linkClass('comments')}>{t('comments')}</UserProfileNavLink>
         <UserProfileNavLink href={`${base}/mentions`} className={linkClass('mentions')}>{t('mentions')}</UserProfileNavLink>
         <UserProfileNavLink href={`${base}/activity`} className={linkClass('activity')}>{t('activity')}</UserProfileNavLink>
@@ -263,16 +250,11 @@ function FeedSubmenuNav({
       <UserProfileNavLink href={`${base}/threads`} className={linkClass('threads')}>
         <ProfileFeedTabLabel label={t('threads')} tab="threads" />
       </UserProfileNavLink>
-      {messagesLink}
       <UserProfileNavLink href={`${base}/comments`} className={linkClass('comments')}>{t('comments')}</UserProfileNavLink>
       <UserProfileNavLink href={`${base}/mentions`} className={linkClass('mentions')}>{t('mentions')}</UserProfileNavLink>
       <UserProfileNavLink href={`${base}/activity`} className={linkClass('activity')}>{t('activity')}</UserProfileNavLink>
     </HorizontalTabNavShell>
   );
-}
-
-function accountNameFromBase(base: string): string {
-  return base.startsWith('/@') ? base.slice(2) : base;
 }
 
 export function UserMenu(props: UserMenuProps) {
@@ -283,7 +265,6 @@ function UserMenuInner({
   accountName,
   direction = 'horizontal',
   rows = 'all',
-  viewerUsername = null,
 }: UserMenuProps) {
   const { t } = useI18n();
   const { resolvedMode } = useShellMode();
@@ -379,7 +360,6 @@ function UserMenuInner({
         vertical={false}
         bleed={submenuBleed}
         className={desktopMenuKeys ? HIDDEN_ON_DESKTOP_CLASS : undefined}
-        viewerUsername={viewerUsername}
       />
     ) : submenuVariant === 'wallet' ? (
       <HorizontalTabNavShell
@@ -446,7 +426,6 @@ function UserMenuInner({
             rest={rest}
             vertical
             className={desktopMenuKeys ? HIDDEN_ON_DESKTOP_CLASS : undefined}
-            viewerUsername={viewerUsername}
           />
         ) : null}
 
