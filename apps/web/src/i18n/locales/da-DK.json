@@ -1451,6 +1451,7 @@
   "messaging_select_chat": "Select a chat",
   "messaging_selected_users": "Selected users",
   "messaging_send": "Send",
+  "messaging_sending": "Sending…",
   "messaging_slots_remaining": "{count} slots left",
   "messaging_start_chat": "Start chat",
   "messaging_type_message": "Type a message...",

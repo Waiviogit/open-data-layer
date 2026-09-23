@@ -72,7 +72,7 @@ Two icon buttons in `MessagingComposeBar`:
 | Arrow | Plain send — `PlainSendDisclaimerModal` until user dismisses |
 | Lock | `EncryptedSendModal` — pick recipient, encrypt (Keychain memo or ephemeral fallback), send |
 
-Recipient selection: DM = peer; group = member dropdown. **Object activity has no encryption UI** (plain `message_create` only; indexer rejects encrypted object messages).
+Recipient selection: DM = peer; group = member dropdown. After a successful send the draft clears, the lock stays as the user set it, and the send control shows Sending until the broadcast finishes. **Object activity has no encryption UI** (plain `message_create` only; indexer rejects encrypted object messages).
 
 Decrypt in `MessagingMessageList` (profile inbox only): click encrypted bubble → Keychain `requestVerifyKey`; ephemeral outgoing bubbles are not clickable.
 

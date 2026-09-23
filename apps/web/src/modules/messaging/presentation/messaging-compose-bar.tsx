@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useIpfsContentBaseUrl } from '@/config/ipfs-content-base-provider';
 import { LexicalPostEditor } from '@/modules/editor';
@@ -62,8 +62,10 @@ export function MessagingComposeBar({
   const contentBaseUrl = useIpfsContentBaseUrl();
   const [bodyLexicalJson, setBodyLexicalJson] = useState('');
   const [internalEditorKey, setInternalEditorKey] = useState(0);
-  const editorKey = editorKeyProp ?? internalEditorKey;
+  const editorKey = `${editorKeyProp ?? 0}-${internalEditorKey}`;
   const [encryptEnabled, setEncryptEnabled] = useState(false);
+  const [submitPending, setSubmitPending] = useState(false);
+  const submitLockRef = useRef(false);
   const [plainDisclaimerOpen, setPlainDisclaimerOpen] = useState(false);
   const [encryptModalOpen, setEncryptModalOpen] = useState(false);
   const [keychainGateOpen, setKeychainGateOpen] = useState(false);
@@ -96,18 +98,47 @@ export function MessagingComposeBar({
     return encryptRecipient.trim();
   }, [channelKind, encryptRecipient, peer]);
 
-  const busy = pending || pendingEncrypted;
-  const canSend = canSendMessageBody(markdownBody) && !busy;
-  const lockDisabled = busy || probePending || disabled;
+  const sending = pending || pendingEncrypted || submitPending;
+  const canSend = canSendMessageBody(markdownBody) && !sending;
+  const lockDisabled = sending || probePending || disabled;
   const hideEncryptToggle = composeIntent?.mode === 'reply' || composeIntent?.mode === 'edit';
-  const sendAriaLabel = sendAriaLabelOverride ?? t('messaging_send');
+  const idleSendLabel = sendAriaLabelOverride ?? t('messaging_send');
+  const sendAriaLabel = sending ? t('messaging_sending') : idleSendLabel;
 
   const resetEditor = useCallback(() => {
     setBodyLexicalJson('');
-    if (editorKeyProp == null) {
-      setInternalEditorKey((key) => key + 1);
+    setInternalEditorKey((key) => key + 1);
+  }, []);
+
+  const endSubmit = useCallback(() => {
+    submitLockRef.current = false;
+    setSubmitPending(false);
+  }, []);
+
+  const beginSubmit = useCallback(() => {
+    if (submitLockRef.current || pending || pendingEncrypted) {
+      return false;
     }
-  }, [editorKeyProp]);
+    submitLockRef.current = true;
+    setSubmitPending(true);
+    return true;
+  }, [pending, pendingEncrypted]);
+
+  const runTrackedSend = useCallback(
+    async (work: () => Promise<void>) => {
+      if (!beginSubmit()) {
+        return;
+      }
+      try {
+        await work();
+      } catch {
+        // A thrown send leaves the draft and the lock as they were.
+      } finally {
+        endSubmit();
+      }
+    },
+    [beginSubmit, endSubmit],
+  );
 
   const sendPlain = useCallback(
     async (value: string) => {
@@ -119,12 +150,14 @@ export function MessagingComposeBar({
         onRequireLogin?.();
         return;
       }
-      const ok = await onSendPlain(trimmed);
-      if (ok !== false) {
-        resetEditor();
-      }
+      await runTrackedSend(async () => {
+        const ok = await onSendPlain(trimmed);
+        if (ok !== false) {
+          resetEditor();
+        }
+      });
     },
-    [disabled, onRequireLogin, onSendPlain, resetEditor],
+    [disabled, onRequireLogin, onSendPlain, resetEditor, runTrackedSend],
   );
 
   const sendEncryptedInline = useCallback(
@@ -144,13 +177,15 @@ export function MessagingComposeBar({
       const ok = await onSendEncrypted(result.input);
       if (ok !== false) {
         resetEditor();
-        setEncryptEnabled(false);
       }
     },
     [buildEncryptedMessage, onSendEncrypted, resetEditor, viewer],
   );
 
   const requestSend = useCallback(() => {
+    if (sending || submitLockRef.current) {
+      return;
+    }
     if (!canSendMessageBody(markdownBody)) {
       return;
     }
@@ -169,14 +204,14 @@ export function MessagingComposeBar({
         setEncryptModalOpen(true);
         return;
       }
-      void (async () => {
+      void runTrackedSend(async () => {
         const memoOk = await ensureMemoKeyProbed();
         if (!memoOk) {
           setEncryptModalOpen(true);
           return;
         }
         await sendEncryptedInline(markdownBody, recipient, false);
-      })();
+      });
       return;
     }
 
@@ -196,9 +231,11 @@ export function MessagingComposeBar({
     markdownBody,
     onRequireLogin,
     resolvedEncryptRecipient,
+    runTrackedSend,
     sendEncryptedInline,
     sendPlain,
     hideEncryptToggle,
+    sending,
   ]);
 
   const handleEncryptToggle = useCallback(() => {
@@ -253,6 +290,11 @@ export function MessagingComposeBar({
             onBodyChange={setBodyLexicalJson}
           />
           <div className="pointer-events-none absolute end-1.5 top-1/2 z-[65] flex -translate-y-1/2 items-center gap-0.5">
+            {sending ? (
+              <span className="pointer-events-none pe-1 text-caption text-fg-secondary">
+                {t('messaging_sending')}
+              </span>
+            ) : null}
             {!hideEncryptToggle ? (
               <button
                 type="button"
@@ -274,9 +316,7 @@ export function MessagingComposeBar({
                   'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus',
                   'disabled:cursor-not-allowed',
                   encryptEnabled
-                    ? lockDisabled
-                      ? 'text-accent/40'
-                      : 'text-accent'
+                    ? 'text-accent'
                     : 'text-fg-tertiary hover:text-fg-secondary',
                 ].join(' ')}
               >
@@ -291,6 +331,7 @@ export function MessagingComposeBar({
               type="button"
               title={sendAriaLabel}
               aria-label={sendAriaLabel}
+              aria-busy={sending}
               disabled={!canSend}
               onClick={requestSend}
               className={[
@@ -300,7 +341,14 @@ export function MessagingComposeBar({
                 'disabled:cursor-not-allowed disabled:opacity-50',
               ].join(' ')}
             >
-              <SendHorizontalIcon size={20} />
+              {sending ? (
+                <span
+                  className="inline-block size-4 animate-spin rounded-circle border-2 border-current border-t-transparent"
+                  aria-hidden
+                />
+              ) : (
+                <SendHorizontalIcon size={20} />
+              )}
             </button>
           </div>
         </div>
@@ -330,12 +378,13 @@ export function MessagingComposeBar({
         body={markdownBody}
         pending={pendingEncrypted}
         onSendEncrypted={async (input) => {
-          const ok = await onSendEncrypted(input);
-          if (ok !== false) {
-            resetEditor();
-            setEncryptEnabled(false);
-            setEncryptModalOpen(false);
-          }
+          await runTrackedSend(async () => {
+            const ok = await onSendEncrypted(input);
+            if (ok !== false) {
+              resetEditor();
+              setEncryptModalOpen(false);
+            }
+          });
         }}
       />
 
