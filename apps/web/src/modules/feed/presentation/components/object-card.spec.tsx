@@ -145,8 +145,9 @@ describe('ObjectCard navigation', () => {
 
     const ratingRows = container.querySelectorAll('[data-testid="star-rating"]');
     expect(ratingRows).toHaveLength(3);
-    expect(ratingRows[2]?.parentElement).toHaveClass('hidden');
-    expect(ratingRows[2]?.parentElement).toHaveClass('sm:flex');
+    const ratingRow = ratingRows[2]?.parentElement?.parentElement;
+    expect(ratingRow).toHaveClass('hidden');
+    expect(ratingRow).toHaveClass('sm:flex');
   });
 
   it('catalog layout keeps horizontal row with fixed thumbnail at all breakpoints', () => {

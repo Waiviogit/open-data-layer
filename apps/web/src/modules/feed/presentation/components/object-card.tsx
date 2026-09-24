@@ -107,25 +107,36 @@ function RatingsGrid({
             key={dimension}
             className={[
               'flex min-w-0 flex-row items-center gap-1.5',
+              compact ? '' : 'w-full sm:w-auto',
               mobileMaxVisible != null && index >= mobileMaxVisible ? 'hidden sm:flex' : '',
             ]
               .filter(Boolean)
               .join(' ')}
           >
-            <StarRating
-              averageRating01To5={averageRating01To5}
-              userRating01To5={userRating01To5}
-              totalVoters={totalVoters}
-              dimension={dimension}
-              updateId={update_id ?? ''}
-              valueText={update_id ? undefined : dimension}
-              objectId={objectId}
-              viewerUsername={viewerUsername}
-              onRequireLogin={onRequireLogin}
-              size="sm"
-              showNumeric={false}
-            />
-            <span className="max-w-full text-caption text-fg-secondary truncate">{dimension}</span>
+            <div className="shrink-0">
+              <StarRating
+                averageRating01To5={averageRating01To5}
+                userRating01To5={userRating01To5}
+                totalVoters={totalVoters}
+                dimension={dimension}
+                updateId={update_id ?? ''}
+                valueText={update_id ? undefined : dimension}
+                objectId={objectId}
+                viewerUsername={viewerUsername}
+                onRequireLogin={onRequireLogin}
+                size="sm"
+                showNumeric={false}
+              />
+            </div>
+            <span
+              className={
+                compact
+                  ? 'max-w-full truncate text-caption text-fg-secondary'
+                  : 'min-w-0 text-caption text-fg-secondary'
+              }
+            >
+              {dimension}
+            </span>
           </div>
         ),
       )}

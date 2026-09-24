@@ -341,6 +341,84 @@ describe('DiscoverMapPanel', () => {
     });
   });
 
+  it('does not fit marker bounds on the rail when a stored camera is set', async () => {
+    fetchDiscoverObjects.mockResolvedValue({
+      items: [
+        {
+          object_id: 'r1',
+          object_type: 'restaurant',
+          semantic_type: null,
+          weight: 10,
+          fields: { name: 'R1', geo: { latitude: 49.2, longitude: -123.1 } },
+          isFavorited: false,
+          hasSupervisedOwnership: false,
+          hasExclusiveOwnership: false,
+        },
+        {
+          object_id: 'r2',
+          object_type: 'restaurant',
+          semantic_type: null,
+          weight: 9,
+          fields: { name: 'R2', geo: { latitude: 49.3, longitude: -123.2 } },
+          isFavorited: false,
+          hasSupervisedOwnership: false,
+          hasExclusiveOwnership: false,
+        },
+      ],
+      cursor: null,
+      hasMore: false,
+    });
+
+    renderPanel({ mapView: MAP_VIEW });
+
+    await waitFor(() => {
+      expect(fetchDiscoverObjects).toHaveBeenCalled();
+    });
+    expect(screen.queryByTestId('map-fit-bounds')).not.toBeInTheDocument();
+  });
+
+  it('fits the feed map to the first markers even when a camera is stored', async () => {
+    fetchDiscoverObjects.mockResolvedValue({
+      items: [
+        {
+          object_id: 'r1',
+          object_type: 'restaurant',
+          semantic_type: null,
+          weight: 10,
+          fields: { name: 'R1', geo: { latitude: 49.2, longitude: -123.1 } },
+          isFavorited: false,
+          hasSupervisedOwnership: false,
+          hasExclusiveOwnership: false,
+        },
+        {
+          object_id: 'r2',
+          object_type: 'restaurant',
+          semantic_type: null,
+          weight: 9,
+          fields: { name: 'R2', geo: { latitude: 49.3, longitude: -123.2 } },
+          isFavorited: false,
+          hasSupervisedOwnership: false,
+          hasExclusiveOwnership: false,
+        },
+      ],
+      cursor: null,
+      hasMore: false,
+    });
+
+    renderPanel({ variant: 'feed', mapView: MAP_VIEW, box: APPLIED_BOX });
+
+    await waitFor(() => {
+      const fitBounds = screen.getByTestId('map-fit-bounds');
+      const positions = JSON.parse(fitBounds.getAttribute('data-positions') ?? '[]');
+      expect(positions).toEqual([
+        [49.2, -123.1],
+        [49.3, -123.2],
+      ]);
+    });
+    expect(latestMapProps.center).toEqual([20, 0]);
+    expect(latestMapProps.zoom).toBe(2);
+  });
+
   it('fits bounds to the top 5-10 markers when no box or mapView is provided', async () => {
     fetchDiscoverObjects.mockResolvedValue({
       items: [

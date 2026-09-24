@@ -20,6 +20,8 @@ import { OBJECT_MAP_MODAL_MIN_HEIGHT_PX } from '@/modules/object/presentation/co
 import type { SocialProjectedObjectView } from '@/modules/user-social/application/dto/user-social.dto';
 
 import {
+  DISCOVER_MAP_FEED_HEIGHT_CLASS,
+  DISCOVER_MAP_INITIAL_FOCUS_COUNT,
   DISCOVER_MAP_LOCATE_ZOOM,
   DISCOVER_MAP_MARKERS_LIMIT,
   DISCOVER_MAP_RAIL_HEIGHT_CLASS,
@@ -38,6 +40,8 @@ import type { DiscoverBox, DiscoverMapView } from '../../domain/discover-url';
 import { fetchDiscoverObjects } from '../../infrastructure/discover.client';
 
 const MAP_ZOOM_UI = { position: 'topright' as const, compact: true };
+/** Second fit after Leaflet invalidateSize timeouts (50ms, 280ms). */
+const FEED_MAP_REFIT_DELAY_MS = 320;
 const OSM_COPYRIGHT_URL = 'https://www.openstreetmap.org/copyright';
 
 const MAP_OVERLAY_BUTTON_CLASS =
@@ -95,10 +99,13 @@ export function DiscoverMapPanel({
   const [markerItems, setMarkerItems] = useState<SocialProjectedObjectView[]>([]);
   const [markersPending, startMarkersTransition] = useTransition();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [feedFitRevision, setFeedFitRevision] = useState(0);
 
+  const cameraMapView = isFeed ? null : mapView;
+  const cameraBox = isFeed ? null : box;
   const initialCamera = useMemo(
-    () => resolveDiscoverMapCamera(mapView, box),
-    [mapView, box],
+    () => resolveDiscoverMapCamera(cameraMapView, cameraBox),
+    [cameraMapView, cameraBox],
   );
   const [mapCenter, setMapCenter] = useState<MapPosition>(initialCamera.center);
   const [mapZoom, setMapZoom] = useState(initialCamera.zoom);
@@ -246,6 +253,13 @@ export function DiscoverMapPanel({
     return entries;
   }, [markerItems]);
 
+  const feedFocusKey = isFeed
+    ? markersWithGeo
+        .slice(0, DISCOVER_MAP_INITIAL_FOCUS_COUNT)
+        .map((marker) => marker.objectId)
+        .join('|')
+    : '';
+
   const fitBoundsPositions = useMemo(() => {
     if (userLocation) {
       if (previousCenterBeforeLocateRef.current) {
@@ -253,16 +267,33 @@ export function DiscoverMapPanel({
       }
       return null;
     }
+    if (isFeed) {
+      const topMarkers = markersWithGeo.slice(0, DISCOVER_MAP_INITIAL_FOCUS_COUNT);
+      const positions = topMarkers.map((marker) => marker.position);
+      return positions.length >= 2 ? positions : null;
+    }
     if (initialCamera.fitBox) {
       return discoverBoxToFitBoundsPositions(initialCamera.fitBox);
     }
     if (mapView != null || box != null) {
       return null;
     }
-    const topMarkers = markersWithGeo.slice(0, 10);
+    const topMarkers = markersWithGeo.slice(0, DISCOVER_MAP_INITIAL_FOCUS_COUNT);
     const positions = topMarkers.map((marker) => marker.position);
     return positions.length >= 2 ? positions : null;
-  }, [initialCamera.fitBox, mapView, box, markersWithGeo, userLocation]);
+  }, [isFeed, initialCamera.fitBox, mapView, box, markersWithGeo, userLocation]);
+
+  useEffect(() => {
+    if (!isFeed || feedFocusKey.length === 0) {
+      return;
+    }
+    const timeoutId = window.setTimeout(() => {
+      setFeedFitRevision((revision) => revision + 1);
+    }, FEED_MAP_REFIT_DELAY_MS);
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [isFeed, feedFocusKey]);
 
   useEffect(() => {
     if (userLocation && !previousCenterBeforeLocateRef.current) {
@@ -272,16 +303,20 @@ export function DiscoverMapPanel({
   }, [userLocation]);
 
   useEffect(() => {
-    if (!mapView && !box && !userLocation && markersWithGeo.length === 1) {
+    const focusSingleMarker =
+      markersWithGeo.length === 1 &&
+      !userLocation &&
+      (isFeed || (mapView == null && box == null));
+    if (focusSingleMarker) {
       setMapCenter(markersWithGeo[0]!.position);
       setMapZoom(DISCOVER_MAP_LOCATE_ZOOM);
     }
-  }, [mapView, box, userLocation, markersWithGeo]);
+  }, [isFeed, mapView, box, userLocation, markersWithGeo]);
 
   const mapSurfaceClassName = isFullscreen
     ? 'size-full rounded-btn border border-border'
     : isFeed
-      ? 'size-full rounded-btn border-0'
+      ? 'size-full border-0'
       : 'h-full w-full rounded-btn border border-border';
 
   const locateControl = (
@@ -321,7 +356,7 @@ export function DiscoverMapPanel({
   const mapStackClassName = isFullscreen
     ? `${MAP_EMBED_STACK_CLASS} min-h-0 flex-1`
     : isFeed
-      ? `${MAP_EMBED_STACK_CLASS} h-[calc(100dvh-15rem)] min-h-[420px]`
+      ? `${MAP_EMBED_STACK_CLASS} ${DISCOVER_MAP_FEED_HEIGHT_CLASS}`
       : `${MAP_EMBED_STACK_CLASS} ${DISCOVER_MAP_RAIL_HEIGHT_CLASS}`;
 
   const mapContent = (
@@ -344,7 +379,12 @@ export function DiscoverMapPanel({
           onViewChange={onViewChange ? handleViewChange : undefined}
         >
           {isInteractiveMap ? <MapInvalidateSizeOnMount /> : null}
-          {fitBoundsPositions ? <MapFitBounds positions={fitBoundsPositions} /> : null}
+          {fitBoundsPositions ? (
+            <MapFitBounds
+              key={isFeed ? feedFitRevision : 'fit'}
+              positions={fitBoundsPositions}
+            />
+          ) : null}
           {userLocation ? (
             <AppMarker position={userLocation} variant="user-location">
               <span className="sr-only">Your location</span>

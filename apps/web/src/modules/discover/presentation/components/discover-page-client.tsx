@@ -162,7 +162,7 @@ function DiscoverPageContent({
   }, [navigateInstant, objectType, q, tags, sort, box, effectiveMapView]);
 
   return (
-    <div className="mx-auto w-full max-w-container-page px-gutter pt-section-y-sm sm:px-gutter-sm">
+    <div className="mx-auto w-full max-w-container-page px-1 pt-section-y-sm max-lg:-mx-gutter max-lg:w-[calc(100%+2*var(--spacing-gutter))] sm:max-lg:-mx-gutter-sm sm:max-lg:w-[calc(100%+2*var(--spacing-gutter-sm))] lg:px-gutter">
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(12rem,14rem)_minmax(0,1fr)_minmax(12rem,15rem)]">
         <DiscoverSidebar usersMode={usersMode} objectType={objectType} q={q} sort={sort} />
         <div className="relative z-10 min-w-0">

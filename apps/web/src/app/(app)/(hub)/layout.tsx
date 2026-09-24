@@ -12,7 +12,7 @@ export default function HubLayout({ children }: { children: React.ReactNode }) {
           <div className="sticky top-[var(--shell-header-height)] z-30 min-w-0">
             <AppSectionNav />
           </div>
-          <div className="min-w-0 overflow-x-clip">{children}</div>
+          <div className="min-w-0 lg:overflow-x-clip">{children}</div>
         </div>
       </InstantNavigationProvider>
     </OptimisticNavProvider>
