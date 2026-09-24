@@ -29,4 +29,19 @@ describe('instant-url', () => {
     replaceInstantUrl('/discover?users=1');
     expect(replaceState).toHaveBeenCalledWith({ idx: 0 }, '', '/discover?users=1');
   });
+
+  it('pushInstantUrl does not copy a saved list offset onto the new entry', () => {
+    Object.defineProperty(window, 'history', {
+      configurable: true,
+      value: {
+        state: { __NA: true, __odlScrollY: 2200 },
+        pushState,
+        replaceState,
+      },
+    });
+
+    pushInstantUrl('/object/knife');
+
+    expect(pushState).toHaveBeenCalledWith({ __NA: true }, '', '/object/knife');
+  });
 });

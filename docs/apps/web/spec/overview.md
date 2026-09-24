@@ -6,7 +6,7 @@ type: overview
 status: active
 scope: web
 tags: [web, overview]
-updated_at: 2026-06-10
+updated_at: 2026-09-24
 related:
   - docs/apps/web/spec/architecture.md
   - docs/apps/web/spec/web-conventions.md
@@ -73,6 +73,7 @@ Do **not** duplicate page-route detail in this file — link the site map or the
 | [object-follow.md](object-follow.md) | Object detail: Follow/Unfollow + Bell → ODL `object_follow` broadcast |
 | [object-update-detail.md](object-update-detail.md) | Deep link `/object/:id/updates/:updateId` from notifications |
 | [user-follow.md](user-follow.md) | Hive follow/unfollow + ODL bell; social list actions |
+| [scroll-restoration.md](scroll-restoration.md) | History-entry scroll memory and pre-paint scroll-to-top on detail routes |
 
 ### Components
 

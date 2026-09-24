@@ -293,6 +293,19 @@ On every tab click:
 
 **References:** `OptimisticNavLink`, `useInstantNavigation`, [`activity-filters-url.ts`](src/modules/user-activity/domain/activity-filters-url.ts), profile `loading.tsx`, object content skeleton.
 
+## Scroll position on navigation
+
+Next's App Router scroll-to-top does not run in this app (Next 16 leaves `scrollRef` unset, so `layout-router` returns before it touches the window). A shorter detail page then paints at a clamped list offset. Do not paper over that with `requestAnimationFrame` / `setTimeout` `scrollTo` — that paints the wrong offset first, then jumps.
+
+| Do | Don't |
+|----|--------|
+| The outgoing page is never scrolled. **`ScrollToTopOnEnter`** (keyed by entity id) calls **`scrollToTopNow()`** in `useLayoutEffect` when that page commits, before paint. `scroll-behavior: auto` stays set until the next frame so `html { scroll-behavior: smooth }` cannot animate the jump. Same-path query changes and object tab changes do not reset. | Scroll the list to `0` on click while the next page is still loading. `window.scrollTo` from a route layout on a timer, or a module-level `popstate` flag cleared on a microtask |
+| **`ScrollMemoryListener`** (mounted once in `(app)/layout.tsx`) stamps `window.scrollY` onto the **current** history entry (`history.state.__odlScrollY`) on an internal link click, and on `navigateInstant({ method: 'push' })`. `pushInstantUrl` copies state **without** that key so the next entry does not inherit the list offset. | `history.pushState` / `replaceState` that drop or overwrite Next's `__NA` state |
+| On `popstate`, restore that offset with a bounded rAF loop (8s — long enough for the list RSC to commit) once `scrollHeight` can hold it. Abort on `wheel` / `touchstart` / `keydown`. `ScrollToTopOnEnter` no-ops while `isScrollRestorePending()`. | Assume the browser or Next will restore scroll on back |
+| Client-fetched lists that reset on mount (Discover) **cache loaded pages** and seed from that cache **only when a restore is pending**. Otherwise back lands at `y = 0` because the document is one short page. | Seed the cache on every remount — forward navigation must still refetch |
+
+Spec: [`docs/apps/web/spec/scroll-restoration.md`](../../docs/apps/web/spec/scroll-restoration.md).
+
 ## Loading UI
 
 - Add `loading.tsx` at route segments that back tab navigation (profile center column, object tab content, discover feed).

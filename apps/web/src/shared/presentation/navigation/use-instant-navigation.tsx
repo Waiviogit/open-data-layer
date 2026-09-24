@@ -11,6 +11,7 @@ import {
 
 import { pushInstantUrl, replaceInstantUrl } from './instant-url';
 import { parseNavHref, type NavTarget } from './nav-target';
+import { rememberScrollForCurrentEntry } from './scroll-memory';
 
 export type NavigateInstantOptions = {
   href: string;
@@ -39,6 +40,7 @@ function useInstantNavigationImpl(): InstantNavigationValue {
       if (method === 'replace') {
         replaceInstantUrl(href);
       } else {
+        rememberScrollForCurrentEntry();
         pushInstantUrl(href);
       }
 

@@ -10,6 +10,7 @@ import {
   BottomNav,
   LayoutProvider,
 } from '@/shared/presentation/layout';
+import { ScrollMemoryListener } from '@/shared/presentation/navigation/scroll-memory-listener';
 
 export default function AppRouteGroupLayout({
   children,
@@ -30,6 +31,7 @@ export default function AppRouteGroupLayout({
           bottomNav={<BottomNav />}
           className="pb-section-y-sm"
         >
+          <ScrollMemoryListener />
           {children}
         </AppShell>
         <ParallelModalSlot>{modal}</ParallelModalSlot>

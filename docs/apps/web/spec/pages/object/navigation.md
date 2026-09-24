@@ -11,7 +11,7 @@ related:
 type: spec
 status: active
 scope: web
-updated_at: 2026-09-23
+updated_at: 2026-09-24
 ---
 
 # Object page — navigation & transitions
@@ -200,6 +200,7 @@ flowchart LR
 ```
 
 - Tab state always re-derived from URL — no stale React state after navigation.
+- A fresh open of an object (`ScrollToTopOnEnter`, keyed by `objectId`) scrolls the window to the top in the same commit as the object layout, so a scrolled list does not carry its offset onto the object page. Browser back/forward restores the list offset from the history entry (`ScrollMemoryListener`) and does not reset. Tab changes keep the same `objectId`. See [scroll-restoration.md](../../scroll-restoration.md).
 - Nested stack: if the new `?path=` is a prefix of the current stack, it is sliced without a network call. Otherwise a batch fetch via `resolveNestedObjectPathAction` hydrates the full stack.
 
 ---

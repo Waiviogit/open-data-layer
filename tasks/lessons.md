@@ -97,6 +97,12 @@
 
 **Rule:** Narrow with `if (!kc?.method) throw`, then capture **`kc.method.bind(kc)`** — never a bare property reference. Non-optional members (`requestSignBuffer`, `requestBroadcast`) can stay as direct `kc.method(...)` calls. Cover it with a jsdom spec whose Keychain stub routes through `this` (see `keychain-memo-crypto.adapter.spec.ts`) so a detached reference fails the suite.
 
+## Web: scroll reset that runs after paint
+
+**Pattern:** `ObjectPageScrollReset` scrolled to the top from `requestAnimationFrame` and `setTimeout`, and treated a microtask-cleared `popstate` flag as "this navigation was back". The object page painted at Discover's clamped offset and then jumped. Back to Discover lost the list offset because nothing had saved it, and the flag was already false by the time the async object layout mounted. A check that only looked at the final `scrollY` reported success while the sample series was `1467 → 1395 → 0` and `backY` was `0`.
+
+**Rule:** Detail pages open at the top via synchronous `useLayoutEffect` (`ScrollToTopOnEnter` / `scrollToTopNow`). List scroll is stored on the current history entry at click time and restored only on `popstate`, after the list can rebuild its height (Discover feed cache). For a visual timing bug, assert the whole sample series (no bad frame after the URL changes) and the inverse path (back), not the final value alone.
+
 ## `libs/*/package.json`: no `type` field
 
 **Pattern:** `libs/hive-memo-crypto/package.json` carried `"type": "commonjs"` from the `@nx/js:library` generator while the source is ESM. Nest consumers never noticed (webpack and ts-jest transpile to CJS), but the moment a client component pulled the barrel in, Turbopack walked up to the nearest `package.json`, saw an explicit CJS declaration against `import`/`export` source, and failed the whole `next build`. Flipping to `"type": "module"` fixes Turbopack but silently switches `@nx/js:tsc` output from CJS to ESM ("Package type is set to module but cjs format is included") — a fix for the symptom that breaks the build format.

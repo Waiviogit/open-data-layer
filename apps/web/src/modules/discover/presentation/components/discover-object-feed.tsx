@@ -8,9 +8,15 @@ import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-
 import type { SocialProjectedObjectView } from '@/modules/user-social/application/dto/user-social.dto';
 import { FeedColumn } from '@/shared/presentation/layout';
 import { useInfiniteScroll } from '@/shared/presentation';
+import { isScrollRestorePending } from '@/shared/presentation/navigation/scroll-memory';
 
 import type { DiscoverBox } from '../../domain/discover-url';
 import { fetchDiscoverObjects } from '../../infrastructure/discover.client';
+import {
+  discoverFeedCacheKey,
+  readDiscoverFeedCache,
+  writeDiscoverFeedCache,
+} from '../../infrastructure/discover-feed-cache';
 
 const PAGE_LIMIT = 20;
 
@@ -36,10 +42,17 @@ export function DiscoverObjectFeed({
   hideType = false,
 }: DiscoverObjectFeedProps) {
   const { t } = useI18n();
-  const [items, setItems] = useState<SocialProjectedObjectView[]>([]);
-  const [cursor, setCursor] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const cacheKey = discoverFeedCacheKey({ objectType, q, tags, sort, box });
+  const [cachedOnRestore] = useState(() =>
+    isScrollRestorePending() ? readDiscoverFeedCache(cacheKey) : null,
+  );
+  const skipInitialFetch = useRef(cachedOnRestore != null);
+  const [items, setItems] = useState<SocialProjectedObjectView[]>(
+    () => cachedOnRestore?.items ?? [],
+  );
+  const [cursor, setCursor] = useState<string | null>(cachedOnRestore?.cursor ?? null);
+  const [hasMore, setHasMore] = useState(cachedOnRestore?.hasMore ?? false);
+  const [loading, setLoading] = useState(cachedOnRestore == null);
   const [pending, startTransition] = useTransition();
   const abortRef = useRef<AbortController | null>(null);
 
@@ -58,14 +71,27 @@ export function DiscoverObjectFeed({
       if (signal.aborted || !page) {
         return;
       }
-      setItems((prev) => (replace ? page.items : [...prev, ...page.items]));
+      let merged: SocialProjectedObjectView[] = page.items;
+      setItems((prev) => {
+        merged = replace ? page.items : [...prev, ...page.items];
+        return merged;
+      });
+      writeDiscoverFeedCache(cacheKey, {
+        items: merged,
+        cursor: page.cursor,
+        hasMore: page.hasMore,
+      });
       setCursor(page.cursor);
       setHasMore(page.hasMore);
     },
-    [objectType, q, tags, sort, box],
+    [cacheKey, objectType, q, tags, sort, box],
   );
 
   useEffect(() => {
+    if (skipInitialFetch.current) {
+      skipInitialFetch.current = false;
+      return;
+    }
     abortRef.current?.abort();
     const ac = new AbortController();
     abortRef.current = ac;

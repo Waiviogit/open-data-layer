@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 
-import { OptimisticNavProvider, OptimisticNavSync } from '@/shared/presentation';
+import { OptimisticNavProvider, OptimisticNavSync, ScrollToTopOnEnter } from '@/shared/presentation';
 import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
 import { getRequestUser } from '@/shared/infrastructure/auth/get-request-user.server';
 import { JsonLdScript } from '@/seo';
@@ -60,6 +60,7 @@ export default async function ObjectDetailLayout({
 
   return (
     <OptimisticNavProvider>
+      <ScrollToTopOnEnter routeKey={objectId} />
       <JsonLdScript data={model.seo?.json_ld} />
       <Suspense fallback={null}>
         <OptimisticNavSync />
