@@ -10,6 +10,9 @@ export const DISCOVER_MAP_DEFAULT_ZOOM = 2;
 
 export const DISCOVER_MAP_RAIL_HEIGHT_CLASS = 'h-48';
 
+/** Small inset so a search box fills the rail instead of the 48px map padding. */
+export const DISCOVER_MAP_RAIL_FIT_PADDING_PX = 12;
+
 /** How many leading geo listings frame the mobile map on open. */
 export const DISCOVER_MAP_INITIAL_FOCUS_COUNT = 10;
 

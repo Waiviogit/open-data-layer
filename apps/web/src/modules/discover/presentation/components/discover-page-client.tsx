@@ -58,7 +58,7 @@ function DiscoverPageContent({
     }
   }, [mapFromUrl]);
 
-  const effectiveMapView = mapFromUrl ?? lastMapView;
+  const effectiveMapView = lastMapView ?? mapFromUrl;
 
   useEffect(() => {
     setMounted(true);

@@ -74,8 +74,18 @@ jest.mock('@/modules/map', () => ({
   },
   AppMarker: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   AppPopup: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  MapFitBounds: ({ positions }: { positions: readonly unknown[] }) => (
-    <div data-testid="map-fit-bounds" data-positions={JSON.stringify(positions)} />
+  MapFitBounds: ({
+    positions,
+    paddingPx,
+  }: {
+    positions: readonly unknown[];
+    paddingPx?: number;
+  }) => (
+    <div
+      data-testid="map-fit-bounds"
+      data-positions={JSON.stringify(positions)}
+      data-padding={paddingPx ?? ''}
+    />
   ),
   MapInvalidateSizeOnMount: () => <div data-testid="map-invalidate-size" />,
   MapProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -375,6 +385,49 @@ describe('DiscoverMapPanel', () => {
       expect(fetchDiscoverObjects).toHaveBeenCalled();
     });
     expect(screen.queryByTestId('map-fit-bounds')).not.toBeInTheDocument();
+  });
+
+  it('fits the rail to the search box without replacing the camera afterwards', async () => {
+    const { rerender } = render(
+      <I18nProvider locale={'en-US' as LocaleId} messages={messages}>
+        <DiscoverMapPanel
+          objectType="restaurant"
+          q=""
+          tags={[]}
+          sort="rank"
+          box={null}
+          mapView={MAP_VIEW}
+          onApplyArea={jest.fn()}
+        />
+      </I18nProvider>,
+    );
+    expect(latestMapProps.zoom).toBe(MAP_VIEW.zoom);
+
+    rerender(
+      <I18nProvider locale={'en-US' as LocaleId} messages={messages}>
+        <DiscoverMapPanel
+          objectType="restaurant"
+          q=""
+          tags={[]}
+          sort="rank"
+          box={APPLIED_BOX}
+          mapView={MAP_VIEW}
+          onApplyArea={jest.fn()}
+        />
+      </I18nProvider>,
+    );
+
+    await waitFor(() => {
+      const fitBounds = screen.getByTestId('map-fit-bounds');
+      const positions = JSON.parse(fitBounds.getAttribute('data-positions') ?? '[]');
+      expect(positions).toEqual([
+        [APPLIED_BOX.swLat, APPLIED_BOX.swLng],
+        [APPLIED_BOX.neLat, APPLIED_BOX.neLng],
+      ]);
+    });
+    expect(screen.getByTestId('map-fit-bounds')).toHaveAttribute('data-padding', '12');
+    expect(latestMapProps.zoom).toBe(MAP_VIEW.zoom);
+    expect(latestMapProps.center).toEqual([MAP_VIEW.latitude, MAP_VIEW.longitude]);
   });
 
   it('fits the feed map to the first markers even when a camera is stored', async () => {

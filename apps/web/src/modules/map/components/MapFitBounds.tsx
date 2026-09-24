@@ -14,13 +14,18 @@ function positionsKey(positions: readonly MapPosition[]): string {
 
 export type MapFitBoundsProps = {
   positions: readonly MapPosition[];
+  /** Inset in pixels. Defaults to the shared map padding. */
+  paddingPx?: number;
 };
 
 /**
  * Re-fits the map viewport when `positions` changes (e.g. destination + user location).
  * Requires at least two positions; no-op otherwise.
  */
-export function MapFitBounds({ positions }: MapFitBoundsProps): null {
+export function MapFitBounds({
+  positions,
+  paddingPx = FIT_BOUNDS_PADDING_PX,
+}: MapFitBoundsProps): null {
   const map = useMap();
   const lastFittedKeyRef = useRef('');
 
@@ -28,7 +33,7 @@ export function MapFitBounds({ positions }: MapFitBoundsProps): null {
     if (positions.length < 2) {
       return;
     }
-    const key = positionsKey(positions);
+    const key = `${paddingPx}:${positionsKey(positions)}`;
     if (key === lastFittedKeyRef.current) {
       return;
     }
@@ -37,9 +42,9 @@ export function MapFitBounds({ positions }: MapFitBoundsProps): null {
       ([lat, lng]) => [lat, lng] as [number, number],
     );
     map.fitBounds(latLngBounds, {
-      padding: [FIT_BOUNDS_PADDING_PX, FIT_BOUNDS_PADDING_PX],
+      padding: [paddingPx, paddingPx],
     });
-  }, [map, positions]);
+  }, [map, paddingPx, positions]);
 
   return null;
 }

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import Link from 'next/link';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { GlobeIcon, LocateIcon, MaximizeIcon, MinimizeIcon } from '@/icons';
+import { LocateIcon, MaximizeIcon, MinimizeIcon } from '@/icons';
 import {
   AppMap,
   AppMarker,
@@ -24,6 +24,7 @@ import {
   DISCOVER_MAP_INITIAL_FOCUS_COUNT,
   DISCOVER_MAP_LOCATE_ZOOM,
   DISCOVER_MAP_MARKERS_LIMIT,
+  DISCOVER_MAP_RAIL_FIT_PADDING_PX,
   DISCOVER_MAP_RAIL_HEIGHT_CLASS,
   DISCOVER_MAP_VIEWPORT_DEBOUNCE_MS,
 } from '../../constants/discover-map.constants';
@@ -101,7 +102,8 @@ export function DiscoverMapPanel({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [feedFitRevision, setFeedFitRevision] = useState(0);
 
-  const cameraMapView = isFeed ? null : mapView;
+  const railFitsSearchBox = !isFeed && !isFullscreen && box != null;
+  const cameraMapView = isFeed || railFitsSearchBox ? null : mapView;
   const cameraBox = isFeed ? null : box;
   const initialCamera = useMemo(
     () => resolveDiscoverMapCamera(cameraMapView, cameraBox),
@@ -115,12 +117,17 @@ export function DiscoverMapPanel({
   const [locateError, setLocateError] = useState(false);
 
   useEffect(() => {
+    // The rail fits the search box itself. Pushing the placeholder zoom here
+    // runs setView after that fit and flies the preview to a different area.
+    if (railFitsSearchBox) {
+      return;
+    }
     setMapCenter(initialCamera.center);
     setMapZoom(initialCamera.zoom);
     setUserLocation(null);
     previousCenterBeforeLocateRef.current = null;
     setLocateError(false);
-  }, [initialCamera.center, initialCamera.zoom]);
+  }, [initialCamera.center, initialCamera.zoom, railFitsSearchBox]);
 
   useEffect(() => {
     if (box) {
@@ -317,7 +324,7 @@ export function DiscoverMapPanel({
     ? 'size-full rounded-btn border border-border'
     : isFeed
       ? 'size-full border-0'
-      : 'h-full w-full rounded-btn border border-border';
+      : 'h-full w-full border-0';
 
   const locateControl = (
     <>
@@ -345,7 +352,7 @@ export function DiscoverMapPanel({
   const searchAreaButton = (
     <button
       type="button"
-      className={`rounded-pill border border-border bg-surface px-2.5 py-0.5 text-caption font-weight-label text-fg-secondary shadow-card enabled:text-fg enabled:hover:border-accent enabled:hover:text-accent disabled:opacity-50${isInteractiveMap ? ' pointer-events-auto' : ''}`}
+      className="pointer-events-auto rounded-pill border border-border bg-surface px-2.5 py-0.5 text-caption font-weight-label text-fg-secondary shadow-card enabled:text-fg enabled:hover:border-accent enabled:hover:text-accent disabled:opacity-50"
       disabled={!canSearchArea}
       onClick={onSearchArea}
     >
@@ -383,6 +390,7 @@ export function DiscoverMapPanel({
             <MapFitBounds
               key={isFeed ? feedFitRevision : 'fit'}
               positions={fitBoundsPositions}
+              paddingPx={railFitsSearchBox ? DISCOVER_MAP_RAIL_FIT_PADDING_PX : undefined}
             />
           ) : null}
           {userLocation ? (
@@ -407,40 +415,30 @@ export function DiscoverMapPanel({
 
       {locateControl}
 
-      {isInteractiveMap ? (
-        <>
-          <div className="pointer-events-none absolute left-3 top-3 z-[1100]">{searchAreaButton}</div>
-          {isFullscreen && onMinimize ? (
-            <div className="pointer-events-none absolute bottom-3 right-3 z-[1100]">
-              <button
-                type="button"
-                aria-label="Close fullscreen map"
-                onClick={onMinimize}
-                className={MAP_OVERLAY_BUTTON_CLASS}
-              >
-                <MinimizeIcon size={18} className="text-fg-secondary" />
-              </button>
-            </div>
-          ) : null}
-          {isFeed && onExpand ? (
-            <div className="pointer-events-none absolute bottom-3 right-3 z-[1100]">
-              <button
-                type="button"
-                aria-label={t('discover_map_expand')}
-                onClick={onExpand}
-                className={MAP_OVERLAY_BUTTON_CLASS}
-              >
-                <MaximizeIcon size={18} className="text-fg-secondary" />
-              </button>
-            </div>
-          ) : null}
-        </>
+      <div className="pointer-events-none absolute left-3 top-3 z-[1100]">{searchAreaButton}</div>
+      {isFullscreen && onMinimize ? (
+        <div className="pointer-events-none absolute bottom-3 right-3 z-[1100]">
+          <button
+            type="button"
+            aria-label="Close fullscreen map"
+            onClick={onMinimize}
+            className={MAP_OVERLAY_BUTTON_CLASS}
+          >
+            <MinimizeIcon size={18} className="text-fg-secondary" />
+          </button>
+        </div>
       ) : null}
-
-      {markersPending && !isInteractiveMap ? (
-        <span className="pointer-events-none absolute left-3 top-3 rounded-btn bg-surface/90 px-2 py-1 text-body-xs text-muted shadow-card">
-          …
-        </span>
+      {!isFullscreen && onExpand ? (
+        <div className="pointer-events-none absolute bottom-3 right-3 z-[1100]">
+          <button
+            type="button"
+            aria-label={t('discover_map_expand')}
+            onClick={onExpand}
+            className={MAP_OVERLAY_BUTTON_CLASS}
+          >
+            <MaximizeIcon size={18} className="text-fg-secondary" />
+          </button>
+        </div>
       ) : null}
       {showEmptyState ? (
         <p className="pointer-events-none absolute inset-x-0 bottom-2 z-[400] px-3 text-center text-body-xs text-muted">
@@ -471,28 +469,5 @@ export function DiscoverMapPanel({
     );
   }
 
-  return (
-    <div>
-      <div className="mb-2 flex items-center justify-between gap-2 border-b border-border px-gutter py-2">
-        <div className="inline-flex min-w-0 items-center gap-1.5 text-body-sm font-weight-label text-fg">
-          <GlobeIcon size={16} className="shrink-0 text-fg-secondary" />
-          <span>{t('discover_map')}</span>
-        </div>
-        <div className="flex shrink-0 items-center gap-1.5">
-          {searchAreaButton}
-          {onExpand ? (
-            <button
-              type="button"
-              className="rounded-btn p-1 text-fg-secondary hover:bg-ghost-surface hover:text-fg"
-              aria-label={t('discover_map_expand')}
-              onClick={onExpand}
-            >
-              <MaximizeIcon size={16} />
-            </button>
-          ) : null}
-        </div>
-      </div>
-      {mapContent}
-    </div>
-  );
+  return mapContent;
 }
