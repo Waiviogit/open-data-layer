@@ -53,7 +53,7 @@ jest.mock('./update-vote-controls', () => ({
 }));
 
 jest.mock('./update-card-value', () => ({
-  UpdateCardValue: () => null,
+  UpdateCardValue: () => <p>value-block</p>,
 }));
 
 jest.mock('@/modules/object/presentation/components/gallery-rank-trigger-button', () => ({
@@ -100,6 +100,43 @@ function galleryItem(overrides: Partial<ObjectUpdateFeedItemView> = {}): ObjectU
     ...overrides,
   };
 }
+
+const YOUTUBE = 'https://www.youtube.com/watch?v=YCLDgh8WJFA';
+
+describe('UpdateCard media preview', () => {
+  it('shows a video poster for gallery item youtube urls', () => {
+    render(
+      <UpdateCard
+        item={galleryItem({
+          value_json: { album: 'Videos', url: YOUTUBE },
+          image_preview_urls: [YOUTUBE],
+        })}
+        showLocaleBadge={false}
+      />,
+    );
+
+    expect(document.querySelector('img')?.getAttribute('src')).toBe(
+      'https://img.youtube.com/vi/YCLDgh8WJFA/hqdefault.jpg',
+    );
+    expect(screen.getByRole('button', { name: 'play_video' })).toBeInTheDocument();
+    expect(document.querySelector('iframe')).toBeNull();
+    expect(screen.queryByText('value-block')).not.toBeInTheDocument();
+  });
+
+  it('keeps the text value under a media preview when both exist', () => {
+    render(
+      <UpdateCard
+        item={galleryItem({
+          value_text: 'caption',
+          image_preview_urls: [YOUTUBE],
+        })}
+        showLocaleBadge={false}
+      />,
+    );
+
+    expect(screen.getByText('value-block')).toBeInTheDocument();
+  });
+});
 
 describe('UpdateCard gallery rank', () => {
   it('shows rank button for imageGalleryItem without image previews', () => {

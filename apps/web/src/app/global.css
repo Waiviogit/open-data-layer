@@ -405,7 +405,7 @@
 
   /* Injected by sanitize-post-html for YouTube / 3Speak / Instagram URLs in body */
   .blog-post-youtube-embed {
-    @apply relative my-4 aspect-video w-full max-w-full overflow-hidden rounded-btn border border-border bg-black;
+    @apply relative my-4 aspect-video w-full max-w-full overflow-hidden border border-border bg-black;
   }
 
   .blog-post-youtube-embed iframe {
@@ -413,7 +413,7 @@
   }
 
   .blog-post-3speak-embed {
-    @apply relative my-4 aspect-video w-full max-w-full overflow-hidden rounded-btn border border-border bg-black;
+    @apply relative my-4 aspect-video w-full max-w-full overflow-hidden border border-border bg-black;
   }
 
   .blog-post-3speak-embed iframe {

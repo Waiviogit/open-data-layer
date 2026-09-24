@@ -19,6 +19,10 @@ import { awaitTrxConfirmation } from '@/modules/notifications';
 import { refreshAfterBroadcast } from '@/shared/infrastructure/query/refresh-after-broadcast';
 import { revalidateObjectAfterBroadcast } from '@/shared/infrastructure/query/revalidate-after-broadcast.server';
 import { labelForUpdateType } from '@/modules/object/domain/object-update-labels';
+import {
+  GalleryMediaItem,
+  isGalleryVideoUrl,
+} from '@/modules/object/presentation/components/gallery-media-item';
 import { ObjectThumbnail, StatHoverTooltip, UserAvatar } from '@/shared/presentation';
 
 import type { ObjectUpdateFeedItemView } from '../../application/dto/object-updates-feed.dto';
@@ -83,6 +87,9 @@ export function UpdateCard({
     String(OBJECT_UPDATES_MIN_APPROVAL_PERCENT),
   );
 
+  const hasTextOrGeo =
+    (item.value_text?.trim().length ?? 0) > 0 || item.value_geo != null;
+  const showValueBlock = item.image_preview_urls.length === 0 || hasTextOrGeo;
   const creatorProfileHref = profileHrefForUsername(item.creator);
   const privilegedVote = item.decisive_privileged_vote;
   const rawViewValue = resolveUpdateRawViewValue(item);
@@ -222,20 +229,33 @@ export function UpdateCard({
 
       {item.image_preview_urls.length > 0 ? (
         <div className="mt-3 flex flex-col gap-2">
-          {item.image_preview_urls.map((src) => (
-            <div
-              key={`${item.update_id}:${src}`}
-              className="relative aspect-[4/3] w-full max-w-container-narrow overflow-hidden rounded-btn border border-border bg-surface-alt"
-            >
-              <ObjectThumbnail
-                src={src}
-                fill
-                avatarSize="large"
-                className="object-contain"
-                sizes="(max-width: 640px) 100vw, 28rem"
-              />
-            </div>
-          ))}
+          {item.image_preview_urls.map((src) =>
+            isGalleryVideoUrl(src) ? (
+              <div
+                key={`${item.update_id}:${src}`}
+                className="relative aspect-video w-full max-w-container-narrow overflow-hidden border border-border bg-surface-alt"
+              >
+                <GalleryMediaItem
+                  src={src}
+                  sizes="(max-width: 640px) 100vw, 28rem"
+                  imageClassName="object-contain"
+                />
+              </div>
+            ) : (
+              <div
+                key={`${item.update_id}:${src}`}
+                className="relative aspect-[4/3] w-full max-w-container-narrow overflow-hidden rounded-btn border border-border bg-surface-alt"
+              >
+                <ObjectThumbnail
+                  src={src}
+                  fill
+                  avatarSize="large"
+                  className="object-contain"
+                  sizes="(max-width: 640px) 100vw, 28rem"
+                />
+              </div>
+            ),
+          )}
         </div>
       ) : null}
 
@@ -254,9 +274,11 @@ export function UpdateCard({
         </div>
       ) : null}
 
-      <div className="mt-3 border-t border-border pt-3">
-        <UpdateCardValue value_text={item.value_text} value_geo={item.value_geo} />
-      </div>
+      {showValueBlock ? (
+        <div className="mt-3 border-t border-border pt-3">
+          <UpdateCardValue value_text={item.value_text} value_geo={item.value_geo} />
+        </div>
+      ) : null}
 
       <div className="mt-3 border-t border-border pt-3">
         <UpdateApprovalStatusBlock

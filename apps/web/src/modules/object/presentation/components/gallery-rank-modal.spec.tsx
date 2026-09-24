@@ -60,6 +60,8 @@ jest.mock('@/i18n/providers/i18n-provider', () => ({
   }),
 }));
 
+const YOUTUBE = 'https://www.youtube.com/watch?v=YCLDgh8WJFA';
+
 describe('GalleryRankModal', () => {
   beforeEach(() => {
     broadcast.mockClear();
@@ -123,6 +125,26 @@ describe('GalleryRankModal', () => {
     fireEvent.click(screen.getByRole('button', { name: 'close' }));
     expect(onClose).toHaveBeenCalled();
     expect(broadcast).not.toHaveBeenCalled();
+  });
+
+  it('shows a video poster instead of an image thumbnail for youtube urls', () => {
+    render(
+      <GalleryRankModal
+        open
+        onClose={jest.fn()}
+        updateId="u1"
+        objectId="obj1"
+        rankScore={5000}
+        viewerRank={null}
+        viewerUsername="alice"
+        imagePreviewUrl={YOUTUBE}
+      />,
+    );
+
+    expect(document.querySelector('img')?.getAttribute('src')).toBe(
+      'https://img.youtube.com/vi/YCLDgh8WJFA/hqdefault.jpg',
+    );
+    expect(document.querySelector('iframe')).toBeNull();
   });
 
   it('calls onRequireLogin on Confirm when guest', () => {

@@ -26,6 +26,8 @@ import {
   ObjectThumbnail,
 } from '@/shared/presentation';
 
+import { GalleryMediaItem, isGalleryVideoUrl } from './gallery-media-item';
+
 export type GalleryRankModalProps = {
   open: boolean;
   onClose: () => void;
@@ -163,15 +165,21 @@ export function GalleryRankModal({
         </div>
 
         {imagePreviewUrl ? (
-          <div className="relative mb-4 aspect-[4/3] w-full overflow-hidden rounded-btn border border-border bg-surface-alt">
-            <ObjectThumbnail
-              src={imagePreviewUrl}
-              fill
-              avatarSize="large"
-              className="object-contain"
-              sizes="20rem"
-            />
-          </div>
+          isGalleryVideoUrl(imagePreviewUrl) ? (
+            <div className="relative mb-4 aspect-video w-full overflow-hidden border border-border bg-surface-alt">
+              <GalleryMediaItem src={imagePreviewUrl} sizes="20rem" previewOnly />
+            </div>
+          ) : (
+            <div className="relative mb-4 aspect-[4/3] w-full overflow-hidden rounded-btn border border-border bg-surface-alt">
+              <ObjectThumbnail
+                src={imagePreviewUrl}
+                fill
+                avatarSize="large"
+                className="object-contain"
+                sizes="20rem"
+              />
+            </div>
+          )
         ) : null}
 
         <p className="mb-4 text-body-sm text-fg-secondary">{currentRankLabel}</p>

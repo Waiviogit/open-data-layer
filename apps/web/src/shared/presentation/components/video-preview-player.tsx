@@ -62,9 +62,9 @@ function variantClasses(variant: VideoPreviewPlayerProps['variant']): {
     case 'feed':
     default:
       return {
-        wrapper: 'rounded-btn border border-border bg-surface-control',
+        wrapper: 'border border-border bg-surface-control',
         playingWrapper:
-          'relative aspect-video w-full overflow-hidden rounded-btn border border-border bg-black',
+          'relative aspect-video w-full overflow-hidden border border-border bg-black',
         posterImg: 'block h-auto w-full',
         minHeight: 'min-h-[180px]',
       };

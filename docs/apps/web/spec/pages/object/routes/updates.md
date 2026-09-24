@@ -8,7 +8,7 @@ related:
 type: spec
 status: active
 scope: web
-updated_at: 2026-09-22
+updated_at: 2026-09-24
 ---
 
 # Object updates feed page
@@ -32,7 +32,7 @@ updated_at: 2026-09-22
 - **Locale filter:** default option label is **“All locales”** (no `locale` query param). Dropdown options come from **`update_locales`** on object resolve (distinct locales stored on the object), not the web interface locale catalog.
 - **Object profile tab “Updates”:** the same feed is shown in the **center column**; filters use **local state** + server actions so the tab does not reset when changing sort (no `router.replace` on the profile URL). A link opens the standalone `/updates` route for bookmarkable filters.
 - **Load more:** client accumulates items; server action passes opaque `cursor`.
-- **Cards:** avatar, creator, Waivio weight, relative time, update type label, locale badge when the type is localizable (from `UPDATE_REGISTRY`), value (text / map / JSON), approval % and for/against counts. JSON (`value_json`, and `value_geo` on map cards) is shown formatted under the type label. **View JSON** stays collapsed by default only for `image`, `imageBackground`, `imageGalleryItem`, and `geo`. `imageGallery` is text and has no JSON toggle. Logged-in viewers can **Approve** (`update_vote` / `for`) or **Reject** (`against`) via Hive `custom_json` (`buildOdlUpdateVoteOp`); unauthenticated clicks open the login modal. After broadcast, `awaitTrxConfirmation` then `router.refresh()`.
+- **Cards:** avatar, creator, Waivio weight, relative time, update type label, locale badge when the type is localizable (from `UPDATE_REGISTRY`), value (text / map / JSON), approval % and for/against counts. JSON (`value_json`, and `value_geo` on map cards) is shown formatted under the type label. **View JSON** stays collapsed by default only for `image`, `imageBackground`, `imageGalleryItem`, and `geo`. `imageGallery` is text and has no JSON toggle. `image_preview_urls` render as images; YouTube / Vimeo / 3Speak / DTube URLs use the same video poster player as gallery tiles (`GalleryMediaItem`) and play inline on the card. The empty value line is omitted when a media preview is already shown. Logged-in viewers can **Approve** (`update_vote` / `for`) or **Reject** (`against`) via Hive `custom_json` (`buildOdlUpdateVoteOp`); unauthenticated clicks open the login modal. After broadcast, `awaitTrxConfirmation` then `router.refresh()`.
 - **`imageGalleryItem` cards:** **Set gallery rank** button opens `GalleryRankModal` (same flow as full-screen gallery viewer). Feed items expose `rank_score` (decisive) and `viewer_rank` when `X-Viewer` is set. See [gallery.md](./gallery.md).
 - **Vote counts:** numeric counts beside Approve/Reject are clickable. Desktop hover shows preview usernames (`for_preview_voters` / `against_preview_voters` from the feed). Click opens a combined modal with approve and reject voter lists (`GET .../updates/:updateId/voters`). No vote-percent column in the report.
 - **Update detail deep link:** `/object/:id/updates/:updateId` — single `UpdateCard` with Back to `/object/:id/updates`. See [object update detail](../../object-update-detail.md).
