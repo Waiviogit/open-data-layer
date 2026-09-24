@@ -69,6 +69,7 @@ export function WalletTransferModal({
   const hiveBroadcast = useHiveBroadcast(account);
 
   const savingsMode = state.fromSavings ? 'from' : state.toSavings ? 'to' : 'none';
+  const depositToOwnSavings = Boolean(state.toSavings);
   const assetLocked = savingsMode !== 'none' || Boolean(state.lockAsset);
   const recipientLocked = Boolean(state.lockRecipient && state.presetTo);
 
@@ -147,15 +148,16 @@ export function WalletTransferModal({
       return false;
     }
     const recipientOk =
-      asset === 'WAIV'
+      depositToOwnSavings ||
+      (asset === 'WAIV'
         ? validateEngineTokenRecipient(to) === null
-        : validateHiveWalletRecipient(to) === null;
+        : validateHiveWalletRecipient(to) === null);
     const amountOk =
       balanceConfig.validation === 'hive'
         ? validateHiveWalletAmount(amount, balanceConfig.maxAmount) === null
         : validateEngineTokenAmount(amount, balanceConfig.maxAmount) === null;
     return recipientOk && amountOk;
-  }, [amount, asset, balanceConfig, to]);
+  }, [amount, asset, balanceConfig, depositToOwnSavings, to]);
 
   const pending = engineBroadcast.pending || hiveBroadcast.pending;
   const error = engineBroadcast.error ?? hiveBroadcast.error;
@@ -168,17 +170,19 @@ export function WalletTransferModal({
       return;
     }
 
-    if (asset === 'WAIV') {
-      const recipientError = validateEngineTokenRecipient(to);
-      if (recipientError) {
-        setValidationError(t(engineTokenFormValidationMessageKey(recipientError)));
-        return;
-      }
-    } else {
-      const recipientError = validateHiveWalletRecipient(to);
-      if (recipientError) {
-        setValidationError(t(hiveWalletFormValidationMessageKey(recipientError)));
-        return;
+    if (!depositToOwnSavings) {
+      if (asset === 'WAIV') {
+        const recipientError = validateEngineTokenRecipient(to);
+        if (recipientError) {
+          setValidationError(t(engineTokenFormValidationMessageKey(recipientError)));
+          return;
+        }
+      } else {
+        const recipientError = validateHiveWalletRecipient(to);
+        if (recipientError) {
+          setValidationError(t(hiveWalletFormValidationMessageKey(recipientError)));
+          return;
+        }
       }
     }
 
@@ -205,7 +209,9 @@ export function WalletTransferModal({
     }
 
     setValidationError(null);
-    const recipient = to.trim().toLowerCase();
+    const recipient = depositToOwnSavings
+      ? account.trim().toLowerCase()
+      : to.trim().toLowerCase();
 
     if (isEngineTokenAsset(asset)) {
       const parsed = parseEngineTokenAmount(amount);
@@ -272,27 +278,29 @@ export function WalletTransferModal({
           <AppModalCloseButton onClose={onClose} />
         </div>
         <div className="space-y-4">
-          <div>
-            <WalletModalFieldLabel>{t('to')}</WalletModalFieldLabel>
-            <div className="mt-1">
-              {recipientLocked ? (
-                <div className="rounded-btn border border-border bg-surface px-3 py-2 text-body">
-                  @{state.presetTo}
-                </div>
-              ) : (
-                <UserRefSearchField
-                  value={to}
-                  onChange={(name) => {
-                    setTo(name);
-                    setValidationError(null);
-                  }}
-                  excludeAccountNames={[account]}
-                  fieldLabel={t('to')}
-                  searchPlaceholder={t('wallet_transfer_search_users')}
-                />
-              )}
+          {depositToOwnSavings ? null : (
+            <div>
+              <WalletModalFieldLabel>{t('to')}</WalletModalFieldLabel>
+              <div className="mt-1">
+                {recipientLocked ? (
+                  <div className="rounded-btn border border-border bg-surface px-3 py-2 text-body">
+                    @{state.presetTo}
+                  </div>
+                ) : (
+                  <UserRefSearchField
+                    value={to}
+                    onChange={(name) => {
+                      setTo(name);
+                      setValidationError(null);
+                    }}
+                    excludeAccountNames={[account]}
+                    fieldLabel={t('to')}
+                    searchPlaceholder={t('wallet_transfer_search_users')}
+                  />
+                )}
+              </div>
             </div>
-          </div>
+          )}
           <WalletAssetAmountField
             label={t('amount')}
             value={amount}

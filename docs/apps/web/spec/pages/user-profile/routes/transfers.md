@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, page, user-profile, wallet]
-updated_at: 2026-09-04
+updated_at: 2026-09-24
 related:
   - docs/apps/web/spec/pages/user-profile/profile-shell.md
   - docs/apps/web/spec/pages/user-profile/routes/waiv-wallet-history.md
@@ -46,7 +46,7 @@ WAIV tab (`?type=WAIV`): summary card with a tinted header (title + est. account
 
 HIVE tab (`?type=HIVE`): L1 wallet summary (tinted header with title + est. USD, then liquid HIVE, HP, delegations net, RC, savings, HBD, interest) plus **paginated wallet transaction history** below the summary. History data from `POST /query/v1/users/{name}/activity` with `filters: ["wallet"]`, page size 20, cursor pagination, infinite scroll. Data from `GET /query/v1/users/{name}/wallet/hive` for balances. Owner actions use L1 broadcast ops (transfer, vesting, savings, HP/RC delegate, claim interest). See [user-hive-wallet-endpoint.md](../../../../../query-api/spec/user-hive-wallet-endpoint.md). **Started power down** (`withdraw_vesting` start) is unsigned `text-fg` — initiating a power down does not change the balance; weekly `fill_vesting_withdraw` rows stay signed.
 
-**Owner HIVE liquid-row menu (legacy parity):** Power up (primary), Transfer, **Convert to HBD** (`collateralized_convert`, 3.5-day settlement), **Convert to SWAP.HIVE** (opens existing Engine deposit modal), **Withdraw to BTC/LTC/ETH** (Changelly via BFF + client L1 broadcast), Transfer to savings. Changelly flow: BFF `GET/POST /api/users/{name}/wallet/hive/withdraw/*` → query-api → two L1 transfers (pay-in + 0.001 HIVE tracking memo). Spec: [user-hive-changelly-withdraw.md](../../../../../query-api/spec/user-hive-changelly-withdraw.md).
+**Owner HIVE liquid-row menu (legacy parity):** Power up (primary), Transfer, **Convert to HBD** (`collateralized_convert`, 3.5-day settlement), **Convert to SWAP.HIVE** (opens existing Engine deposit modal), **Withdraw to BTC/LTC/ETH** (Changelly via BFF + client L1 broadcast), Transfer to savings. Deposit to savings (HIVE and HBD) has no recipient field; `transfer_to_savings.to` is the profile account. Changelly flow: BFF `GET/POST /api/users/{name}/wallet/hive/withdraw/*` → query-api → two L1 transfers (pay-in + 0.001 HIVE tracking memo). Spec: [user-hive-changelly-withdraw.md](../../../../../query-api/spec/user-hive-changelly-withdraw.md).
 
 Wallet transaction history is rendered only on this transfers page (not on `HiveWalletTab` export or the activity tab). Legacy-parity card UI lives in `user-wallet/.../hive/history/`.
 
