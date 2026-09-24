@@ -278,13 +278,13 @@ export function MessageRow({
                 <span>{t('messaging_reply_deleted')}</span>
               ) : quoteImageDisplayUrl ? (
                 <div className="flex items-start gap-2">
-                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-btn bg-surface-control">
+                  <div className="relative h-12 w-20 shrink-0 overflow-hidden rounded-card bg-surface-control">
                     <Image
                       src={quoteImageDisplayUrl}
                       alt=""
                       fill
-                      sizes="48px"
-                      className="object-cover"
+                      sizes="80px"
+                      className="object-contain"
                       unoptimized={shouldUnoptimizeRemoteImage(quoteImageDisplayUrl)}
                     />
                   </div>
