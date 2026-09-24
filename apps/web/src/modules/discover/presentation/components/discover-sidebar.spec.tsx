@@ -116,4 +116,19 @@ describe('DiscoverSidebar', () => {
     expect(within(sectionByHeading('All types')).queryByRole('link', { name: 'Product' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Show more/ })).toBeInTheDocument();
   });
+
+  it('scrolls inside the viewport and shows 15 All types before Show more', () => {
+    renderSidebar();
+
+    const aside = screen.getByRole('complementary');
+    expect(aside.className).toContain('lg:overflow-y-auto');
+    expect(aside.className).toContain('scrollbar-hide');
+    expect(aside.className).toContain(
+      'lg:max-h-[calc(100dvh-var(--app-header-height,4rem)-2rem)]',
+    );
+    const allTypes = sectionByHeading('All types');
+    expect(within(allTypes).getAllByRole('link')).toHaveLength(15);
+    expect(within(allTypes).getByRole('link', { name: 'Page' })).toBeInTheDocument();
+    expect(within(allTypes).queryByRole('link', { name: 'Person' })).not.toBeInTheDocument();
+  });
 });

@@ -19,7 +19,7 @@ import {
 } from '../../domain/discover-type-icons';
 import { writeDiscoverObjectTypeCookie } from '../../domain/discover-type-cookie';
 
-const TYPES_INITIAL = 10;
+const TYPES_INITIAL = 15;
 
 export type DiscoverSidebarProps = {
   usersMode: boolean;
@@ -108,7 +108,7 @@ export function DiscoverSidebar(_props: DiscoverSidebarProps) {
   const showNoResults = hasSearch && !showPopular && !showAllTypesSection;
 
   return (
-    <aside className="hidden min-w-0 self-start space-y-6 lg:sticky lg:top-[calc(var(--app-header-height,4rem)+1rem)] lg:block">
+    <aside className="scrollbar-hide hidden min-w-0 self-start space-y-6 lg:sticky lg:top-[calc(var(--app-header-height,4rem)+1rem)] lg:block lg:max-h-[calc(100dvh-var(--app-header-height,4rem)-2rem)] lg:overflow-y-auto lg:overflow-x-hidden">
       <div className="relative flex items-center gap-2 rounded-btn border border-border bg-surface-control px-2 py-1.5">
         <SearchIcon size={16} className="shrink-0 text-fg-secondary" />
         <input

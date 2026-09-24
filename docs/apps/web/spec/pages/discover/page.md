@@ -64,10 +64,10 @@ Cookie `discover_object_type` stores the last picked registry object type (clien
 
 Left column, top to bottom:
 
-1. **Find object type** — filters Popular and All types by label. While searching, the 10-item All types cap is skipped and empty type sections hide. Users stays visible. No matches show `discover_no_results`.
+1. **Find object type** — filters Popular and All types by label. While searching, the 15-item All types cap is skipped and empty type sections hide. Users stays visible. No matches show `discover_no_results`.
 2. **Popular** — `product`, `business`, `restaurant`, `person`, `book`.
 3. **Users** — All users (above the full type list).
-4. **All types** — alphabetical registry list, first 10, then Show more. A type can appear in both Popular and All types; the active row is accent in both when both are visible. Selecting a Popular type does not expand All types. Selecting a type that exists only in the hidden tail does expand All types.
+4. **All types** — alphabetical registry list, first 15, then Show more. The column scrolls inside the viewport (`max-h` + `overflow-y-auto`, scrollbar hidden) so the expanded list is reachable without scrolling the feed to its end. A type can appear in both Popular and All types; the active row is accent in both when both are visible. Selecting a Popular type does not expand All types. Selecting a type that exists only in the hidden tail does expand All types.
 
 Each type row and the Users row show a 14px glyph from `@/icons`. The active row uses `bg-accent-soft` (`--color-accent-soft`, 10% accent) with `text-accent`. `bg-accent/10` does not paint because `--color-accent` is a hex CSS variable.
 
