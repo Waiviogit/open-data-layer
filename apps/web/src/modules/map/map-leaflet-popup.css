@@ -10,6 +10,15 @@
   line-height: inherit;
 }
 
+/* Leaflet paints every anchor inside the map blue. Object names stay the heading color. */
+.map-object-popup.leaflet-popup .leaflet-popup-content a {
+  color: var(--color-heading);
+}
+
+.map-object-popup.leaflet-popup .leaflet-popup-content a:hover {
+  color: var(--color-heading);
+}
+
 .map-object-popup.leaflet-popup .leaflet-popup-close-button {
   color: var(--color-fg-secondary);
   font-size: 1.25rem;
@@ -18,4 +27,11 @@
 
 .map-object-popup.leaflet-popup .leaflet-popup-close-button:hover {
   color: var(--color-fg);
+}
+
+.map-object-popup-compact.leaflet-popup .leaflet-popup-close-button {
+  font-size: 0.875rem;
+  padding: 0.05rem 0.2rem;
+  width: 1rem;
+  height: 1rem;
 }

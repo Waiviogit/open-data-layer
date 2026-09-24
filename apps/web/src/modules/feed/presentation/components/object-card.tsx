@@ -24,6 +24,7 @@ import { objectPagePath } from '@/shared/routes/object-page-path';
 
 const THUMB_SIZE = 120;
 const MAP_SIDEBAR_THUMB_SIZE = 88;
+const POPUP_NAME_ONLY_THUMB_SIZE = 40;
 
 function CardNavTarget({
   href,
@@ -80,6 +81,7 @@ function RatingsGrid({
   onRequireLogin,
   compact = false,
   mobileMaxVisible,
+  readOnly = false,
 }: {
   dims: CardRatingDimension[];
   objectId: string;
@@ -89,6 +91,8 @@ function RatingsGrid({
   compact?: boolean;
   /** Hide rating rows beyond this count below the `sm` breakpoint. */
   mobileMaxVisible?: number;
+  /** Map bubble: show the score, do not start a vote. */
+  readOnly?: boolean;
 }) {
   if (dims.length === 0) {
     return null;
@@ -126,11 +130,12 @@ function RatingsGrid({
                 onRequireLogin={onRequireLogin}
                 size="sm"
                 showNumeric={false}
+                readOnly={readOnly}
               />
             </div>
             <span
               className={
-                compact
+                compact && !readOnly
                   ? 'max-w-full truncate text-caption text-fg-secondary'
                   : 'min-w-0 text-caption text-fg-secondary'
               }
@@ -157,7 +162,9 @@ export type ObjectCardProps = {
   /** Hide object type label in subtitle (e.g. discover when type is page-scoped). */
   hideType?: boolean;
   /** Post editor: hide admin heart and use compact row with trailing controls. */
-  layout?: 'default' | 'editorRow' | 'mapSidebar' | 'catalog';
+  layout?: 'default' | 'editorRow' | 'mapSidebar' | 'catalog' | 'popup';
+  /** Desktop rail: the map is too small for price, tags, and a rating. */
+  popupNameOnly?: boolean;
   hideAdministrativeHeart?: boolean;
   /** Post editor: toggle + slider column on the right. */
   trailing?: ReactNode;
@@ -182,6 +189,7 @@ export function ObjectCard({
   viewerUsername,
   onRequireLogin,
   layout = 'default',
+  popupNameOnly = false,
   hideAdministrativeHeart = false,
   trailing,
   titleSuffix,
@@ -193,10 +201,18 @@ export function ObjectCard({
 }: ObjectCardProps) {
   const editorRow = layout === 'editorRow';
   const mapSidebar = layout === 'mapSidebar';
+  const popup = layout === 'popup';
+  const popupNameOnlyRow = popup && popupNameOnly;
   const catalog = layout === 'catalog';
   const stackedMobile = layout === 'default';
   const horizontalRow = !stackedMobile;
-  const thumbSize = editorRow ? 72 : mapSidebar ? MAP_SIDEBAR_THUMB_SIZE : THUMB_SIZE;
+  const thumbSize = editorRow
+    ? 72
+    : popupNameOnlyRow
+      ? POPUP_NAME_ONLY_THUMB_SIZE
+      : mapSidebar || popup
+        ? MAP_SIDEBAR_THUMB_SIZE
+        : THUMB_SIZE;
   const typeLabel = formatLinkedObjectTypeLabel(o.object_type);
   const normalizedType = o.object_type?.trim().toLowerCase() ?? '';
   const seenCategories = new Set<string>();
@@ -229,7 +245,7 @@ export function ObjectCard({
     getRatingDimensionNamesForObjectType(objectTypeKey),
     objectFields.aggregateRatingAspects(o),
   );
-  const visibleRatingDims = mapSidebar ? ratingDims.slice(0, 1) : ratingDims;
+  const visibleRatingDims = mapSidebar || popup ? ratingDims.slice(0, 1) : ratingDims;
 
   const [navPending, setNavPending] = useState(false);
   const navPendingCountRef = useRef(0);
@@ -242,16 +258,23 @@ export function ObjectCard({
   }, []);
 
   const rootClassName = [
-    'relative list-none border-[0.5px] border-border bg-surface-control/40 shadow-whisper',
-    mapSidebar
-      ? 'rounded-card py-card-padding pe-card-padding ps-gutter sm:ps-gutter-sm'
-      : 'rounded-card p-3 sm:p-card-padding',
+    'relative list-none',
+    popupNameOnlyRow
+      ? 'bg-surface px-1.5 py-1 pe-4'
+      : popup
+        ? 'bg-surface p-3'
+        : 'border-[0.5px] border-border bg-surface-control/40 shadow-whisper',
+    popup
+      ? ''
+      : mapSidebar
+        ? 'rounded-card py-card-padding pe-card-padding ps-gutter sm:ps-gutter-sm'
+        : 'rounded-card p-3 sm:p-card-padding',
     navPending ? 'opacity-90' : '',
   ]
     .filter(Boolean)
     .join(' ');
 
-  const showHeart = !hideAdministrativeHeart && !editorRow;
+  const showHeart = !hideAdministrativeHeart && !editorRow && !popup;
 
   return (
     <Root
@@ -283,7 +306,7 @@ export function ObjectCard({
       ) : null}
       <div
         className={[
-          'flex gap-3 flex-row items-start',
+          popupNameOnlyRow ? 'flex flex-row items-center gap-2' : 'flex gap-3 flex-row items-start',
           showHeart || userWeight != null ? 'pe-8' : '',
           trailing ? 'items-start' : '',
         ]
@@ -300,7 +323,13 @@ export function ObjectCard({
         >
           <span
             className="flex items-center justify-center overflow-hidden rounded-card border-[0.5px] border-border bg-surface-alt size-[104px] sm:size-[120px]"
-            style={editorRow ? { width: thumbSize, height: thumbSize } : mapSidebar ? { width: MAP_SIDEBAR_THUMB_SIZE, height: MAP_SIDEBAR_THUMB_SIZE } : undefined}
+            style={
+              editorRow || popupNameOnlyRow
+                ? { width: thumbSize, height: thumbSize }
+                : mapSidebar || popup
+                  ? { width: MAP_SIDEBAR_THUMB_SIZE, height: MAP_SIDEBAR_THUMB_SIZE }
+                  : undefined
+            }
           >
             {thumbUrl ? (
               <ObjectThumbnail
@@ -324,7 +353,7 @@ export function ObjectCard({
           </span>
         </CardNavTarget>
         <div className="min-w-0 flex-1">
-          {brandOrParentLabel ? (
+          {brandOrParentLabel && !popup ? (
             <p className="text-caption text-fg-secondary">{brandOrParentLabel}</p>
           ) : null}
           <div className="flex min-w-0 flex-wrap items-baseline gap-x-1">
@@ -333,51 +362,57 @@ export function ObjectCard({
               linkReplace={linkReplace}
               onNavigate={onNavigate}
               onPendingChange={onNavPendingChange}
-              className="max-w-full text-left font-weight-strong text-body-lg text-heading hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus line-clamp-2"
+              className={[
+                'max-w-full text-left font-weight-strong text-heading hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus line-clamp-2',
+                popup ? 'text-body-sm' : 'text-body-lg',
+              ].join(' ')}
             >
               {titleLabel}
             </CardNavTarget>
             {titleSuffix}
           </div>
-          <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-caption text-fg-secondary">
-            {priceLabel ? (
-              <>
-                <span className="font-weight-strong text-fg">{priceLabel}</span>
-                {(!hideType && typeLabel) || categoryLabels.length > 0 ? (
-                  <span aria-hidden>·</span>
-                ) : null}
-              </>
-            ) : null}
-            {!hideType && typeLabel ? (
-              <>
-                <span>{typeLabel}</span>
-                {categoryLabels.length > 0 ? <span aria-hidden>·</span> : null}
-              </>
-            ) : null}
-            {categoryLabels.map((cat, i) => (
-              <span key={`${cat}-${i}`} className="flex items-center gap-x-1.5">
-                {i > 0 ? <span aria-hidden>·</span> : null}
-                <span>{cat}</span>
-              </span>
-            ))}
-          </div>
-          {addressLine ? (
+          {!popupNameOnlyRow ? (
+            <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-caption text-fg-secondary">
+              {priceLabel ? (
+                <>
+                  <span className="font-weight-strong text-fg">{priceLabel}</span>
+                  {(!hideType && !popup && typeLabel) || categoryLabels.length > 0 ? (
+                    <span aria-hidden>·</span>
+                  ) : null}
+                </>
+              ) : null}
+              {!hideType && !popup && typeLabel ? (
+                <>
+                  <span>{typeLabel}</span>
+                  {categoryLabels.length > 0 ? <span aria-hidden>·</span> : null}
+                </>
+              ) : null}
+              {categoryLabels.map((cat, i) => (
+                <span key={`${cat}-${i}`} className="flex items-center gap-x-1.5">
+                  {i > 0 ? <span aria-hidden>·</span> : null}
+                  <span>{cat}</span>
+                </span>
+              ))}
+            </div>
+          ) : null}
+          {addressLine && !popup ? (
             <p className="mt-0.5 flex min-w-0 items-center gap-1 text-body-xs text-muted">
               <MapPinIcon size={13} className="shrink-0 text-muted" aria-hidden />
               <span className="truncate">{addressLine}</span>
             </p>
           ) : null}
-          {!editorRow ? (
+          {!editorRow && !popupNameOnlyRow ? (
             <RatingsGrid
               dims={visibleRatingDims}
               objectId={o.object_id}
               viewerUsername={viewerUsername}
               onRequireLogin={onRequireLogin}
-              compact={mapSidebar}
-              mobileMaxVisible={mapSidebar ? undefined : 2}
+              compact={mapSidebar || popup}
+              readOnly={popup}
+              mobileMaxVisible={mapSidebar || popup ? undefined : 2}
             />
           ) : null}
-          {displayText ? (
+          {displayText && !popup ? (
             <p
               className={[
                 'text-body-sm leading-body text-fg',

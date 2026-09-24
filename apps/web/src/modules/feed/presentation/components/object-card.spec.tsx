@@ -201,6 +201,58 @@ describe('ObjectCard navigation', () => {
     expect(container.querySelectorAll('[data-testid="star-rating"]')).toHaveLength(1);
     expect(screen.queryByText('Service')).not.toBeInTheDocument();
   });
+
+  it('popup layout shows name, one rating, price, and a tag', () => {
+    render(
+      <ObjectCard
+        object={{
+          ...sampleObject,
+          fields: {
+            ...sampleObject.fields,
+            description: '(Spicy) Fish flakes',
+            price: '$$',
+            tagCategoryItem: [{ value: 'Wifi' }, { value: 'Sushi' }],
+          },
+        }}
+        layout="popup"
+        as="div"
+      />,
+    );
+
+    const title = screen.getByRole('link', { name: 'Spicy Agedashi Tofu' });
+    expect(title).toHaveClass('text-body-sm');
+    expect(title).toHaveClass('text-heading');
+    expect(screen.getAllByTestId('star-rating')).toHaveLength(1);
+    expect(screen.getByText('$$')).toBeInTheDocument();
+    expect(screen.getByText('Sushi')).toBeInTheDocument();
+    expect(screen.queryByText('(Spicy) Fish flakes')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('admin-heart')).not.toBeInTheDocument();
+  });
+
+  it('popupNameOnly shows the thumb and name only', () => {
+    render(
+      <ObjectCard
+        object={{
+          ...sampleObject,
+          fields: {
+            ...sampleObject.fields,
+            price: '$$',
+            tagCategoryItem: [{ value: 'Sushi' }],
+          },
+        }}
+        layout="popup"
+        popupNameOnly
+        as="div"
+      />,
+    );
+
+    const thumb = screen.getByRole('link', { name: 'View object: Spicy Agedashi Tofu' });
+    expect(thumb.querySelector('span')).toHaveStyle({ width: '40px', height: '40px' });
+    expect(screen.getByRole('link', { name: 'Spicy Agedashi Tofu' })).toBeInTheDocument();
+    expect(screen.queryByText('$$')).not.toBeInTheDocument();
+    expect(screen.queryByText('Sushi')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('star-rating')).not.toBeInTheDocument();
+  });
 });
 
 describe('ObjectCard price and brand/parent', () => {

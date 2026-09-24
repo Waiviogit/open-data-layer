@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, object-page, components]
-updated_at: 2026-06-10
+updated_at: 2026-09-24
 related:
   - docs/apps/web/spec/overview.md
 ---
@@ -22,6 +22,7 @@ Single component: [`apps/web/src/modules/feed/presentation/components/object-car
 | Surface | Notes |
 |---------|--------|
 | Discover object feed | `/discover?type=…` |
+| Discover and profile map pins | `layout="popup"` inside `AppPopup` |
 | Feed linked objects | Post body linked object chips |
 | User profile shop | Shop object lists |
 
@@ -33,6 +34,7 @@ Single component: [`apps/web/src/modules/feed/presentation/components/object-car
 | `catalog` | Object-page list feeds (embedded catalog, related/similar, category, books) | Horizontal row at all viewports; line-clamps in text column |
 | `editorRow` | Post editor linked-object row | Compact horizontal row |
 | `mapSidebar` | Profile map favorites sidebar | Compact horizontal row, single rating |
+| `popup` | Discover and profile map pin bubbles | 88px thumb, name (`text-body-sm`, heading color). Full bubble adds one read-only rating and `price` · tag categories. `popupNameOnly` (desktop rail) is a 40px thumb and the name, capped at 180px wide. No heart, address, description, border, or shadow |
 
 ## Layout
 

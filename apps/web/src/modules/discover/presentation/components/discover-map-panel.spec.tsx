@@ -36,6 +36,25 @@ jest.mock('../../infrastructure/discover.client', () => ({
   fetchDiscoverObjects: (...args: unknown[]) => fetchDiscoverObjects(...args),
 }));
 
+jest.mock('@/shared/presentation', () => ({
+  AVATAR_PLACEHOLDER_SRC: '/avatar-placeholder.png',
+  ObjectThumbnail: () => null,
+  shouldUnoptimizeRemoteImage: () => false,
+}));
+
+jest.mock('next/image', () => ({
+  __esModule: true,
+  default: () => null,
+}));
+
+jest.mock('@/modules/object/presentation/components/star-rating', () => ({
+  StarRating: () => <div data-testid="star-rating" />,
+}));
+
+jest.mock('@/modules/object/presentation/components/administrative-heart-button', () => ({
+  AdministrativeHeartButton: () => null,
+}));
+
 jest.mock('@/modules/map', () => ({
   MAP_EMBED_STACK_CLASS: 'map-embed',
   AppMap: ({
@@ -511,5 +530,6 @@ describe('DiscoverMapPanel', () => {
         [49.3, -123.2],
       ]);
     });
+    expect(screen.getByText('R1')).toBeInTheDocument();
   });
 });

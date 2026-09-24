@@ -32,7 +32,6 @@ import {
   haversineDistanceKm,
   mapBoxesEqual,
 } from '../../domain/types/favorites-map';
-import { MapObjectPopupCard } from './map-object-popup-card';
 import { ProfileMapSidebarListSkeleton } from './profile-map-sidebar-list-skeleton';
 
 const OSM_COPYRIGHT_URL = 'https://www.openstreetmap.org/copyright';
@@ -329,7 +328,7 @@ export function ProfileMapView({ accountName, viewerUsername }: ProfileMapViewPr
                 onClick={() => setHighlightedId(marker.objectId)}
               >
                 <AppPopup className="map-object-popup">
-                  <MapObjectPopupCard object={marker.item} />
+                  <ObjectCard object={marker.item} layout="popup" as="div" />
                 </AppPopup>
               </AppMarker>
             ))}

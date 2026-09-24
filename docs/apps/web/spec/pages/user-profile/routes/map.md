@@ -40,7 +40,7 @@ When `GET .../favorites/types` has no intersection with `MAP_GEO_OBJECT_TYPES`, 
 - `ProfileMapView` — split layout: sidebar list + `AppMap` canvas
 - `ProfileMapEmpty` — zero map-eligible favorite types
 - List: `ObjectCard` (`layout="mapSidebar"`) + infinite scroll (`loadMoreFavoritesMapAction`)
-- Map: Waivio orange pins (`AppMarker` default), marker click opens `AppPopup` with `MapObjectPopupCard`, `onViewportChange` debounced marker fetch (`limit: 100`)
+- Map: Waivio orange pins (`AppMarker` default), marker click opens `AppPopup` with `ObjectCard` (`layout="popup"`), `onViewportChange` debounced marker fetch (`limit: 100`)
 - **Reload:** shown when the user pans so the map center moves >20 km from the last list fetch (ignored for the initial `MapFitBounds` after markers load); refetches sidebar list for current bbox
 
 ## Cache

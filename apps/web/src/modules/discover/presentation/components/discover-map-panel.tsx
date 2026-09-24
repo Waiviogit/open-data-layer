@@ -1,9 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
-import Link from 'next/link';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
+import { ObjectCard } from '@/modules/feed/presentation/components/object-card';
 import { LocateIcon, MaximizeIcon, MinimizeIcon } from '@/icons';
 import {
   AppMap,
@@ -400,13 +401,21 @@ export function DiscoverMapPanel({
           ) : null}
           {markersWithGeo.map((marker) => (
             <AppMarker key={marker.objectId} position={marker.position}>
-              <AppPopup className="map-object-popup" maxWidth={240}>
-                <Link
-                  href={`/object/${encodeURIComponent(marker.objectId)}`}
-                  className="text-body-sm font-weight-label text-accent hover:underline"
-                >
-                  {marker.label}
-                </Link>
+              <AppPopup
+                className={
+                  !isFeed && !isFullscreen
+                    ? 'map-object-popup map-object-popup-compact'
+                    : 'map-object-popup'
+                }
+                minWidth={!isFeed && !isFullscreen ? 0 : undefined}
+                maxWidth={!isFeed && !isFullscreen ? 180 : undefined}
+              >
+                <ObjectCard
+                  object={marker.item as unknown as ProjectedObjectView}
+                  layout="popup"
+                  popupNameOnly={!isFeed && !isFullscreen}
+                  as="div"
+                />
               </AppPopup>
             </AppMarker>
           ))}
