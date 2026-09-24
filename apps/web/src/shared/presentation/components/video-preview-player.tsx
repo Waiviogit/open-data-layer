@@ -241,7 +241,7 @@ export function VideoPreviewPlayer({
                 aria-hidden
               >
                 <PlayIcon
-                  size={variant === 'viewer' ? 32 : 28}
+                  size={28}
                   className="ml-0.5 text-accent-fg"
                 />
               </span>
@@ -269,7 +269,7 @@ export function VideoPreviewPlayer({
               aria-hidden
             >
               <PlayIcon
-                size={variant === 'viewer' ? 32 : 28}
+                size={28}
                 className="ml-0.5 text-accent-fg"
               />
             </span>
