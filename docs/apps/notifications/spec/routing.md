@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: notifications
 tags: [notifications, routing]
-updated_at: 2026-07-30
+updated_at: 2026-09-25
 related:
   - docs/apps/notifications/spec/event-catalog.md
   - docs/apps/notifications/spec/transport.md
@@ -26,7 +26,7 @@ Registered in `RecipientStrategyRegistry` (`domain/routing/`):
 | **PostAuthor** | `reply`, `mention`, `vote_like`, `vote_downvote`, `reblog` | Parent/post author from payload |
 | **SelfActor** | `my_post`, `my_comment`, `my_vote` | `event.actor` |
 | **ObjectAudience** | Object updates, votes, status | Creator + administrative authority + object bell (`user_object_follows.bell`) |
-| **UserBell** | `bell_post`, `bell_reblog`, `bell_follow`, `bell_object_post`, `bell_thread` | `user_subscriptions.bell` subscribers or object bell followers |
+| **UserBell** | `bell_post`, `bell_reblog`, `bell_follow`, `bell_object_post`, `bell_thread` | `user_subscriptions.bell` subscribers of the post author (`bell_post`, `bell_thread`) or of the reblogger `payload.account` (`bell_reblog`, excluding the reblogger and the post author); object bell followers for `bell_object_post` |
 | **ThreadAuthorFollower** | `thread_author_follower` | `payload.mentions` + account bell subscribers of `payload.author` |
 | **ChannelMessaging** | `message_direct`, `message_group`, `bell_object_message` | Channel members minus author (DM/group); object bell followers minus author (`bell_object_message`) |
 | **Obl** | `obl_*` | Unique involved accounts from payload (including actor) |

@@ -1,5 +1,10 @@
 import type { AnyNotificationEvent } from '@opden-data-layer/notifications-contract';
-import { DirectRecipientStrategy, OblRecipientStrategy } from './recipient-strategies';
+import type { NotificationRecipientsRepository } from '../../repositories/notification-recipients.repository';
+import {
+  DirectRecipientStrategy,
+  OblRecipientStrategy,
+  UserBellRecipientStrategy,
+} from './recipient-strategies';
 
 describe('DirectRecipientStrategy', () => {
   const strategy = new DirectRecipientStrategy();
@@ -274,5 +279,56 @@ describe('OblRecipientStrategy', () => {
       },
     } as AnyNotificationEvent);
     expect(recipients).toEqual(['bob', 'alice']);
+  });
+});
+
+describe('UserBellRecipientStrategy', () => {
+  const findAccountBellSubscribers = jest.fn<Promise<string[]>, [string]>();
+  const strategy = new UserBellRecipientStrategy({
+    findAccountBellSubscribers,
+  } as unknown as NotificationRecipientsRepository);
+
+  const envelope = {
+    occurredAt: '2026-01-01T00:00:00.000Z',
+    blockNum: 1,
+    trxId: null,
+    objectId: null,
+  };
+
+  beforeEach(() => {
+    findAccountBellSubscribers.mockReset();
+  });
+
+  it('routes bell_reblog to bell subscribers of the reblogger', async () => {
+    findAccountBellSubscribers.mockResolvedValue(['carol', 'bob', 'Alice']);
+    const recipients = await strategy.resolveRecipients({
+      ...envelope,
+      type: 'bell_reblog',
+      actor: 'bob',
+      payload: {
+        account: 'bob',
+        author: 'alice',
+        permlink: 'hello',
+        title: 'Hello',
+      },
+    } as AnyNotificationEvent);
+    expect(findAccountBellSubscribers).toHaveBeenCalledWith('bob');
+    expect(recipients).toEqual(['carol']);
+  });
+
+  it('routes bell_post to bell subscribers of the author', async () => {
+    findAccountBellSubscribers.mockResolvedValue(['carol']);
+    const recipients = await strategy.resolveRecipients({
+      ...envelope,
+      type: 'bell_post',
+      actor: 'alice',
+      payload: {
+        author: 'alice',
+        permlink: 'hello',
+        title: 'Hello',
+      },
+    } as AnyNotificationEvent);
+    expect(findAccountBellSubscribers).toHaveBeenCalledWith('alice');
+    expect(recipients).toEqual(['carol']);
   });
 });

@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: notifications
 tags: [notifications, events]
-updated_at: 2026-07-31
+updated_at: 2026-09-25
 related:
   - docs/apps/notifications/spec/transport.md
   - docs/apps/notifications/spec/routing.md
@@ -43,7 +43,7 @@ Campaign types (`campaignReservation`, `activationCampaign`, etc.) are **out of 
 | `reblog` | account, author, permlink | Post author |
 | `follow` | following, action | `following` when action is follow |
 
-Bell types (`bell_post`, `bell_reblog`, …) are emitted from **chain-indexer** for root posts and reblogs (`bell_post`, `bell_reblog`). `bell_follow`, `bell_object_post`, `bell_thread`, and `thread_author_follower` are routed when producers emit them; ODL bell-follow actions are not fully wired yet.
+Bell types (`bell_post`, `bell_reblog`, …) are emitted from **chain-indexer** for root posts and reblogs (`bell_post`, `bell_reblog`). `bell_reblog` goes to accounts that bell-follow the reblogger (`payload.account`), excluding the reblogger and the post author (the author already receives `reblog`). `bell_follow`, `bell_object_post`, `bell_thread`, and `thread_author_follower` are routed when producers emit them; ODL bell-follow actions are not fully wired yet.
 
 ## Wallet (Hive L1)
 

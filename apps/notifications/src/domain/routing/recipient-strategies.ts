@@ -214,13 +214,20 @@ export class UserBellRecipientStrategy implements RecipientStrategy {
   async resolveRecipients(event: AnyNotificationEvent): Promise<string[]> {
     switch (event.type) {
       case 'bell_post':
-      case 'bell_reblog':
-      case 'bell_thread': {
-        const author =
-          event.type === 'bell_reblog'
-            ? event.payload.author
-            : event.payload.author;
-        return this.recipientsRepository.findAccountBellSubscribers(author);
+      case 'bell_thread':
+        return this.recipientsRepository.findAccountBellSubscribers(
+          event.payload.author,
+        );
+      case 'bell_reblog': {
+        const subscribers =
+          await this.recipientsRepository.findAccountBellSubscribers(
+            event.payload.account,
+          );
+        return subscribers.filter(
+          (account) =>
+            !sameHiveAccount(account, event.payload.account) &&
+            !sameHiveAccount(account, event.payload.author),
+        );
       }
       case 'bell_follow':
         return [event.payload.following];
