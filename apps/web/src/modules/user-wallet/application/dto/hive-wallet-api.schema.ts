@@ -39,6 +39,7 @@ export const hiveWalletApiResponseSchema = z.object({
   balance: z.object({
     liquidHive: z.string(),
     hivePower: z.string(),
+    delegatableHp: z.string().optional(),
     delegationsNetHp: z.string(),
     rcMax: z.string(),
     hiveSavings: z.string(),

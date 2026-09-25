@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, page, user-profile, wallet, delegations]
-updated_at: 2026-08-07
+updated_at: 2026-09-25
 related:
   - docs/apps/web/spec/pages/user-profile/routes/transfers.md
   - docs/apps/web/spec/pages/user-profile/routes/engine-wallet-operations.md
@@ -93,7 +93,7 @@ Domain: `getWalletEditDelegationMaxAmount` in `wallet-edit-delegation.ts`.
 | Asset | Formula |
 |-------|---------|
 | **WAIV** | `(stake + delegationsOut) - sum(other outgoing)` |
-| **HP** | `hivePower - sum(other outgoing HP)` |
+| **HP** | `delegatableHp + this row's HP` when the summary includes `delegatableHp` (`own VESTS − outgoing delegation − remaining power down`). Otherwise `hivePower − sum(other outgoing HP)`. The new-delegate dialog uses the same max for a recipient who already has an outgoing HP row, and shows `wallet_hive_delegate_replaces`: the amount is the new total, because Hive replaces that delegation instead of adding to it. An unchanged total is rejected (`wallet_validation_delegation_unchanged`). |
 
 ### Broadcast on Update
 

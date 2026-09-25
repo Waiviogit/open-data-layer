@@ -5,6 +5,7 @@ import {
 import {
   parseHiveRcAmount,
   validateHiveDelegationAmount,
+  validateHiveDelegationUnchanged,
   validateHiveRcAmount,
   validateHiveWalletAmount,
 } from './hive-wallet-form-validation';
@@ -20,6 +21,24 @@ describe('validateHiveDelegationAmount', () => {
       'delegation_below_minimum',
     );
     expect(validateHiveDelegationAmount('1', '100', chain)).toBeNull();
+  });
+
+  it('rejects an HP total that matches the existing delegation', () => {
+    expect(validateHiveDelegationUnchanged('50', '50')).toBe(
+      'delegation_unchanged',
+    );
+    expect(validateHiveDelegationUnchanged('50.000', '50')).toBe(
+      'delegation_unchanged',
+    );
+  });
+
+  it('accepts a different HP total within the available max', () => {
+    expect(validateHiveDelegationUnchanged('100', '50')).toBeNull();
+    expect(validateHiveDelegationAmount('100', '208.334', chain)).toBeNull();
+  });
+
+  it('does not treat a first delegation as unchanged', () => {
+    expect(validateHiveDelegationUnchanged('50', null)).toBeNull();
   });
 
   it('computes minimum close to 1 HP on mainnet globals', () => {

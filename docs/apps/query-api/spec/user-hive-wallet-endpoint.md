@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: query-api
 tags: [query-api, wallet, hive]
-updated_at: 2026-06-22
+updated_at: 2026-09-25
 related:
   - docs/apps/web/spec/pages/user-profile/routes/transfers.md
   - docs/apps/chain-indexer/spec/hive-delegations.md
@@ -45,6 +45,10 @@ Returns a live Hive L1 wallet summary for the profile account: liquid HIVE, Hive
 - `user_rc_delegations` — indexed RC delegation incoming pairs
 - `rc_api.list_rc_direct_delegations` — outgoing RC delegations
 - `CurrencyQueryService.marketInfo` — HIVE/HBD USD rates
+
+## Delegatable HP
+
+`balance.delegatableHp` is vest-to-HP of `max(0, vesting_shares − delegated_vesting_shares − max(0, to_withdraw − withdrawn))`. Received vesting is not included. Integer `to_withdraw` / `withdrawn` are micro-VESTS.
 
 ## Errors
 

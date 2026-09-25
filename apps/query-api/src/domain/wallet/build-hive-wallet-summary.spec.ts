@@ -2,6 +2,7 @@ import {
   buildHiveWalletSummary,
   calculateHivePowerDownWeeksRemainingFromVests,
   canClaimHbdInterest,
+  emptyHiveBalance,
   estimateHbdInterestBalance,
   mapHiveAccountToBalanceFields,
   mapPendingRewards,
@@ -386,5 +387,86 @@ describe('mapPendingRewards', () => {
     expect(rewards.display.hive).toBe('0.734');
     expect(rewards.display.hbd).toBe('0.012');
     expect(rewards.display.hp).toBe('1.8');
+  });
+});
+
+describe('delegatableHp', () => {
+  function balance(
+    account: Parameters<typeof mapHiveAccountToBalanceFields>[0],
+  ) {
+    return mapHiveAccountToBalanceFields(account, CHAIN, '0');
+  }
+
+  it('TC-001 subtracts outgoing delegation and only the remaining power down', () => {
+    const fields = balance({
+      vesting_shares: '400.000000 VESTS',
+      delegated_vesting_shares: '100.000000 VESTS',
+      received_vesting_shares: '0.000000 VESTS',
+      to_withdraw: 10_000_000,
+      withdrawn: 4_000_000,
+    });
+    const summary = buildHiveWalletSummary(
+      fields,
+      { hiveUsd: 1, hbdUsd: 1 },
+      {
+        canClaimInterest: false,
+        daysUntilInterestClaim: 0,
+        nextVestingWithdrawal: null,
+        pendingSavingsWithdrawals: [],
+        pendingRewards: EMPTY_PENDING_REWARDS,
+      },
+    );
+
+    expect(Number.parseFloat(fields.delegatableHp)).toBe(147);
+    expect(summary.display.hivePower).toBe('200');
+  });
+
+  it('TC-002 ignores received vesting', () => {
+    const fields = balance({
+      vesting_shares: '400.000000 VESTS',
+      received_vesting_shares: '200.000000 VESTS',
+      delegated_vesting_shares: '0.000000 VESTS',
+      to_withdraw: 0,
+      withdrawn: 0,
+    });
+
+    expect(Number.parseFloat(fields.delegatableHp)).toBe(200);
+  });
+
+  it('TC-011 treats VESTS strings the same as micro-VEST integers', () => {
+    const fields = balance({
+      vesting_shares: '400.000000 VESTS',
+      delegated_vesting_shares: '100.000000 VESTS',
+      to_withdraw: '10.000000 VESTS',
+      withdrawn: '4.000000 VESTS',
+    });
+
+    expect(Number.parseFloat(fields.delegatableHp)).toBe(147);
+  });
+
+  it('TC-012 floors at zero when delegated vesting exceeds own vesting', () => {
+    const fields = balance({
+      vesting_shares: '100.000000 VESTS',
+      delegated_vesting_shares: '200.000000 VESTS',
+      to_withdraw: 0,
+      withdrawn: 0,
+    });
+
+    expect(Number.parseFloat(fields.delegatableHp)).toBe(0);
+  });
+
+  it('TC-013 does not add HP when withdrawn exceeds to_withdraw', () => {
+    const fields = balance({
+      vesting_shares: '400.000000 VESTS',
+      delegated_vesting_shares: '0.000000 VESTS',
+      to_withdraw: 4_000_000,
+      withdrawn: 10_000_000,
+    });
+
+    expect(Number.parseFloat(fields.delegatableHp)).toBe(200);
+  });
+
+  it('TC-014 reports zero delegatable HP for an empty balance', () => {
+    expect(emptyHiveBalance().delegatableHp).toBe('0');
   });
 });

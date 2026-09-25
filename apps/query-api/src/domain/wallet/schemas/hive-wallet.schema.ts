@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const hiveWalletBalanceSchema = z.object({
   liquidHive: z.string(),
   hivePower: z.string(),
+  delegatableHp: z.string(),
   delegationsNetHp: z.string(),
   rcMax: z.string(),
   hiveSavings: z.string(),

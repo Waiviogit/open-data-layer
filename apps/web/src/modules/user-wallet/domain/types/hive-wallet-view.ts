@@ -15,6 +15,8 @@ export type HiveWalletSummaryView = {
   balance: {
     liquidHive: string;
     hivePower: string;
+    /** Present when query-api computed HP still free to delegate. */
+    delegatableHp?: string;
     delegationsNetHp: string;
     rcMax: string;
     hiveSavings: string;

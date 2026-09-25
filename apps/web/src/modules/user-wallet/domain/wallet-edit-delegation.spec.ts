@@ -107,6 +107,71 @@ describe('wallet-edit-delegation', () => {
     ).toBe('80');
   });
 
+  it('TC-004 adds only the edited HP row back onto delegatable HP', () => {
+    const hiveSummary = {
+      balance: { hivePower: '210.368', delegatableHp: '158.334' },
+    } as HiveWalletSummaryView;
+    const hiveData: HiveHpDelegationsView = {
+      account: 'alice',
+      incoming: [],
+      outgoing: [
+        {
+          delegator: 'alice',
+          delegatee: 'bob',
+          vestingShares: '1 VESTS',
+          hp: '50',
+          minDelegationTime: '',
+        },
+        {
+          delegator: 'alice',
+          delegatee: 'carol',
+          vestingShares: '1 VESTS',
+          hp: '20',
+          minDelegationTime: '',
+        },
+      ],
+    };
+    expect(
+      getWalletEditDelegationMaxAmount(
+        'HIVE',
+        'bob',
+        null,
+        hiveSummary,
+        null,
+        hiveData,
+      ),
+    ).toBe('208.334');
+  });
+
+  it('uses only free HP when the recipient has no outgoing row', () => {
+    const hiveSummary = {
+      balance: { hivePower: '210.368', delegatableHp: '158.334' },
+    } as HiveWalletSummaryView;
+    const hiveData: HiveHpDelegationsView = {
+      account: 'alice',
+      incoming: [],
+      outgoing: [
+        {
+          delegator: 'alice',
+          delegatee: 'bob',
+          vestingShares: '1 VESTS',
+          hp: '50',
+          minDelegationTime: '',
+        },
+      ],
+    };
+    expect(
+      getWalletEditDelegationMaxAmount(
+        'HIVE',
+        'insta.agent',
+        null,
+        hiveSummary,
+        null,
+        hiveData,
+      ),
+    ).toBe('158.334');
+  });
+
   it('detects unchanged HP edit amounts', () => {
     expect(hasHpDelegationEditChanged('30.000', '30')).toBe(false);
     expect(hasHpDelegationEditChanged('30', '29.999')).toBe(true);

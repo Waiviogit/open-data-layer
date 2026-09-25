@@ -249,7 +249,9 @@ export function getWalletDelegateBalanceConfig(
   }
 
   return {
-    maxAmount: truncateHiveAmountForInput(hive.balance.hivePower),
+    maxAmount: truncateHiveAmountForInput(
+      hive.balance.delegatableHp ?? hive.balance.hivePower,
+    ),
     balanceSymbol,
     validation: 'hive',
     tokenUsdRate: resolveHiveUsdRate(hive, engineSummary),
@@ -410,11 +412,10 @@ export function getHiveDelegateRcMaxAmount(
     return '0';
   }
   const maxCapacity = parseRcInteger(hive.rc.maxCapacity);
-  const delegated = parseRcInteger(hive.rc.delegatedRc);
+  const received = parseRcInteger(hive.rc.receivedDelegatedRc ?? '0');
   const currentMana = parseRcInteger(hive.rc.currentMana);
-  const delegatable = Math.max(0, maxCapacity - delegated);
-  const capped =
-    currentMana > 0 ? Math.min(delegatable, currentMana) : delegatable;
+  const ownMax = Math.max(0, maxCapacity - received);
+  const capped = Math.min(ownMax, currentMana);
   const max = Math.max(0, capped - HIVE_RC_DELEGATOR_RESERVE);
   return max > 0 ? String(max) : '0';
 }

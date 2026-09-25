@@ -31,6 +31,15 @@ export function getWalletEditDelegationMaxAmount(
   }
 
   if (asset === 'HIVE' && hiveSummary && hiveData) {
+    const current = hiveData.outgoing
+      .filter((row) => row.delegatee === delegatee)
+      .reduce((sum, row) => sum + parseDelegationAmount(row.hp), 0);
+    const delegatableHp = hiveSummary.balance.delegatableHp;
+    if (delegatableHp != null) {
+      return truncateHiveAmountForInput(
+        parseDelegationAmount(delegatableHp) + current,
+      );
+    }
     const hivePower = parseDelegationAmount(hiveSummary.balance.hivePower);
     const otherOutgoing = hiveData.outgoing
       .filter((row) => row.delegatee !== delegatee)

@@ -4,12 +4,14 @@ import {
   isHiveDelegationHpAboveMinimum,
   parseHiveAmount,
 } from './hive-wallet-amount';
+import { hasHpDelegationEditChanged } from './wallet-edit-delegation';
 
 export type HiveWalletFormValidationCode =
   | 'recipient_required'
   | 'amount_invalid'
   | 'amount_exceeds_max'
-  | 'delegation_below_minimum';
+  | 'delegation_below_minimum'
+  | 'delegation_unchanged';
 
 export function parseHiveRcAmount(value: string): number | null {
   const trimmed = value.trim();
@@ -75,6 +77,20 @@ export function validateHiveDelegationAmount(
   return null;
 }
 
+/** Hive replaces the absolute vesting for a delegatee; the same total is not a new delegation. */
+export function validateHiveDelegationUnchanged(
+  amount: string,
+  currentHp: string | null,
+): HiveWalletFormValidationCode | null {
+  if (!currentHp) {
+    return null;
+  }
+  if (!hasHpDelegationEditChanged(currentHp, amount)) {
+    return 'delegation_unchanged';
+  }
+  return null;
+}
+
 export function getHiveDelegationMinimumHp(
   chain: HiveDelegationChainContext,
 ): number {
@@ -96,6 +112,8 @@ export function hiveWalletFormValidationMessageKey(
       return 'wallet_validation_amount_exceeds_max';
     case 'delegation_below_minimum':
       return 'wallet_validation_delegation_below_minimum';
+    case 'delegation_unchanged':
+      return 'wallet_validation_delegation_unchanged';
   }
 }
 

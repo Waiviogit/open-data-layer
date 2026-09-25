@@ -1,5 +1,7 @@
 import {
+  getHiveDelegateRcMaxAmount,
   getWalletDelegateBalanceConfig,
+  getWalletPowerBalanceConfig,
   getWalletTransferBalanceConfig,
   listWalletManageDelegationsAssetOptions,
   listWalletPowerAssetOptions,
@@ -155,6 +157,127 @@ describe('getWalletDelegateBalanceConfig', () => {
       tokenUsdRate: 0.25,
       returnDays: 5,
     });
+  });
+
+  it('TC-003 uses delegatable HP instead of full hive power', () => {
+    const config = getWalletDelegateBalanceConfig('HIVE', null, {
+      balance: { hivePower: '210.368', delegatableHp: '158.334' },
+      rates: { hiveUsd: 0.25 },
+    } as HiveWalletSummaryView);
+    expect(config?.maxAmount).toBe('158.334');
+  });
+
+  it('TC-017 falls back to hive power when delegatable HP is absent', () => {
+    const config = getWalletDelegateBalanceConfig('HIVE', null, {
+      balance: { hivePower: '210.368' },
+      rates: { hiveUsd: 0.25 },
+    } as HiveWalletSummaryView);
+    expect(config?.maxAmount).toBe('210.368');
+  });
+});
+
+describe('getWalletPowerBalanceConfig', () => {
+  it('TC-006 keeps power-down max on full hive power', () => {
+    const config = getWalletPowerBalanceConfig(
+      'HIVE',
+      'down',
+      null,
+      {
+        balance: { hivePower: '210.368', delegatableHp: '158.334' },
+      } as HiveWalletSummaryView,
+    );
+    expect(config?.maxAmount).toBe('210.368');
+  });
+});
+
+describe('getHiveDelegateRcMaxAmount', () => {
+  function rcHive(rc: {
+    maxCapacity: string;
+    delegatedRc: string;
+    receivedDelegatedRc: string;
+    currentMana: string;
+  }): HiveWalletSummaryView {
+    return {
+      rc: { totalOwned: rc.maxCapacity, ...rc },
+    } as HiveWalletSummaryView;
+  }
+
+  it('TC-007 does not subtract outgoing RC again and keeps the 3b reserve', () => {
+    expect(
+      getHiveDelegateRcMaxAmount(
+        rcHive({
+          maxCapacity: '100000000000',
+          delegatedRc: '20000000000',
+          receivedDelegatedRc: '0',
+          currentMana: '100000000000',
+        }),
+      ),
+    ).toBe('97000000000');
+  });
+
+  it('TC-008 excludes received RC', () => {
+    expect(
+      getHiveDelegateRcMaxAmount(
+        rcHive({
+          maxCapacity: '100000000000',
+          delegatedRc: '0',
+          receivedDelegatedRc: '30000000000',
+          currentMana: '100000000000',
+        }),
+      ),
+    ).toBe('67000000000');
+  });
+
+  it('TC-009 caps available RC by current mana', () => {
+    expect(
+      getHiveDelegateRcMaxAmount(
+        rcHive({
+          maxCapacity: '100000000000',
+          delegatedRc: '20000000000',
+          receivedDelegatedRc: '0',
+          currentMana: '10000000000',
+        }),
+      ),
+    ).toBe('7000000000');
+  });
+
+  it('TC-010 returns zero when current mana is zero', () => {
+    expect(
+      getHiveDelegateRcMaxAmount(
+        rcHive({
+          maxCapacity: '100000000000',
+          delegatedRc: '0',
+          receivedDelegatedRc: '0',
+          currentMana: '0',
+        }),
+      ),
+    ).toBe('0');
+  });
+
+  it('TC-018 returns zero when own RC is below the reserve', () => {
+    expect(
+      getHiveDelegateRcMaxAmount(
+        rcHive({
+          maxCapacity: '2000000000',
+          delegatedRc: '0',
+          receivedDelegatedRc: '0',
+          currentMana: '2000000000',
+        }),
+      ),
+    ).toBe('0');
+  });
+
+  it('TC-019 returns zero when received RC exceeds max capacity', () => {
+    expect(
+      getHiveDelegateRcMaxAmount(
+        rcHive({
+          maxCapacity: '1000000000',
+          delegatedRc: '0',
+          receivedDelegatedRc: '5000000000',
+          currentMana: '1000000000',
+        }),
+      ),
+    ).toBe('0');
   });
 });
 

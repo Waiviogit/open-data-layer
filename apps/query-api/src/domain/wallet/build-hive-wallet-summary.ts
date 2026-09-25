@@ -15,6 +15,8 @@ export type HiveWalletRates = {
 export type HiveWalletBalanceFields = {
   liquidHive: string;
   hivePower: string;
+  /** HP that can still be delegated: own VESTS minus outgoing delegation minus remaining power down. */
+  delegatableHp: string;
   delegationsNetHp: string;
   rcMax: string;
   hiveSavings: string;
@@ -207,6 +209,30 @@ export function calculateSavingsWithdrawDaysRemaining(
   return diffHours > 24 ? Math.ceil(diffHours / 24) : 0;
 }
 
+/** Own VESTS still free to delegate. Received vesting is not included. */
+function delegatableVestsToHp(
+  account: HiveWalletAccountInput,
+  totalVestingShares: string,
+  totalVestingFund: string,
+): number {
+  const ownVests = parseHiveVestsAmount(account.vesting_shares ?? '0 VESTS');
+  const delegatedVests = parseHiveVestsAmount(
+    account.delegated_vesting_shares ?? '0 VESTS',
+  );
+  const toWithdrawVests = parseHiveVestsAmount(account.to_withdraw ?? 0);
+  const withdrawnVests = parseHiveVestsAmount(account.withdrawn ?? 0);
+  const poweringDownVests = Math.max(0, toWithdrawVests - withdrawnVests);
+  const delegatableVests = Math.max(
+    0,
+    ownVests - delegatedVests - poweringDownVests,
+  );
+  return vestToHp(
+    `${delegatableVests} VESTS`,
+    totalVestingShares,
+    totalVestingFund,
+  );
+}
+
 function parseAssetNumber(value: string | number | undefined): number {
   if (value === undefined || value === null) {
     return 0;
@@ -338,6 +364,11 @@ export function mapHiveAccountToBalanceFields(
     totalVestingShares,
     totalVestingFund,
   );
+  const delegatableHp = delegatableVestsToHp(
+    account,
+    totalVestingShares,
+    totalVestingFund,
+  );
 
   const interest = estimateHbdInterestBalance({
     savingsHbdBalance: account.savings_hbd_balance ?? '0 HBD',
@@ -350,6 +381,7 @@ export function mapHiveAccountToBalanceFields(
   return {
     liquidHive: String(parseAssetNumber(account.balance)),
     hivePower: String(hivePower),
+    delegatableHp: String(delegatableHp),
     delegationsNetHp: String(delegationsNetHp),
     rcMax: typeof rcMax === 'number' ? String(rcMax) : rcMax,
     hiveSavings: String(parseAssetNumber(account.savings_balance)),
@@ -471,6 +503,7 @@ export function emptyHiveBalance(): HiveWalletBalanceFields {
   return {
     liquidHive: ZERO,
     hivePower: ZERO,
+    delegatableHp: ZERO,
     delegationsNetHp: ZERO,
     rcMax: ZERO,
     hiveSavings: ZERO,

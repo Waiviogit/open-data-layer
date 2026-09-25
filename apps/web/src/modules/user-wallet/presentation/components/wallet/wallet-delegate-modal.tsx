@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import { buildDelegateVestingSharesOp } from '@opden-data-layer/hive-broadcast';
 
@@ -23,6 +23,7 @@ import {
   getHiveDelegationMinimumHp,
   hiveWalletFormValidationMessageKey,
   validateHiveDelegationAmount,
+  validateHiveDelegationUnchanged,
   validateHiveWalletRecipient,
 } from '../../../domain/hive-wallet-form-validation';
 import {
@@ -30,7 +31,10 @@ import {
   estimateHiveUsdValue,
   hpToVestingShares,
   parseHiveAmount,
+  truncateHiveAmountForInput,
 } from '../../../domain/hive-wallet-amount';
+import { getWalletEditDelegationMaxAmount } from '../../../domain/wallet-edit-delegation';
+import type { HiveHpDelegationsView } from '../../../domain/types/hive-wallet-view';
 import {
   getWalletDelegateBalanceConfig,
   listWalletMainAssetOptions,
@@ -72,6 +76,9 @@ export function WalletDelegateModal({
   const [to, setTo] = useState('');
   const [amount, setAmount] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [hiveDelegations, setHiveDelegations] =
+    useState<HiveHpDelegationsView | null>(null);
+  const prefilledDelegatee = useRef('');
 
   useEffect(() => {
     if (!open) {
@@ -81,9 +88,35 @@ export function WalletDelegateModal({
     setTo('');
     setAmount('');
     setValidationError(null);
+    setHiveDelegations(null);
+    prefilledDelegatee.current = '';
     engineBroadcast.setError(null);
     hiveBroadcast.setError(null);
   }, [open, state.asset]);
+
+  useEffect(() => {
+    if (!open || asset !== 'HIVE') {
+      return;
+    }
+    const ac = new AbortController();
+    void (async () => {
+      try {
+        const res = await fetch(
+          `/api/users/${encodeURIComponent(account)}/wallet/hive/delegations`,
+          { signal: ac.signal, cache: 'no-store' },
+        );
+        if (!res.ok) {
+          return;
+        }
+        setHiveDelegations((await res.json()) as HiveHpDelegationsView);
+      } catch {
+        if (!ac.signal.aborted) {
+          setHiveDelegations(null);
+        }
+      }
+    })();
+    return () => ac.abort();
+  }, [account, asset, open]);
 
   const balanceConfig = useMemo(
     () =>
@@ -134,6 +167,51 @@ export function WalletDelegateModal({
     return formatEngineTokenUsdEstimate(amount, balanceConfig.tokenUsdRate);
   }, [amount, balanceConfig, engineSummary?.rates.hiveUsd, hiveSummary?.rates.hiveUsd]);
 
+  const existingHpDelegation = useMemo(() => {
+    if (asset !== 'HIVE' || !hiveDelegations) {
+      return null;
+    }
+    const name = to.trim().toLowerCase();
+    if (!name) {
+      return null;
+    }
+    return (
+      hiveDelegations.outgoing.find(
+        (row) => row.delegatee.toLowerCase() === name,
+      ) ?? null
+    );
+  }, [asset, hiveDelegations, to]);
+
+  const maxAmount = useMemo(() => {
+    if (asset === 'HIVE' && hiveSummary && hiveDelegations && to.trim()) {
+      return getWalletEditDelegationMaxAmount(
+        'HIVE',
+        to.trim().toLowerCase(),
+        null,
+        hiveSummary,
+        null,
+        hiveDelegations,
+      );
+    }
+    return balanceConfig?.maxAmount ?? '0';
+  }, [asset, balanceConfig?.maxAmount, hiveDelegations, hiveSummary, to]);
+
+  useEffect(() => {
+    if (!existingHpDelegation) {
+      return;
+    }
+    const name = existingHpDelegation.delegatee.toLowerCase();
+    if (prefilledDelegatee.current === name) {
+      return;
+    }
+    prefilledDelegatee.current = name;
+    setAmount((current) =>
+      current.trim() === ''
+        ? truncateHiveAmountForInput(existingHpDelegation.hp)
+        : current,
+    );
+  }, [existingHpDelegation]);
+
   const hiveDelegationMinHp = useMemo(() => {
     if (asset !== 'HIVE' || !hiveSummary) {
       return null;
@@ -153,12 +231,24 @@ export function WalletDelegateModal({
         ? hiveSummary &&
           validateHiveDelegationAmount(
             amount,
-            balanceConfig.maxAmount,
+            maxAmount,
             hiveSummary.chain,
+          ) === null &&
+          validateHiveDelegationUnchanged(
+            amount,
+            existingHpDelegation?.hp ?? null,
           ) === null
         : validateEngineTokenAmount(amount, balanceConfig.maxAmount) === null;
     return recipientOk && amountOk;
-  }, [amount, asset, balanceConfig, hiveSummary, to]);
+  }, [
+    amount,
+    asset,
+    balanceConfig,
+    existingHpDelegation?.hp,
+    hiveSummary,
+    maxAmount,
+    to,
+  ]);
 
   const pending = engineBroadcast.pending || hiveBroadcast.pending;
   const error = engineBroadcast.error ?? hiveBroadcast.error;
@@ -189,8 +279,12 @@ export function WalletDelegateModal({
       const amountError = hiveSummary
         ? validateHiveDelegationAmount(
             amount,
-            balanceConfig.maxAmount,
+            maxAmount,
             hiveSummary.chain,
+          ) ??
+          validateHiveDelegationUnchanged(
+            amount,
+            existingHpDelegation?.hp ?? null,
           )
         : 'amount_invalid';
       if (amountError) {
@@ -202,7 +296,11 @@ export function WalletDelegateModal({
                   getHiveDelegationMinimumHp(hiveSummary.chain),
                 ),
               })
-            : t(key),
+            : amountError === 'delegation_unchanged' && existingHpDelegation
+              ? interpolateMessage(t(key), {
+                  amount: truncateHiveAmountForInput(existingHpDelegation.hp),
+                })
+              : t(key),
         );
         return;
       }
@@ -297,7 +395,7 @@ export function WalletDelegateModal({
               setValidationError(null);
             }}
             options={assetOptions}
-            maxAmount={balanceConfig?.maxAmount ?? '0'}
+            maxAmount={maxAmount}
             searchableAsset
             showBalanceInAssetMenu
             showTokenOnlyOnAssetTrigger={false}
@@ -309,11 +407,19 @@ export function WalletDelegateModal({
           </p>
           {balanceConfig ? (
             <WalletModalBalanceLine
-              amount={balanceConfig.maxAmount}
+              amount={maxAmount}
               symbol={balanceConfig.balanceSymbol}
-              onSelect={() => setAmount(balanceConfig.maxAmount)}
+              onSelect={() => setAmount(maxAmount)}
               labelKey="available"
             />
+          ) : null}
+          {existingHpDelegation ? (
+            <p className="text-body-sm text-muted">
+              {interpolateMessage(t('wallet_hive_delegate_replaces'), {
+                amount: truncateHiveAmountForInput(existingHpDelegation.hp),
+                account: existingHpDelegation.delegatee,
+              })}
+            </p>
           ) : null}
         </div>
         {hiveDelegationMinHp != null ? (
