@@ -51,6 +51,8 @@ Dead or flaky UGC hosts (e.g. legacy **`ipfs.busy.org`**) break feed previews an
 
 **Skip proxy** when the URL contains: `waivio.nyc3.digitaloceanspaces` / `nyc3.digitaloceanspaces`, `steemitimages.com`, `i.imgur.com`, `sephora.com`, `.avif`, `gstatic.com` (Google Shopping thumbnails — Hive returns 403), `ecency.com` (Ecency CDN thumbs — double-proxy distorts), `/ipfs-gateway/content/image/` (first-party IPFS content gateway — Hive returns 403), or video poster CDNs (`vumbnail.com`, `i.ytimg.com`, `img.youtube.com` — Hive returns 403). Hive **avatar** paths (`images.hive.blog/u/…`) are left unchanged. Relative `/…` and `data:` URLs are left unchanged.
 
+**Legacy `steemitimages.com` resize proxies:** apex and `cdn.steemitimages.com` paths like `/640x0/…` and `/p/…` return JSON, not an image. `0x0/` wrapping those URLs returns 400. Before the skip list, replace only that outer host with `images.hive.blog` (Peakd does the same). An ipfs inner URL is then double-wrapped as `0x0/`. An inner `cdn.steemitimages.com` URL stays unwrapped because the skip list still matches. Direct `/DQm…` files still serve from steemitimages and are not host-swapped (`images.hive.blog/DQm…` returns 500).
+
 **Legacy `steemitimages.com` object avatars:** stored URLs like `https://steemitimages.com/u/{user}/avatar/large` must not be wrapped in `0x0/` (403). `normalizeLegacyObjectImageUrl` rewrites them to `https://images.hive.blog/u/{user}/avatar/{large|small}` before display.
 
 **Already on `images.hive.blog/{W}x{H}/…` or `/p/…`:** some stored thumbs (e.g. `1280x0/https://ipfs.busy.org/…`) 400 alone but work when wrapped again as `0x0/{fullHiveUrl}`. Direct Hive assets (`/DQm…`, `/u/…` avatars) and standard `0x0/{external}` are left as-is.

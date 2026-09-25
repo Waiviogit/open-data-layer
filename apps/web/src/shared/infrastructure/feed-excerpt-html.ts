@@ -185,7 +185,7 @@ export function feedExcerptToSafeHtml(
       return '';
     }
   }
-  const prepared = looksLikeHtml ? source : linkifyBareImageUrls(source);
+  const prepared = linkifyBareImageUrls(source);
   const intermediate = looksLikeHtml
     ? prepared
     : (marked.parse(prepared, { async: false, gfm: true, breaks: true }) as string);

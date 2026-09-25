@@ -25,4 +25,20 @@ describe('linkifyBareImageUrls', () => {
       '<p><img src="https://images.waivio.io/photo.jpg" alt="a"></p>';
     expect(linkifyBareImageUrls(html)).toBe(html);
   });
+
+  it('linkifies extensionless steemit resize URLs inside HTML text', () => {
+    const url =
+      'https://steemitimages.com/640x0/https://ipfs.busy.org/ipfs/QmTo8opLZykpxLng6yxpgn5Aco5SDhrVMHVM4inZT1SxHE';
+    expect(linkifyBareImageUrls(`<center>${url}</center>`)).toBe(
+      `<center><img src="${url}" alt="" /></center>`,
+    );
+  });
+
+  it('linkifies image filenames that contain parentheses', () => {
+    const url =
+      'https://steemitimages.com/640x0/https://cdn.steemitimages.com/DQmS4vR6jYqXCeDJbmVGyYKXj1cDcg1j7ybRnjk95nMbxZR/maxresdefault%20(1).jpg';
+    expect(linkifyBareImageUrls(`see ${url} here`)).toBe(
+      `see <img src="${url}" alt="" /> here`,
+    );
+  });
 });

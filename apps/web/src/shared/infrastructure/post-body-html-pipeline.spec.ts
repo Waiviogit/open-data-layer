@@ -73,6 +73,16 @@ describe('sanitizePostBodyHtml', () => {
     expect(html).toContain(`data-fallback-src="${src}"`);
   });
 
+  it('turns bare steemit resize URLs in HTML bodies into proxied images', () => {
+    const src =
+      'https://steemitimages.com/640x0/https://ipfs.busy.org/ipfs/QmTo8opLZykpxLng6yxpgn5Aco5SDhrVMHVM4inZT1SxHE';
+    const html = sanitizePostBodyHtml(`<center>${src}</center>`);
+    expect(html).toContain(
+      'https://images.hive.blog/0x0/https://images.hive.blog/640x0/https://ipfs.busy.org/ipfs/QmTo8opLZykpxLng6yxpgn5Aco5SDhrVMHVM4inZT1SxHE',
+    );
+    expect(html).toContain(`data-fallback-src="${src}"`);
+  });
+
   it('does not re-proxy digitaloceanspaces images', () => {
     const src =
       'https://waivio.nyc3.digitaloceanspaces.com/1562259409_photo.jpg';

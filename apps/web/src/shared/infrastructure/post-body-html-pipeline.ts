@@ -274,9 +274,7 @@ const POST_BODY_SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
 /** Markdown or HTML post body → safe HTML for display. Client and server safe. */
 export function sanitizePostBodyHtml(raw: string): string {
   const parsed = postBodyToIntermediateHtml(raw);
-  const withImages = postBodyLooksLikeHtml(raw)
-    ? parsed
-    : linkifyBareImageUrls(parsed);
+  const withImages = linkifyBareImageUrls(parsed);
   const intermediate = linkifyHiveMentions(
     embedMediaUrls(embedThreeSpeakInBody(convertMarkdownImages(withImages))),
   );

@@ -19,6 +19,14 @@ const STEEMIT_IMAGES_AVATAR_PATH =
   /^https?:\/\/(?:cdn\.)?steemitimages\.com\/u\/([^/?#]+)\/avatar\/([^/?#]+)/i;
 
 /**
+ * Dead Steemit resize proxy (`/640x0/`, `/0x0/`, `/p/`). Same path on
+ * `images.hive.blog` still returns the image. Direct `/DQm…` files stay on
+ * steemitimages — Hive's `/DQm…` copy 500s.
+ */
+const STEEMIT_RESIZE_PROXY_PATH =
+  /^https?:\/\/(?:cdn\.)?steemitimages\.com\/(?:\d+x\d+|p)\//i;
+
+/**
  * Hosts / path fragments that must not be wrapped.
  * Includes video poster CDNs — Hive `0x0` returns 403 for e.g. vumbnail.com.
  */
@@ -61,6 +69,17 @@ function normalizeProtocolRelative(url: string): string {
     return `https:${url}`;
   }
   return url;
+}
+
+/** Swap only the outer resize host. Inner `cdn.steemitimages.com` URLs stay. */
+function rewriteLegacySteemitResizeProxy(url: string): string {
+  if (!STEEMIT_RESIZE_PROXY_PATH.test(url)) {
+    return url;
+  }
+  return url.replace(
+    /^https?:\/\/(?:cdn\.)?steemitimages\.com\//i,
+    'https://images.hive.blog/',
+  );
 }
 
 function shouldSkipProxy(url: string): boolean {
@@ -109,7 +128,9 @@ export function getProxyImageUrl(url: string | null | undefined): string {
     return trimmed;
   }
 
-  const normalized = normalizeProtocolRelative(trimmed);
+  const normalized = rewriteLegacySteemitResizeProxy(
+    normalizeProtocolRelative(trimmed),
+  );
 
   if (isHiveAvatarUrl(normalized) || shouldSkipProxy(normalized)) {
     return normalized;

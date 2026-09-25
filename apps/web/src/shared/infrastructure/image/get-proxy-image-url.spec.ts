@@ -102,9 +102,38 @@ describe('getProxyImageUrl', () => {
     expect(getImagePathPost(gstatic)).toBe(gstatic);
   });
 
-  it('skips steemitimages.com (Hive 0x0 returns 403)', () => {
+  it('skips steemitimages.com avatars (Hive 0x0 returns 403)', () => {
     expect(getProxyImageUrl(NEOXIAN_STEEMIT)).toBe(NEOXIAN_STEEMIT);
     expect(getImagePathPost(NEOXIAN_STEEMIT)).toBe(NEOXIAN_STEEMIT);
+  });
+
+  it('rewrites dead steemitimages resize proxies onto images.hive.blog', () => {
+    const ipfs =
+      'https://steemitimages.com/640x0/https://ipfs.busy.org/ipfs/QmTo8opLZykpxLng6yxpgn5Aco5SDhrVMHVM4inZT1SxHE';
+    const rewritten =
+      'https://images.hive.blog/640x0/https://ipfs.busy.org/ipfs/QmTo8opLZykpxLng6yxpgn5Aco5SDhrVMHVM4inZT1SxHE';
+    expect(getProxyImageUrl(ipfs)).toBe(
+      `https://images.hive.blog/0x0/${rewritten}`,
+    );
+    expect(getImagePathPost(ipfs)).toBe(
+      `https://images.hive.blog/0x0/${rewritten}`,
+    );
+  });
+
+  it('rewrites the outer host and leaves an inner cdn.steemitimages.com URL unwrapped', () => {
+    const nested =
+      'https://steemitimages.com/640x0/https://cdn.steemitimages.com/DQmSFmABdN8qJzZybCo7uqPnehUJ7vCDzmEWPpgAhjm9L7U/ragulla%202.jpg';
+    const rewritten =
+      'https://images.hive.blog/640x0/https://cdn.steemitimages.com/DQmSFmABdN8qJzZybCo7uqPnehUJ7vCDzmEWPpgAhjm9L7U/ragulla%202.jpg';
+    expect(getProxyImageUrl(nested)).toBe(rewritten);
+    expect(getImagePathPost(nested)).toBe(rewritten);
+  });
+
+  it('leaves direct steemitimages DQm assets on the original host', () => {
+    const direct =
+      'https://steemitimages.com/DQmSFmABdN8qJzZybCo7uqPnehUJ7vCDzmEWPpgAhjm9L7U/ragulla%202.jpg';
+    expect(getProxyImageUrl(direct)).toBe(direct);
+    expect(getImagePathPost(direct)).toBe(direct);
   });
 
   it('skips first-party ipfs-gateway content image URLs (Hive 0x0 returns 403)', () => {
