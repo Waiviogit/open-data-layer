@@ -163,7 +163,6 @@ export function buildObjectCreateEnvelope(
       payload: {
         object_id: input.objectId,
         object_type: input.objectType,
-        creator: input.creator,
       },
     },
   ];
@@ -197,7 +196,6 @@ export function buildObjectCreateEnvelope(
     const payload: Record<string, unknown> = {
       object_id: input.objectId,
       update_type: field.updateType,
-      creator: input.creator,
       [valueField]: parsed.data,
     };
 

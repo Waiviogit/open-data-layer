@@ -54,7 +54,7 @@ describe('buildOdlUpdateCreateOp', () => {
     const payload = parsed.events[0]?.payload;
     expect(payload?.['object_id']).toBe('obj-1');
     expect(payload?.['update_type']).toBe('name');
-    expect(payload?.['creator']).toBe('alice');
+    expect(payload?.['creator']).toBeUndefined();
     expect(payload?.['transaction_id']).toBeUndefined();
     expect(payload?.['value_text']).toBe('My Business');
     expect(payload?.['locale']).toBe('en-US');
@@ -140,8 +140,9 @@ describe('buildOdlUpdateVoteOp', () => {
     expect(parsed.events[0]?.action).toBe('update_vote');
     expect(parsed.events[0]?.payload['update_id']).toBe('trx-0-0-1');
     expect(parsed.events[0]?.payload['object_id']).toBe('obj-1');
-    expect(parsed.events[0]?.payload['voter']).toBe('alice');
+    expect(parsed.events[0]?.payload['voter']).toBeUndefined();
     expect(parsed.events[0]?.payload['vote']).toBe('for');
+    expect(op.required_posting_auths).toEqual(['alice']);
   });
 
   it('emits vote against', () => {
@@ -185,7 +186,8 @@ describe('buildOdlUpdateCreateWithRankVoteOp', () => {
     expect(parsed.events[1]?.payload['create_event_id']).toBe(createEventId);
     expect(parsed.events[1]?.payload['update_id']).toBeUndefined();
     expect(parsed.events[1]?.payload['rank']).toBe(8000);
-    expect(parsed.events[1]?.payload['voter']).toBe('alice');
+    expect(parsed.events[1]?.payload['voter']).toBeUndefined();
+    expect(parsed.events[0]?.payload['creator']).toBeUndefined();
   });
 });
 
@@ -206,7 +208,7 @@ describe('buildOdlRankVoteOp', () => {
     expect(parsed.events[0]?.action).toBe('rank_vote');
     expect(parsed.events[0]?.payload['update_id']).toBe('trx-0-0-3');
     expect(parsed.events[0]?.payload['object_id']).toBe('obj-1');
-    expect(parsed.events[0]?.payload['voter']).toBe('alice');
+    expect(parsed.events[0]?.payload['voter']).toBeUndefined();
     expect(parsed.events[0]?.payload['rank']).toBe(7000);
     expect(parsed.events[0]?.payload['rank_context']).toBe('default');
   });

@@ -45,7 +45,7 @@ Hive validates `custom_json.json` UTF-8 byte length: `json.size() <= 8192`.
 3. If a **single** event alone exceeds 8192 bytes → throw (cannot broadcast on chain).
 4. If more than **5** ops are required → throw.
 
-Each op uses the same `id` (`odlCustomJsonId`), `required_posting_auths: [creator]`, and `required_auths: []`.
+Each op uses the same `id` (`odlCustomJsonId`), `required_posting_auths: [creator]`, and `required_auths: []`. Event payloads do not repeat `creator` or `voter`.
 
 Create does not broadcast a default `active` status update. `objects_core.status` defaults to `active`. A non-active status (`unavailable`, `closed`, and the other status titles) is still included when the form or agent field supplies it.
 

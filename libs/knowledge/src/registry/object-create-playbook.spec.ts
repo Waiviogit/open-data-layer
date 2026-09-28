@@ -48,7 +48,8 @@ describe('getObjectCreatePlaybook', () => {
     expect(result!.update_summaries.find((s) => s.update_type === 'name')?.localizable).toBe(
       true,
     );
-    expect(result!.registry.example_create_payload).toContain('creator');
+    expect(result!.registry.example_create_payload).toContain('required_posting_auths');
+    expect(result!.registry.example_create_payload).not.toContain('creator');
     expect(result!.playbook?.truncated).toBe(false);
     expect(result!.playbook_missing).toBe(false);
   });

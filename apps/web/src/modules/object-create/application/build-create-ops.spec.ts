@@ -116,8 +116,8 @@ describe('buildCreateOps', () => {
     expect(envelope.events[0]?.payload).toMatchObject({
       object_id: 'abc12345',
       object_type: 'recipe',
-      creator: 'alice',
     });
+    expect(envelope.events[0]?.payload['creator']).toBeUndefined();
 
     const updates = envelope.events.filter((e) => e.action === 'update_create');
     expect(updates.length).toBeGreaterThanOrEqual(4);

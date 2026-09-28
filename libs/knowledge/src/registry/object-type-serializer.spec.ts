@@ -1,9 +1,10 @@
 import { objectTypeExamplePayload } from './object-type-serializer';
 
 describe('objectTypeExamplePayload', () => {
-  it('includes creator in object_create payload', () => {
+  it('puts the account in required_posting_auths, not the payload', () => {
     const payload = objectTypeExamplePayload('recipe');
-    expect(payload).toContain('creator');
+    expect(payload).toContain('required_posting_auths: [account]');
+    expect(payload).not.toContain('creator');
     expect(payload).toContain("object_type: 'recipe'");
   });
 });

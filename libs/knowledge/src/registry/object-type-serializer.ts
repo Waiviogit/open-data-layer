@@ -17,8 +17,7 @@ export function objectTypeExamplePayload(objectType: string): string {
           v: 1,
           payload: {
             object_id: '${safeId}1',
-            object_type: '${objectType}',
-            creator: account
+            object_type: '${objectType}'
           }
         }
       ]

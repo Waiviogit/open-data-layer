@@ -33,7 +33,6 @@ function buildUpdateCreatePayload(input: BuildOdlUpdateCreateOpInput): Record<st
   const payload: Record<string, unknown> = {
     object_id: input.objectId,
     update_type: input.updateType,
-    creator: input.creator,
     [valueField]: input.value,
   };
   if (input.locale !== undefined && input.locale !== '') {
@@ -89,7 +88,6 @@ export function buildOdlGalleryItemWithAlbumEnsureOp(
     payload: {
       object_id: input.objectId,
       update_type: 'imageGallery',
-      creator: input.creator,
       value_text: input.albumName,
     },
   });
@@ -100,7 +98,6 @@ export function buildOdlGalleryItemWithAlbumEnsureOp(
     payload: {
       object_id: input.objectId,
       update_type: 'imageGalleryItem',
-      creator: input.creator,
       value_json: input.itemValue,
     },
   });
@@ -137,7 +134,6 @@ export function buildOdlUpdateVoteOp(input: BuildOdlUpdateVoteOpInput): CustomJs
         payload: {
           update_id: input.updateId,
           object_id: input.objectId,
-          voter: input.voter,
           vote: input.vote,
         },
       },
@@ -199,7 +195,6 @@ export function buildOdlUpdateCreateWithRankVoteOp(
         payload: {
           object_id: input.objectId,
           update_type: 'aggregateRating',
-          creator: input.creator,
           value_text: input.valueText,
         },
       },
@@ -209,7 +204,6 @@ export function buildOdlUpdateCreateWithRankVoteOp(
         payload: {
           create_event_id: eventId,
           object_id: input.objectId,
-          voter: input.creator,
           rank: input.rank,
           rank_context: input.rankContext ?? 'default',
         },
@@ -234,7 +228,6 @@ export function buildOdlRankVoteOp(input: BuildOdlRankVoteOpInput): CustomJsonOp
         payload: {
           update_id: input.updateId,
           object_id: input.objectId,
-          voter: input.voter,
           rank: input.rank,
           rank_context: input.rankContext ?? 'default',
         },

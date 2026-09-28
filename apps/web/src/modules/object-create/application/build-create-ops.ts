@@ -37,7 +37,6 @@ function resolveValueFieldKey(valueKind: OdlUpdateCreateValueKind): string {
 
 function buildUpdateCreateEventPayload(
   objectId: string,
-  creator: string,
   entry: FieldEntry,
 ): Record<string, unknown> | null {
   const definition = UPDATE_REGISTRY[entry.updateType];
@@ -53,7 +52,6 @@ function buildUpdateCreateEventPayload(
   const payload: Record<string, unknown> = {
     object_id: objectId,
     update_type: entry.updateType,
-    creator,
     [valueField]: parsed.value,
   };
   if (definition.localizable && entry.locale) {
@@ -76,7 +74,6 @@ function readGalleryItemAlbumName(value: unknown): string | null {
 
 function ensureGalleryAlbumEvent(
   objectId: string,
-  creator: string,
   albumName: string,
   acceptedFields: FieldEntry[],
   events: OdlCreateEvent[],
@@ -90,7 +87,7 @@ function ensureGalleryAlbumEvent(
     updateType: UPDATE_TYPES.IMAGE_GALLERY,
     value: albumName,
   };
-  const payload = buildUpdateCreateEventPayload(objectId, creator, syntheticEntry);
+  const payload = buildUpdateCreateEventPayload(objectId, syntheticEntry);
   if (!payload) {
     return;
   }
@@ -132,7 +129,6 @@ export function buildAllCreateEvents(input: BuildCreateOpsInput): OdlCreateEvent
       payload: {
         object_id: input.objectId,
         object_type: input.objectType,
-        creator: input.creator,
       },
     },
   ];
@@ -170,7 +166,6 @@ export function buildAllCreateEvents(input: BuildCreateOpsInput): OdlCreateEvent
         if (albumName) {
           ensureGalleryAlbumEvent(
             input.objectId,
-            input.creator,
             albumName,
             acceptedFields,
             events,
@@ -178,7 +173,7 @@ export function buildAllCreateEvents(input: BuildCreateOpsInput): OdlCreateEvent
         }
       }
     }
-    const payload = buildUpdateCreateEventPayload(input.objectId, input.creator, {
+    const payload = buildUpdateCreateEventPayload(input.objectId, {
       ...entry,
       locale,
     });

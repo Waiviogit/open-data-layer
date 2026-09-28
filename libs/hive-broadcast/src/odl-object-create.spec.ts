@@ -48,7 +48,6 @@ describe('buildObjectCreateEnvelope', () => {
       payload: {
         object_id: BASE.objectId,
         object_type: BASE.objectType,
-        creator: BASE.creator,
       },
     });
 
@@ -60,9 +59,9 @@ describe('buildObjectCreateEnvelope', () => {
     expect(nameEvent?.payload).toMatchObject({
       object_id: BASE.objectId,
       update_type: 'name',
-      creator: BASE.creator,
       value_text: 'Borscht',
     });
+    expect(nameEvent?.payload['creator']).toBeUndefined();
 
     expect(result.ops).toHaveLength(1);
     expect(result.ops[0]?.required_posting_auths).toEqual([BASE.creator]);
@@ -150,7 +149,6 @@ describe('chunkOdlEventsIntoOps', () => {
         payload: {
           object_id: BASE.objectId,
           object_type: BASE.objectType,
-          creator: BASE.creator,
         },
       },
       {
@@ -159,7 +157,6 @@ describe('chunkOdlEventsIntoOps', () => {
         payload: {
           object_id: BASE.objectId,
           update_type: 'description',
-          creator: BASE.creator,
           value_text: largeText(7_000),
         },
       },
@@ -169,7 +166,6 @@ describe('chunkOdlEventsIntoOps', () => {
         payload: {
           object_id: BASE.objectId,
           update_type: 'name',
-          creator: BASE.creator,
           value_text: largeText(7_000),
         },
       },
@@ -198,7 +194,6 @@ describe('chunkOdlEventsIntoOps', () => {
         payload: {
           object_id: BASE.objectId,
           update_type: 'description',
-          creator: BASE.creator,
           value_text: largeText(7_500 + index),
         },
       }),

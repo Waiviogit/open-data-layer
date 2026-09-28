@@ -259,6 +259,8 @@ Limits:
 
 **Large standalone `update_create`** (e.g. `pageContent`, `skillContent`, `legalText`, `htmlContent` over 8192 bytes): upload the full `{ events: [...] }` envelope to IPFS, then broadcast **`batch_import`** with the CID — **not** OSL `overflow_ref` (that field is for messaging only). Agent-wallet: `odl_build_update_create` → when `requiresIpfsBatch`, `ipfs_upload_file` + `odl_build_batch_import`. See [ipfs-file-upload.md](ipfs-file-upload.md).
 
+`creator` / `voter` on these builders set `required_posting_auths` only. They are not written into the JSON payload.
+
 Example — single field update after object exists (library or MCP `odl_build_update_create`):
 
 ```ts

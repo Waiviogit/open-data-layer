@@ -43,7 +43,6 @@ function resolveValueFieldKey(valueKind: OdlUpdateCreateValueKind): string {
 
 function buildUpdateCreateEventPayload(
   objectId: string,
-  creator: string,
   entry: FieldEntry,
 ): Record<string, unknown> | null {
   const definition = UPDATE_REGISTRY[entry.updateType];
@@ -59,7 +58,6 @@ function buildUpdateCreateEventPayload(
   const payload: Record<string, unknown> = {
     object_id: objectId,
     update_type: entry.updateType,
-    creator,
     [valueField]: parsed.value,
   };
   if (definition.localizable && entry.locale) {
@@ -123,7 +121,6 @@ export function buildEditorQuickCreateEvents(
       payload: {
         object_id: input.objectId,
         object_type: input.objectType,
-        creator: input.creator,
       },
     },
   ];
@@ -152,7 +149,7 @@ export function buildEditorQuickCreateEvents(
     }
     const locale =
       entry.locale && entry.locale.length > 0 ? entry.locale : input.language;
-    const payload = buildUpdateCreateEventPayload(input.objectId, input.creator, {
+    const payload = buildUpdateCreateEventPayload(input.objectId, {
       ...entry,
       locale,
     });

@@ -48,7 +48,7 @@ describe('buildValidatedUpdateCreateOp', () => {
 
     expect(op.required_posting_auths).toEqual(['alice']);
     const payload = JSON.parse(op.json).events[0].payload as Record<string, unknown>;
-    expect(payload['creator']).toBe('alice');
+    expect(payload['creator']).toBeUndefined();
   });
 
   it('throws for unknown update_type', () => {
