@@ -325,6 +325,107 @@ describe('HasClient', () => {
     await expect(ackPromise).rejects.toThrow('sign rejected');
   });
 
+  it('keeps sign_ack that arrives before awaitBroadcast', async () => {
+    const transport = new FakeHasTransport();
+    const client = await openClient(transport);
+
+    const session = {
+      username: 'alice',
+      key: 'k1',
+      token: 't1',
+      expire: 9_000,
+    };
+
+    const startPromise = client.startBroadcast({
+      session,
+      keyType: 'posting',
+      ops: [['custom_json', { id: 'odl-testnet', json: '{}' }]],
+    });
+    await Promise.resolve();
+
+    transport.emit({
+      cmd: HAS_CMD.SIGN_WAIT,
+      uuid: 's1',
+      expire: 9_000,
+    });
+    transport.emit({
+      cmd: HAS_CMD.SIGN_ACK,
+      uuid: 's1',
+      data: 'trx-abc',
+    });
+
+    const signPending = await startPromise;
+    await expect(
+      client.awaitBroadcast(signPending.uuid, session, signPending.expire),
+    ).resolves.toEqual({ transactionId: 'trx-abc' });
+  });
+
+  it('keeps sign_nack that arrives before awaitBroadcast', async () => {
+    const transport = new FakeHasTransport();
+    const client = await openClient(transport);
+
+    const session = {
+      username: 'alice',
+      key: 'k1',
+      token: 't1',
+      expire: 9_000,
+    };
+
+    const startPromise = client.startBroadcast({
+      session,
+      keyType: 'posting',
+      ops: [['vote', {}]],
+    });
+    await Promise.resolve();
+
+    transport.emit({
+      cmd: HAS_CMD.SIGN_WAIT,
+      uuid: 's1',
+      expire: 9_000,
+    });
+    transport.emit({ cmd: HAS_CMD.SIGN_NACK, uuid: 's1' });
+
+    const signPending = await startPromise;
+    await expect(
+      client.awaitBroadcast(signPending.uuid, session, signPending.expire),
+    ).rejects.toThrow('sign rejected');
+  });
+
+  it('keeps sign_err that arrives before awaitBroadcast', async () => {
+    const transport = new FakeHasTransport();
+    const client = await openClient(transport);
+
+    const session = {
+      username: 'alice',
+      key: 'k1',
+      token: 't1',
+      expire: 9_000,
+    };
+
+    const startPromise = client.startBroadcast({
+      session,
+      keyType: 'posting',
+      ops: [['vote', {}]],
+    });
+    await Promise.resolve();
+
+    transport.emit({
+      cmd: HAS_CMD.SIGN_WAIT,
+      uuid: 's1',
+      expire: 9_000,
+    });
+    transport.emit({
+      cmd: HAS_CMD.SIGN_ERR,
+      uuid: 's1',
+      error: CryptoJS.AES.encrypt('insufficient RC', 'k1').toString(),
+    });
+
+    const signPending = await startPromise;
+    await expect(
+      client.awaitBroadcast(signPending.uuid, session, signPending.expire),
+    ).rejects.toThrow('insufficient RC');
+  });
+
   it('decrypts sign_err message', async () => {
     const transport = new FakeHasTransport();
     const client = await openClient(transport);

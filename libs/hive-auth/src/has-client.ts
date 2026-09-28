@@ -96,6 +96,15 @@ type ChallengeWaitResolver = {
   reject: (error: Error) => void;
 };
 
+/** SIGN_ACK / SIGN_NACK / SIGN_ERR that arrived before awaitBroadcast registered. */
+type EarlySignResult = {
+  timeoutId: ReturnType<typeof setTimeout>;
+  outcome:
+    | { kind: 'ack'; transactionId: string }
+    | { kind: 'nack' }
+    | { kind: 'err'; error: string };
+};
+
 export type HasClientOptions = {
   host: string;
   transportFactory?: HasTransportFactory;
@@ -123,6 +132,7 @@ export class HasClient {
   private readonly authAckWaiters = new Map<string, AuthAckWaiter>();
   private signWaitResolvers: ChallengeWaitResolver[] = [];
   private readonly signAckWaiters = new Map<string, SignAckWaiter>();
+  private readonly earlySignResults = new Map<string, EarlySignResult>();
   private readonly challengeAckWaiters = new Map<string, ChallengeAckWaiter>();
   private readonly attachWaiters = new Map<
     string,
@@ -355,6 +365,11 @@ export class HasClient {
     session: HasSession,
     expireAt: number,
   ): Promise<{ transactionId: string }> {
+    const early = this.takeEarlySignResult(uuid);
+    if (early) {
+      return this.settleEarlySignResult(early, session);
+    }
+
     const existing = this.signAckWaiters.get(uuid);
     if (existing) {
       return new Promise<{ transactionId: string }>((resolve, reject) => {
@@ -646,18 +661,21 @@ export class HasClient {
     }
 
     const waiter = this.signAckWaiters.get(frame.uuid);
-    if (!waiter) {
-      return;
-    }
-
-    clearTimeout(waiter.timeoutId);
-    this.signAckWaiters.delete(frame.uuid);
-
     const transactionId =
       typeof frame.data === 'string' && frame.data.length > 0
         ? frame.data
         : '';
 
+    if (!waiter) {
+      this.bufferEarlySignResult(frame.uuid, {
+        kind: 'ack',
+        transactionId,
+      });
+      return;
+    }
+
+    clearTimeout(waiter.timeoutId);
+    this.signAckWaiters.delete(frame.uuid);
     waiter.resolve({ transactionId });
   }
 
@@ -668,6 +686,7 @@ export class HasClient {
 
     const waiter = this.signAckWaiters.get(frame.uuid);
     if (!waiter) {
+      this.bufferEarlySignResult(frame.uuid, { kind: 'nack' });
       return;
     }
 
@@ -683,6 +702,10 @@ export class HasClient {
 
     const waiter = this.signAckWaiters.get(frame.uuid);
     if (!waiter) {
+      this.bufferEarlySignResult(frame.uuid, {
+        kind: 'err',
+        error: frame.error,
+      });
       return;
     }
 
@@ -826,6 +849,56 @@ export class HasClient {
     });
   }
 
+  private bufferEarlySignResult(
+    uuid: string,
+    outcome: EarlySignResult['outcome'],
+  ): void {
+    const previous = this.earlySignResults.get(uuid);
+    if (previous) {
+      clearTimeout(previous.timeoutId);
+    }
+
+    const timeoutId = setTimeout(() => {
+      this.earlySignResults.delete(uuid);
+    }, this.timeoutMs);
+
+    this.earlySignResults.set(uuid, { timeoutId, outcome });
+  }
+
+  private takeEarlySignResult(
+    uuid: string,
+  ): EarlySignResult['outcome'] | undefined {
+    const early = this.earlySignResults.get(uuid);
+    if (!early) {
+      return undefined;
+    }
+
+    clearTimeout(early.timeoutId);
+    this.earlySignResults.delete(uuid);
+    return early.outcome;
+  }
+
+  private settleEarlySignResult(
+    outcome: EarlySignResult['outcome'],
+    session: HasSession,
+  ): { transactionId: string } {
+    if (outcome.kind === 'ack') {
+      return { transactionId: outcome.transactionId };
+    }
+
+    if (outcome.kind === 'nack') {
+      throw new Error('sign rejected');
+    }
+
+    let message = 'sign error';
+    try {
+      message = decryptHasError(outcome.error, session.key);
+    } catch {
+      message = 'sign error';
+    }
+    throw new Error(message);
+  }
+
   private removeAuthWaitResolver(
     entry: (typeof this.authWaitResolvers)[number],
   ): void {
@@ -854,6 +927,11 @@ export class HasClient {
       clearTimeout(waiter.timeoutId);
       waiter.reject(error);
       this.signAckWaiters.delete(uuid);
+    }
+
+    for (const [uuid, early] of this.earlySignResults.entries()) {
+      clearTimeout(early.timeoutId);
+      this.earlySignResults.delete(uuid);
     }
 
     for (const [uuid, waiter] of this.challengeAckWaiters.entries()) {
