@@ -9,6 +9,7 @@ import {
   GetObjectChannelEndpoint,
   GetObjectChannelMessagesEndpoint,
 } from './get-object-channel.endpoint';
+import { GetFollowedObjectsMessagesEndpoint } from './get-followed-objects-messages.endpoint';
 import { MarkChannelReadEndpoint } from './mark-channel-read.endpoint';
 import {
   ValidateChannelMembersEndpoint,
@@ -26,6 +27,7 @@ import { CheckActivityDuplicateEndpoint } from './check-activity-duplicate.endpo
     GetChannelMessagesEndpoint,
     GetObjectChannelEndpoint,
     GetObjectChannelMessagesEndpoint,
+    GetFollowedObjectsMessagesEndpoint,
     CheckActivityDuplicateEndpoint,
     MarkChannelReadEndpoint,
     ValidateChannelMembersEndpoint,
@@ -39,6 +41,7 @@ import { CheckActivityDuplicateEndpoint } from './check-activity-duplicate.endpo
     GetChannelMessagesEndpoint,
     GetObjectChannelEndpoint,
     GetObjectChannelMessagesEndpoint,
+    GetFollowedObjectsMessagesEndpoint,
     CheckActivityDuplicateEndpoint,
     MarkChannelReadEndpoint,
     ValidateChannelMembersEndpoint,

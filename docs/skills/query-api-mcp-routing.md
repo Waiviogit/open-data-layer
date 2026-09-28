@@ -68,6 +68,7 @@ related:
 | USD → WAIV conversion hint | `convert_usd_to_waiv` |
 | Messaging inbox / channels | `get_channels`, `get_channel_by_id`, `get_channel_messages` |
 | Object channel feed | `get_object_channel`, `get_object_channel_messages` |
+| Followed objects message feed | `get_followed_objects_messages` |
 | Memo key for encrypt | `get_memo_public_key` |
 | Hive L1 wallet summary | `get_user_hive_wallet` |
 | HP / RC delegation lists | `get_user_hive_hp_delegations`, `get_user_hive_rc_delegations` |

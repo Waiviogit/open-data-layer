@@ -569,6 +569,13 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/osl-messaging.md',
   },
   {
+    name: 'get_followed_objects_messages',
+    description:
+      'Merged object-channel messages for every active object the account follows, newest coalesced publish time first.',
+    httpEquivalent: 'POST /query/v1/users/:name/following-objects/messages',
+    specPath: 'docs/apps/query-api/spec/osl-messaging.md',
+  },
+  {
     name: 'check_object_activity_duplicate',
     description:
       'Preflight duplicate check for archival object activity before broadcasting message_create.',

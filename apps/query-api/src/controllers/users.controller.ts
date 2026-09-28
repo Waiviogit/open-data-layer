@@ -95,6 +95,14 @@ import {
   GetMemoPublicKeyEndpoint,
   type MemoPublicKeyResponseDto,
 } from '../domain/messaging/get-memo-public-key.endpoint';
+import {
+  GetFollowedObjectsMessagesEndpoint,
+  type FollowedObjectsMessagesResponseDto,
+} from '../domain/messaging';
+import {
+  messageHistoryBodySchema,
+  type MessageHistoryBody,
+} from '../domain/messaging/schemas/messaging.schema';
 
 @Controller({ path: 'users', version: '1' })
 export class UsersController {
@@ -122,6 +130,7 @@ export class UsersController {
     private readonly getUserAccountSidebar: GetUserAccountSidebarEndpoint,
     private readonly getUserNotificationSettings: GetUserNotificationSettingsEndpoint,
     private readonly getMemoPublicKey: GetMemoPublicKeyEndpoint,
+    private readonly getFollowedObjectsMessages: GetFollowedObjectsMessagesEndpoint,
   ) {}
 
   @Get(':name/categories')
@@ -212,6 +221,25 @@ export class UsersController {
       name,
       query,
       locale,
+      governanceObjectIdFromHeader,
+      viewer,
+    );
+    if (!result) {
+      throw new NotFoundException(`User not found: ${name}`);
+    }
+    return result;
+  }
+
+  @Post(':name/following-objects/messages')
+  async getFollowedObjectMessages(
+    @Param('name') name: string,
+    @Body(new ZodBodyPipe(messageHistoryBodySchema)) body: MessageHistoryBody,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqViewer() viewer: string | undefined,
+  ): Promise<FollowedObjectsMessagesResponseDto> {
+    const result = await this.getFollowedObjectsMessages.execute(
+      name,
+      body,
       governanceObjectIdFromHeader,
       viewer,
     );

@@ -162,6 +162,96 @@ registry.registerPath({
   },
 });
 
+const followedObjectsMessageSchema = registry.register(
+  'FollowedObjectsMessage',
+  z.object({
+    message_id: z.string(),
+    channel_id: z.string(),
+    author: z.string(),
+    body: z.string().nullable(),
+    encrypted_body: z.string().nullable(),
+    encryption: z
+      .object({
+        v: z.number().int(),
+        mode: z.enum(['memo', 'ephemeral']),
+        to: z.string(),
+      })
+      .nullable(),
+    overflow_ref: z.string().nullable(),
+    reply_to: z.string().nullable(),
+    quote_json: z.unknown().nullable(),
+    attachments: z.unknown().nullable(),
+    mentions: z.array(z.string()),
+    created_at_unix: z.number().int(),
+    original_created_at_unix: z.number().int().nullable(),
+    updated_at_unix: z.number().int().nullable(),
+    source_object: z.null(),
+    source: z
+      .object({
+        platform: z.string(),
+        id: z.string(),
+      })
+      .nullable(),
+    duplicate_of: z.string().nullable(),
+    duplicate_count: z.number().int(),
+    object: z.object({
+      object_id: z.string(),
+      name: z.string().openapi({
+        description: 'Native object channel title, or `object_id` when the channel has no title.',
+      }),
+    }),
+  }),
+);
+
+const followedObjectsMessagesResponseSchema = registry.register(
+  'FollowedObjectsMessagesResponse',
+  z.object({
+    items: z.array(followedObjectsMessageSchema),
+    cursor: z.string().nullable(),
+    hasMore: z.boolean(),
+  }),
+);
+
+registry.registerPath({
+  method: 'post',
+  path: '/query/v1/users/{name}/following-objects/messages',
+  tags: [queryApiOpenApiTags.users],
+  summary: 'Message feed across objects the profile follows',
+  description:
+    'Public read of object-channel messages for active `user_object_follows` of `{name}`, plus mention cross-posts, deduped by `message_id`. Ordered by `COALESCE(original_created_at_unix, created_at_unix) DESC, event_seq DESC`. Optional `X-Viewer` and `X-Governance-Object-Id` apply mute filters only; they do not change whose follows are read.',
+  request: {
+    params: z.object({ name: accountNameParam }),
+    body: {
+      content: {
+        'application/json': {
+          schema: z.object({
+            limit: z.number().int().min(1).max(100).optional().openapi({
+              description: 'Page size. Default 50.',
+            }),
+            cursor: z.string().optional(),
+            for_context: z.boolean().optional(),
+            include_duplicates: z.boolean().optional().openapi({
+              description: 'When omitted or false, only canonical rows (`message_id = dup_group_id`).',
+            }),
+          }),
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Keyset page. Empty follow set is an empty page, not 404.',
+      content: {
+        'application/json': { schema: followedObjectsMessagesResponseSchema },
+      },
+    },
+    404: {
+      description: 'Profile not in `accounts_current`.',
+      content: { 'application/json': { schema: notFoundSchema } },
+    },
+  },
+});
+
 const userAccountAuthGrantorItemSchema = registry.register(
   'UserAccountAuthGrantorItem',
   z.object({

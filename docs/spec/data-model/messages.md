@@ -49,6 +49,7 @@ Key indexes:
 - `uq_channels_direct_pair_hash` on `pair_hash` where `kind=direct`
 - `uq_channels_object_kind` on `object_id` where `kind=object`
 - `idx_messages_channel_time` on `(channel_id, created_at_unix DESC, event_seq DESC)`
+- `idx_messages_channel_activity_time` on `(channel_id, (COALESCE(original_created_at_unix, created_at_unix)) DESC, event_seq DESC)` (migration `00066_messages_channel_activity_time.ts`) — per-channel object-activity order for the followed-objects feed
 - `idx_messages_linked_object_ids` GIN on `linked_object_ids` (migration `00061_messages_linked_object_ids.ts`)
 
 ## Linked object mentions (object channels)

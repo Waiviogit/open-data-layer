@@ -412,6 +412,105 @@ export class MessagingRepository {
     return query.execute();
   }
 
+  async listFollowedObjectActivityMessages(
+    account: string,
+    excludedAuthors: readonly string[],
+    cursor: MessageCursorPayload | null,
+    limitPlusOne: number,
+    forContextViewer?: string,
+    includeDuplicates = false,
+  ): Promise<ObjectActivityMessageRow[]> {
+    const canonicalSql = includeDuplicates
+      ? sql``
+      : sql`AND m.message_id = m.dup_group_id`;
+    const authorSql =
+      excludedAuthors.length > 0
+        ? sql`AND m.author NOT IN (${sql.join(excludedAuthors.map((author) => sql`${author}`))})`
+        : sql``;
+    const contextSql = forContextViewer
+      ? sql`AND NOT EXISTS (
+          SELECT 1
+          FROM message_context_exclusions AS x
+          WHERE x.message_id = m.message_id
+            AND x.excluded_by = ${forContextViewer}
+        )`
+      : sql``;
+    const cursorSql = cursor
+      ? sql`AND (
+          COALESCE(m.original_created_at_unix, m.created_at_unix) < ${cursor.createdAtUnix}
+          OR (
+            COALESCE(m.original_created_at_unix, m.created_at_unix) = ${cursor.createdAtUnix}
+            AND m.event_seq < ${cursor.eventSeq}
+          )
+        )`
+      : sql``;
+    const rowFilters = () => sql`${canonicalSql} ${authorSql} ${contextSql} ${cursorSql}`;
+
+    const result = await sql<ObjectActivityMessageRow>`
+      WITH followed AS (
+        SELECT uof.object_id
+        FROM user_object_follows AS uof
+        INNER JOIN objects_core AS oc
+          ON oc.object_id = uof.object_id
+         AND oc.status = 'active'
+        WHERE uof.account = ${account}
+      ),
+      followed_channels AS (
+        SELECT c.channel_id, c.object_id
+        FROM channels AS c
+        INNER JOIN followed AS f ON f.object_id = c.object_id
+        WHERE c.kind = 'object'
+      )
+      SELECT
+        page.*,
+        (
+          SELECT COUNT(*)::int
+          FROM messages AS d
+          WHERE d.dup_group_id = page.dup_group_id
+        ) AS duplicate_count
+      FROM (
+        SELECT unioned.*
+        FROM (
+          (
+            SELECT m.*, fc.object_id AS channel_object_id
+            FROM followed_channels AS fc
+            CROSS JOIN LATERAL (
+              SELECT m.*
+              FROM messages AS m
+              WHERE m.channel_id = fc.channel_id
+                ${rowFilters()}
+              ORDER BY COALESCE(m.original_created_at_unix, m.created_at_unix) DESC,
+                       m.event_seq DESC
+              LIMIT ${limitPlusOne}
+            ) AS m
+          )
+          UNION ALL
+          (
+            SELECT m.*, c.object_id AS channel_object_id
+            FROM messages AS m
+            INNER JOIN channels AS c ON c.channel_id = m.channel_id
+            WHERE c.kind = 'object'
+              AND c.object_id IS NOT NULL
+              AND m.linked_object_ids && (
+                SELECT COALESCE(array_agg(f.object_id), '{}'::text[])
+                FROM followed AS f
+              )
+              AND c.object_id NOT IN (SELECT f.object_id FROM followed AS f)
+              ${rowFilters()}
+            ORDER BY COALESCE(m.original_created_at_unix, m.created_at_unix) DESC,
+                     m.event_seq DESC
+            LIMIT ${limitPlusOne}
+          )
+        ) AS unioned
+        ORDER BY COALESCE(unioned.original_created_at_unix, unioned.created_at_unix) DESC,
+                 unioned.event_seq DESC
+        LIMIT ${limitPlusOne}
+      ) AS page
+    `.execute(this.db);
+
+    return result.rows.map(normalizeActivityRow);
+  }
+
   async findObjectChannelTitles(objectIds: readonly string[]): Promise<Map<string, string>> {
     const unique = [...new Set(objectIds.map((id) => id.trim()).filter(Boolean))];
     const out = new Map<string, string>();
@@ -458,4 +557,19 @@ export class MessagingRepository {
       .execute();
     return rows.map((r) => r.message_id);
   }
+}
+
+function normalizeActivityRow(row: ObjectActivityMessageRow): ObjectActivityMessageRow {
+  return {
+    ...row,
+    created_at_unix: Number(row.created_at_unix),
+    original_created_at_unix:
+      row.original_created_at_unix == null ? null : Number(row.original_created_at_unix),
+    updated_at_unix: row.updated_at_unix == null ? null : Number(row.updated_at_unix),
+    event_seq: BigInt(row.event_seq),
+    duplicate_count: Number(row.duplicate_count),
+    mentions: row.mentions ?? [],
+    linked_object_ids: row.linked_object_ids ?? [],
+    image_phashes: row.image_phashes ?? [],
+  };
 }

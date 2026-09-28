@@ -798,3 +798,5 @@ CREATE UNIQUE INDEX uq_waiv_generated_report_rows_report_operation
 
 CREATE INDEX idx_waiv_generated_report_rows_report_ts
   ON waiv_generated_report_rows (report_id, timestamp DESC, id DESC);
+
+-- Object-activity sort index idx_messages_channel_activity_time: see docs/spec/data-model/messages.md

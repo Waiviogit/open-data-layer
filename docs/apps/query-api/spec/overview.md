@@ -32,6 +32,7 @@ The **query-api** application is the **read path**: it serves HTTP endpoints tha
 | [User notification settings](user-notification-settings.md) | `GET /query/v1/users/:name/notification-settings` |
 | [User account sidebar](users-account-sidebar.md) | `GET /query/v1/users/:name/account-sidebar` |
 | [User social lists](user-social-lists.md) | `GET .../:name/followers`, `/following`, `/following-objects` |
+| [OSL messaging](osl-messaging.md) | Channels, object activity, `POST .../:name/following-objects/messages` |
 | [User account authority lists](user-account-auths-endpoint.md) | `GET .../:name/authority-grantors`, `/authority-grantees` |
 | [Shop categories](categories.md) | `GET /query/v1/users/:name/categories` |
 | [Category objects feed](category-objects.md) | `GET /query/v1/categories/objects` |

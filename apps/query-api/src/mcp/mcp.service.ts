@@ -98,6 +98,7 @@ import {
   GetChannelMessagesEndpoint,
   GetObjectChannelEndpoint,
   GetObjectChannelMessagesEndpoint,
+  GetFollowedObjectsMessagesEndpoint,
   GetMemoPublicKeyEndpoint,
 } from '../domain/messaging';
 import { QUERY_API_MCP_INSTRUCTIONS } from './mcp-instructions';
@@ -188,6 +189,7 @@ export class McpService {
     private readonly getChannelMessages: GetChannelMessagesEndpoint,
     private readonly getObjectChannel: GetObjectChannelEndpoint,
     private readonly getObjectChannelMessages: GetObjectChannelMessagesEndpoint,
+    private readonly getFollowedObjectsMessages: GetFollowedObjectsMessagesEndpoint,
     private readonly checkObjectActivityDuplicate: CheckActivityDuplicateEndpoint,
     private readonly getMemoPublicKey: GetMemoPublicKeyEndpoint,
   ) {}
@@ -272,6 +274,7 @@ export class McpService {
       getChannelMessages: this.getChannelMessages,
       getObjectChannel: this.getObjectChannel,
       getObjectChannelMessages: this.getObjectChannelMessages,
+      getFollowedObjectsMessages: this.getFollowedObjectsMessages,
       checkObjectActivityDuplicate: this.checkObjectActivityDuplicate,
       getMemoPublicKey: this.getMemoPublicKey,
     };

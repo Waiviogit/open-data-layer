@@ -11,6 +11,7 @@ import { userAccountAuthListQuerySchema } from '../../domain/social/user-account
 import { userFavoritesMapBodySchema, toUserFavoritesMapBody } from '../../domain/favorites/post-user-favorites-map.schema';
 import { userFavoritesQuerySchema } from '../../domain/favorites/favorites.schema';
 import { userExpertiseObjectsQuerySchema } from '../../domain/expertise/expertise.schema';
+import { messageHistoryBodySchema } from '../../domain/messaging/schemas/messaging.schema';
 import { userActivityBodyFieldsSchema } from '../../domain/feed/schemas/user-activity.schema';
 import {
   hiveAdvancedReportBodySchema,
@@ -629,6 +630,28 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
         account,
         { sort, skip, limit },
         ctx.locale,
+        ctx.governanceObjectIdFromHeader,
+        ctx.viewerAccount,
+      );
+      if (!result) {
+        return toolError(`User not found: ${account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
+    'get_followed_objects_messages',
+    {
+      description: catalogDescription('get_followed_objects_messages'),
+      inputSchema: withMcpLocaleContext(messageHistoryBodySchema.extend(accountField)),
+    },
+    async (args) => {
+      const ctx = pickMcpContext(args);
+      const { account, limit, cursor, for_context, include_duplicates } = args;
+      const result = await deps.getFollowedObjectsMessages.execute(
+        account,
+        { limit, cursor, for_context, include_duplicates },
         ctx.governanceObjectIdFromHeader,
         ctx.viewerAccount,
       );

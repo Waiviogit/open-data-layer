@@ -8,6 +8,12 @@ export {
   GetObjectChannelEndpoint,
   GetObjectChannelMessagesEndpoint,
 } from './get-object-channel.endpoint';
+export { GetFollowedObjectsMessagesEndpoint } from './get-followed-objects-messages.endpoint';
+export type {
+  FollowedObjectRefDto,
+  FollowedObjectsMessageDto,
+  FollowedObjectsMessagesResponseDto,
+} from './get-followed-objects-messages.endpoint';
 export { MarkChannelReadEndpoint } from './mark-channel-read.endpoint';
 export type { MarkChannelReadResponseDto } from './mark-channel-read.endpoint';
 export {
