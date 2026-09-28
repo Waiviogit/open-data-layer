@@ -77,4 +77,45 @@ describe('UpdateVoteHandler posting auth', () => {
       expect.objectContaining({ voter: 'alice' }),
     );
   });
+
+  it('casts vote under posting auth when payload omits voter', async () => {
+    const findByUpdateIdAndVoter = jest.fn().mockResolvedValue(undefined);
+    const create = jest.fn().mockResolvedValue(undefined);
+    const notificationEmitter = {
+      odlContext: jest.fn().mockReturnValue({}),
+      emitWithContext: jest.fn(),
+      emitTrxProcessedOdl: jest.fn(),
+    } as unknown as NotificationEmitterService;
+
+    const handler = new UpdateVoteHandler(
+      {
+        create,
+        delete: jest.fn(),
+        findByUpdateIdAndVoter,
+        update: jest.fn(),
+      } as unknown as import('../../../repositories').ValidityVotesRepository,
+      {
+        findByUpdateId: jest.fn().mockResolvedValue(votedUpdate),
+      } as unknown as import('../../../repositories').ObjectUpdatesRepository,
+      {
+        findByObjectId: jest.fn().mockResolvedValue(core),
+      } as unknown as import('../../../repositories').ObjectsCoreRepository,
+      { check: jest.fn().mockReturnValue(null) } as unknown as WriteGuardRunner,
+      { emit: jest.fn() } as unknown as EventEmitter2,
+      notificationEmitter,
+    );
+
+    await handler.handle(
+      {
+        update_id: 'upd-1',
+        voter: undefined,
+        vote: 'for',
+      },
+      ctx,
+    );
+
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({ voter: 'bob', vote: 'for' }),
+    );
+  });
 });

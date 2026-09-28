@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: chain-indexer
 tags: [chain-indexer, odl-pipeline]
-updated_at: 2026-06-10
+updated_at: 2026-09-28
 related:
   - docs/apps/chain-indexer/spec/overview.md
   - docs/apps/chain-indexer/spec/hive-ingestion.md
@@ -37,7 +37,7 @@ Describe how ODL **envelopes** inside Hive `custom_json` are validated, sequence
 - Each event has an **`action`** string; unknown actions are logged and skipped.
 - **`eventSeq`** is computed with `encodeEventSeq` from `@opden-data-layer/core` from block position and index inside the envelope (`blockNum`, `transactionIndex`, `operationIndex`, `odlEventIndex`).
 
-**Context** passed to handlers (`OdlEventContext`) includes creator (posting/auth account), transaction id, timestamp, and `eventSeq`.
+**Context** passed to handlers (`OdlEventContext`) includes creator (posting/auth account), transaction id, timestamp, and `eventSeq`. The stored account is that posting auth (`required_posting_auths[0]`, else `required_auths[0]`). Payload `creator` and `voter` are ignored.
 
 ## 4) Action → handler mapping
 

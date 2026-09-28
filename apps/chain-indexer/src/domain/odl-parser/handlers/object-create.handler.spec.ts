@@ -63,4 +63,44 @@ describe('ObjectCreateHandler', () => {
       expect.objectContaining({ creator: 'bob' }),
     );
   });
+
+  it('attributes a new object to posting auth when payload omits creator', async () => {
+    const create = jest.fn();
+    const findByObjectId = jest.fn().mockResolvedValue(null);
+    const handler = new ObjectCreateHandler(
+      { findByObjectId, create } as never,
+      { emit: jest.fn() } as unknown as EventEmitter2,
+    );
+
+    await handler.handle(
+      {
+        object_id: 'pgx-new',
+        object_type: OBJECT_TYPES.RECIPE,
+        creator: null,
+      },
+      ctx,
+    );
+
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({ creator: 'alice' }),
+    );
+  });
+
+  it('skips when posting auth is empty', async () => {
+    const create = jest.fn();
+    const handler = new ObjectCreateHandler(
+      { findByObjectId: jest.fn(), create } as never,
+      { emit: jest.fn() } as unknown as EventEmitter2,
+    );
+
+    await handler.handle(
+      {
+        object_id: 'pgx-new',
+        object_type: OBJECT_TYPES.RECIPE,
+      },
+      { ...ctx, creator: '  ' },
+    );
+
+    expect(create).not.toHaveBeenCalled();
+  });
 });

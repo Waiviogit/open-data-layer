@@ -1,5 +1,6 @@
 import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
 import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
+import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 import type { OdlUpdateCreateValueKind } from './odl-operations';
 import { HIVE_CUSTOM_OP_DATA_MAX_LENGTH } from './constants';
 import { buildCustomJsonOp } from './operation-builders';
@@ -39,6 +40,27 @@ export type BuildObjectCreateEnvelopeResult = {
 /** Full ODL envelope JSON for IPFS batch import. */
 export function buildOdlEnvelopeJson(events: readonly OdlCreateEvent[]): string {
   return serializeEnvelope(events);
+}
+
+export const DEFAULT_ACTIVE_STATUS_SKIP_WARNING =
+  'Skipped default active status; objects_core.status defaults to active';
+
+/** True when an object-create field is the default `active` status and must not be broadcast. */
+export function isDefaultActiveStatusUpdate(
+  updateType: string,
+  value: unknown,
+): boolean {
+  if (updateType !== UPDATE_TYPES.STATUS) {
+    return false;
+  }
+  if (value == null) {
+    return true;
+  }
+  if (typeof value !== 'object' || Array.isArray(value)) {
+    return false;
+  }
+  const title = (value as { title?: unknown }).title;
+  return title == null || title === 'active';
 }
 
 export function resolveOdlValueFieldKey(
@@ -147,6 +169,11 @@ export function buildObjectCreateEnvelope(
   ];
 
   for (const field of input.fields) {
+    if (isDefaultActiveStatusUpdate(field.updateType, field.value)) {
+      warnings.push(DEFAULT_ACTIVE_STATUS_SKIP_WARNING);
+      continue;
+    }
+
     if (!objectTypeDef.supported_updates.includes(field.updateType)) {
       warnings.push(
         `Skipped unsupported update "${field.updateType}" for object_type "${input.objectType}"`,

@@ -2,9 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hiveBlockTimestampToDate, OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core';
 import { ObjectsCoreRepository } from '../../../repositories';
+import { normalizeHiveAccountName } from '../../hive-delegation';
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
 import { objectCreatePayloadSchema } from '../odl-envelope.schema';
-import { resolveEventAccount } from '../normalize-event-account';
 import {
   USER_OBJECT_POWERS_CREATE_EVENT,
   UserObjectPowersCreateEvent,
@@ -27,15 +27,11 @@ export class ObjectCreateHandler implements OdlActionHandler {
       return;
     }
 
-    const { object_id, object_type, creator: payloadCreator } = result.data;
-    const { account: creator, mismatch } = resolveEventAccount(
-      ctx.creator,
-      payloadCreator,
-    );
-    if (mismatch) {
-      this.logger.warn(
-        `object_create: payload creator '${payloadCreator}' does not match posting auth '${ctx.creator}'; using posting auth`,
-      );
+    const { object_id, object_type } = result.data;
+    const creator = normalizeHiveAccountName(ctx.creator);
+    if (!creator) {
+      this.logger.warn('object_create: missing posting auth; skipping');
+      return;
     }
 
     if (!OBJECT_TYPE_REGISTRY[object_type]) {

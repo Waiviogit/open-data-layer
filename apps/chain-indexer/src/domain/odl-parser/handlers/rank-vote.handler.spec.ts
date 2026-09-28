@@ -78,4 +78,38 @@ describe('RankVoteHandler posting auth', () => {
       expect.anything(),
     );
   });
+
+  it('casts rank vote under posting auth when payload omits voter', async () => {
+    const findByUpdateIdVoterAndContext = jest.fn().mockResolvedValue(undefined);
+    const create = jest.fn().mockResolvedValue(undefined);
+    const handler = new RankVoteHandler(
+      {
+        findByUpdateIdVoterAndContext,
+        create,
+        update: jest.fn(),
+      } as unknown as import('../../../repositories').RankVotesRepository,
+      {
+        findByUpdateId: jest.fn().mockResolvedValue(votedUpdate),
+      } as unknown as import('../../../repositories').ObjectUpdatesRepository,
+      {
+        findByObjectId: jest.fn().mockResolvedValue(core),
+      } as unknown as import('../../../repositories').ObjectsCoreRepository,
+      { check: jest.fn().mockReturnValue(null) } as unknown as WriteGuardRunner,
+      { emit: jest.fn() } as unknown as EventEmitter2,
+      { recalculateForUpdateId: jest.fn() } as never,
+    );
+
+    await handler.handle(
+      {
+        object_id: 'obj-1',
+        update_id: 'upd-1',
+        rank: 5000,
+      },
+      ctx,
+    );
+
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({ voter: 'bob', rank: 5000 }),
+    );
+  });
 });

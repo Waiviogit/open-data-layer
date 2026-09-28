@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 import {
   buildCustomJsonOp,
   HIVE_CUSTOM_OP_DATA_MAX_LENGTH,
+  isDefaultActiveStatusUpdate,
   type CustomJsonOp,
   type OdlUpdateCreateValueKind,
 } from '@opden-data-layer/hive-broadcast';
@@ -130,6 +131,9 @@ export function buildEditorQuickCreateEvents(
   const acceptedFields: FieldEntry[] = [];
 
   for (const entry of fieldsForType) {
+    if (isDefaultActiveStatusUpdate(entry.updateType, entry.value)) {
+      continue;
+    }
     if (
       entry.updateType === UPDATE_TYPES.TAG_CATEGORY_ITEM &&
       !isTagCategoryItemFilled(entry.value)

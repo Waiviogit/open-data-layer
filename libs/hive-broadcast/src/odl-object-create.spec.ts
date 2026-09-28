@@ -2,6 +2,7 @@ import { HIVE_CUSTOM_OP_DATA_MAX_LENGTH } from './constants';
 import {
   buildObjectCreateEnvelope,
   chunkOdlEventsIntoOps,
+  DEFAULT_ACTIVE_STATUS_SKIP_WARNING,
   OBJECT_CREATE_MAX_OPS_PER_TRX,
   parseObjectIdFromCreateOdlJson,
   resolveOdlValueFieldKey,
@@ -76,6 +77,32 @@ describe('buildObjectCreateEnvelope', () => {
         fields: [],
       }),
     ).toThrow('Unknown object_type: not-a-type');
+  });
+
+  it('skips a default active status field and keeps a non-active status', () => {
+    const activeOnly = buildObjectCreateEnvelope({
+      ...BASE,
+      fields: [{ updateType: 'status', value: { title: 'active' } }],
+    });
+    expect(activeOnly.warnings).toEqual([DEFAULT_ACTIVE_STATUS_SKIP_WARNING]);
+    expect(activeOnly.events.map((event) => event.payload['update_type'])).not.toContain(
+      'status',
+    );
+
+    const omitted = buildObjectCreateEnvelope({
+      ...BASE,
+      fields: [{ updateType: 'status', value: null }],
+    });
+    expect(omitted.warnings).toEqual([DEFAULT_ACTIVE_STATUS_SKIP_WARNING]);
+
+    const unavailable = buildObjectCreateEnvelope({
+      ...BASE,
+      fields: [{ updateType: 'status', value: { title: 'unavailable' } }],
+    });
+    expect(unavailable.warnings).toEqual([]);
+    expect(unavailable.events.some((event) => event.payload['update_type'] === 'status')).toBe(
+      true,
+    );
   });
 
   it('warns and skips unsupported update_type for object_type', () => {

@@ -9,8 +9,8 @@ import {
   RankVotesRepository,
 } from '../../../repositories';
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
+import { normalizeHiveAccountName } from '../../hive-delegation';
 import { rankVotePayloadSchema } from '../odl-envelope.schema';
-import { resolveEventAccount } from '../normalize-event-account';
 import { WriteGuardRunner } from '../guards';
 import {
   GovernanceObjectMutatedEvent,
@@ -44,14 +44,10 @@ export class RankVoteHandler implements OdlActionHandler {
     }
 
     const { rank, rank_context } = result.data;
-    const { account: voter, mismatch } = resolveEventAccount(
-      ctx.creator,
-      result.data.voter,
-    );
-    if (mismatch) {
-      this.logger.warn(
-        `rank_vote: payload voter '${result.data.voter}' does not match posting auth '${ctx.creator}'; using posting auth`,
-      );
+    const voter = normalizeHiveAccountName(ctx.creator);
+    if (!voter) {
+      this.logger.warn('rank_vote: missing posting auth; skipping');
+      return;
     }
     let { object_id } = result.data;
 

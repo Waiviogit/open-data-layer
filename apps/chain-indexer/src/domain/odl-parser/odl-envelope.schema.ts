@@ -9,7 +9,6 @@ import { OSL_MESSAGING_ACTIONS } from '../osl-parser/osl-envelope.schema';
 export const objectCreatePayloadSchema = z.object({
   object_id: z.string().min(1).max(256),
   object_type: z.string().min(1).max(64),
-  creator: z.string().min(1).max(32),
 });
 
 export type ObjectCreatePayload = z.infer<typeof objectCreatePayloadSchema>;
@@ -17,7 +16,6 @@ export type ObjectCreatePayload = z.infer<typeof objectCreatePayloadSchema>;
 export const updateCreatePayloadSchema = z.object({
   object_id: z.string().min(1).max(256),
   update_type: z.string().min(1),
-  creator: z.string().min(1).max(32),
   locale: z.string().min(2).max(35).optional(),
 });
 
@@ -32,7 +30,6 @@ export const updateVotePayloadSchema = z
     update_id: z.string().min(1).max(256).optional(),
     create_event_id: z.string().uuid().optional(),
     object_id: z.string().min(1).max(256).optional(),
-    voter: z.string().min(1).max(32),
     vote: z.enum(['for', 'against', 'remove']),
   })
   .superRefine((data, ctx) => {
@@ -55,7 +52,6 @@ export const rankVotePayloadSchema = z
     update_id: z.string().min(1).max(256).optional(),
     create_event_id: z.string().uuid().optional(),
     object_id: z.string().min(1).max(256).optional(),
-    voter: z.string().min(1).max(32),
     rank: z.number().int().min(0).max(10000),
     rank_context: z.string().max(64).default('default'),
   })

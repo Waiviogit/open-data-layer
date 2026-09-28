@@ -132,6 +132,29 @@ describe('buildCreateOps', () => {
     });
   });
 
+  it('omits default active status and keeps a non-active status', () => {
+    const ops = buildCreateOps({
+      ...BASE,
+      fields: [
+        ...recipeRequiredFields(),
+        { entryKey: 'status-active', updateType: 'status', value: { title: 'active' } },
+        {
+          entryKey: 'status-closed',
+          updateType: 'status',
+          value: { title: 'unavailable' },
+        },
+      ],
+    });
+    const envelope = JSON.parse(ops[0]!.json) as {
+      events: { payload: Record<string, unknown> }[];
+    };
+    const statusEvents = envelope.events.filter(
+      (event) => event.payload['update_type'] === 'status',
+    );
+    expect(statusEvents).toHaveLength(1);
+    expect(statusEvents[0]?.payload['value_json']).toEqual({ title: 'unavailable' });
+  });
+
   it('omits tag_category_item rows with an empty value', () => {
     const ops = buildCreateOps({
       ...BASE,

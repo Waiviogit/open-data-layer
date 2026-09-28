@@ -4,6 +4,7 @@ import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 import {
   chunkOdlEventsIntoOps,
   HIVE_CUSTOM_OP_DATA_MAX_LENGTH,
+  isDefaultActiveStatusUpdate,
   OBJECT_CREATE_MAX_OPS_PER_TRX,
   parseObjectIdFromCreateOdlJson,
   type CustomJsonOp,
@@ -138,6 +139,9 @@ export function buildAllCreateEvents(input: BuildCreateOpsInput): OdlCreateEvent
 
   const acceptedFields: FieldEntry[] = [];
   for (const entry of fieldsForType) {
+    if (isDefaultActiveStatusUpdate(entry.updateType, entry.value)) {
+      continue;
+    }
     if (
       entry.updateType === UPDATE_TYPES.TAG_CATEGORY_ITEM &&
       !isTagCategoryItemFilled(entry.value)

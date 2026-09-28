@@ -98,6 +98,8 @@ export {
   OBJECT_CREATE_MAX_OPS_PER_TRX,
   parseObjectIdFromCreateOdlJson,
   resolveOdlValueFieldKey,
+  isDefaultActiveStatusUpdate,
+  DEFAULT_ACTIVE_STATUS_SKIP_WARNING,
   type AgentObjectCreateField,
   type BuildObjectCreateEnvelopeInput,
   type BuildObjectCreateEnvelopeResult,

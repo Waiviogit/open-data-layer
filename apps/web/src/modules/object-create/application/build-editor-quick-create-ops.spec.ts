@@ -52,6 +52,32 @@ describe('buildEditorQuickCreateEvents', () => {
     expect(updateTypes).not.toContain(UPDATE_TYPES.IMAGE);
   });
 
+  it('omits a default active status field', () => {
+    const { objectId, fields } = prepareEditorQuickCreateFields(
+      BASE.objectType,
+      BASE.language,
+      'Gadget',
+      'xyz',
+    );
+    const events = buildEditorQuickCreateEvents({
+      ...BASE,
+      objectId,
+      fields: [
+        ...fields,
+        {
+          entryKey: 'status',
+          updateType: UPDATE_TYPES.STATUS,
+          value: { title: 'active' },
+          locale: BASE.language,
+        },
+      ],
+    });
+    const updateTypes = events
+      .filter((e) => e.action === 'update_create')
+      .map((e) => (e.payload as { update_type?: string }).update_type);
+    expect(updateTypes).not.toContain(UPDATE_TYPES.STATUS);
+  });
+
   it('appends object_follow when followObject is true', () => {
     const { objectId, fields } = prepareEditorQuickCreateFields(
       BASE.objectType,

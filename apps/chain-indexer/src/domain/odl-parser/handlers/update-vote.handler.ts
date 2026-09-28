@@ -13,8 +13,8 @@ import {
   ValidityVotesRepository,
 } from '../../../repositories';
 import type { OdlActionHandler, OdlEventContext } from '../odl-action-handler';
+import { normalizeHiveAccountName } from '../../hive-delegation';
 import { updateVotePayloadSchema } from '../odl-envelope.schema';
-import { resolveEventAccount } from '../normalize-event-account';
 import { WriteGuardRunner } from '../guards';
 import {
   GovernanceObjectMutatedEvent,
@@ -64,14 +64,10 @@ export class UpdateVoteHandler implements OdlActionHandler {
     }
 
     const { vote } = result.data;
-    const { account: voter, mismatch } = resolveEventAccount(
-      ctx.creator,
-      result.data.voter,
-    );
-    if (mismatch) {
-      this.logger.warn(
-        `update_vote: payload voter '${result.data.voter}' does not match posting auth '${ctx.creator}'; using posting auth`,
-      );
+    const voter = normalizeHiveAccountName(ctx.creator);
+    if (!voter) {
+      this.logger.warn('update_vote: missing posting auth; skipping');
+      return;
     }
 
     let update_id: string;
