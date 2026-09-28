@@ -1,6 +1,5 @@
 import { sql } from 'kysely';
 import {
-  migrateDown,
   migrateTo,
   migrateToLatest,
 } from '@opden-data-layer/migrations';
@@ -67,7 +66,7 @@ describe('00064 migration lifecycle (TC-062)', () => {
     `.execute(db);
     expect(notNull.rows[0]?.attnotnull).toBe(true);
 
-    await migrateDown({ connectionString });
+    await migrateTo({ connectionString }, '00063_user_notification_settings_obl');
 
     const columnNames = await sql<{ column_name: string }>`
       SELECT column_name
