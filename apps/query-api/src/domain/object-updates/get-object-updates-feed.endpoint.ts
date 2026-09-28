@@ -374,6 +374,7 @@ export class GetObjectUpdatesFeedEndpoint {
       creator_wobjects_weight: jr.creator_wobjects_weight,
       locale: jr.row.locale,
       created_at_unix: jr.row.created_at_unix,
+      transaction_id: jr.row.transaction_id,
       value_text: jr.row.value_text,
       value_geo,
       value_json: jr.row.value_json ?? null,

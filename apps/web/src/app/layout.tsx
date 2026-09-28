@@ -7,8 +7,10 @@ import { I18nProvider } from '@/i18n/providers/i18n-provider';
 import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
 import { loadMessages } from '@/i18n/runtime/load-messages';
 import { env } from '@/config/env';
+import { getHiveTxExplorerBaseUrl } from '@/config/get-hive-tx-explorer-base-url';
 import { getIpfsContentBaseUrl } from '@/config/get-ipfs-content-base-url';
 import { getNotificationsWsPublicUrl } from '@/config/get-notifications-ws-public-url';
+import { HiveTxExplorerProvider } from '@/config/hive-tx-explorer-provider';
 import { IpfsContentBaseProvider } from '@/config/ipfs-content-base-provider';
 import { HasConfigProvider } from '@/config/has-config-provider';
 import { HasSignWaitProvider } from '@/modules/auth/presentation/components/has-sign-wait-provider';
@@ -59,6 +61,7 @@ export default async function RootLayout({
   const shellModeResolution = await getServerShellModeResolution();
   const notificationsWsUrl = getNotificationsWsPublicUrl();
   const ipfsContentBaseUrl = getIpfsContentBaseUrl();
+  const hiveTxExplorerBaseUrl = getHiveTxExplorerBaseUrl();
 
   return (
     <html
@@ -79,12 +82,14 @@ export default async function RootLayout({
                 oslCustomJsonId={env.oslCustomJsonId}
               >
                 <IpfsContentBaseProvider contentBaseUrl={ipfsContentBaseUrl}>
-                  <NotificationsWsConfigProvider wsUrl={notificationsWsUrl}>
-                    <I18nProvider locale={locale} messages={messages}>
-                      <HasSignWaitProvider />
-                      {children}
-                    </I18nProvider>
-                  </NotificationsWsConfigProvider>
+                  <HiveTxExplorerProvider baseUrl={hiveTxExplorerBaseUrl}>
+                    <NotificationsWsConfigProvider wsUrl={notificationsWsUrl}>
+                      <I18nProvider locale={locale} messages={messages}>
+                        <HasSignWaitProvider />
+                        {children}
+                      </I18nProvider>
+                    </NotificationsWsConfigProvider>
+                  </HiveTxExplorerProvider>
                 </IpfsContentBaseProvider>
               </OdlNetworkProvider>
             </HasConfigProvider>

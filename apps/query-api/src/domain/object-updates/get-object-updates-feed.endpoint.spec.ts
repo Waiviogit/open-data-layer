@@ -101,6 +101,7 @@ describe('GetObjectUpdatesFeedEndpoint.executeByUpdateId', () => {
       update_type: 'name',
       creator: 'alice',
       value_text: 'Shop',
+      transaction_id: 'tx1',
       rank_score: null,
       viewer_rank: null,
     });
@@ -213,6 +214,7 @@ describe('GetObjectUpdatesFeedEndpoint.execute recency', () => {
       'bob',
     );
     expect(result?.items[0]).toMatchObject({
+      transaction_id: 'tx1',
       rank_score: 6000,
       viewer_rank: 7000,
     });
@@ -293,6 +295,7 @@ describe('GetObjectUpdatesFeedEndpoint.execute approval', () => {
       'carol',
     );
     expect(result?.items[0]).toMatchObject({
+      transaction_id: 'tx2',
       rank_score: 5000,
       viewer_rank: 9000,
     });

@@ -13,6 +13,7 @@ const objectUpdateFeedItemSchema = registry.register(
     creator_wobjects_weight: z.number(),
     locale: z.string().nullable(),
     created_at_unix: z.number().int(),
+    transaction_id: z.string(),
     value_text: z.string().nullable(),
     value_geo: z
       .object({

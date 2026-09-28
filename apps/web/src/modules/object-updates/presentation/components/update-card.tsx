@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { buildOdlUpdateVoteOp } from '@opden-data-layer/hive-broadcast';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
+import { useHiveTxExplorerBaseUrl } from '@/config/hive-tx-explorer-provider';
 import { useOdlCustomJsonId } from '@/config/odl-network-provider';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import type { LocaleId } from '@/i18n/types';
@@ -23,9 +24,15 @@ import {
   GalleryMediaItem,
   isGalleryVideoUrl,
 } from '@/modules/object/presentation/components/gallery-media-item';
-import { ObjectThumbnail, StatHoverTooltip, UserAvatar } from '@/shared/presentation';
+import {
+  HydrationSafeAnchor,
+  ObjectThumbnail,
+  StatHoverTooltip,
+  UserAvatar,
+} from '@/shared/presentation';
 
 import type { ObjectUpdateFeedItemView } from '../../application/dto/object-updates-feed.dto';
+import { hiveUpdateExplorerHref } from '../../domain/legacy-update-tx';
 import {
   isCollapsedRawJsonUpdate,
   resolveUpdateRawViewValue,
@@ -64,6 +71,7 @@ export function UpdateCard({
 }: UpdateCardProps) {
   useHydrateWalletProvider();
   const odlCustomJsonId = useOdlCustomJsonId();
+  const hiveTxExplorerBaseUrl = useHiveTxExplorerBaseUrl();
   const router = useRouter();
   const { t, locale } = useI18n();
   const loc = locale as LocaleId;
@@ -80,6 +88,8 @@ export function UpdateCard({
   }, [item.update_id, item.viewer_vote]);
 
   const relative = formatRelativeFeedTime(unixToIsoSeconds(item.created_at_unix), loc);
+  const transactionId = item.transaction_id.trim();
+  const txExplorerHref = hiveUpdateExplorerHref(hiveTxExplorerBaseUrl, transactionId);
   const weightLabel = formatReputation(item.creator_wobjects_weight, loc);
 
   const minLine = t('object_updates_min_required').replace(
@@ -281,6 +291,19 @@ export function UpdateCard({
       ) : null}
 
       <div className="mt-3 border-t border-border pt-3">
+        {txExplorerHref ? (
+          <div className="mb-2 flex flex-wrap items-baseline gap-2">
+            <span className="text-body-sm text-fg">{t('object_updates_transaction')}</span>
+            <HydrationSafeAnchor
+              href={txExplorerHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="min-w-0 break-all font-mono text-body-sm text-link hover:underline focus-visible:rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            >
+              {transactionId}
+            </HydrationSafeAnchor>
+          </div>
+        ) : null}
         <UpdateApprovalStatusBlock
           approvePercent={item.approve_percent}
           decisivePrivilegedVote={privilegedVote}

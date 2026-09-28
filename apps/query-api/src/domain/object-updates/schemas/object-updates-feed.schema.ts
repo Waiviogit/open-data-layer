@@ -41,6 +41,8 @@ export type ObjectUpdateFeedItemDto = {
   creator_wobjects_weight: number;
   locale: string | null;
   created_at_unix: number;
+  /** Hive transaction id of the update (`object_updates.transaction_id`). */
+  transaction_id: string;
   value_text: string | null;
   value_geo: { latitude: number; longitude: number } | null;
   value_json: unknown | null;

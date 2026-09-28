@@ -27,6 +27,10 @@ jest.mock('@/config/odl-network-provider', () => ({
   useOdlCustomJsonId: () => 'waivio.mainnet',
 }));
 
+jest.mock('@/config/hive-tx-explorer-provider', () => ({
+  useHiveTxExplorerBaseUrl: () => 'https://hiveblockexplorer.com/tx',
+}));
+
 jest.mock('@/modules/auth', () => ({
   useHydrateWalletProvider: () => undefined,
   getWalletFacade: () => ({ broadcast: jest.fn() }),
@@ -63,6 +67,15 @@ jest.mock('@/modules/object/presentation/components/gallery-rank-trigger-button'
 }));
 
 jest.mock('@/shared/presentation', () => ({
+  HydrationSafeAnchor: ({
+    children,
+    href,
+    ...rest
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+    <a href={href} {...rest}>
+      {children}
+    </a>
+  ),
   ObjectThumbnail: () => null,
   StatHoverTooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   UserAvatar: () => null,
@@ -84,6 +97,7 @@ function galleryItem(overrides: Partial<ObjectUpdateFeedItemView> = {}): ObjectU
     creator_wobjects_weight: 10,
     locale: null,
     created_at_unix: 1_700_000_000,
+    transaction_id: 'tx1',
     value_text: null,
     value_geo: null,
     value_json: { album: 'Photos', cid: 'bafyTest' },
@@ -252,5 +266,38 @@ describe('UpdateCard raw JSON toggle', () => {
 
     expect(screen.getByText(/49\.28/)).toBeInTheDocument();
     expect(screen.getByText(/-123\.12/)).toBeInTheDocument();
+  });
+});
+
+describe('UpdateCard transaction link', () => {
+  it('links the tx id above approval to the hive explorer', () => {
+    render(<UpdateCard item={galleryItem()} showLocaleBadge={false} />);
+
+    expect(screen.getByText('object_updates_transaction')).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: 'tx1' });
+    expect(link).toHaveAttribute('href', 'https://hiveblockexplorer.com/tx/tx1');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('omits the tx link when transaction_id is blank', () => {
+    render(
+      <UpdateCard item={galleryItem({ transaction_id: '  ' })} showLocaleBadge={false} />,
+    );
+
+    expect(screen.queryByRole('link', { name: 'tx1' })).not.toBeInTheDocument();
+    expect(screen.queryByText('object_updates_transaction')).not.toBeInTheDocument();
+  });
+
+  it('links a legacy update id to the explorer post page', () => {
+    const legacyId = 'legacy_waivio.updates09_pacificgifts-ruv7l520zt';
+    render(
+      <UpdateCard item={galleryItem({ transaction_id: legacyId })} showLocaleBadge={false} />,
+    );
+
+    expect(screen.getByRole('link', { name: legacyId })).toHaveAttribute(
+      'href',
+      'https://hiveblockexplorer.com/@waivio.updates09/pacificgifts-ruv7l520zt',
+    );
   });
 });

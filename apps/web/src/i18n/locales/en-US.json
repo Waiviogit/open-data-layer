@@ -2702,6 +2702,7 @@
   "object_updates_sort_approval": "Approval",
   "object_updates_sort_recency": "Recency",
   "object_updates_title": "Updates",
+  "object_updates_transaction": "Transaction:",
   "object_updates_view_all": "View all updates",
   "object_updates_view_json": "View JSON",
   "object_updates_view_voters": "View voters",

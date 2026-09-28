@@ -63,6 +63,7 @@ describe('Update card decisive vote i18n keys (en-US)', () => {
       'object_updates_rejected_by_admin',
       'object_updates_approved_by_trusted',
       'object_updates_rejected_by_trusted',
+      'object_updates_transaction',
     ] as const;
 
     for (const key of keys) {

@@ -9,6 +9,7 @@ import {
   resolveOslCustomJsonId,
 } from './odl-network';
 import { DEFAULT_HAS_WS_URL } from './has.constants';
+import { DEFAULT_HIVE_TX_EXPLORER_BASE_URL } from './hive-tx-explorer.constants';
 
 /**
  * Single source of truth for server-side env vars used by `apps/web`.
@@ -90,6 +91,17 @@ const envSchema = z.object({
     .transform((v) => {
       const t = v?.trim();
       return t || 'Waivio';
+    }),
+  /**
+   * Prefix for Hive tx links on update cards (`{base}/{transactionId}`).
+   * Domain plus path; trailing slash is stripped.
+   */
+  HIVE_TX_EXPLORER_BASE_URL: z
+    .string()
+    .optional()
+    .transform((v) => {
+      const t = v?.trim().replace(/\/$/, '');
+      return t || DEFAULT_HIVE_TX_EXPLORER_BASE_URL;
     }),
 });
 

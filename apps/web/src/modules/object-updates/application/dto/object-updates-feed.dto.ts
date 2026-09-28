@@ -22,6 +22,7 @@ export const objectUpdateFeedItemDtoSchema = z.object({
   creator_wobjects_weight: num(),
   locale: z.string().nullable(),
   created_at_unix: num().pipe(z.number().int()),
+  transaction_id: z.string(),
   value_text: z.string().nullable(),
   value_geo: valueGeoSchema.nullable(),
   value_json: z.unknown().nullable(),
