@@ -98,6 +98,14 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
       return { kind: 'manufacturer', headingLabel, items: [] };
     case 'merchant':
       return { kind: 'merchant', headingLabel, items: [] };
+    case 'provider':
+      return { kind: 'provider', headingLabel, items: [] };
+    case 'input':
+      return { kind: 'input', headingLabel, text: '' };
+    case 'output':
+      return { kind: 'output', headingLabel, text: '' };
+    case 'limitations':
+      return { kind: 'limitations', headingLabel, text: '' };
     case 'featureList':
       return { kind: 'featureList', headingLabel, items: [] };
     case 'license':

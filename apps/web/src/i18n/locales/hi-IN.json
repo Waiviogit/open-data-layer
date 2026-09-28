@@ -2311,6 +2311,8 @@
   "object_type_resort": "रिज़ॉर्ट",
   "object_type_restaurant": "रेस्तरां",
   "object_type_service": "सेवा",
+  "object_type_service_offer": "सेवा प्रस्ताव",
+  "object_type_service_request": "सेवा अनुरोध",
   "object_type_shop": "दुकान",
   "object_type_stocks": "स्टॉक्स",
   "object_type_test": "टेस्ट",

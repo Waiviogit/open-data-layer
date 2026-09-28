@@ -2463,6 +2463,8 @@
   "object_type_resort": "курорт",
   "object_type_restaurant": "ресторан",
   "object_type_service": "услуга",
+  "object_type_service_offer": "предложение услуги",
+  "object_type_service_request": "запрос услуги",
   "object_type_shop": "магазин",
   "object_type_stocks": "акции",
   "object_type_test": "тест",

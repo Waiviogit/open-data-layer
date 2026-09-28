@@ -2311,6 +2311,8 @@
   "object_type_resort": "курорт",
   "object_type_restaurant": "ресторан",
   "object_type_service": "послуга",
+  "object_type_service_offer": "пропозиція послуги",
+  "object_type_service_request": "запит послуги",
   "object_type_shop": "магазин",
   "object_type_stocks": "акції",
   "object_type_test": "тест",

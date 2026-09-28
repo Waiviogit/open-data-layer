@@ -2311,6 +2311,8 @@
   "object_type_resort": "resort",
   "object_type_restaurant": "ristorante",
   "object_type_service": "servizio",
+  "object_type_service_offer": "offerta di servizio",
+  "object_type_service_request": "richiesta di servizio",
   "object_type_shop": "negozio",
   "object_type_stocks": "azioni",
   "object_type_test": "test",

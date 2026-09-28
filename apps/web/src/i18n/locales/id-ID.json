@@ -2311,6 +2311,8 @@
   "object_type_resort": "resor",
   "object_type_restaurant": "restoran",
   "object_type_service": "layanan",
+  "object_type_service_offer": "penawaran layanan",
+  "object_type_service_request": "permintaan layanan",
   "object_type_shop": "toko",
   "object_type_stocks": "saham",
   "object_type_test": "ujian",

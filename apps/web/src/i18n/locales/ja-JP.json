@@ -2311,6 +2311,8 @@
   "object_type_resort": "リゾート",
   "object_type_restaurant": "レストラン",
   "object_type_service": "サービス",
+  "object_type_service_offer": "サービス提供",
+  "object_type_service_request": "サービス依頼",
   "object_type_shop": "ショップ",
   "object_type_stocks": "株式",
   "object_type_test": "テスト",

@@ -2300,6 +2300,8 @@
   "object_type_resort": "度假村",
   "object_type_restaurant": "餐馆",
   "object_type_service": "服务",
+  "object_type_service_offer": "服务提供",
+  "object_type_service_request": "服务请求",
   "object_type_shop": "商店",
   "object_type_stocks": "股票",
   "object_type_test": "测试",

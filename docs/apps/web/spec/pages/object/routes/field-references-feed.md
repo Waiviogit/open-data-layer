@@ -22,6 +22,8 @@ related:
 |------------|-----------|
 | `/object/:id/books` | `GET /query/v1/objects/:id/field-references/book` |
 | `/object/:id/products` | `GET .../field-references/product` |
+| `/object/:id/service-offers` | `GET .../field-references/service_offer` |
+| `/object/:id/service-requests` | `GET .../field-references/service_request` |
 
 Proxy rewrites to `?tab=field-references&field_reference_type=…` (singular API type).
 

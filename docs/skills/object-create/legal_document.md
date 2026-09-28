@@ -54,7 +54,7 @@ Not applicable.
 ## Special constraints
 
 - **Single-writer** — see indexer `LegalDocumentWriteGuard`.
-- Linked from OBL offers — create before `service_offered` publish when required.
+- Linked from OBL offers — create before `service_offer` publish when required.
 
 ## Verification
 
@@ -66,4 +66,4 @@ Not applicable.
 ## Related workflows
 
 - [OBL offers and contracts](../obl-offers-contracts.md)
-- [service_offered](service_offered.md)
+- [service_offer](service_offer.md)

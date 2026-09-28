@@ -18,13 +18,18 @@ describe('object-field-reference-rules', () => {
     expect(isAllowedFieldReferenceObjectType('person', 'product')).toBe(false);
   });
 
-  it('maps business to products and books via commerce fields', () => {
+  it('maps business to products, books, and service catalog types', () => {
     expect(getFieldReferenceRule('business')?.referenceObjectTypes).toEqual([
       'product',
       'book',
+      'service_offer',
+      'service_request',
     ]);
+    expect(getFieldReferenceRule('business')?.updateTypes).toContain('provider');
     expect(isAllowedFieldReferenceObjectType('business', 'product')).toBe(true);
     expect(isAllowedFieldReferenceObjectType('business', 'book')).toBe(true);
+    expect(isAllowedFieldReferenceObjectType('business', 'service_offer')).toBe(true);
+    expect(isAllowedFieldReferenceObjectType('business', 'service_request')).toBe(true);
     expect(isAllowedFieldReferenceObjectType('business', 'person')).toBe(false);
   });
 

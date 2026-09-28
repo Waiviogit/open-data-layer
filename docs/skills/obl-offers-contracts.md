@@ -35,7 +35,7 @@ Discover published offers, publish/retire offer versions, and sign contracts (`c
 
 - Invoices, payments, pair balances, ledger history — [obl-ledger.md](obl-ledger.md).
 - Open/resolve disputes or arbiter inbox — [obl-disputes.md](obl-disputes.md).
-- ODL catalog objects (`service_offered`, etc.) on `odl-*` — [hive-blockchain-broadcast.md](hive-blockchain-broadcast.md) + object registries.
+- ODL catalog objects (`service_offer`, etc.) on `odl-*` — [hive-blockchain-broadcast.md](hive-blockchain-broadcast.md) + object registries.
 - Normative rules — [docs/spec/obl/contracts.md](../spec/obl/contracts.md).
 
 ## Cycle position

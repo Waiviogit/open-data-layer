@@ -2311,6 +2311,8 @@
   "object_type_resort": "Vakansieoord",
   "object_type_restaurant": "Restaurant",
   "object_type_service": "Diens",
+  "object_type_service_offer": "diensaanbod",
+  "object_type_service_request": "diensversoek",
   "object_type_shop": "Winkel",
   "object_type_stocks": "Aandele",
   "object_type_test": "Toets",

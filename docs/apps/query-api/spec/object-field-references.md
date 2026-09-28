@@ -35,7 +35,7 @@ Returns **422** when source type is not `person` or `business`, or `{referenceOb
 | Source type | Target groups | Update types on targets |
 | ----------- | ------------- | ----------------------- |
 | `person` | `book` | `author` |
-| `business` | `product`, `book` | `merchant`, `manufacturer`, `brand`, `publisher` |
+| `business` | `product`, `book`, `service_offer`, `service_request` | `merchant`, `manufacturer`, `brand`, `publisher`, `provider` |
 
 ## Query parameters
 

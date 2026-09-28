@@ -62,6 +62,7 @@ import * as m00061 from './00061_messages_linked_object_ids';
 import * as m00062 from './00062_user_account_auths';
 import * as m00063 from './00063_user_notification_settings_obl';
 import * as m00064 from './00064_messages_activity_dedup';
+import * as m00065 from './00065_rename_service_offer_object_types';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/odl-db-types OdlDatabase and docs/spec/data-model/schema.sql */
@@ -139,4 +140,5 @@ export const MIGRATIONS: Record<string, Migration> = {
   '00062_user_account_auths': { up: m00062.up, down: m00062.down },
   '00063_user_notification_settings_obl': { up: m00063.up, down: m00063.down },
   '00064_messages_activity_dedup': { up: m00064.up, down: m00064.down },
+  '00065_rename_service_offer_object_types': { up: m00065.up, down: m00065.down },
 };

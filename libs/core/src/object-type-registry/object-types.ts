@@ -22,8 +22,8 @@ export const OBJECT_TYPES = {
   GROUP: 'group',
   HTML: 'html',
   GOVERNANCE: 'governance',
-  SERVICE_OFFERED: 'service_offered',
-  SERVICE_REQUESTED: 'service_requested',
+  SERVICE_OFFER: 'service_offer',
+  SERVICE_REQUEST: 'service_request',
   LEGAL_DOCUMENT: 'legal_document',
   SKILL: 'skill',
 } as const;

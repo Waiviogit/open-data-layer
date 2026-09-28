@@ -2,7 +2,10 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { env } from '@/config/env';
-import { resolveFieldReferenceTypeFromPathSegment } from '@/modules/object/domain/field-reference-rules';
+import {
+  FIELD_REFERENCE_PATH_SEGMENTS,
+  resolveFieldReferenceTypeFromPathSegment,
+} from '@/modules/object/domain/field-reference-rules';
 import {
   OBJECT_PAGE_GALLERY_ALBUM_PARAM,
   OBJECT_PAGE_GALLERY_ALBUM_PATH_SEGMENT,
@@ -97,7 +100,10 @@ export async function proxy(request: NextRequest) {
     return finish(NextResponse.rewrite(url));
   }
 
-  const fieldReferenceFeedMatch = pathname.match(/^\/object\/([^/]+)\/(books|products)\/?$/);
+  const fieldReferencePathGroup = FIELD_REFERENCE_PATH_SEGMENTS.join('|');
+  const fieldReferenceFeedMatch = pathname.match(
+    new RegExp(`^/object/([^/]+)/(${fieldReferencePathGroup})/?$`),
+  );
   if (fieldReferenceFeedMatch) {
     const id = fieldReferenceFeedMatch[1];
     const pathSegment = fieldReferenceFeedMatch[2];

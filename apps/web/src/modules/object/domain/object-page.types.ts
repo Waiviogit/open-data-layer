@@ -294,6 +294,14 @@ export type ObjectLeftRailBlock =
       items: ObjectRefItem[];
     }
   | {
+      kind: 'provider';
+      headingLabel: string;
+      items: ObjectRefItem[];
+    }
+  | { kind: 'input'; headingLabel: string; text: string }
+  | { kind: 'output'; headingLabel: string; text: string }
+  | { kind: 'limitations'; headingLabel: string; text: string }
+  | {
       kind: 'featureList';
       headingLabel: string;
       items: FeatureListItem[];

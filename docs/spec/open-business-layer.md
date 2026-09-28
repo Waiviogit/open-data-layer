@@ -25,7 +25,7 @@ Waivio indexes OBL on-chain history and computes per-pair **Mutual Ledger** bala
 
 ## Two discovery paths
 
-1. **ODL catalog** — collaborative `service_offered` / `service_requested` / `legal_document` objects under `odl-mainnet` (discover/search unchanged).
+1. **ODL catalog** — collaborative `service_offer` / `service_request` / `legal_document` objects under `odl-mainnet` (discover/search unchanged).
 2. **Published offers** — `obl_offers` rows with own `name` / `description` / `tags` (search via query-api). `service_ref` is optional.
 
 ## Lifecycle

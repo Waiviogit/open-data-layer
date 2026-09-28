@@ -613,6 +613,13 @@ export function projectedLicense(o: ProjectedObjectView): string | null {
   return readString(o.fields.license) ?? null;
 }
 
+export function projectedCatalogText(
+  o: ProjectedObjectView,
+  field: 'input' | 'output' | 'limitations',
+): string | null {
+  return readString(o.fields[field]) ?? null;
+}
+
 export function projectedCompatibility(o: ProjectedObjectView): string | null {
   return readString(o.fields.compatibility) ?? null;
 }

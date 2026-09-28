@@ -113,6 +113,11 @@ export const UPDATE_TYPES = {
   ALLOWED_TOOLS: 'allowedTools',
   REFERENCES: 'references',
   SKILL_CONTENT: 'skillContent',
+  // Service offer / request catalog fields
+  PROVIDER: 'provider',
+  INPUT: 'input',
+  OUTPUT: 'output',
+  LIMITATIONS: 'limitations',
 } as const;
 
 export type UpdateType = (typeof UPDATE_TYPES)[keyof typeof UPDATE_TYPES];

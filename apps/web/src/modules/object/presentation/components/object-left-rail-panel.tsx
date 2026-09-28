@@ -929,6 +929,7 @@ export function ObjectLeftRailPanel({
           case 'manufacturer':
           case 'merchant':
           case 'publisher':
+          case 'provider':
             return (
               <div key={`${block.kind}-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
                 <LeftRailEditToolbar {...editToolbarProps(block.kind, block.headingLabel)} />
@@ -966,6 +967,9 @@ export function ObjectLeftRailPanel({
             );
           case 'license':
           case 'compatibility':
+          case 'input':
+          case 'output':
+          case 'limitations':
             return (
               <div key={`${block.kind}-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
                 <LeftRailScalarFieldSection

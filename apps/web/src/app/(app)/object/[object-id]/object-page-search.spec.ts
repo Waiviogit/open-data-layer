@@ -298,6 +298,15 @@ describe('resolveFieldReferenceTypeFromObjectUrl', () => {
     );
   });
 
+  it('decodes service catalog field-reference paths', () => {
+    expect(resolveFieldReferenceTypeFromObjectUrl(objectId, `${base}/service-offers`)).toBe(
+      'service_offer',
+    );
+    expect(resolveFieldReferenceTypeFromObjectUrl(objectId, `${base}/service-requests`)).toBe(
+      'service_request',
+    );
+  });
+
   it('returns null for unrelated paths', () => {
     expect(
       resolveFieldReferenceTypeFromObjectUrl(objectId, `${base}/reviews`),

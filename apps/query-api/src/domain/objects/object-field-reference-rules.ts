@@ -19,12 +19,18 @@ export const FIELD_REFERENCE_RULES: Record<FieldReferenceSourceType, FieldRefere
     updateTypes: [UPDATE_TYPES.AUTHOR],
   },
   [OBJECT_TYPES.BUSINESS]: {
-    referenceObjectTypes: [OBJECT_TYPES.PRODUCT, OBJECT_TYPES.BOOK],
+    referenceObjectTypes: [
+      OBJECT_TYPES.PRODUCT,
+      OBJECT_TYPES.BOOK,
+      OBJECT_TYPES.SERVICE_OFFER,
+      OBJECT_TYPES.SERVICE_REQUEST,
+    ],
     updateTypes: [
       UPDATE_TYPES.MERCHANT,
       UPDATE_TYPES.MANUFACTURER,
       UPDATE_TYPES.BRAND,
       UPDATE_TYPES.PUBLISHER,
+      UPDATE_TYPES.PROVIDER,
     ],
   },
 };

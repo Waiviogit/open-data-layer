@@ -2312,6 +2312,8 @@
   "object_type_resort": "Resort",
   "object_type_restaurant": "Restaurant",
   "object_type_service": "Dienstleistung",
+  "object_type_service_offer": "Dienstleistungsangebot",
+  "object_type_service_request": "Dienstleistungsanfrage",
   "object_type_shop": "Geschäft",
   "object_type_stocks": "Aktien",
   "object_type_test": "Test",

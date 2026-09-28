@@ -23,8 +23,8 @@ import { RECIPE_OBJECT_TYPE } from './object-types/recipe';
 import { GROUP_OBJECT_TYPE } from './object-types/group';
 import { HTML_OBJECT_TYPE } from './object-types/html';
 import { GOVERNANCE_OBJECT_TYPE } from './object-types/governance';
-import { SERVICE_OFFERED_OBJECT_TYPE } from './object-types/service-offered';
-import { SERVICE_REQUESTED_OBJECT_TYPE } from './object-types/service-requested';
+import { SERVICE_OFFER_OBJECT_TYPE } from './object-types/service-offer';
+import { SERVICE_REQUEST_OBJECT_TYPE } from './object-types/service-request';
 import { LEGAL_DOCUMENT_OBJECT_TYPE } from './object-types/legal-document';
 import { SKILL_OBJECT_TYPE } from './object-types/skill';
 
@@ -52,8 +52,8 @@ export const OBJECT_TYPE_REGISTRY: ObjectTypeRegistry = {
   [OBJECT_TYPES.GROUP]: GROUP_OBJECT_TYPE,
   [OBJECT_TYPES.HTML]: HTML_OBJECT_TYPE,
   [OBJECT_TYPES.GOVERNANCE]: GOVERNANCE_OBJECT_TYPE,
-  [OBJECT_TYPES.SERVICE_OFFERED]: SERVICE_OFFERED_OBJECT_TYPE,
-  [OBJECT_TYPES.SERVICE_REQUESTED]: SERVICE_REQUESTED_OBJECT_TYPE,
+  [OBJECT_TYPES.SERVICE_OFFER]: SERVICE_OFFER_OBJECT_TYPE,
+  [OBJECT_TYPES.SERVICE_REQUEST]: SERVICE_REQUEST_OBJECT_TYPE,
   [OBJECT_TYPES.LEGAL_DOCUMENT]: LEGAL_DOCUMENT_OBJECT_TYPE,
   [OBJECT_TYPES.SKILL]: SKILL_OBJECT_TYPE,
 };

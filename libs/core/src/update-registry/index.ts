@@ -136,6 +136,10 @@ export { UPDATE_METADATA, UPDATE_METADATA_SCHEMA } from './updates/metadata';
 export { UPDATE_ALLOWED_TOOLS } from './updates/allowed-tools';
 export { UPDATE_REFERENCES } from './updates/references';
 export { UPDATE_SKILL_CONTENT } from './updates/skill-content';
+export { UPDATE_PROVIDER } from './updates/provider';
+export { UPDATE_INPUT } from './updates/input';
+export { UPDATE_OUTPUT } from './updates/output';
+export { UPDATE_LIMITATIONS } from './updates/limitations';
 
 export { UPDATE_ARRAY_MAX, UPDATE_STRING_MAX } from './string-limits';
 export { cidSchema } from './schemas/cid-schema';

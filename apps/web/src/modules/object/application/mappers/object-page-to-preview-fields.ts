@@ -54,6 +54,21 @@ function appendLeftRailBlock(
     case 'description':
       pushEntry(fields, counters, UPDATE_TYPES.DESCRIPTION, block.text);
       break;
+    case 'provider':
+      for (const item of block.items) {
+        const objectId = item.objectId.trim();
+        if (objectId.length > 0) {
+          pushEntry(fields, counters, UPDATE_TYPES.PROVIDER, objectId);
+        }
+      }
+      break;
+    case 'input':
+    case 'output':
+    case 'limitations':
+      if (block.text.trim()) {
+        pushEntry(fields, counters, block.kind, block.text);
+      }
+      break;
     case 'parent':
       pushEntry(fields, counters, UPDATE_TYPES.PARENT, block.objectId);
       break;

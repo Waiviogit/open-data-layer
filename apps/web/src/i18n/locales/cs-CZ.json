@@ -2311,6 +2311,8 @@
   "object_type_resort": "rezort",
   "object_type_restaurant": "restaurace",
   "object_type_service": "služba",
+  "object_type_service_offer": "nabídka služby",
+  "object_type_service_request": "požadavek na službu",
   "object_type_shop": "obchod",
   "object_type_stocks": "akcie",
   "object_type_test": "Test",

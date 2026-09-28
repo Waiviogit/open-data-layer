@@ -2311,6 +2311,8 @@
   "object_type_resort": "station balnéaire",
   "object_type_restaurant": "restaurant",
   "object_type_service": "service",
+  "object_type_service_offer": "offre de service",
+  "object_type_service_request": "demande de service",
   "object_type_shop": "boutique",
   "object_type_stocks": "actions",
   "object_type_test": "test",

@@ -21,7 +21,8 @@ describe('discover-registry', () => {
   });
 
   it('matches type search against key and spaced label', () => {
-    expect(matchesDiscoverTypeSearch('service_offered', 'offered')).toBe(true);
+    expect(matchesDiscoverTypeSearch('service_offer', 'offer')).toBe(true);
+    expect(matchesDiscoverTypeSearch('service_offer', 'offered')).toBe(false);
     expect(matchesDiscoverTypeSearch('restaurant', 'prod')).toBe(false);
     expect(matchesDiscoverTypeSearch('product', '')).toBe(true);
   });

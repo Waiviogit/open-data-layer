@@ -17,7 +17,7 @@ Product or sellable item with catalog fields.
 ## When to use / not
 
 - **Use** for sellable catalog items (SKU, merchant, price, variants).
-- **Not** for intangible services — consider `service_offered` for OBL catalog.
+- **Not** for intangible services — consider `service_offer` for OBL catalog.
 - **Not** when product id already exists in catalog — update instead.
 
 ## Product baseline fields

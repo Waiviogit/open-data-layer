@@ -23,6 +23,18 @@ export const RECIPE_OBJECT_TYPE = 'recipe' as const;
 
 export const SKILL_OBJECT_TYPE = 'skill' as const;
 
+export const SERVICE_CATALOG_OBJECT_TYPES = ['service_offer', 'service_request'] as const;
+
+/** Catalog fields spliced after description on service_offer and service_request. */
+export const SERVICE_CATALOG_FIELD_BLOCK_ORDER = [
+  'provider',
+  'input',
+  'output',
+  'limitations',
+] as const;
+
+export type ServiceCatalogFieldBlockId = (typeof SERVICE_CATALOG_FIELD_BLOCK_ORDER)[number];
+
 export const LIST_OBJECT_TYPE = 'list' as const;
 
 export function isListObjectType(objectType: string): boolean {
@@ -31,6 +43,10 @@ export function isListObjectType(objectType: string): boolean {
 
 export function isSkillObjectType(objectType: string): boolean {
   return objectType.trim() === SKILL_OBJECT_TYPE;
+}
+
+export function isServiceCatalogObjectType(objectType: string): boolean {
+  return (SERVICE_CATALOG_OBJECT_TYPES as readonly string[]).includes(objectType.trim());
 }
 
 export function isOptionsObjectType(objectType: string): boolean {
@@ -180,7 +196,8 @@ export type AboutSectionBlockId =
   | (typeof ABOUT_SECTION_BLOCK_ORDER)[number]
   | BookAboutSectionBlockId
   | RecipeAboutSectionBlockId
-  | SkillAboutSectionBlockId;
+  | SkillAboutSectionBlockId
+  | ServiceCatalogFieldBlockId;
 
 /**
  * Menu / custom-sort cluster is rendered before the about stack (legacy `menuSection`).
@@ -236,6 +253,7 @@ export type EditModeLeftRailBlockId =
   | BookAboutSectionBlockId
   | NavigateSectionBlockId
   | SkillAboutSectionBlockId
+  | ServiceCatalogFieldBlockId
   | 'parent'
   | 'publisher';
 
@@ -269,7 +287,16 @@ export function bookTypeAboutRemainderOrder(): readonly AboutSectionBlockId[] {
   ];
 }
 
-/** Edit-mode slot order; product-like types match legacy navigate-before-menu layout. */
+/** Generic about stack with catalog fields inserted after description. */
+function serviceCatalogAboutOrder(): readonly AboutSectionBlockId[] {
+  const descriptionIdx = ABOUT_SECTION_BLOCK_ORDER.indexOf('description');
+  return [
+    ...ABOUT_SECTION_BLOCK_ORDER.slice(0, descriptionIdx + 1),
+    ...SERVICE_CATALOG_FIELD_BLOCK_ORDER,
+    ...ABOUT_SECTION_BLOCK_ORDER.slice(descriptionIdx + 1),
+  ];
+}
+
 export function resolveAboutSectionBlockOrder(
   objectType: string,
 ): readonly AboutSectionBlockId[] {
@@ -278,6 +305,9 @@ export function resolveAboutSectionBlockOrder(
   }
   if (isRecipeObjectType(objectType)) {
     return RECIPE_ABOUT_SECTION_BLOCK_ORDER;
+  }
+  if (isServiceCatalogObjectType(objectType)) {
+    return serviceCatalogAboutOrder();
   }
   return ABOUT_SECTION_BLOCK_ORDER;
 }

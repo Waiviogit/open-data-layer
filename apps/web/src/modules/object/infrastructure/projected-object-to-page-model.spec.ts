@@ -1008,3 +1008,48 @@ describe('projectedObjectWithCountsToPageModel closed venue status block', () =>
     ).toBe('full');
   });
 });
+
+describe('projectedObjectWithCountsToPageModel service catalog fields', () => {
+  it('places provider, input, output, and limitations after description', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: 'offer-1',
+      object_type: 'service_offer',
+      semantic_type: 'schema:Service',
+      weight: 1,
+      fields: {
+        name: 'Translate',
+        description: 'Turns text into another language.',
+        provider: {
+          object_id: 'acme-biz',
+          object_type: 'business',
+          fields: { name: 'Acme' },
+        },
+        input: 'Source text',
+        output: 'Translated text',
+        limitations: 'Latin scripts only',
+      },
+      followers_count: 0,
+      posts_count: 0,
+      updates_count: 0,
+      favorited_by_count: 0,
+      supervised_count: 0,
+      exclusive_count: 0,
+      is_following: false,
+      viewer_bell: false,
+      update_type_counts: {},
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    const descriptionIdx = kinds.indexOf('description');
+
+    expect(descriptionIdx).toBeGreaterThanOrEqual(0);
+    expect(kinds.indexOf('provider')).toBe(descriptionIdx + 1);
+    expect(kinds.indexOf('input')).toBe(descriptionIdx + 2);
+    expect(kinds.indexOf('output')).toBe(descriptionIdx + 3);
+    expect(kinds.indexOf('limitations')).toBe(descriptionIdx + 4);
+
+    const provider = model.leftRailBlocks.find((block) => block.kind === 'provider');
+    expect(provider && provider.kind === 'provider' ? provider.items[0]?.name : null).toBe('Acme');
+  });
+});

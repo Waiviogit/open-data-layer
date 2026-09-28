@@ -50,8 +50,8 @@ export function OfferEditorServiceStep({
   const { t } = useI18n();
   const objectType =
     kind === 'offer'
-      ? OBL_CATALOG_OBJECT_TYPES.SERVICE_OFFERED
-      : OBL_CATALOG_OBJECT_TYPES.SERVICE_REQUESTED;
+      ? OBL_CATALOG_OBJECT_TYPES.SERVICE_OFFER
+      : OBL_CATALOG_OBJECT_TYPES.SERVICE_REQUEST;
   const [suggestions, setSuggestions] = useState<SocialProjectedObjectView[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(true);
   const signParams = getOfferTerms(fields).signParams ?? [];

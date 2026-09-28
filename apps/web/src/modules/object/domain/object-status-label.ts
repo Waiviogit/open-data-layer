@@ -13,8 +13,8 @@ export const OBJECT_STATUS_DISCONTINUED_TYPES = [
   'book',
   'drink',
   'dish',
-  'service_offered',
-  'service_requested',
+  'service_offer',
+  'service_request',
 ] as const;
 
 const DEFAULT_STATUS_LABEL_KEYS: Record<string, string> = {

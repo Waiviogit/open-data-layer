@@ -106,6 +106,10 @@ import { UPDATE_METADATA } from './updates/metadata';
 import { UPDATE_ALLOWED_TOOLS } from './updates/allowed-tools';
 import { UPDATE_REFERENCES } from './updates/references';
 import { UPDATE_SKILL_CONTENT } from './updates/skill-content';
+import { UPDATE_PROVIDER } from './updates/provider';
+import { UPDATE_INPUT } from './updates/input';
+import { UPDATE_OUTPUT } from './updates/output';
+import { UPDATE_LIMITATIONS } from './updates/limitations';
 
 export const UPDATE_REGISTRY: UpdateRegistry = {
   [UPDATE_TYPES.NAME]: UPDATE_NAME,
@@ -214,4 +218,8 @@ export const UPDATE_REGISTRY: UpdateRegistry = {
   [UPDATE_TYPES.ALLOWED_TOOLS]: UPDATE_ALLOWED_TOOLS,
   [UPDATE_TYPES.REFERENCES]: UPDATE_REFERENCES,
   [UPDATE_TYPES.SKILL_CONTENT]: UPDATE_SKILL_CONTENT,
+  [UPDATE_TYPES.PROVIDER]: UPDATE_PROVIDER,
+  [UPDATE_TYPES.INPUT]: UPDATE_INPUT,
+  [UPDATE_TYPES.OUTPUT]: UPDATE_OUTPUT,
+  [UPDATE_TYPES.LIMITATIONS]: UPDATE_LIMITATIONS,
 } satisfies UpdateRegistry;

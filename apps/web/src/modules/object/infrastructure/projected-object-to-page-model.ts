@@ -66,6 +66,7 @@ import {
   projectedLegalText,
   projectedSkillContent,
   projectedLicense,
+  projectedCatalogText,
   projectedCompatibility,
   projectedMetadataItems,
   projectedAllowedTools,
@@ -565,6 +566,30 @@ function appendAboutSectionBlock(
         blocks.push({
           kind: 'description',
           headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.description,
+          text,
+        });
+      }
+      break;
+    }
+    case 'provider': {
+      const items = projectedObjectRefItems(viewLike, 'provider');
+      if (items.length > 0) {
+        blocks.push({
+          kind: 'provider',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.provider,
+          items,
+        });
+      }
+      break;
+    }
+    case 'input':
+    case 'output':
+    case 'limitations': {
+      const text = projectedCatalogText(viewLike, step);
+      if (text) {
+        blocks.push({
+          kind: step,
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL[step],
           text,
         });
       }

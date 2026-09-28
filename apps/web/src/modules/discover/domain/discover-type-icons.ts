@@ -31,8 +31,8 @@ export const DISCOVER_TYPE_ICONS: Record<ObjectType, IconName> = {
   [OBJECT_TYPES.MAP]: 'map',
   [OBJECT_TYPES.LINK]: 'link',
   [OBJECT_TYPES.RECIPE]: 'chef-hat',
-  [OBJECT_TYPES.SERVICE_OFFERED]: 'hand-helping',
-  [OBJECT_TYPES.SERVICE_REQUESTED]: 'hand',
+  [OBJECT_TYPES.SERVICE_OFFER]: 'hand-helping',
+  [OBJECT_TYPES.SERVICE_REQUEST]: 'hand',
   [OBJECT_TYPES.SKILL]: 'sparkles',
 };
 

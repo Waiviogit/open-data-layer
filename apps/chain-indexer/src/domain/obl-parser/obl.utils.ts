@@ -21,9 +21,9 @@ export function toUsdString(value: number | string, kind: OblUsdAmountKind = 'no
 
 export function isServiceRefType(objectType: string, kind: 'offer' | 'request'): boolean {
   if (kind === 'offer') {
-    return objectType === OBJECT_TYPES.SERVICE_OFFERED;
+    return objectType === OBJECT_TYPES.SERVICE_OFFER;
   }
-  return objectType === OBJECT_TYPES.SERVICE_REQUESTED;
+  return objectType === OBJECT_TYPES.SERVICE_REQUEST;
 }
 
 export function isLegalRefType(objectType: string): boolean {

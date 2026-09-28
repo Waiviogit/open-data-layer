@@ -60,7 +60,7 @@ export type ObjectPagePathTabSegment = (typeof OBJECT_PAGE_PATH_TAB_SEGMENTS)[nu
 /** Internal query param when proxy rewrites `/object/:id/gallery/album/:name`. */
 export const OBJECT_PAGE_GALLERY_ALBUM_PARAM = 'gallery_album';
 
-/** Internal query param when proxy rewrites `/object/:id/books` or `/products`. */
+/** Internal query param when proxy rewrites `/object/:id/books`, `/products`, `/service-offers`, or `/service-requests`. */
 export const OBJECT_PAGE_FIELD_REFERENCE_TYPE_PARAM = 'field_reference_type';
 
 /** Internal `?tab=` value for field-reference center feeds. */
@@ -195,7 +195,7 @@ export function resolveCategoryNameForObjectPage(
   }
 }
 
-/** Parses field-reference target type from `/object/:id/books` or `/products`. */
+/** Parses field-reference target type from `/object/:id/books`, `/products`, `/service-offers`, or `/service-requests`. */
 export function resolveFieldReferenceTypeFromObjectUrl(
   objectId: string,
   pathname: string,
