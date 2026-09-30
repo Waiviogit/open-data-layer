@@ -56,6 +56,7 @@ describe('OblRelationshipsService detail getters', () => {
       created_at: new Date('2026-01-01T00:00:00.000Z'),
       offer_name: 'Design sprint',
       offer_description: 'Scoped delivery',
+      offer_status: 'active',
     });
 
     const result = await service.getContract('c-1');
@@ -111,6 +112,7 @@ describe('OblRelationshipsService detail getters', () => {
       created_at: new Date('2026-01-01T00:00:00.000Z'),
       offer_name: 'Design sprint',
       offer_description: null,
+      offer_status: 'active',
     });
 
     const result = await service.getInvoice('inv-1');
@@ -260,6 +262,7 @@ describe('OblRelationshipsService detail getters', () => {
       created_at: new Date('2026-01-01T00:00:00.000Z'),
       offer_name: 'Sprint',
       offer_description: null,
+      offer_status: 'active',
     });
 
     const result = await service.getServiceOrder('so-1');

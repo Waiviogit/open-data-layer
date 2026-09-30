@@ -546,6 +546,7 @@ export class OblRepository {
     OblContract & {
       offer_name: string;
       offer_description: string | null;
+      offer_status: 'active' | 'retired';
     }
   >> {
     const decoded = decodeOblCursor(cursor);
@@ -557,7 +558,11 @@ export class OblRepository {
           .onRef('o.version', '=', 'c.offer_version'),
       )
       .selectAll('c')
-      .select(['o.name as offer_name', 'o.description as offer_description'])
+      .select([
+        'o.name as offer_name',
+        'o.description as offer_description',
+        'o.status as offer_status',
+      ])
       .where('c.pair_low', '=', pairLow)
       .where('c.pair_high', '=', pairHigh);
     if (startedSeq !== null) {
@@ -876,6 +881,7 @@ export class OblRepository {
       OblContract & {
         offer_name: string;
         offer_description: string | null;
+        offer_status: 'active' | 'retired';
       }
     >
   > {
@@ -887,7 +893,11 @@ export class OblRepository {
           .onRef('o.version', '=', 'c.offer_version'),
       )
       .selectAll('c')
-      .select(['o.name as offer_name', 'o.description as offer_description'])
+      .select([
+        'o.name as offer_name',
+        'o.description as offer_description',
+        'o.status as offer_status',
+      ])
       .where('c.pair_low', '=', pairLow)
       .where('c.pair_high', '=', pairHigh)
       .orderBy('c.created_at', 'desc')

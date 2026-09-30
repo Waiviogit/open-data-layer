@@ -26,6 +26,7 @@ describe('dispute-resolution', () => {
     arbiter: null,
     offer_name: 'API',
     offer_description: null,
+    offer_status: 'active',
     service_order_schema: null,
     created_at: '2026-01-01T00:00:00.000Z',
   };

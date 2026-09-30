@@ -1,12 +1,12 @@
 ---
 id: docs-skills-obl-offers-contracts
 title: OBL offers and contracts
-description: Discover, publish, and sign OBL offers/contracts including signParams metadata and deterministic contract_id.
+description: Discover, publish, and sign OBL offers/contracts; create or cancel service orders on a signed contract.
 type: skill
 status: active
 scope: platform
-tags: [obl, offers, contracts, signParams, contract_sign, offer_publish, business]
-updated_at: 2026-07-17
+tags: [obl, offers, contracts, signParams, contract_sign, offer_publish, service_order_create, service_order_cancel, business]
+updated_at: 2026-09-30
 related:
   - docs/skills/obl-ledger.md
   - docs/skills/obl-disputes.md
@@ -15,12 +15,13 @@ related:
   - docs/skills/knowledge-api-routing.md
   - docs/spec/open-business-layer.md
   - docs/spec/obl/contracts.md
+  - docs/spec/obl/service-orders.md
   - docs/apps/query-api/spec/obl.md
 ---
 
 # OBL offers and contracts
 
-Discover published offers, publish/retire offer versions, and sign contracts (`contract_sign`) on the Open Business Layer.
+Discover published offers, publish/retire offer versions, sign contracts (`contract_sign`), and create/cancel service orders on a signed contract.
 
 **Signing / broadcast:** follow [Hive blockchain broadcast](hive-blockchain-broadcast.md) for key custody. OBL ops use `buildObl*` builders and `obl-mainnet` / `obl-testnet` (not `odl-*`).
 
@@ -29,7 +30,8 @@ Discover published offers, publish/retire offer versions, and sign contracts (`c
 - Find or inspect an OBL offer (`search_obl_offers`, `get_obl_offer`).
 - Publish, update, or retire an offer (`offer_publish` / `offer_update` / `offer_retire`).
 - Sign a contract for an offer pair (`contract_sign`), including `terms.signParams` → `metadata`.
-- Need the deterministic `contract_id` formula or `get_obl_contract`.
+- Create or cancel a service order on a signed contract (`service_order_create` / `service_order_cancel`).
+- Need the deterministic `contract_id` formula or `get_obl_contract` / `get_obl_service_order`.
 
 ## When not to use
 
@@ -40,7 +42,7 @@ Discover published offers, publish/retire offer versions, and sign contracts (`c
 
 ## Cycle position
 
-`draft` → **publish offer** → **sign contract** → [invoices / payments](obl-ledger.md) → [disputes](obl-disputes.md).
+`draft` → **publish offer** → **sign contract** → **service order** → [invoices / payments](obl-ledger.md) → [disputes](obl-disputes.md).
 
 ## Network (pick once)
 
@@ -60,6 +62,7 @@ Prefer [query-api MCP routing](query-api-mcp-routing.md). Tools:
 | Search offers | `search_obl_offers` |
 | Offer detail | `get_obl_offer` |
 | Contract detail | `get_obl_contract` |
+| Service order detail | `get_obl_service_order` |
 
 HTTP parity: [query-api OBL spec](../apps/query-api/spec/obl.md).
 
@@ -106,21 +109,53 @@ const op = buildOblContractSignOp({
 5. Broadcast; wait for indexer; `get_obl_contract` / ledger contracts list to confirm.
 6. **One contract per `offer_id` + account pair** — re-sign with same id is rejected / no-op at DB unique index.
 
+## Steps — service orders
+
+Normative rules: [service-orders.md](../spec/obl/service-orders.md).
+
+**Create** (`buildOblServiceOrderCreateOp`): party is `provider` or `client`; signed offer version must still be `active` (indexer skips retired/missing). Client id: `so-{uuid}`. Optional `details`. Web picker only lists contracts whose offer is `active`.
+
+```ts
+import { buildOblServiceOrderCreateOp } from '@opden-data-layer/hive-broadcast';
+
+const op = buildOblServiceOrderCreateOp({
+  id: 'obl-mainnet',
+  serviceOrderId: 'so-…',
+  contractId: 'contract-…',
+  creator: 'alice',
+});
+```
+
+**Cancel** (`buildOblServiceOrderCancelOp`): either party. Payload is **only** `{ service_order_id }` — no `canceller` in JSON. Actor is `required_posting_auths[0]`. Already cancelled is a no-op. Existing reports/invoices are not rewritten; new `report_create` / `invoice_issue` that reference a cancelled SO are skipped.
+
+```ts
+import { buildOblServiceOrderCancelOp } from '@opden-data-layer/hive-broadcast';
+
+const op = buildOblServiceOrderCancelOp({
+  id: 'obl-mainnet',
+  serviceOrderId: 'so-…',
+  required_posting_auths: ['alice'],
+});
+```
+
+After index: `get_obl_service_order` / ledger `service-orders` — `status`, `cancelled_by`, `cancelled_at`.
+
 ## Gotchas
 
 - Signer must be the counterparty (`required_posting_auths: [signer]`).
 - `signParams` only guide UI → `metadata`; they are not separate on-chain fields.
 - Draft APIs require auth JWT; agents without session cannot mutate drafts via MCP.
 - After first contract for a pair, ledger may start (`started_event_seq`); invoices before that stay `pending` — see [obl-ledger.md](obl-ledger.md).
+- Do not put `canceller` in the cancel envelope; indexer uses the Hive signer.
 
 ## Verification
 
-- `get_file({ path: "docs/skills/obl-offers-contracts.md" })` body contains `buildOblContractSignOp` and `obl-mainnet`.
-- `search_obl_offers` / `get_obl_contract` return the published/signed row after index.
-- `resolve_doc({ topic: "sign obl contract" })` routes here.
+- `get_file({ path: "docs/skills/obl-offers-contracts.md" })` body contains `buildOblContractSignOp`, `buildOblServiceOrderCancelOp`, and `obl-mainnet`.
+- `search_obl_offers` / `get_obl_contract` / `get_obl_service_order` return the published/signed/cancelled row after index.
+- `resolve_doc({ topic: "sign obl contract" })` / `"cancel service order"` routes here.
 
 ## Related
 
 - [OBL ledger](obl-ledger.md) · [OBL disputes](obl-disputes.md)
-- [Contracts spec](../spec/obl/contracts.md) · [Open Business Layer](../spec/open-business-layer.md)
+- [Contracts spec](../spec/obl/contracts.md) · [Service orders](../spec/obl/service-orders.md) · [Open Business Layer](../spec/open-business-layer.md)
 - [Hive blockchain broadcast](hive-blockchain-broadcast.md)

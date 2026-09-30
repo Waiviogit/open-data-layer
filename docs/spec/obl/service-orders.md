@@ -22,7 +22,7 @@ Records that reference a **signed contract** between provider and client. They d
 
 - **Payload:** `service_order_id`, `contract_id`, `creator`, optional `details` (JSON object)
 - **Signer:** `creator` must be in `required_posting_auths`
-- **Rules:** `creator` must be the contract `provider` or `client`
+- **Rules:** `creator` must be the contract `provider` or `client`; the signed offer version (`offer_id` + `offer_version`) must be `active` (retired or missing offer → skip)
 
 ### `service_order_cancel`
 

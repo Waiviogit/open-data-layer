@@ -68,6 +68,7 @@ export class OblLedgerService {
       OblContract & {
         offer_name: string;
         offer_description: string | null;
+        offer_status: 'active' | 'retired';
       }
     >;
     invoices: OblInvoiceLineView[];

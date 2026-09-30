@@ -6,7 +6,7 @@ type: skill
 status: active
 scope: platform
 tags: [hive, broadcast, odl, custom_json, dhive, signing, object-create]
-updated_at: 2026-06-10
+updated_at: 2026-09-30
 related:
   - docs/skills/knowledge-api-routing.md
   - docs/skills/hive-has-agent-wallet.md
@@ -40,12 +40,12 @@ Build, sign, and broadcast Hive transactions for **ODL** (`custom_json` envelope
 
 - Account signup — [hive-account-signup.md](hive-account-signup.md).
 - Read-only queries — use **query-api** / Postgres (indexed state), not broadcast.
-- **OBL business lifecycle** (offers, contracts, invoices, payments, disputes) — use [obl-offers-contracts](obl-offers-contracts.md), [obl-ledger](obl-ledger.md), [obl-disputes](obl-disputes.md); those skills call `buildObl*` then return here for custody/sign.
+- **OBL business lifecycle** (offers, contracts, service orders, invoices, payments, disputes) — use [obl-offers-contracts](obl-offers-contracts.md), [obl-ledger](obl-ledger.md), [obl-disputes](obl-disputes.md); those skills call `buildObl*` then return here for custody/sign.
 - Server-side auth login — [auth-api challenge flow](../apps/auth-api/spec/challenge-flow.md) (signature verify only, not chain write).
 
 ### OBL envelopes (short)
 
-OBL `custom_json` ids are **`obl-mainnet` / `obl-testnet`** (not `odl-*`). Build with `@opden-data-layer/hive-broadcast` helpers: `buildOblOfferPublishOp`, `buildOblContractSignOp`, `buildOblInvoiceIssueOp`, `buildOblPaymentDeclareOp`, `buildOblPaymentConfirmOp`, `buildOblDisputeOpenOp`, `buildOblDisputeResolveOp`, etc. Full cycle playbooks: skills above.
+OBL `custom_json` ids are **`obl-mainnet` / `obl-testnet`** (not `odl-*`). Build with `@opden-data-layer/hive-broadcast` helpers: `buildOblOfferPublishOp`, `buildOblContractSignOp`, `buildOblServiceOrderCreateOp`, `buildOblServiceOrderCancelOp`, `buildOblInvoiceIssueOp`, `buildOblPaymentDeclareOp`, `buildOblPaymentConfirmOp`, `buildOblDisputeOpenOp`, `buildOblDisputeResolveOp`, etc. Full cycle playbooks: skills above. Cancel SO payload is `{ service_order_id }` only — signer is `required_posting_auths`, not a JSON `canceller`.
 
 ## Key custody (decide with the user first)
 

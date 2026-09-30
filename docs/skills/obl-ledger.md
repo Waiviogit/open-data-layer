@@ -6,7 +6,7 @@ type: skill
 status: active
 scope: platform
 tags: [obl, ledger, invoice, payment, balance, mutual-ledger, relationships, business]
-updated_at: 2026-07-23
+updated_at: 2026-09-30
 related:
   - docs/skills/obl-offers-contracts.md
   - docs/skills/obl-disputes.md
@@ -16,6 +16,7 @@ related:
   - docs/spec/open-business-layer.md
   - docs/spec/obl/mutual-ledger.md
   - docs/spec/obl/payments.md
+  - docs/spec/obl/service-orders.md
   - docs/apps/query-api/spec/obl.md
 ---
 
@@ -34,13 +35,13 @@ Issue invoices, record off-chain payments, and read Mutual Ledger balances / his
 
 ## When not to use
 
-- Discover/publish/sign offers and contracts — [obl-offers-contracts.md](obl-offers-contracts.md).
+- Discover/publish/sign offers and contracts, or create/cancel service orders — [obl-offers-contracts.md](obl-offers-contracts.md).
 - Open/resolve disputes or arbiter inbox — [obl-disputes.md](obl-disputes.md).
 - Normative balance rules — [docs/spec/obl/mutual-ledger.md](../spec/obl/mutual-ledger.md).
 
 ## Cycle position
 
-[Sign contract](obl-offers-contracts.md) → **invoices / payments / balances** → [disputes](obl-disputes.md).
+[Sign contract](obl-offers-contracts.md) → [service order](obl-offers-contracts.md#steps--service-orders) → **invoices / payments / balances** → [disputes](obl-disputes.md).
 
 ## Network
 
@@ -58,8 +59,9 @@ Issue invoices, record off-chain payments, and read Mutual Ledger balances / his
 | Counterparties + balances | `get_obl_relationships` |
 | USD → WAIV hint | `convert_usd_to_waiv` |
 | Contract context | `get_obl_contract` |
+| Service order | `get_obl_service_order` |
 
-HTTP also: cursor pages `/query/v1/obl/ledger/{payments|invoices|contracts|disputes}`, `GET /obl/invoices/:invoiceId`. See [query-api OBL](../apps/query-api/spec/obl.md) and [query-api MCP routing](query-api-mcp-routing.md).
+HTTP also: cursor pages `/query/v1/obl/ledger/{payments|invoices|contracts|disputes|service-orders|reports}`, `GET /obl/invoices/:invoiceId`, `GET /obl/service-orders/:serviceOrderId`. See [query-api OBL](../apps/query-api/spec/obl.md) and [query-api MCP routing](query-api-mcp-routing.md).
 
 Balance buckets (confirmed / pending / disputed) — [mutual-ledger.md](../spec/obl/mutual-ledger.md).
 
@@ -136,6 +138,7 @@ On-chain WAIV transfers / upvote rewards can also credit the ledger when indexed
 
 - Amounts are USD strings/numbers validated strictly on chain and in web builders.
 - Invoice without `contract_id` is allowed; dispute authority then falls back when resolving — prefer linking a contract when the pair has one.
+- `invoice_issue` / `report_create` with a **cancelled** `service_order_id` are skipped entirely (do not persist a nulled ref). Create/cancel SO — [obl-offers-contracts.md](obl-offers-contracts.md#steps--service-orders).
 - Do not treat query-api drafts as ledger state.
 
 ## Verification

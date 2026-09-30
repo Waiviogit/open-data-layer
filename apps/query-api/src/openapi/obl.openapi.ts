@@ -144,6 +144,7 @@ const oblContractSchema = registry.register(
     dispute_rule: z.enum(['client', 'provider', 'arbiter']),
     arbiter: z.string().nullable(),
     service_order_schema: z.unknown().nullable().optional(),
+    offer_status: z.enum(['active', 'retired']).optional(),
     created_event_seq: z.string(),
     transaction_id: z.string(),
   }),

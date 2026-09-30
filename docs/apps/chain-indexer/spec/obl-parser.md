@@ -24,7 +24,7 @@ Registered ids: `obl-mainnet`, `obl-testnet` (see `hive.oblCustomJsonId`). Dispa
 
 `offer_publish`, `offer_update`, `offer_retire`, `contract_sign`, `service_order_create`, `service_order_cancel`, `report_create`, `invoice_issue`, `payment_declare`, `payment_confirm`, `dispute_open`, `dispute_resolve`.
 
-`service_order_cancel` payload is `{ service_order_id }` only; `cancelled_by` is the Hive signer (`ctx.creator`). `report_create` / `invoice_issue` that reference a cancelled service order are skipped entirely (see [service orders](../../../spec/obl/service-orders.md)).
+`service_order_create` skips when the contract’s signed offer version is missing or not `active`. `service_order_cancel` payload is `{ service_order_id }` only; `cancelled_by` is the Hive signer (`ctx.creator`). `report_create` / `invoice_issue` that reference a cancelled service order are skipped entirely (see [service orders](../../../spec/obl/service-orders.md)).
 
 After a successful persist, handlers emit `obl_*` notifications via `OblNotificationService` — see [OBL lifecycle notifications](../../../spec/obl/notifications.md).
 

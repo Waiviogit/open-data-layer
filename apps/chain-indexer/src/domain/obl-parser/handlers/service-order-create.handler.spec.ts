@@ -40,18 +40,21 @@ describe('ServiceOrderCreateHandler', () => {
   let handler: ServiceOrderCreateHandler;
   let findServiceOrder: jest.Mock;
   let findContract: jest.Mock;
+  let findOfferVersion: jest.Mock;
   let insertServiceOrder: jest.Mock;
   let oblNotifications: ReturnType<typeof mockOblNotifications>;
 
   beforeEach(() => {
     findServiceOrder = jest.fn().mockResolvedValue(null);
     findContract = jest.fn().mockResolvedValue(contract);
+    findOfferVersion = jest.fn().mockResolvedValue({ status: 'active' });
     insertServiceOrder = jest.fn().mockResolvedValue(undefined);
     oblNotifications = mockOblNotifications();
     handler = new ServiceOrderCreateHandler(
       {
         findServiceOrder,
         findContract,
+        findOfferVersion,
         insertServiceOrder,
       } as unknown as OblRepository,
       oblNotifications.service,
@@ -129,6 +132,35 @@ describe('ServiceOrderCreateHandler', () => {
       {
         service_order_id: 'so-1',
         contract_id: 'missing',
+        creator: 'alice',
+      },
+      ctx('alice'),
+    );
+    expect(insertServiceOrder).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).not.toHaveBeenCalled();
+  });
+
+  it('skips when the signed offer version is retired', async () => {
+    findOfferVersion.mockResolvedValue({ status: 'retired' });
+    await handler.handle(
+      {
+        service_order_id: 'so-1',
+        contract_id: 'c-1',
+        creator: 'alice',
+      },
+      ctx('alice'),
+    );
+    expect(findOfferVersion).toHaveBeenCalledWith('offer-1', 1);
+    expect(insertServiceOrder).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).not.toHaveBeenCalled();
+  });
+
+  it('skips when the signed offer version is missing', async () => {
+    findOfferVersion.mockResolvedValue(null);
+    await handler.handle(
+      {
+        service_order_id: 'so-1',
+        contract_id: 'c-1',
         creator: 'alice',
       },
       ctx('alice'),

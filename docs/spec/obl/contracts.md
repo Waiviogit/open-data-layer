@@ -33,7 +33,7 @@ related:
 | `offer_update` | `author` | Append version |
 | `offer_retire` | `author` | Mark retired |
 | `contract_sign` | counterparty (`signer`) | Create contract; may start ledger. **One contract per `offer_id` + account pair** (deterministic `contract_id`, unique index). Optional `metadata` JSONB. Copies optional `service_order_schema` from the signed offer version’s `terms.serviceOrderSchema`. |
-| `service_order_create` | `creator` | Service order for a signed contract; creator must be provider or client. Optional `details`. |
+| `service_order_create` | `creator` | Service order for a signed contract; creator must be provider or client; signed offer version must be `active`. Optional `details`. |
 | `service_order_cancel` | posting signer (`required_posting_auths[0]`) | Soft-cancel; either party. Payload is only `service_order_id`. Stores `cancelled_by` from the signer. Existing reports/invoices are not rewritten. New report/invoice with this `service_order_id` is rejected. |
 | `report_create` | `author` | Immutable report; at least one of `contract_id` / `service_order_id`; author must be a contract party. Optional `details`. If `service_order_id` points at a cancelled SO the whole report is skipped. |
 | `invoice_issue` | `issuer` | Header + obligation line(s). Optional `service_order_id` / `report_id` (informational; indexer nulls invalid refs **except** a cancelled SO: that skips the entire invoice). **Legacy:** `creditor` + `amount_usd` (single line). **Multi:** `beneficiaries[]` with `{ beneficiary, amount_usd, role? }` (2+ lines → `kind=multi`). Attestor invoices (issuer not debtor/beneficiary) require `contract_id` (governing contract with issuer + debtor). Auto-starts ledger per debt pair when authorized by governing contract. |

@@ -46,6 +46,15 @@ export class ServiceOrderCreateHandler implements OdlActionHandler {
       return;
     }
 
+    const offer = await this.oblRepository.findOfferVersion(
+      contract.offer_id,
+      contract.offer_version,
+    );
+    if (!offer || offer.status !== 'active') {
+      this.logger.warn('service_order_create: offer not found or inactive');
+      return;
+    }
+
     await this.oblRepository.insertServiceOrder({
       service_order_id: data.service_order_id,
       contract_id: contract.contract_id,

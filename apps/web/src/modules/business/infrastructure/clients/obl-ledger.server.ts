@@ -40,6 +40,7 @@ export type OblContractApiRow = {
   metadata: Record<string, unknown>;
   offer_name: string | null;
   offer_description: string | null;
+  offer_status?: 'active' | 'retired';
   service_order_schema: Record<string, unknown> | null;
   created_event_seq: string;
   created_at: string;

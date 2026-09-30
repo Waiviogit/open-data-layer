@@ -48,6 +48,7 @@ import {
   newOblServiceOrderId,
 } from '../../domain/obl-ids';
 import { businessRoutes } from '../../domain/routes';
+import { canCreateServiceOrderOnContract } from '../../domain/service-order-create';
 import {
   buildRelationshipTabHref,
   parseRelationshipTab,
@@ -201,6 +202,11 @@ export function BusinessRelationshipDetailClient({
     }
     return sortByCreatedAtDesc(contractLabels as LedgerContractRow[]);
   }, [contractLabels, lists.contracts.items]);
+
+  const serviceOrderContracts = useMemo(
+    () => contracts.filter(canCreateServiceOrderOnContract),
+    [contracts],
+  );
 
   const invoices = useMemo(
     () =>
@@ -801,7 +807,7 @@ export function BusinessRelationshipDetailClient({
         open={serviceOrderModalOpen}
         onClose={() => setServiceOrderModalOpen(false)}
         isBusy={isBusy}
-        contracts={contracts}
+        contracts={serviceOrderContracts}
         onSubmit={createServiceOrder}
       />
       <BusinessCreateReportModal

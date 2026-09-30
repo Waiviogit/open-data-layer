@@ -95,6 +95,7 @@ export type LedgerContractRow = {
   arbiter: string | null;
   offer_name: string;
   offer_description: string | null;
+  offer_status?: 'active' | 'retired';
   service_order_schema: Record<string, unknown> | null;
   created_at: string;
 };
