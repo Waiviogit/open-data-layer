@@ -259,6 +259,14 @@ const oblServiceOrderCreatePayload = z.object({
   client: z.string(),
 });
 
+const oblServiceOrderCancelPayload = z.object({
+  serviceOrderId: z.string(),
+  contractId: z.string(),
+  canceller: z.string(),
+  provider: z.string(),
+  client: z.string(),
+});
+
 const oblReportCreatePayload = z.object({
   reportId: z.string(),
   contractId: z.string(),
@@ -509,6 +517,11 @@ const notificationEventVariants = [
     type: z.literal('obl_service_order_create'),
     ...envelopeSchema,
     payload: oblServiceOrderCreatePayload,
+  }),
+  z.object({
+    type: z.literal('obl_service_order_cancel'),
+    ...envelopeSchema,
+    payload: oblServiceOrderCancelPayload,
   }),
   z.object({
     type: z.literal('obl_report_create'),

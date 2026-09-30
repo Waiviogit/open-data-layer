@@ -7,6 +7,7 @@ import { computePairBalance } from './compute-pair-balance';
 import { buildOffsetPage } from './obl-pagination';
 import { filterByLedgerCutoff, normalizePair } from './obl-pair-utils';
 import { toBalanceInvoiceRow, type OblInvoiceLineView } from './obl-invoice-line';
+import { serializeOblServiceOrder } from './obl-row-serialize';
 import type { OblLedgerListQuery, SearchOblOffersQuery } from './obl.schemas';
 
 function toBalanceInvoices(invoices: readonly OblInvoiceLineView[]) {
@@ -179,20 +180,7 @@ export class OblLedgerService {
       startedSeq,
     );
     return {
-      items: page.items.map((row) => ({
-        service_order_id: row.service_order_id,
-        contract_id: row.contract_id,
-        creator: row.creator,
-        provider: row.provider,
-        client: row.client,
-        details: row.details,
-        created_event_seq: row.created_event_seq.toString(),
-        transaction_id: row.transaction_id,
-        created_at:
-          row.created_at instanceof Date
-            ? row.created_at.toISOString()
-            : String(row.created_at),
-      })),
+      items: page.items.map(serializeOblServiceOrder),
       hasMore: page.hasMore,
       nextCursor: page.nextCursor,
     };

@@ -1,6 +1,7 @@
 import {
   buildCreateReportOp,
   buildCreateServiceOrderOp,
+  buildCancelServiceOrderOp,
   buildIssueInvoiceOp,
   buildIssueSplitInvoiceOp,
 } from './build-obl-ops';
@@ -59,6 +60,24 @@ describe('buildCreateServiceOrderOp', () => {
     const envelope = JSON.parse(op.json).events[0];
     expect(envelope.action).toBe('service_order_create');
     expect(envelope.payload.service_order_id).toBe('so-1');
+    expect(op.required_posting_auths).toEqual(['alice']);
+  });
+});
+
+describe('buildCancelServiceOrderOp', () => {
+  it('signs via posting auths and omits canceller from JSON', () => {
+    const op = buildCancelServiceOrderOp({
+      oblCustomJsonId: 'obl-mainnet',
+      serviceOrderId: 'so-1',
+      username: 'alice',
+    });
+    const envelope = JSON.parse(op.json).events[0] as {
+      action: string;
+      payload: Record<string, unknown>;
+    };
+    expect(envelope.action).toBe('service_order_cancel');
+    expect(envelope.payload).toEqual({ service_order_id: 'so-1' });
+    expect(envelope.payload).not.toHaveProperty('canceller');
     expect(op.required_posting_auths).toEqual(['alice']);
   });
 });

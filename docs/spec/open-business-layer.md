@@ -32,7 +32,7 @@ Waivio indexes OBL on-chain history and computes per-pair **Mutual Ledger** bala
 
 `draft` (off-chain, query-api) → `offer_publish` → `contract_sign` → optional `service_order_create` / `report_create` → `invoice_issue` → payments / disputes.
 
-On-chain actions include: `offer_publish`, `offer_update`, `offer_retire`, `contract_sign`, `service_order_create`, `report_create`, `invoice_issue`, `payment_declare`, `payment_confirm`, `dispute_open`, `dispute_resolve` (see [chain-indexer obl-parser](../apps/chain-indexer/spec/obl-parser.md)).
+On-chain actions include: `offer_publish`, `offer_update`, `offer_retire`, `contract_sign`, `service_order_create`, `service_order_cancel`, `report_create`, `invoice_issue`, `payment_declare`, `payment_confirm`, `dispute_open`, `dispute_resolve` (see [chain-indexer obl-parser](../apps/chain-indexer/spec/obl-parser.md)).
 
 Drafts are editable off-chain (`obl_offer_drafts`). Publishing freezes a version on-chain.
 

@@ -52,6 +52,7 @@ export const NOTIFICATION_EVENT_TYPES = [
   'obl_offer_retire',
   'obl_contract_sign',
   'obl_service_order_create',
+  'obl_service_order_cancel',
   'obl_report_create',
   'obl_invoice_issue',
   'obl_payment_declare',
@@ -354,6 +355,13 @@ export interface NotificationPayloadMap {
     serviceOrderId: string;
     contractId: string;
     creator: string;
+    provider: string;
+    client: string;
+  };
+  obl_service_order_cancel: {
+    serviceOrderId: string;
+    contractId: string;
+    canceller: string;
     provider: string;
     client: string;
   };

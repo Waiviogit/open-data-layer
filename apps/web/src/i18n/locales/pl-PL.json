@@ -2911,5 +2911,11 @@
   "object_edit_upload_failed": "IPFS upload failed. Try again later.",
   "object_activity_duplicate_badge": "Also imported {count} times",
   "object_type_service_offer": "oferta usługi",
-  "object_type_service_request": "zapytanie o usługę"
+  "object_type_service_request": "zapytanie o usługę",
+  "business_cancel_service_order": "Cancel service order",
+  "business_state_cancelled": "Cancelled",
+  "business_field_cancelled_by": "Cancelled by",
+  "business_field_cancelled_at": "Cancelled at",
+  "business_service_order_cancelled_ref": "This service order is cancelled",
+  "notification_obl_service_order_cancel": "{canceller} cancelled service order {serviceOrderId}"
 }

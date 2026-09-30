@@ -70,6 +70,8 @@ export const EN_NOTIFICATION_DICTIONARY: Readonly<Record<string, string>> = {
     '{signer} signed contract {contractId} ({provider} / {client})',
   notification_obl_service_order_create:
     '{creator} created service order {serviceOrderId}',
+  notification_obl_service_order_cancel:
+    '{canceller} cancelled service order {serviceOrderId}',
   notification_obl_report_create: '{author} created report {reportId}',
   notification_obl_invoice_issue:
     '{issuer} issued invoice {invoiceId} to {debtor} ({amountUsd} USD)',

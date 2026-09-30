@@ -63,6 +63,7 @@ const TYPE_TO_SETTING: Partial<Record<NotificationEventType, SettingsColumn>> = 
   obl_offer_retire: 'obl',
   obl_contract_sign: 'obl',
   obl_service_order_create: 'obl',
+  obl_service_order_cancel: 'obl',
   obl_report_create: 'obl',
   obl_invoice_issue: 'obl',
   obl_payment_declare: 'obl',

@@ -206,6 +206,14 @@ export function minimalNotificationEventPayload(
         provider: 'alice',
         client: 'bob',
       };
+    case 'obl_service_order_cancel':
+      return {
+        serviceOrderId: 'so-1',
+        contractId: 'c-1',
+        canceller: 'alice',
+        provider: 'alice',
+        client: 'bob',
+      };
     case 'obl_report_create':
       return {
         reportId: 'r-1',

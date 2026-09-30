@@ -166,6 +166,7 @@ export type {
   OblPaymentMethod,
   OblPaymentState,
   OblDisputeStatus,
+  OblServiceOrderStatus,
   OblOffer,
   NewOblOffer,
   OblOfferUpdate,

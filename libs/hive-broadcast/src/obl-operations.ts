@@ -31,6 +31,7 @@ type OblEnvelopeAction =
   | 'dispute_open'
   | 'dispute_resolve'
   | 'service_order_create'
+  | 'service_order_cancel'
   | 'report_create';
 
 export type BuildOblEnvelopeOpInput = {
@@ -387,6 +388,25 @@ export function buildOblServiceOrderCreateOp(
       contract_id: input.contractId,
       creator: input.creator,
       ...(input.details !== undefined ? { details: input.details } : {}),
+    },
+  });
+}
+
+export type BuildOblServiceOrderCancelOpInput = {
+  readonly id: string;
+  readonly serviceOrderId: string;
+  readonly required_posting_auths: readonly string[];
+};
+
+export function buildOblServiceOrderCancelOp(
+  input: BuildOblServiceOrderCancelOpInput,
+): CustomJsonOp {
+  return buildOblEnvelopeOp({
+    id: input.id,
+    action: 'service_order_cancel',
+    required_posting_auths: input.required_posting_auths,
+    payload: {
+      service_order_id: input.serviceOrderId,
     },
   });
 }

@@ -2,6 +2,7 @@ import {
   invoiceIssuePayloadSchema,
   paymentDeclarePayloadSchema,
   reportCreatePayloadSchema,
+  serviceOrderCancelPayloadSchema,
   serviceOrderCreatePayloadSchema,
 } from './obl-envelope.schema';
 
@@ -62,6 +63,20 @@ describe('obl-envelope amount_usd validation', () => {
       creator: 'alice',
     });
     expect(result.success).toBe(true);
+  });
+
+  it('accepts service_order_cancel payload without canceller', () => {
+    const result = serviceOrderCancelPayloadSchema.safeParse({
+      service_order_id: 'so-1',
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects empty service_order_id on cancel', () => {
+    const result = serviceOrderCancelPayloadSchema.safeParse({
+      service_order_id: '',
+    });
+    expect(result.success).toBe(false);
   });
 
   it('requires contract_id or service_order_id for report_create', () => {

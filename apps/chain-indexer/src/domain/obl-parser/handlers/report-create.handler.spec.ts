@@ -49,6 +49,7 @@ describe('ReportCreateHandler', () => {
     findServiceOrder = jest.fn().mockResolvedValue({
       service_order_id: 'so-1',
       contract_id: 'c-1',
+      status: 'active',
     });
     findContract = jest.fn().mockResolvedValue(contract);
     insertReport = jest.fn().mockResolvedValue(undefined);
@@ -135,6 +136,61 @@ describe('ReportCreateHandler', () => {
         report_id: 'r-1',
         author: 'alice',
         service_order_id: 'so-missing',
+      },
+      ctx('alice'),
+    );
+    expect(insertReport).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).not.toHaveBeenCalled();
+  });
+
+  it('skips when service order is cancelled', async () => {
+    findServiceOrder.mockResolvedValue({
+      service_order_id: 'so-1',
+      contract_id: 'c-1',
+      status: 'cancelled',
+    });
+    await handler.handle(
+      {
+        report_id: 'r-1',
+        author: 'alice',
+        service_order_id: 'so-1',
+      },
+      ctx('alice'),
+    );
+    expect(insertReport).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).not.toHaveBeenCalled();
+  });
+
+  it('persists a report that omits service_order_id', async () => {
+    await handler.handle(
+      {
+        report_id: 'r-2',
+        author: 'alice',
+        contract_id: 'c-1',
+      },
+      ctx('alice'),
+    );
+    expect(insertReport).toHaveBeenCalledWith(
+      expect.objectContaining({
+        report_id: 'r-2',
+        contract_id: 'c-1',
+        service_order_id: null,
+      }),
+    );
+  });
+
+  it('skips when contract_id is set and service order is cancelled', async () => {
+    findServiceOrder.mockResolvedValue({
+      service_order_id: 'so-1',
+      contract_id: 'c-1',
+      status: 'cancelled',
+    });
+    await handler.handle(
+      {
+        report_id: 'r-1',
+        author: 'alice',
+        contract_id: 'c-1',
+        service_order_id: 'so-1',
       },
       ctx('alice'),
     );

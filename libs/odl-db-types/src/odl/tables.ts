@@ -1285,6 +1285,7 @@ export type OblInvoiceKind = 'single' | 'multi';
 export type OblPaymentMethod = 'token_transfer' | 'upvote_reward' | 'offchain';
 export type OblPaymentState = 'confirmed' | 'pending';
 export type OblDisputeStatus = 'open' | 'resolved';
+export type OblServiceOrderStatus = 'active' | 'cancelled';
 
 export interface OblOffersTable {
   offer_id: string;
@@ -1432,6 +1433,19 @@ export interface OblServiceOrdersTable {
   pair_low: Generated<string>;
   pair_high: Generated<string>;
   details: ColumnType<JsonValue, JsonValue | undefined, JsonValue>;
+  status: ColumnType<
+    OblServiceOrderStatus,
+    OblServiceOrderStatus | undefined,
+    OblServiceOrderStatus
+  >;
+  cancelled_by: string | null;
+  cancelled_at: ColumnType<
+    Date | null,
+    Date | string | null | undefined,
+    Date | string | null
+  >;
+  cancelled_event_seq: bigint | null;
+  cancelled_transaction_id: string | null;
   created_event_seq: bigint;
   transaction_id: string;
   created_at: ColumnType<Date, Date | string | undefined, Date | string>;

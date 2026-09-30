@@ -14,6 +14,7 @@ import { PaymentConfirmHandler } from './handlers/payment-confirm.handler';
 import { DisputeOpenHandler } from './handlers/dispute-open.handler';
 import { DisputeResolveHandler } from './handlers/dispute-resolve.handler';
 import { ServiceOrderCreateHandler } from './handlers/service-order-create.handler';
+import { ServiceOrderCancelHandler } from './handlers/service-order-cancel.handler';
 import { ReportCreateHandler } from './handlers/report-create.handler';
 import { OblUsdRatesService } from './obl-usd-rates.service';
 import { OblPaymentAttributionService } from './obl-payment-attribution.service';
@@ -35,6 +36,7 @@ import { OblPaymentAttributionService } from './obl-payment-attribution.service'
     DisputeOpenHandler,
     DisputeResolveHandler,
     ServiceOrderCreateHandler,
+    ServiceOrderCancelHandler,
     ReportCreateHandler,
   ],
   exports: [OblCustomJsonParser, OblPaymentAttributionService],

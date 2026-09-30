@@ -119,6 +119,7 @@ Emitted from **chain-indexer** OBL handlers after a successful persist. See [OBL
 | `obl_offer_retire` | `offerId`, `version`, `kind`, `name`, `author` | Author |
 | `obl_contract_sign` | `contractId`, `offerId`, `provider`, `client`, `signer` | Provider and client |
 | `obl_service_order_create` | `serviceOrderId`, `contractId`, `creator`, `provider`, `client` | Contract parties |
+| `obl_service_order_cancel` | `serviceOrderId`, `contractId`, `canceller`, `provider`, `client` | Contract parties |
 | `obl_report_create` | `reportId`, `contractId`, `author`, `provider`, `client` | Contract parties |
 | `obl_invoice_issue` | `invoiceId`, `issuer`, `debtor`, `beneficiaries`, `amountUsd`, `contractId` | Issuer, debtor, beneficiaries |
 | `obl_payment_declare` / `obl_payment_confirm` | `paymentId`, `payer`, `receiver`, `amountUsd`, `state` | Payer and receiver |

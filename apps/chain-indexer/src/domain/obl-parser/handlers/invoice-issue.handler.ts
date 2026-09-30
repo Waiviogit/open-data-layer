@@ -65,6 +65,14 @@ export class InvoiceIssueHandler implements OdlActionHandler {
       authorizedByGoverning = true;
     }
 
+    if (data.service_order_id) {
+      const serviceOrder = await this.oblRepository.findServiceOrder(data.service_order_id);
+      if (serviceOrder?.status === 'cancelled') {
+        this.logger.warn('invoice_issue: service order cancelled');
+        return;
+      }
+    }
+
     const createdAt = hiveBlockTimestampToDate(ctx.timestamp);
     const { serviceOrderId, reportId } = await this.resolveInvoiceRefs(data);
 

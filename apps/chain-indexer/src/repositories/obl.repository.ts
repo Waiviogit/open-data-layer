@@ -480,6 +480,28 @@ export class OblRepository {
     }
   }
 
+  async cancelServiceOrder(
+    serviceOrderId: string,
+    patch: {
+      cancelled_by: string;
+      cancelled_at: Date;
+      cancelled_event_seq: bigint;
+      cancelled_transaction_id: string;
+    },
+    trx?: DbExecutor,
+  ): Promise<void> {
+    try {
+      await this.executor(trx)
+        .updateTable('obl_service_orders')
+        .set({ ...patch, status: 'cancelled' })
+        .where('service_order_id', '=', serviceOrderId)
+        .execute();
+    } catch (e) {
+      this.logger.error((e as Error).message);
+      throw e;
+    }
+  }
+
   async findReport(reportId: string, trx?: DbExecutor): Promise<OblReport | null> {
     try {
       return (

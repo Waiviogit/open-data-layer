@@ -91,6 +91,22 @@ export function buildOblMessage(
         accountHrefs({ creator: p.creator }),
       );
     }
+    case 'obl_service_order_cancel': {
+      const p = event.payload;
+      return withParamHrefs(
+        {
+          key: 'notification_obl_service_order_cancel',
+          params: {
+            canceller: p.canceller,
+            serviceOrderId: p.serviceOrderId,
+          },
+          href: oblServiceOrderPath(p.serviceOrderId),
+          icon: 'generic',
+          actor: p.canceller,
+        },
+        accountHrefs({ canceller: p.canceller }),
+      );
+    }
     case 'obl_report_create': {
       const p = event.payload;
       return withParamHrefs(

@@ -31,7 +31,7 @@ Client broadcasts use `useOblCustomJsonId()` from `OdlNetworkProvider` (server e
 
 ## Builders
 
-`application/build-obl-ops.ts` wraps `@opden-data-layer/hive-broadcast` for publish, update, retire, sign (with optional `metadata`), invoice (optional `details`, `contractId`, `serviceOrderId`, `reportId`), service order create, report create, payment declare/confirm (confirm supports `declarePaymentId` and partial amount), dispute open/resolve.
+`application/build-obl-ops.ts` wraps `@opden-data-layer/hive-broadcast` for publish, update, retire, sign (with optional `metadata`), invoice (optional `details`, `contractId`, `serviceOrderId`, `reportId`), service order create / cancel (`buildCancelServiceOrderOp` / `service_order_cancel`; signer is posting auth only), report create, payment declare/confirm (confirm supports `declarePaymentId` and partial amount), dispute open/resolve.
 
 Relationship modals:
 

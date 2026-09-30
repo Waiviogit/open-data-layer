@@ -20,7 +20,8 @@ import {
   type BeneficiaryLineDraft,
   type InvoiceIssueMode,
 } from '../../../domain/invoice-issue';
-import type { LedgerContractRow } from '../../../domain/ledger.types';
+import type { LedgerContractRow, LedgerServiceOrderRow } from '../../../domain/ledger.types';
+import { isCancelledServiceOrderId } from '../../../domain/service-order-cancel';
 import { shortContractId } from '../../../domain/dispute-resolution';
 import { ObjectBuilder } from '../object-builder';
 import { StateBadge } from '../state-badge';
@@ -39,6 +40,7 @@ export type BusinessIssueInvoiceModalProps = {
   debtor: string;
   creditor: string;
   contracts: LedgerContractRow[];
+  serviceOrders: LedgerServiceOrderRow[];
   onSubmit: (payload: InvoiceIssueSubmitPayload) => Promise<void>;
 };
 
@@ -57,6 +59,7 @@ export function BusinessIssueInvoiceModal({
   debtor,
   creditor,
   contracts,
+  serviceOrders,
   onSubmit,
 }: BusinessIssueInvoiceModalProps) {
   const { t } = useI18n();
@@ -71,6 +74,7 @@ export function BusinessIssueInvoiceModal({
   const [contractId, setContractId] = useState('');
   const [serviceOrderId, setServiceOrderId] = useState('');
   const [reportId, setReportId] = useState('');
+  const [soError, setSoError] = useState<string | null>(null);
   const [parties, setParties] = useState({ debtor, creditor });
   const [splitDebtor, setSplitDebtor] = useState(debtor);
   const [beneficiaries, setBeneficiaries] = useState<BeneficiaryLineDraft[]>([
@@ -87,6 +91,7 @@ export function BusinessIssueInvoiceModal({
       setContractId(contracts[0]?.contract_id ?? '');
       setServiceOrderId('');
       setReportId('');
+      setSoError(null);
       setBeneficiaries([emptyBeneficiaryLine()]);
       setDetails({});
       setDetailsValid(true);
@@ -193,6 +198,12 @@ export function BusinessIssueInvoiceModal({
   async function handleSubmit() {
     const detailsPayload =
       Object.keys(details).length > 0 ? details : undefined;
+    const trimmedSo = serviceOrderId.trim();
+    if (isCancelledServiceOrderId(trimmedSo, serviceOrders)) {
+      setSoError(t('business_service_order_cancelled_ref'));
+      return;
+    }
+    setSoError(null);
 
     if (mode === 'simple') {
       if (!parsePositiveUsdAmount(amount)) {
@@ -529,11 +540,19 @@ export function BusinessIssueInvoiceModal({
             <input
               type="text"
               value={serviceOrderId}
-              onChange={(e) => setServiceOrderId(e.target.value)}
+              onChange={(e) => {
+                setServiceOrderId(e.target.value);
+                setSoError(null);
+              }}
               className="rounded-btn border border-border px-3 py-2 font-mono text-caption"
               placeholder={t('business_invoice_optional_link_placeholder')}
             />
           </label>
+          {soError ? (
+            <p className="text-caption text-error" role="alert">
+              {soError}
+            </p>
+          ) : null}
           <label className="flex flex-col gap-1 text-body-sm">
             {t('business_field_report')}
             <input

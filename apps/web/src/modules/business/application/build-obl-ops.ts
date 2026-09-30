@@ -10,6 +10,7 @@ import {
   buildOblPaymentConfirmOp,
   buildOblPaymentDeclareOp,
   buildOblReportCreateOp,
+  buildOblServiceOrderCancelOp,
   buildOblServiceOrderCreateOp,
 } from '@opden-data-layer/hive-broadcast';
 
@@ -260,6 +261,18 @@ export function buildCreateServiceOrderOp(input: {
     creator: input.creator,
     details: input.details,
     required_posting_auths: [input.creator],
+  });
+}
+
+export function buildCancelServiceOrderOp(input: {
+  oblCustomJsonId: string;
+  serviceOrderId: string;
+  username: string;
+}) {
+  return buildOblServiceOrderCancelOp({
+    id: input.oblCustomJsonId,
+    serviceOrderId: input.serviceOrderId,
+    required_posting_auths: [input.username],
   });
 }
 

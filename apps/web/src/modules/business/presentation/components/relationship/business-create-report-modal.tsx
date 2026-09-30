@@ -6,7 +6,8 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import { ModalShell, ModalShellCloseButton } from '@/shared/presentation';
 
 import { shortContractId } from '../../../domain/dispute-resolution';
-import type { LedgerContractRow } from '../../../domain/ledger.types';
+import type { LedgerContractRow, LedgerServiceOrderRow } from '../../../domain/ledger.types';
+import { isCancelledServiceOrderId } from '../../../domain/service-order-cancel';
 import { ObjectBuilder } from '../object-builder';
 
 export type BusinessCreateReportModalProps = {
@@ -14,6 +15,7 @@ export type BusinessCreateReportModalProps = {
   onClose: () => void;
   isBusy: boolean;
   contracts: LedgerContractRow[];
+  serviceOrders: LedgerServiceOrderRow[];
   onSubmit: (input: {
     contractId?: string;
     serviceOrderId?: string;
@@ -26,6 +28,7 @@ export function BusinessCreateReportModal({
   onClose,
   isBusy,
   contracts,
+  serviceOrders,
   onSubmit,
 }: BusinessCreateReportModalProps) {
   const { t } = useI18n();
@@ -58,6 +61,10 @@ export function BusinessCreateReportModal({
     const serviceOrder = serviceOrderId.trim();
     if (!contract && !serviceOrder) {
       setLinkError(t('business_report_link_required'));
+      return;
+    }
+    if (isCancelledServiceOrderId(serviceOrder, serviceOrders)) {
+      setLinkError(t('business_service_order_cancelled_ref'));
       return;
     }
     setLinkError(null);

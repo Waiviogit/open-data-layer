@@ -19,7 +19,7 @@ related:
 
 - `obl_offers` — versioned templates (`PK offer_id, version`); `created_at`
 - `obl_contracts` — signed instances (1 offer : many contracts); `created_at`, `metadata` JSONB, optional `service_order_schema` JSONB (snapshot from `offer.terms.serviceOrderSchema` at `contract_sign`)
-- `obl_service_orders` — immutable scope/work orders per contract; see [service-orders.md](service-orders.md)
+- `obl_service_orders` — scope/work orders per contract; create + soft-cancel; see [service-orders.md](service-orders.md)
 - `obl_reports` — immutable reports linked to contract and/or service order; see [reports.md](reports.md)
 - `obl_invoices` — invoice header (`issuer`, `debtor`, `kind`, optional `contract_id`, optional `service_order_id`, optional `report_id`, `details`); `created_at`
 - `obl_obligation_lines` — netting source: `(debtor, beneficiary, amount_usd, state, invoice_id, dispute_group, role?)`; pair = `LEAST/GREATEST(debtor, beneficiary)`
@@ -33,9 +33,10 @@ related:
 | `offer_update` | `author` | Append version |
 | `offer_retire` | `author` | Mark retired |
 | `contract_sign` | counterparty (`signer`) | Create contract; may start ledger. **One contract per `offer_id` + account pair** (deterministic `contract_id`, unique index). Optional `metadata` JSONB. Copies optional `service_order_schema` from the signed offer version’s `terms.serviceOrderSchema`. |
-| `service_order_create` | `creator` | Immutable service order for a signed contract; creator must be provider or client. Optional `details`. |
-| `report_create` | `author` | Immutable report; at least one of `contract_id` / `service_order_id`; author must be a contract party. Optional `details`. |
-| `invoice_issue` | `issuer` | Header + obligation line(s). Optional `service_order_id` / `report_id` (informational; indexer nulls invalid refs). **Legacy:** `creditor` + `amount_usd` (single line). **Multi:** `beneficiaries[]` with `{ beneficiary, amount_usd, role? }` (2+ lines → `kind=multi`). Attestor invoices (issuer not debtor/beneficiary) require `contract_id` (governing contract with issuer + debtor). Auto-starts ledger per debt pair when authorized by governing contract. |
+| `service_order_create` | `creator` | Service order for a signed contract; creator must be provider or client. Optional `details`. |
+| `service_order_cancel` | posting signer (`required_posting_auths[0]`) | Soft-cancel; either party. Payload is only `service_order_id`. Stores `cancelled_by` from the signer. Existing reports/invoices are not rewritten. New report/invoice with this `service_order_id` is rejected. |
+| `report_create` | `author` | Immutable report; at least one of `contract_id` / `service_order_id`; author must be a contract party. Optional `details`. If `service_order_id` points at a cancelled SO the whole report is skipped. |
+| `invoice_issue` | `issuer` | Header + obligation line(s). Optional `service_order_id` / `report_id` (informational; indexer nulls invalid refs **except** a cancelled SO: that skips the entire invoice). **Legacy:** `creditor` + `amount_usd` (single line). **Multi:** `beneficiaries[]` with `{ beneficiary, amount_usd, role? }` (2+ lines → `kind=multi`). Attestor invoices (issuer not debtor/beneficiary) require `contract_id` (governing contract with issuer + debtor). Auto-starts ledger per debt pair when authorized by governing contract. |
 
 Typical documentation chain (informational, no extra ledger effect): `contract_sign` → `service_order_create` → `report_create` → `invoice_issue` → payments / disputes.
 

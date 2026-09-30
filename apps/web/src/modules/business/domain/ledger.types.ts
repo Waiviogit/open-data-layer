@@ -106,6 +106,9 @@ export type LedgerServiceOrderRow = {
   provider: string;
   client: string;
   details: Record<string, unknown>;
+  status: 'active' | 'cancelled';
+  cancelled_by: string | null;
+  cancelled_at: string | null;
   created_event_seq: string;
   transaction_id: string;
   created_at: string;

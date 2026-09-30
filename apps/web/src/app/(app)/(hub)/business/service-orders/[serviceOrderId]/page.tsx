@@ -9,11 +9,11 @@ export default async function BusinessServiceOrderPage({
 }: {
   params: Promise<{ serviceOrderId: string }>;
 }) {
-  await requireBusinessUser();
+  const { username } = await requireBusinessUser();
   const { serviceOrderId } = await params;
   const detail = await fetchOblServiceOrder(decodeURIComponent(serviceOrderId));
   if (!detail) {
     notFound();
   }
-  return <BusinessServiceOrderClient detail={detail} />;
+  return <BusinessServiceOrderClient username={username} detail={detail} />;
 }

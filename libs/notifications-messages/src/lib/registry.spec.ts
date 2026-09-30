@@ -79,6 +79,25 @@ describe('buildNotificationMessage', () => {
     expect(msg.params['signer']).toBe('bob');
   });
 
+  it('builds obl_service_order_cancel message', () => {
+    const msg = buildNotificationMessage({
+      ...baseEnvelope,
+      type: 'obl_service_order_cancel',
+      actor: 'bob',
+      payload: {
+        serviceOrderId: 'so-1',
+        contractId: 'c-1',
+        canceller: 'bob',
+        provider: 'alice',
+        client: 'bob',
+      },
+    });
+    expect(msg.key).toBe('notification_obl_service_order_cancel');
+    expect(msg.params['canceller']).toBe('bob');
+    expect(msg.params['serviceOrderId']).toBe('so-1');
+    expect(msg.href).toBe('/business/service-orders/so-1');
+  });
+
   it.each([
     {
       type: 'obl_offer_publish' as const,

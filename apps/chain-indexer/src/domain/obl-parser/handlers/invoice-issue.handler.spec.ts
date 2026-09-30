@@ -322,4 +322,48 @@ describe('InvoiceIssueHandler', () => {
       expect.anything(),
     );
   });
+
+  it('skips the entire invoice when service order is cancelled', async () => {
+    hasLedgerForPair.mockResolvedValue(true);
+    findServiceOrder.mockResolvedValue({
+      service_order_id: 'so-1',
+      contract_id: 'c-1',
+      status: 'cancelled',
+    });
+    await handler.handle(
+      {
+        invoice_id: 'inv-cancelled-so',
+        issuer: 'organizer',
+        debtor: 'sponsor',
+        creditor: 'organizer',
+        amount_usd: '10',
+        service_order_id: 'so-1',
+      },
+      ctx('organizer'),
+    );
+    expect(insertInvoice).not.toHaveBeenCalled();
+    expect(oblNotifications.emit).not.toHaveBeenCalled();
+  });
+
+  it('persists an invoice that omits service_order_id', async () => {
+    hasLedgerForPair.mockResolvedValue(true);
+    await handler.handle(
+      {
+        invoice_id: 'inv-no-so',
+        issuer: 'organizer',
+        debtor: 'sponsor',
+        creditor: 'organizer',
+        amount_usd: '10',
+      },
+      ctx('organizer'),
+    );
+    expect(insertInvoice).toHaveBeenCalledWith(
+      expect.objectContaining({
+        invoice_id: 'inv-no-so',
+        service_order_id: null,
+      }),
+      expect.anything(),
+    );
+    expect(findServiceOrder).not.toHaveBeenCalled();
+  });
 });

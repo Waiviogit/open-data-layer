@@ -43,6 +43,10 @@ export class ReportCreateHandler implements OdlActionHandler {
         this.logger.warn('report_create: service order not found');
         return;
       }
+      if (serviceOrder.status === 'cancelled') {
+        this.logger.warn('report_create: service order cancelled');
+        return;
+      }
       if (contractId && contractId !== serviceOrder.contract_id) {
         this.logger.warn('report_create: contract_id inconsistent with service order');
         return;

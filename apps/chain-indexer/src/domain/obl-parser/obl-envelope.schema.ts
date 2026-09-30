@@ -120,6 +120,10 @@ export const serviceOrderCreatePayloadSchema = z.object({
   details: z.record(z.string(), z.unknown()).optional(),
 });
 
+export const serviceOrderCancelPayloadSchema = z.object({
+  service_order_id: z.string().min(1).max(256),
+});
+
 export const reportCreatePayloadSchema = z
   .object({
     report_id: z.string().min(1).max(256),
@@ -152,6 +156,7 @@ const oblEventSchema = z.object({
     'dispute_open',
     'dispute_resolve',
     'service_order_create',
+    'service_order_cancel',
     'report_create',
   ]),
   v: z.number().int().min(1),

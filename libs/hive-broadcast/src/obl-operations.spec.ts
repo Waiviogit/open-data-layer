@@ -10,6 +10,7 @@ import {
   buildOblDisputeOpenOp,
   buildOblDisputeResolveOp,
   buildOblServiceOrderCreateOp,
+  buildOblServiceOrderCancelOp,
   buildOblReportCreateOp,
 } from './obl-operations';
 
@@ -202,6 +203,22 @@ describe('obl-operations', () => {
     const event = JSON.parse(op.json).events[0];
     expect(event.action).toBe('service_order_create');
     expect(event.payload.service_order_id).toBe('so-1');
+    expect(op.required_posting_auths).toEqual(['alice']);
+  });
+
+  it('buildOblServiceOrderCancelOp signs via posting auths and omits canceller from JSON', () => {
+    const op = buildOblServiceOrderCancelOp({
+      id: 'obl-mainnet',
+      serviceOrderId: 'so-1',
+      required_posting_auths: ['alice'],
+    });
+    const event = JSON.parse(op.json).events[0] as {
+      action: string;
+      payload: Record<string, unknown>;
+    };
+    expect(event.action).toBe('service_order_cancel');
+    expect(event.payload).toEqual({ service_order_id: 'so-1' });
+    expect(event.payload).not.toHaveProperty('canceller');
     expect(op.required_posting_auths).toEqual(['alice']);
   });
 

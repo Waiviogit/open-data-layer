@@ -190,7 +190,7 @@ Actions: `object_create`, `update_create`, `update_vote`, `rank_vote`. Governanc
 - Main network `custom_json.id`: `obl-mainnet`
 - Test network `custom_json.id`: `obl-testnet`
 
-Actions: `offer_publish`, `offer_update`, `offer_retire`, `contract_sign`, `service_order_create`, `report_create`, `invoice_issue`, `payment_declare`, `payment_confirm`, `dispute_open`, `dispute_resolve`.
+Actions: `offer_publish`, `offer_update`, `offer_retire`, `contract_sign`, `service_order_create`, `service_order_cancel`, `report_create`, `invoice_issue`, `payment_declare`, `payment_confirm`, `dispute_open`, `dispute_resolve`.
 
 See [open-business-layer.md](open-business-layer.md).
 
@@ -206,4 +206,4 @@ Envelope shape (both ODL and OBL):
 
 Actions (ODL in `waivio` / platform id): `object_create`, `update_create`, `update_vote`, `rank_vote`.
 
-Actions (OBL in `obl-mainnet` / `obl-testnet`): `offer_publish`, `offer_update`, `offer_retire`, `contract_sign`, `service_order_create`, `report_create`, `invoice_issue`, `payment_declare`, `payment_confirm`, `dispute_open`, `dispute_resolve`. See [open-business-layer.md](open-business-layer.md).
+Actions (OBL in `obl-mainnet` / `obl-testnet`): `offer_publish`, `offer_update`, `offer_retire`, `contract_sign`, `service_order_create`, `service_order_cancel`, `report_create`, `invoice_issue`, `payment_declare`, `payment_confirm`, `dispute_open`, `dispute_resolve`. See [open-business-layer.md](open-business-layer.md).

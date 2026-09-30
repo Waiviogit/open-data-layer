@@ -13,6 +13,7 @@ import {
   buildConfirmPaymentOp,
   buildCreateReportOp,
   buildCreateServiceOrderOp,
+  buildCancelServiceOrderOp,
   buildDeclarePaymentOp,
   buildIssueInvoiceOp,
   buildIssueSplitInvoiceOp,
@@ -60,6 +61,7 @@ import { BusinessCreateServiceOrderModal } from './relationship/business-create-
 import { BusinessConfirmPaymentModal } from './relationship/business-confirm-payment-modal';
 import { BusinessDeclarePaymentModal } from './relationship/business-declare-payment-modal';
 import { BusinessIssueInvoiceModal } from './relationship/business-issue-invoice-modal';
+import { BusinessServiceOrderCard } from './relationship/business-service-order-card';
 import { BusinessOpenDisputeModal } from './relationship/business-open-dispute-modal';
 import { BusinessResolveDisputeModal } from './relationship/business-resolve-dispute-modal';
 import { DisputeSettlementSummary } from './relationship/dispute-settlement-summary';
@@ -311,6 +313,19 @@ export function BusinessRelationshipDetailClient({
     );
   }
 
+  async function cancelServiceOrder(serviceOrderId: string) {
+    await broadcast(
+      [
+        buildCancelServiceOrderOp({
+          oblCustomJsonId,
+          serviceOrderId,
+          username,
+        }),
+      ],
+      { serviceOrderId },
+    );
+  }
+
   async function createReport(input: {
     contractId?: string;
     serviceOrderId?: string;
@@ -518,27 +533,15 @@ export function BusinessRelationshipDetailClient({
                 const linkedContract = contractLabel(so.contract_id, contracts);
                 const linkedContractUrl = contractHref(so.contract_id);
                 return (
-                  <Link
+                  <BusinessServiceOrderCard
                     key={so.service_order_id}
-                    href={businessRoutes.serviceOrder(so.service_order_id)}
-                    className="rounded-card border border-border bg-surface/80 p-card-padding text-body-sm hover:bg-surface-alt"
-                  >
-                    <h3 className="font-weight-label text-heading">{so.service_order_id}</h3>
-                    {linkedContract ? (
-                      <p className="mt-2 text-caption text-fg-secondary">
-                        {t('business_field_contract')}:{' '}
-                        {linkedContractUrl ? (
-                          <span className="text-link">{linkedContract}</span>
-                        ) : (
-                          linkedContract
-                        )}
-                      </p>
-                    ) : null}
-                    <p className="mt-1 text-caption text-fg-secondary">
-                      {t('business_field_created_at')}:{' '}
-                      <ActivityTimestamp timestamp={so.created_at} />
-                    </p>
-                  </Link>
+                    so={so}
+                    username={username}
+                    linkedContract={linkedContract}
+                    linkedContractUrl={linkedContractUrl}
+                    isBusy={isBusy}
+                    onCancel={(serviceOrderId) => void cancelServiceOrder(serviceOrderId)}
+                  />
                 );
               })}
             </div>
@@ -791,6 +794,7 @@ export function BusinessRelationshipDetailClient({
         debtor={counterparty}
         creditor={username}
         contracts={contracts}
+        serviceOrders={serviceOrders}
         onSubmit={issueInvoice}
       />
       <BusinessCreateServiceOrderModal
@@ -805,6 +809,7 @@ export function BusinessRelationshipDetailClient({
         onClose={() => setReportModalOpen(false)}
         isBusy={isBusy}
         contracts={contracts}
+        serviceOrders={serviceOrders}
         onSubmit={createReport}
       />
       <BusinessDeclarePaymentModal

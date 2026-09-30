@@ -241,6 +241,25 @@ describe('OblRecipientStrategy', () => {
     expect(recipients).toEqual(['alice', 'bob']);
   });
 
+  it('notifies contract parties on service order cancel', async () => {
+    const recipients = await strategy.resolveRecipients({
+      type: 'obl_service_order_cancel',
+      occurredAt: '2026-01-01T00:00:00.000Z',
+      blockNum: 1,
+      trxId: null,
+      objectId: null,
+      actor: 'bob',
+      payload: {
+        serviceOrderId: 'so-1',
+        contractId: 'c-1',
+        canceller: 'bob',
+        provider: 'alice',
+        client: 'bob',
+      },
+    } as AnyNotificationEvent);
+    expect(recipients).toEqual(['bob', 'alice']);
+  });
+
   it('notifies payer and receiver on payment declare', async () => {
     const recipients = await strategy.resolveRecipients({
       type: 'obl_payment_declare',

@@ -21,7 +21,7 @@ Immutable records authored by a contract party. They may link to a **contract**,
 - **Action:** `report_create`
 - **Payload:** `report_id`, `author`, optional `contract_id`, optional `service_order_id`, optional `details`
 - **Signer:** `author` in `required_posting_auths`
-- **Rules:** At least one of `contract_id` / `service_order_id`; author must be provider or client of the resolved contract; if both ids are set they must agree on contract
+- **Rules:** At least one of `contract_id` / `service_order_id`; author must be provider or client of the resolved contract; if both ids are set they must agree on contract; if `service_order_id` points at a **cancelled** service order the whole report is skipped
 
 ## Storage
 
@@ -36,7 +36,7 @@ Table `obl_reports`. `contract_id` is stored denormalized (from payload or from 
 
 ## Invoices
 
-`invoice_issue` may include optional `service_order_id` and `report_id`. The indexer validates consistency leniently: mismatches are logged and stored as `null` on the invoice row.
+`invoice_issue` may include optional `service_order_id` and `report_id`. The indexer validates consistency leniently for missing/mismatched refs (logged and stored as `null`) **except** a cancelled service order: if `service_order_id` is set and that SO is cancelled, the entire invoice is skipped. Already-stored invoices keep their ref after a later cancel.
 
 ## Web
 

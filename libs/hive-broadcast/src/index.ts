@@ -123,6 +123,7 @@ export {
   buildOblDisputeOpenOp,
   buildOblDisputeResolveOp,
   buildOblServiceOrderCreateOp,
+  buildOblServiceOrderCancelOp,
   buildOblReportCreateOp,
   type BuildOblEnvelopeOpInput,
   type BuildOblOfferPublishOpInput,
@@ -137,6 +138,7 @@ export {
   type BuildOblDisputeOpenOpInput,
   type BuildOblDisputeResolveOpInput,
   type BuildOblServiceOrderCreateOpInput,
+  type BuildOblServiceOrderCancelOpInput,
   type BuildOblReportCreateOpInput,
 } from './obl-operations';
 export {

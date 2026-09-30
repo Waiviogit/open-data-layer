@@ -9,6 +9,7 @@ export type StateBadgeVariant =
   | 'disputed'
   | 'resolved'
   | 'retired'
+  | 'cancelled'
   | 'indexing';
 
 const LABEL_KEYS: Record<StateBadgeVariant, string> = {
@@ -18,6 +19,7 @@ const LABEL_KEYS: Record<StateBadgeVariant, string> = {
   disputed: 'business_state_disputed',
   resolved: 'business_state_resolved',
   retired: 'business_state_retired',
+  cancelled: 'business_state_cancelled',
   indexing: 'business_state_indexing',
 };
 

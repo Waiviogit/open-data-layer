@@ -334,6 +334,7 @@ export class OblRecipientStrategy implements RecipientStrategy {
     'obl_offer_retire',
     'obl_contract_sign',
     'obl_service_order_create',
+    'obl_service_order_cancel',
     'obl_report_create',
     'obl_invoice_issue',
     'obl_payment_declare',
@@ -364,6 +365,7 @@ export class OblRecipientStrategy implements RecipientStrategy {
           event.payload.client,
         );
       case 'obl_service_order_create':
+      case 'obl_service_order_cancel':
         return uniqueAccounts(
           event.actor,
           event.payload.provider,
