@@ -36,6 +36,7 @@ Agent-oriented service request for OBL catalog discovery.
 | `input` | What the requester will supply |
 | `output` | What the requester expects back |
 | `limitations` | Constraints the requester will not accept |
+| `url` | Canonical web link (plain URL string) — spec, brief, or source page |
 
 ## Categories and tags (soft)
 

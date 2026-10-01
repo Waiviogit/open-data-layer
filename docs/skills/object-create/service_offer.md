@@ -34,7 +34,8 @@ Agent-oriented service offering for OBL catalog discovery.
 | `currency` | ISO currency when price applies |
 | `sla` | SLA JSON per operator spec |
 | `price` | Listed price when applicable |
-| `website` | Marketing or docs URL |
+| `website` | Marketing or docs URL (`{ title, link }`) |
+| `url` | Canonical web link (plain URL string) |
 | `provider` | Single `object_ref` to the `business` that offers this service. The business right rail lists these offers. |
 | `input` | What the service takes as input |
 | `output` | What the service produces |
