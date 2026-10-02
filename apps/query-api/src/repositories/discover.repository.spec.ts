@@ -107,10 +107,11 @@ describe('DiscoverRepository', () => {
 
     expect(executeQuery).toHaveBeenCalledTimes(1);
     const compiled = executeQuery.mock.calls[0][0] as { sql: string };
-    expect(compiled.sql).toMatch(/oc\.object_id\s*>/);
-    expect(compiled.sql).not.toMatch(/oc\.object_id\s*</);
+    expect(compiled.sql).toContain('DISTINCT ON (COALESCE(oc.meta_group_id, oc.object_id))');
+    expect(compiled.sql).toMatch(/picked\.object_id\s*>/);
+    expect(compiled.sql).not.toMatch(/oc\.object_id\s*>/);
     expect(compiled.sql).toMatch(/::float8/);
-    expect(compiled.sql).toContain('ORDER BY oc.weight DESC NULLS LAST, oc.object_id ASC');
+    expect(compiled.sql).toContain('ORDER BY picked.weight DESC NULLS LAST, picked.object_id ASC');
   });
 
   const SAMPLE_BOX = { swLng: -123.2, swLat: 49.1, neLng: -123.0, neLat: 49.3 };
@@ -220,6 +221,40 @@ describe('DiscoverRepository', () => {
 
     expect(redisGet).not.toHaveBeenCalled();
     expect(redisSet).not.toHaveBeenCalled();
+  });
+
+  it('listObjects newest and oldest order picked rows by created_at', async () => {
+    const executeQuery = jest.fn().mockResolvedValue({ rows: [] });
+    const db = createQueryCapturingDb(executeQuery);
+    const repo = new DiscoverRepository(db as never, emptyRedisFactory());
+
+    await repo.listObjects({ tags: [], sort: 'newest', limit: 20 });
+    await repo.listObjects({ tags: [], sort: 'oldest', limit: 20 });
+
+    const newestSql = (executeQuery.mock.calls[0][0] as { sql: string }).sql;
+    const oldestSql = (executeQuery.mock.calls[1][0] as { sql: string }).sql;
+    expect(newestSql).toContain('ORDER BY picked.created_at DESC, picked.object_id ASC');
+    expect(oldestSql).toContain('ORDER BY picked.created_at ASC, picked.object_id ASC');
+    expect(newestSql).toContain('oc.created_at DESC, oc.object_id ASC');
+    expect(oldestSql).toContain('oc.created_at ASC, oc.object_id ASC');
+  });
+
+  it('getTagCategories counts distinct meta groups over active objects', async () => {
+    const executeQuery = jest.fn().mockResolvedValue({ rows: [] });
+    const db = createQueryCapturingDb(executeQuery);
+    const repo = new DiscoverRepository(db as never, emptyRedisFactory());
+
+    await repo.getTagCategories('product');
+    await repo.getTagCategories('product', [{ category: 'Cuisine', value: 'Asian' }]);
+    await repo.getTagCategories('product', [], 'burger');
+
+    expect(executeQuery).toHaveBeenCalledTimes(3);
+    for (const call of executeQuery.mock.calls) {
+      const compiled = call[0] as { sql: string };
+      expect(compiled.sql).toContain('COUNT(DISTINCT COALESCE(oc.meta_group_id, tci.object_id))');
+      expect(compiled.sql).toContain('objects_core');
+      expect(compiled.sql).toContain("oc.status = 'active'");
+    }
   });
 
   it('getTagCategories with box applies geographic predicate', async () => {

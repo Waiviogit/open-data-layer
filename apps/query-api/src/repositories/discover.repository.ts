@@ -172,6 +172,25 @@ function buildDiscoverGeoBoxFilter(box: DiscoverBox | undefined) {
   )`;
 }
 
+function discoverSortKey(sort: DiscoverSort, alias: 'oc' | 'picked') {
+  if (alias === 'oc') {
+    if (sort === 'oldest') {
+      return sql`oc.created_at ASC, oc.object_id ASC`;
+    }
+    if (sort === 'rank') {
+      return sql`oc.weight DESC NULLS LAST, oc.object_id ASC`;
+    }
+    return sql`oc.created_at DESC, oc.object_id ASC`;
+  }
+  if (sort === 'oldest') {
+    return sql`picked.created_at ASC, picked.object_id ASC`;
+  }
+  if (sort === 'rank') {
+    return sql`picked.weight DESC NULLS LAST, picked.object_id ASC`;
+  }
+  return sql`picked.created_at DESC, picked.object_id ASC`;
+}
+
 @Injectable()
 export class DiscoverRepository {
   private readonly logger = new Logger(DiscoverRepository.name);
@@ -214,26 +233,22 @@ export class DiscoverRepository {
       const cursorFilter =
         cursor && cursor.sort === params.sort
           ? params.sort === 'newest' && cursorCreatedAt
-            ? sql`AND oc.created_at < ${cursorCreatedAt}`
+            ? sql`AND picked.created_at < ${cursorCreatedAt}`
             : params.sort === 'oldest' && cursorCreatedAt
-              ? sql`AND oc.created_at > ${cursorCreatedAt}`
+              ? sql`AND picked.created_at > ${cursorCreatedAt}`
               : params.sort === 'rank'
                 ? sql`AND (
-                  COALESCE(oc.weight, -1::float8) < COALESCE(${cursor.weight}::float8, -1::float8)
+                  COALESCE(picked.weight, -1::float8) < COALESCE(${cursor.weight}::float8, -1::float8)
                   OR (
-                    COALESCE(oc.weight, -1::float8) = COALESCE(${cursor.weight}::float8, -1::float8)
-                    AND oc.object_id > ${cursor.object_id}
+                    COALESCE(picked.weight, -1::float8) = COALESCE(${cursor.weight}::float8, -1::float8)
+                    AND picked.object_id > ${cursor.object_id}
                   )
                 )`
                 : sql``
           : sql``;
 
-      const orderClause =
-        params.sort === 'oldest'
-          ? sql`ORDER BY oc.created_at ASC, oc.object_id ASC`
-          : params.sort === 'rank'
-            ? sql`ORDER BY oc.weight DESC NULLS LAST, oc.object_id ASC`
-            : sql`ORDER BY oc.created_at DESC, oc.object_id ASC`;
+      const innerSort = discoverSortKey(params.sort, 'oc');
+      const outerSort = discoverSortKey(params.sort, 'picked');
 
       const textMatchFilter = buildDiscoverObjectTextMatchFilter({
         qTrimmed,
@@ -254,15 +269,24 @@ export class DiscoverRepository {
       const geoBoxFilter = buildDiscoverGeoBoxFilter(params.box);
 
       const result = await sql<DiscoverObjectCandidateRow>`
-        SELECT oc.object_id AS object_id, oc.created_at AS created_at, oc.weight AS weight
-        FROM objects_core oc
-        WHERE oc.status = 'active'
-          ${objectTypeFilter}
-          ${textMatchFilter}
-          ${tagFilter}
-          ${geoBoxFilter}
+        WITH picked AS (
+          SELECT DISTINCT ON (COALESCE(oc.meta_group_id, oc.object_id))
+            oc.object_id AS object_id,
+            oc.created_at AS created_at,
+            oc.weight AS weight
+          FROM objects_core oc
+          WHERE oc.status = 'active'
+            ${objectTypeFilter}
+            ${textMatchFilter}
+            ${tagFilter}
+            ${geoBoxFilter}
+          ORDER BY COALESCE(oc.meta_group_id, oc.object_id), ${innerSort}
+        )
+        SELECT picked.object_id AS object_id, picked.created_at AS created_at, picked.weight AS weight
+        FROM picked
+        WHERE TRUE
           ${cursorFilter}
-        ${orderClause}
+        ORDER BY ${outerSort}
         LIMIT ${fetchLimit}
       `.execute(this.db);
 
@@ -337,8 +361,10 @@ export class DiscoverRepository {
               SELECT
                 tci.category AS category,
                 tci.value AS tag_value,
-                COUNT(*)::int AS object_count
+                COUNT(DISTINCT COALESCE(oc.meta_group_id, tci.object_id))::int AS object_count
               FROM object_tag_category_items tci
+              INNER JOIN objects_core oc
+                ON oc.object_id = tci.object_id AND oc.status = 'active'
               WHERE tci.object_type = ${trimmed}
                 AND tci.object_id IN (
                   SELECT tci2.object_id
@@ -359,8 +385,10 @@ export class DiscoverRepository {
               SELECT
                 tci.category AS category,
                 tci.value AS tag_value,
-                COUNT(*)::int AS object_count
+                COUNT(DISTINCT COALESCE(oc.meta_group_id, tci.object_id))::int AS object_count
               FROM object_tag_category_items tci
+              INNER JOIN objects_core oc
+                ON oc.object_id = tci.object_id AND oc.status = 'active'
               WHERE tci.object_type = ${trimmed}
               GROUP BY 1, 2
               ORDER BY 1 ASC, 3 DESC, 2 ASC
@@ -440,8 +468,10 @@ export class DiscoverRepository {
         SELECT
           tci.category AS category,
           tci.value AS tag_value,
-          COUNT(*)::int AS object_count
+          COUNT(DISTINCT COALESCE(oc.meta_group_id, tci.object_id))::int AS object_count
         FROM object_tag_category_items tci
+        INNER JOIN objects_core oc
+          ON oc.object_id = tci.object_id AND oc.status = 'active'
         WHERE tci.object_type = ${objectType}
           AND tci.object_id IN (
             SELECT oc.object_id

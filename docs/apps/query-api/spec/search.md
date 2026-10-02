@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: query-api
 tags: [query-api, search]
-updated_at: 2026-08-27
+updated_at: 2026-10-02
 related:
   - docs/apps/query-api/spec/overview.md
   - docs/README.md
@@ -131,6 +131,8 @@ Used by the web `/discover` page (BFF proxies under `/api/discover/*`).
 | `cursor` | string | no | Opaque pagination cursor |
 | `limit` | integer | no | Default 20, max 50 |
 
+Results collapse to **one row per `meta_group_id`** (`COALESCE(meta_group_id, object_id)`). The representative is the SKU that would appear first under the active sort among matching active objects: `rank` keeps highest `weight`, `newest`/`oldest` keep that group's newest or oldest `created_at`. Keyset cursor and `limit` apply after collapse.
+
 ### Query parameters — `GET /discover/tag-categories`
 
 | Name | Type | Required | Description |
@@ -141,3 +143,5 @@ Used by the web `/discover` page (BFF proxies under `/api/discover/*`).
 | `box` | string | no | Same bounding box as objects; facet counts respect the geographic predicate |
 
 When `q`, any `tags`, or `box` is present, facet results are computed live and **not** read from or written to the per-`object_type` Redis cache key.
+
+Facet `count` is the number of **distinct active groups** (`COUNT(DISTINCT COALESCE(objects_core.meta_group_id, object_id))`), not SKU rows. Inactive objects are excluded.
