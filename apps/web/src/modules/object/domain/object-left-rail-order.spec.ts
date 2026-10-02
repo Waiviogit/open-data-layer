@@ -97,6 +97,8 @@ describe('resolveEditModeLeftRailBlockOrder', () => {
     const order = resolveAboutSectionBlockOrder('restaurant');
     expect(order.indexOf('description')).toBeLessThan(order.indexOf('category'));
     expect(order.indexOf('category')).toBeLessThan(order.indexOf('rating'));
+    expect(order.indexOf('url')).toBeGreaterThan(order.indexOf('geo'));
+    expect(order.indexOf('url')).toBeLessThan(order.indexOf('websites'));
   });
 
   it('includes governance fields in edit order for governance type', () => {

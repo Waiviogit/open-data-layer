@@ -49,6 +49,7 @@ export const BLOCK_KIND_TO_UPDATE_TYPES: Record<ObjectLeftRailBlockKind, readonl
   workHours: [UPDATE_TYPES.WORK_HOURS],
   address: [UPDATE_TYPES.ADDRESS],
   geo: [UPDATE_TYPES.GEO],
+  url: [UPDATE_TYPES.URL],
   websites: [UPDATE_TYPES.WEBSITE],
   productWeight: [UPDATE_TYPES.PRODUCT_WEIGHT],
   phones: [UPDATE_TYPES.TELEPHONE],

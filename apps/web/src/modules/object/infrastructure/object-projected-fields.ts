@@ -1,4 +1,5 @@
 import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
+import { safeHttpUrl } from '@/shared/domain/safe-http-url';
 
 import { isOptionsObjectType } from '../domain/object-left-rail-order';
 import { resolveSocialLinkHref } from '../domain/resolve-social-link-href';
@@ -1133,6 +1134,12 @@ export function orderRecipeTagCategorySections(
     }
   }
   return ordered;
+}
+
+/** Canonical `url` update — stored string when it is a safe http(s) URL. */
+export function projectedUrl(o: ProjectedObjectView): string | null {
+  const raw = typeof o.fields.url === 'string' ? o.fields.url.trim() : '';
+  return raw && safeHttpUrl(raw) ? raw : null;
 }
 
 /** Website entries from projected `website` (single JSON object today). */

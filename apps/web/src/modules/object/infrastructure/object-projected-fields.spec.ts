@@ -23,6 +23,7 @@ import {
   projectedHostHtmlBody,
   projectedPageContent,
   projectedWidgetConfig,
+  projectedUrl,
   projectedPreviewGallery,
   projectedGalleryAlbums,
   linkKindPublicIconSrc,
@@ -875,5 +876,28 @@ describe('projectedWidgetConfig', () => {
         baseView({ widget: { column: 'one', type: 'Widget', content: '   ' } }),
       ),
     ).toBeNull();
+  });
+});
+
+describe('projectedUrl', () => {
+  const view = (url: unknown): ProjectedObjectView => ({
+    object_id: 'x',
+    object_type: 'link',
+    semantic_type: null,
+    weight: null,
+    fields: { url },
+    isFavorited: false,
+    hasSupervisedOwnership: false,
+    hasExclusiveOwnership: false,
+  });
+
+  it('keeps a stored http(s) URL', () => {
+    expect(projectedUrl(view('https://peakd.com'))).toBe('https://peakd.com');
+  });
+
+  it('rejects javascript: and empty values', () => {
+    expect(projectedUrl(view('javascript:alert(1)'))).toBeNull();
+    expect(projectedUrl(view('   '))).toBeNull();
+    expect(projectedUrl(view(undefined))).toBeNull();
   });
 });

@@ -116,6 +116,11 @@ function appendLeftRailBlock(
         });
       }
       break;
+    case 'url':
+      if (block.href.trim()) {
+        pushEntry(fields, counters, UPDATE_TYPES.URL, block.href);
+      }
+      break;
     case 'websites':
       for (const entry of block.entries) {
         pushEntry(fields, counters, UPDATE_TYPES.WEBSITE, {

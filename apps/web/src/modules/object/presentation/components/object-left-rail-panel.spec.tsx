@@ -149,6 +149,11 @@ describe('ObjectLeftRailPanel contact and detail icons', () => {
           },
           { kind: 'address', headingLabel: 'Address', text: '456 Oak Ave' },
           {
+            kind: 'url',
+            headingLabel: 'Url',
+            href: 'https://peakd.com',
+          },
+          {
             kind: 'websites',
             headingLabel: 'Website',
             entries: [{ title: 'example.com', link: 'https://example.com' }],
@@ -165,6 +170,7 @@ describe('ObjectLeftRailPanel contact and detail icons', () => {
     expect(screen.getByText('Mon–Fri 9am–5pm')).toBeTruthy();
     expect(screen.getByText('Sat 10am–2pm')).toBeTruthy();
     expect(screen.getByText('456 Oak Ave')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'https://peakd.com' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'example.com' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'hello@example.com' })).toBeTruthy();
     expect(screen.queryByRole('img')).toBeNull();

@@ -753,6 +753,23 @@ export function ObjectLeftRailPanel({
               </div>
             );
           }
+          case 'url':
+            return (
+              <div key={`url-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <LeftRailEditToolbar {...editToolbarProps('url', block.headingLabel)} />
+                {block.href ? (
+                  <ExternalLinkButton
+                    href={block.href}
+                    className="flex w-full items-start gap-2 rounded-btn text-left transition-opacity hover:opacity-75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  >
+                    <LeftRailIconShell>
+                      <LinkIcon size="md" />
+                    </LeftRailIconShell>
+                    <span className="break-all text-accent">{block.href}</span>
+                  </ExternalLinkButton>
+                ) : null}
+              </div>
+            );
           case 'websites':
             return (
               <div key={`web-${index}`} className={LEFT_RAIL_SECTION_CLASS}>

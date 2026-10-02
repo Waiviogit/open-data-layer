@@ -66,6 +66,7 @@ Example restaurant edit groups (supported slots only):
 | GALLERY | Gallery |
 | VISIT | Price, Hours, Address, Map |
 | CONTACT | Website, Social links, Phone, Email |
+| CONTENT | Url (plain `url` update — not `website` / social `link`) |
 | PAYMENTS | Wallet |
 | OBJECT | Identifier, Status |
 

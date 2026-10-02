@@ -89,6 +89,7 @@ import {
   projectedTagCategorySections,
   projectedTelephoneEntries,
   projectedTypicalAgeRange,
+  projectedUrl,
   projectedWebsiteEntries,
   projectedProductWeight,
   projectedProductSize,
@@ -703,6 +704,17 @@ function appendAboutSectionBlock(
           headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.geo,
           latitude: coords.latitude,
           longitude: coords.longitude,
+        });
+      }
+      break;
+    }
+    case 'url': {
+      const href = projectedUrl(viewLike);
+      if (href) {
+        blocks.push({
+          kind: 'url',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.url,
+          href,
         });
       }
       break;

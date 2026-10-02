@@ -93,6 +93,17 @@ describe('mergeLeftRailBlocksForEditMode', () => {
     expect(optionsIdx).toBeGreaterThan(galleryIdx);
   });
 
+  it('includes an empty url slot when url is supported', () => {
+    const merged = mergeLeftRailBlocksForEditMode([], [UPDATE_TYPES.URL], 'link');
+    const url = merged.find((b) => b.kind === 'url');
+
+    expect(url?.kind).toBe('url');
+    if (url?.kind === 'url') {
+      expect(url.href).toBe('');
+      expect(url.headingLabel).toBe('Url');
+    }
+  });
+
   it('uses grouped recipe field order for recipe type', () => {
     const recipeSupported = [
       UPDATE_TYPES.NAME,

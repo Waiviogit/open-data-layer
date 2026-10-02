@@ -1053,3 +1053,39 @@ describe('projectedObjectWithCountsToPageModel service catalog fields', () => {
     expect(provider && provider.kind === 'provider' ? provider.items[0]?.name : null).toBe('Acme');
   });
 });
+
+describe('projectedObjectWithCountsToPageModel url field', () => {
+  it('places url immediately before websites on link objects', () => {
+    const api: ProjectedObjectWithCountsView = {
+      object_id: '3vtg4j-peakd-com',
+      object_type: 'link',
+      semantic_type: 'schema:URL',
+      weight: 1,
+      fields: {
+        name: 'peakd.com',
+        url: 'https://peakd.com',
+        website: { title: 'Docs', link: 'https://peakd.com/faq' },
+      },
+      followers_count: 0,
+      posts_count: 0,
+      updates_count: 0,
+      favorited_by_count: 0,
+      supervised_count: 0,
+      exclusive_count: 0,
+      is_following: false,
+      viewer_bell: false,
+      update_type_counts: {},
+    };
+
+    const model = projectedObjectWithCountsToPageModel(api);
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    const urlIdx = kinds.indexOf('url');
+    const websitesIdx = kinds.indexOf('websites');
+
+    expect(urlIdx).toBeGreaterThanOrEqual(0);
+    expect(websitesIdx).toBe(urlIdx + 1);
+
+    const urlBlock = model.leftRailBlocks.find((block) => block.kind === 'url');
+    expect(urlBlock && urlBlock.kind === 'url' ? urlBlock.href : null).toBe('https://peakd.com');
+  });
+});

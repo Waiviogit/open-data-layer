@@ -61,6 +61,8 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
       return { kind: 'address', headingLabel, text: '' };
     case 'geo':
       return { kind: 'geo', headingLabel };
+    case 'url':
+      return { kind: 'url', headingLabel, href: '' };
     case 'websites':
       return { kind: 'websites', headingLabel, entries: [] };
     case 'productWeight':

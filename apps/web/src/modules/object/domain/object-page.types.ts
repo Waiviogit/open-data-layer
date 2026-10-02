@@ -215,6 +215,11 @@ export type ObjectLeftRailBlock =
       longitude?: number;
     }
   | {
+      kind: 'url';
+      headingLabel: string;
+      href: string;
+    }
+  | {
       kind: 'websites';
       headingLabel: string;
       entries: { title: string; link: string }[];
