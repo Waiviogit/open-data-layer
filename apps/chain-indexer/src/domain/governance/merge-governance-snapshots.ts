@@ -48,6 +48,7 @@ export function mergeGovernanceSnapshots(
     restricted: dedupeStrings([...base.restricted, ...overlay.restricted]),
     whitelist: dedupeStrings([...base.whitelist, ...overlay.whitelist]),
     authorities: dedupeStrings([...base.authorities, ...overlay.authorities]),
+    authors: dedupeStrings([...base.authors, ...overlay.authors]),
     banned: dedupeStrings([...base.banned, ...overlay.banned]),
     muted: dedupeStrings([...base.muted, ...overlay.muted]),
     validity_cutoff: mergeValidityCutoffPreferOverlay(base.validity_cutoff, overlay.validity_cutoff),

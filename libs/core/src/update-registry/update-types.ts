@@ -93,6 +93,7 @@ export const UPDATE_TYPES = {
   TRUSTED: 'trusted',
   MODERATORS: 'moderators',
   AUTHORITIES: 'authorities',
+  AUTHORS: 'authors',
   RESTRICTED: 'restricted',
   BANNED: 'banned',
   WHITELIST: 'whitelist',

@@ -39,6 +39,11 @@ describe('assembleSnapshot', () => {
         trusted: { update_type: 'trusted', cardinality: 'multi', values: [] },
         moderators: { update_type: 'moderators', cardinality: 'multi', values: [ru({ value_text: 'm1' })] },
         authorities: { update_type: 'authorities', cardinality: 'multi', values: [] },
+        authors: {
+          update_type: 'authors',
+          cardinality: 'multi',
+          values: [ru({ update_type: 'authors', value_text: 'alice' }), ru({ update_type: 'authors', value_text: 'bob' })],
+        },
         restricted: { update_type: 'restricted', cardinality: 'multi', values: [] },
         banned: { update_type: 'banned', cardinality: 'multi', values: [] },
         whitelist: { update_type: 'whitelist', cardinality: 'multi', values: [ru({ value_text: 'w1' })] },
@@ -75,6 +80,8 @@ describe('assembleSnapshot', () => {
 
     const snap = assembleSnapshot(view);
     expect(snap.admins).toEqual(['a1']);
+    expect(snap.authors).toEqual(['alice', 'bob']);
+    expect(snap.authorities).toEqual([]);
     expect(snap.moderators).toEqual(['m1']);
     expect(snap.whitelist).toEqual(['w1']);
     expect(snap.object_control).toBe('full');
@@ -101,5 +108,19 @@ describe('assembleSnapshot', () => {
       },
     };
     expect(assembleSnapshot(view).object_control).toBeNull();
+  });
+
+  it('yields empty authors when the field is absent', () => {
+    const view: ResolvedObjectView = {
+      object_id: 'g1',
+      object_type: 'governance',
+      creator: 'alice',
+      weight: null,
+      meta_group_id: null,
+      status: 'active',
+      canonical: null,
+      fields: {},
+    };
+    expect(assembleSnapshot(view).authors).toEqual([]);
   });
 });

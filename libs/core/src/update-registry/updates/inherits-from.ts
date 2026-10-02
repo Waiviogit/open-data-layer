@@ -11,6 +11,7 @@ const GOVERNANCE_SCOPE = [
   'restricted',
   'whitelist',
   'authorities',
+  'authors',
   'banned',
   'muted',
 ] as const;

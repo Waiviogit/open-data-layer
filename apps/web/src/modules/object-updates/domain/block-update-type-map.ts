@@ -73,6 +73,7 @@ export const BLOCK_KIND_TO_UPDATE_TYPES: Record<ObjectLeftRailBlockKind, readonl
   moderators: [UPDATE_TYPES.MODERATORS],
   trusted: [UPDATE_TYPES.TRUSTED],
   authorities: [UPDATE_TYPES.AUTHORITIES],
+  authors: [UPDATE_TYPES.AUTHORS],
   whitelist: [UPDATE_TYPES.WHITELIST],
   restricted: [UPDATE_TYPES.RESTRICTED],
   banned: [UPDATE_TYPES.BANNED],

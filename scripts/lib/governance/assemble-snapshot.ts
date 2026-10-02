@@ -20,6 +20,7 @@ export function assembleSnapshot(view: ResolvedObjectView): GovernanceSnapshot {
   const trusted = collectValueTextsFromUpdates(fieldValues(view, 'trusted'));
   const moderators = collectValueTextsFromUpdates(fieldValues(view, 'moderators'));
   const authorities = collectValueTextsFromUpdates(fieldValues(view, 'authorities'));
+  const authors = collectValueTextsFromUpdates(fieldValues(view, 'authors'));
   const restricted = collectValueTextsFromUpdates(fieldValues(view, 'restricted'));
   const banned = collectValueTextsFromUpdates(fieldValues(view, 'banned'));
   const whitelist = collectValueTextsFromUpdates(fieldValues(view, 'whitelist'));
@@ -52,6 +53,7 @@ export function assembleSnapshot(view: ResolvedObjectView): GovernanceSnapshot {
     restricted,
     whitelist,
     authorities,
+    authors,
     banned,
     object_control,
     muted: [],

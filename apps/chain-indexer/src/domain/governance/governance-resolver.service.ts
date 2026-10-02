@@ -129,6 +129,9 @@ function mergeInheritedScopes(
       case 'authorities':
         root.authorities = dedupeStrings([...root.authorities, ...child.authorities]);
         break;
+      case 'authors':
+        root.authors = dedupeStrings([...root.authors, ...child.authors]);
+        break;
       case 'restricted':
         root.restricted = dedupeStrings([...root.restricted, ...child.restricted]);
         break;

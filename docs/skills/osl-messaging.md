@@ -84,7 +84,7 @@ Payloads **never** include message body or ciphertext — always follow with `ge
 | `get_channel_by_alias` | Resolve `dm:` / `obj:` aliases |
 | `get_channel_messages` | History for a channel (`channel_id`, optional `for_context`) |
 | `get_object_channel` | Object default channel meta |
-| `get_object_channel_messages` | Public object feed (governance + mute filters; optional `include_duplicates`) |
+| `get_object_channel_messages` | Public object feed (governance + mute filters; optional `include_duplicates`; optional `authors_only`) |
 | `check_object_activity_duplicate` | Preflight before any archival object-channel post |
 | `get_memo_public_key` | Recipient memo public key before encrypt |
 

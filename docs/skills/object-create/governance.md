@@ -30,6 +30,7 @@ Governance snapshot: admins, trusted, moderation, object control.
 |--------|-----------|
 | `admins`, `trusted`, `moderators` | Hive account lists — exact accounts from operator |
 | `authorities`, `restricted`, `banned`, `whitelist` | Access control sets |
+| `authors` | Activity author allowlist (opt-in per request; see governance spec §14) |
 | `objectControl` | Per-object moderation rules |
 | `inheritsFrom` | Parent governance object ref |
 | `validityCutoff` | Snapshot cutoff semantics per spec |

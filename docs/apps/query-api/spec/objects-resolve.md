@@ -22,7 +22,7 @@ When resolving a `governance` object, governance update types are projected into
 
 | `update_type` | Projected shape |
 |---------------|-----------------|
-| `admins`, `trusted`, `moderators`, `authorities`, `whitelist`, `restricted`, `banned` | `string[]` — Hive account names from VALID rows |
+| `admins`, `trusted`, `moderators`, `authorities`, `authors`, `whitelist`, `restricted`, `banned` | `string[]` — Hive account names from VALID rows |
 | `objectControl` | `string \| null` — e.g. `"full"` |
 | `inheritsFrom` | `object[]` — `{ object_id, scope }` per VALID row |
 | `validityCutoff` | `object[]` — `{ account, timestamp }` per VALID row |

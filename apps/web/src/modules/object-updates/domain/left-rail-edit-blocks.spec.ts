@@ -127,4 +127,18 @@ describe('mergeLeftRailBlocksForEditMode', () => {
     expect(kinds.indexOf('rating')).toBeLessThan(kinds.indexOf('ingredients'));
     expect(kinds).toContain('budget');
   });
+
+  it('exposes an empty authors slot for governance', () => {
+    const merged = mergeLeftRailBlocksForEditMode(
+      [],
+      [UPDATE_TYPES.AUTHORITIES, UPDATE_TYPES.AUTHORS, UPDATE_TYPES.INHERITS_FROM],
+      'governance',
+    );
+    const authors = merged.find((b) => b.kind === 'authors');
+    expect(authors?.kind).toBe('authors');
+    if (authors?.kind === 'authors') {
+      expect(authors.accounts).toEqual([]);
+      expect(authors.headingLabel).toBe('Authors');
+    }
+  });
 });

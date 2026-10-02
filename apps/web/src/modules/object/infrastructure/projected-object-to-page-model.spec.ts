@@ -981,6 +981,7 @@ describe('projectedObjectWithCountsToPageModel closed venue status block', () =>
       fields: {
         name: 'Site governance',
         admins: ['alice', 'bob'],
+        authors: ['alice', 'bob'],
         moderators: ['mod1'],
         objectControl: 'full',
       },
@@ -994,7 +995,17 @@ describe('projectedObjectWithCountsToPageModel closed venue status block', () =>
 
     expect(kinds).toContain('objectControl');
     expect(kinds).toContain('admins');
+    expect(kinds).toContain('authors');
     expect(kinds).toContain('moderators');
+
+    const authorsBlock = model.leftRailBlocks.find((b) => b.kind === 'authors');
+    expect(authorsBlock && authorsBlock.kind === 'authors' ? authorsBlock.accounts : []).toEqual([
+      'alice',
+      'bob',
+    ]);
+    expect(authorsBlock && authorsBlock.kind === 'authors' ? authorsBlock.headingLabel : '').toBe(
+      'Authors',
+    );
 
     const adminsBlock = model.leftRailBlocks.find((b) => b.kind === 'admins');
     expect(adminsBlock && adminsBlock.kind === 'admins' ? adminsBlock.accounts : []).toEqual([

@@ -6,12 +6,14 @@ type: spec
 status: active
 scope: platform
 tags: [platform, domain]
-updated_at: 2026-06-10
+updated_at: 2026-10-02
 related:
   - docs/spec/README.md
   - docs/spec/objects-domain.md
   - docs/apps/query-api/spec/overview.md
   - docs/apps/chain-indexer/spec/meta-group-sync.md
+  - docs/apps/query-api/spec/osl-messaging.md
+  - docs/apps/query-api/spec/object-threads-feed.md
 ---
 
 # Governance Resolution
@@ -34,6 +36,7 @@ Most update types are **multi-cardinality** (accumulate, never replace). `object
 | `trusted`         | multi  | text — Hive account name | Account responsible for object data curation on objects they have claimed authority over; lower precedence than `admins` |
 | `moderators`      | multi  | text — Hive account name | Account responsible for muting social content; their mutes form the resolved `muted` set |
 | `authorities`     | multi  | text — Hive account name | Restricts object search scope to objects where at least one `authorities` account has an `object_favorite` row |
+| `authors`         | multi  | text — Hive account name | Activity author allowlist; applied only when a read request sends authors_only (see §14). No effect on vote resolution, search scope, or mutes |
 | `restricted`      | multi  | text — Hive account name | Account flagged for reward eligibility (informational only, not enforced in V2) |
 | `banned`          | multi  | text — Hive account name | Platform-level ban: triggers deletion of all objects and updates created by this account; at governance level all remaining content from this account is excluded from resolved views |
 | `whitelist`       | multi  | text — Hive account name | Account protected from appearing in the resolved `muted` set regardless of who muted them |
@@ -43,7 +46,7 @@ Most update types are **multi-cardinality** (accumulate, never replace). `object
 
 ```typescript
 // Valid scope field names — any key from the output snapshot except `object_control` and `inherits_from` (snapshot keys); scope tokens use lower camelCase where multi-word (e.g. `validityCutoff`).
-type GovernanceScope = 'admins' | 'trusted' | 'moderators' | 'validityCutoff' | 'restricted' | 'whitelist' | 'authorities' | 'banned' | 'muted';
+type GovernanceScope = 'admins' | 'trusted' | 'moderators' | 'validityCutoff' | 'restricted' | 'whitelist' | 'authorities' | 'authors' | 'banned' | 'muted';
 ```
 
 ## 3) Write rules
@@ -69,6 +72,7 @@ For each update type, include only entries where `update.creator == governance.c
 - `whitelist` → resolved set of account strings
 - `inheritsFrom` → resolved list of `{ object_id: string, scope: GovernanceScope[] }`
 - `authorities` → resolved set of account strings
+- `authors` → resolved set of account strings
 - `banned` → resolved set of account strings
 - `objectControl` → resolved single `ObjectControlMode` string, or `null` if absent / voted against
 
@@ -110,7 +114,7 @@ Whitelisted accounts are never present in the resolved `muted` set, regardless o
 // Extensible enum — only 'full' is defined in V2; future modes may be added.
 type ObjectControlMode = 'full';
 
-type GovernanceScope = 'admins' | 'trusted' | 'moderators' | 'validityCutoff' | 'restricted' | 'whitelist' | 'authorities' | 'banned' | 'muted';
+type GovernanceScope = 'admins' | 'trusted' | 'moderators' | 'validityCutoff' | 'restricted' | 'whitelist' | 'authorities' | 'authors' | 'banned' | 'muted';
 
 interface InheritsFromEntry {
   object_id: string;
@@ -126,6 +130,7 @@ interface InheritsFromEntry {
   whitelist:       string[];
   inherits_from:   InheritsFromEntry[];
   authorities:     string[];
+  authors:         string[];
   banned:          string[];
   object_control:  ObjectControlMode | null;  // null = control off
   muted:           string[];
@@ -221,6 +226,7 @@ Data domain (object curation):
 Social domain (content moderation):
 
 - `moderators` — their mutes form the resolved `muted` set; no effect on object data curation
+- `authors` — activity allowlist for object feeds. It is opt-in per request (`authors_only`) and never filters by default. See §14.
 
 Role effects are domain-scoped and must not leak across domains.
 
@@ -261,3 +267,24 @@ The following signals may inform auxiliary ranking or freshness scoring but must
 - account heartbeat/activity recency.
 
 These signals are advisory and must be clearly separated from decisive role resolution.
+
+## 14) authors filter semantics
+
+`authors` is a Hive-account allowlist for object activity feeds. It does not participate in vote resolution, search scope, or mute aggregation.
+
+The filter applies to:
+
+- `POST /query/v1/objects/:id/channel/messages`
+- `POST /query/v1/users/:name/following-objects/messages`
+- `POST /query/v1/objects/:id/threads`
+
+When a request sends `authors_only: true`:
+
+1. The primary allowlist is the `authors` set of the merged snapshot (platform config governance plus `X-Governance-Object-Id`).
+2. Optional `authors_governance_object_id` unions that governance object's `authors` into the allowlist. Without `authors_only` this field is ignored and never changes `muted`.
+3. An empty allowlist returns an empty page.
+4. The allowlist (`IN`) applies together with mute exclusion (`NOT IN`).
+
+`authors` is inheritable via `inheritsFrom` scope `authors` (union, like the other list fields).
+
+Request-body shape: [osl-messaging.md](../apps/query-api/spec/osl-messaging.md) and [object-threads-feed.md](../apps/query-api/spec/object-threads-feed.md).

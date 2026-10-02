@@ -1,12 +1,15 @@
+import { DEFAULT_GOVERNANCE_SNAPSHOT } from '@opden-data-layer/objects-domain';
+import { Thread } from '@opden-data-layer/odl-db-types';
+
 import { AccountsCurrentRepository } from '../../repositories/accounts-current.repository';
 import { ObjectsCoreRepository } from '../../repositories/objects-core.repository';
 import { ThreadsRepository } from '../../repositories/threads.repository';
 import { UserAccountMutesRepository } from '../../repositories/user-account-mutes.repository';
-import { Thread } from '@opden-data-layer/odl-db-types';
 
 import { encodeFeedCursor } from './feed-cursor';
 import { GetObjectThreadsFeedEndpoint } from './get-object-threads-feed.endpoint';
 import * as threadFeedHydrator from './thread-feed-hydrator';
+import type { GovernanceResolverService } from '../governance';
 
 jest.mock('./thread-feed-hydrator', () => ({
   hydrateThreadFeedPage: jest.fn(),
@@ -52,6 +55,9 @@ describe('GetObjectThreadsFeedEndpoint', () => {
   let objectsCoreRepo: jest.Mocked<Pick<ObjectsCoreRepository, 'findByObjectIdForPage'>>;
   let accounts: jest.Mocked<Pick<AccountsCurrentRepository, 'findByNames'>>;
   let userAccountMutesRepo: jest.Mocked<Pick<UserAccountMutesRepository, 'listMutedForMuters'>>;
+  let governanceResolver: jest.Mocked<
+    Pick<GovernanceResolverService, 'resolveMergedForObjectView'>
+  >;
   let endpoint: GetObjectThreadsFeedEndpoint;
 
   beforeEach(() => {
@@ -65,6 +71,11 @@ describe('GetObjectThreadsFeedEndpoint', () => {
     userAccountMutesRepo = {
       listMutedForMuters: jest.fn().mockResolvedValue([]),
     };
+    governanceResolver = {
+      resolveMergedForObjectView: jest
+        .fn()
+        .mockResolvedValue({ ...DEFAULT_GOVERNANCE_SNAPSHOT, authors: [] }),
+    };
     hydrateThreadFeedPageMock.mockResolvedValue({
       items: [],
       cursor: null,
@@ -75,6 +86,7 @@ describe('GetObjectThreadsFeedEndpoint', () => {
       objectsCoreRepo as unknown as ObjectsCoreRepository,
       accounts as unknown as AccountsCurrentRepository,
       userAccountMutesRepo as unknown as UserAccountMutesRepository,
+      governanceResolver as unknown as GovernanceResolverService,
     );
   });
 
@@ -123,6 +135,7 @@ describe('GetObjectThreadsFeedEndpoint', () => {
       null,
       'latest',
       21,
+      undefined,
     );
     expect(hydrateThreadFeedPageMock).toHaveBeenCalledWith(
       expect.objectContaining({ threadsRepo, accounts }),
@@ -144,6 +157,43 @@ describe('GetObjectThreadsFeedEndpoint', () => {
       { feedAt: 100, author: 'alice', permlink: 't-1' },
       'oldest',
       11,
+      undefined,
     );
+  });
+
+  it('uses header governance authors as the allowlist and keeps viewer mutes only', async () => {
+    governanceResolver.resolveMergedForObjectView.mockResolvedValue({
+      ...DEFAULT_GOVERNANCE_SNAPSHOT,
+      authors: ['alice'],
+    });
+    userAccountMutesRepo.listMutedForMuters.mockResolvedValue(['muted-user']);
+
+    await endpoint.execute(
+      'waivio',
+      { limit: 20, sort: 'latest', currency: 'USD', authors_only: true },
+      'viewer',
+      'gov-h',
+    );
+
+    expect(governanceResolver.resolveMergedForObjectView).toHaveBeenCalledWith('gov-h');
+    expect(threadsRepo.findObjectThreadsFeed).toHaveBeenCalledWith(
+      'waivio',
+      ['muted-user'],
+      null,
+      'latest',
+      21,
+      ['alice'],
+    );
+  });
+
+  it('returns an empty page without querying when authors_only and the allowlist is empty', async () => {
+    const r = await endpoint.execute('waivio', {
+      limit: 20,
+      sort: 'latest',
+      currency: 'USD',
+      authors_only: true,
+    });
+    expect(r).toEqual({ items: [], cursor: null, hasMore: false });
+    expect(threadsRepo.findObjectThreadsFeed).not.toHaveBeenCalled();
   });
 });

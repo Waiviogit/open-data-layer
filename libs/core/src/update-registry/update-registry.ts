@@ -88,6 +88,7 @@ import { UPDATE_ADMINS } from './updates/admins';
 import { UPDATE_TRUSTED } from './updates/trusted';
 import { UPDATE_MODERATORS } from './updates/moderators';
 import { UPDATE_AUTHORITIES } from './updates/authorities';
+import { UPDATE_AUTHORS } from './updates/authors';
 import { UPDATE_RESTRICTED } from './updates/restricted';
 import { UPDATE_BANNED } from './updates/banned';
 import { UPDATE_WHITELIST } from './updates/whitelist';
@@ -200,6 +201,7 @@ export const UPDATE_REGISTRY: UpdateRegistry = {
   [UPDATE_TYPES.TRUSTED]: UPDATE_TRUSTED,
   [UPDATE_TYPES.MODERATORS]: UPDATE_MODERATORS,
   [UPDATE_TYPES.AUTHORITIES]: UPDATE_AUTHORITIES,
+  [UPDATE_TYPES.AUTHORS]: UPDATE_AUTHORS,
   [UPDATE_TYPES.RESTRICTED]: UPDATE_RESTRICTED,
   [UPDATE_TYPES.BANNED]: UPDATE_BANNED,
   [UPDATE_TYPES.WHITELIST]: UPDATE_WHITELIST,

@@ -185,6 +185,24 @@ const userThreadsFeedBodySchema = registry.register(
   }),
 );
 
+const objectThreadsFeedBodyOpenApi = registry.register(
+  'ObjectThreadsFeedBody',
+  z.object({
+    limit: z.number().int().min(1).max(50).optional(),
+    cursor: z.string().optional(),
+    sort: z.enum(['latest', 'oldest']).optional(),
+    currency: feedCurrencyBodyField,
+    authors_only: z.boolean().optional().openapi({
+      description:
+        'When true, return only threads whose author is in the governance authors list.',
+    }),
+    authors_governance_object_id: z.string().min(1).optional().openapi({
+      description:
+        'Optional second governance object id whose authors are unioned into the allowlist. Ignored unless authors_only is true.',
+    }),
+  }),
+);
+
 const accountNameParam = z
   .string()
   .min(3)
@@ -497,7 +515,7 @@ registry.registerPath({
   tags: [queryApiOpenApiTags.objects],
   summary: 'Object threads feed (Reviews > Threads tab)',
   description:
-    'Paginated threads whose `hashtags` array contains the object id (legacy `getThreads.byHashtag`). Respects viewer mutes (X-Viewer). Cursor matches blog/user-threads feed encoding. No locale filter (unlike object posts).',
+    'Paginated threads whose `hashtags` array contains the object id (legacy `getThreads.byHashtag`). Respects viewer mutes (X-Viewer). Optional authors_only restricts to governance authors; authors_governance_object_id unions a second governance authors list. Cursor matches blog/user-threads feed encoding. No locale filter (unlike object posts).',
   request: {
     params: z.object({
       objectId: z
@@ -508,7 +526,7 @@ registry.registerPath({
     body: {
       content: {
         'application/json': {
-          schema: userThreadsFeedBodySchema,
+          schema: objectThreadsFeedBodyOpenApi,
         },
       },
       required: false,

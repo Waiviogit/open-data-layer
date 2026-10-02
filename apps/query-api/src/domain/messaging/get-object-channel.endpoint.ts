@@ -4,7 +4,8 @@ import { GovernanceResolverService } from '../governance';
 import { UserAccountMutesRepository } from '../../repositories';
 import type { ChannelDetailDto } from './get-channel-by-id.endpoint';
 import { GetChannelByIdEndpoint } from './get-channel-by-id.endpoint';
-import type { MessageHistoryBody } from './schemas/messaging.schema';
+import type { ObjectActivityMessageHistoryBody } from './schemas/messaging.schema';
+import { resolveActivityAuthorsAllowlist } from '../governance/resolve-activity-authors-allowlist';
 import {
   decodeMessageCursor,
   encodeMessageCursor,
@@ -58,7 +59,7 @@ export class GetObjectChannelMessagesEndpoint {
 
   async execute(
     objectId: string,
-    body: MessageHistoryBody,
+    body: ObjectActivityMessageHistoryBody,
     governanceObjectIdFromHeader?: string,
     viewerAccount?: string,
   ): Promise<MessageHistoryResponseDto | null> {
@@ -88,19 +89,30 @@ export class GetObjectChannelMessagesEndpoint {
       ? false
       : (body.include_duplicates ?? false);
 
+    const includedAuthors = await resolveActivityAuthorsAllowlist(this.governanceResolver, {
+      authorsOnly: body.authors_only,
+      governanceObjectIdFromHeader,
+      authorsGovernanceObjectId: body.authors_governance_object_id,
+    });
+    if (includedAuthors && includedAuthors.length === 0) {
+      return { items: [], cursor: null, hasMore: false };
+    }
+
     return this.fetchObjectActivityMessages(
       trimmedId,
       { ...body, include_duplicates: includeDuplicates },
       excludedAuthors,
       body.for_context ? viewerTrimmed : undefined,
+      includedAuthors,
     );
   }
 
   async fetchObjectActivityMessages(
     objectId: string,
-    body: MessageHistoryBody,
+    body: ObjectActivityMessageHistoryBody,
     excludedAuthors: readonly string[],
     forContextViewer?: string,
+    includedAuthors?: readonly string[],
   ): Promise<MessageHistoryResponseDto> {
     const limit = body.limit;
     const limitPlusOne = limit + 1;
@@ -116,6 +128,7 @@ export class GetObjectChannelMessagesEndpoint {
       limitPlusOne,
       forContextViewer,
       body.include_duplicates ?? false,
+      includedAuthors,
     );
 
     const hasMore = rows.length > limit;

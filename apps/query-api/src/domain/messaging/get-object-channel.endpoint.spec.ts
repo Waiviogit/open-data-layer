@@ -1,3 +1,5 @@
+import { DEFAULT_GOVERNANCE_SNAPSHOT } from '@opden-data-layer/objects-domain';
+
 import { GetObjectChannelMessagesEndpoint } from './get-object-channel.endpoint';
 import type { MessagingRepository } from '../../repositories/messaging.repository';
 import type { ObjectsCoreRepository } from '../../repositories/objects-core.repository';
@@ -104,6 +106,7 @@ describe('GetObjectChannelMessagesEndpoint', () => {
       21,
       undefined,
       false,
+      undefined,
     );
   });
 
@@ -213,5 +216,104 @@ describe('GetObjectChannelMessagesEndpoint', () => {
       Buffer.from(result.cursor ?? '', 'base64url').toString('utf8'),
     );
     expect(decoded.createdAtUnix).toBe(1_262_304_000);
+  });
+
+  it('passes included authors when authors_only is true', async () => {
+    const { endpoint, messaging } = makeEndpoint({
+      governance: {
+        resolveMergedForObjectView: jest.fn().mockResolvedValue({ muted: [], authors: ['alice'] }),
+      },
+    });
+
+    await endpoint.execute(objectId, { limit: 10, authors_only: true });
+
+    expect(messaging.listObjectActivityMessages).toHaveBeenCalledWith(
+      objectId,
+      [],
+      null,
+      11,
+      undefined,
+      false,
+      ['alice'],
+    );
+  });
+
+  it('ignores overlay when authors_only is absent', async () => {
+    const resolveMergedForObjectView = jest.fn().mockResolvedValue({ muted: ['eve'], authors: ['alice'] });
+    const { endpoint, messaging } = makeEndpoint({
+      governance: { resolveMergedForObjectView },
+    });
+
+    await endpoint.execute(objectId, {
+      limit: 10,
+      authors_governance_object_id: 'gov-c',
+    });
+
+    expect(resolveMergedForObjectView).toHaveBeenCalledTimes(1);
+    expect(messaging.listObjectActivityMessages).toHaveBeenCalledWith(
+      objectId,
+      ['eve'],
+      null,
+      11,
+      undefined,
+      false,
+      undefined,
+    );
+  });
+
+  it('unions overlay authors without applying overlay mutes', async () => {
+    const resolveMergedForObjectView = jest.fn(async (id?: string) => {
+      if (id === 'gov-c') {
+        return { ...DEFAULT_GOVERNANCE_SNAPSHOT, muted: ['alice'], authors: ['alice'] };
+      }
+      return { ...DEFAULT_GOVERNANCE_SNAPSHOT, muted: ['eve'], authors: ['bob'] };
+    });
+    const { endpoint, messaging } = makeEndpoint({
+      governance: { resolveMergedForObjectView },
+    });
+
+    await endpoint.execute(objectId, {
+      limit: 10,
+      authors_only: true,
+      authors_governance_object_id: 'gov-c',
+    });
+
+    expect(messaging.listObjectActivityMessages).toHaveBeenCalledWith(
+      objectId,
+      ['eve'],
+      null,
+      11,
+      undefined,
+      false,
+      ['bob', 'alice'],
+    );
+  });
+
+  it('returns an empty page without querying when the allowlist is empty', async () => {
+    const { endpoint, messaging } = makeEndpoint({
+      governance: {
+        resolveMergedForObjectView: jest.fn().mockResolvedValue({ muted: [], authors: [] }),
+      },
+    });
+
+    const result = await endpoint.execute(objectId, { limit: 10, authors_only: true });
+    expect(result).toEqual({ items: [], cursor: null, hasMore: false });
+    expect(messaging.listObjectActivityMessages).not.toHaveBeenCalled();
+  });
+
+  it('returns an empty page for an invalid cursor even when authors_only is set', async () => {
+    const { endpoint, messaging } = makeEndpoint({
+      governance: {
+        resolveMergedForObjectView: jest.fn().mockResolvedValue({ muted: [], authors: ['alice'] }),
+      },
+    });
+
+    const result = await endpoint.execute(objectId, {
+      limit: 10,
+      authors_only: true,
+      cursor: 'garbage',
+    });
+    expect(result).toEqual({ items: [], cursor: null, hasMore: false });
+    expect(messaging.listObjectActivityMessages).not.toHaveBeenCalled();
   });
 });

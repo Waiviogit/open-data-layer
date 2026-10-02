@@ -11,6 +11,7 @@ const EMPTY_GOVERNANCE: GovernanceSnapshot = {
   restricted: [],
   whitelist: [],
   authorities: [],
+  authors: [],
   banned: [],
   object_control: null,
   muted: [],

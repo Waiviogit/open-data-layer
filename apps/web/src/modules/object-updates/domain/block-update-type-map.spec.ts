@@ -34,6 +34,15 @@ describe('getUpdateTypesForBlockKind', () => {
   it('returns empty when type not supported for object', () => {
     expect(getUpdateTypesForBlockKind('geo', supported)).toEqual([]);
   });
+
+  it('maps authors to the authors update type, not book author', () => {
+    expect(
+      getUpdateTypesForBlockKind('authors', [UPDATE_TYPES.AUTHORS, UPDATE_TYPES.AUTHOR]),
+    ).toEqual([UPDATE_TYPES.AUTHORS]);
+    expect(
+      getUpdateTypesForBlockKind('author', [UPDATE_TYPES.AUTHORS, UPDATE_TYPES.AUTHOR]),
+    ).toEqual([UPDATE_TYPES.AUTHOR]);
+  });
 });
 
 describe('resolveUpdateTypeFilterForBlockKind', () => {

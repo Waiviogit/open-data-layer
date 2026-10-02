@@ -11,7 +11,7 @@ import { userAccountAuthListQuerySchema } from '../../domain/social/user-account
 import { userFavoritesMapBodySchema, toUserFavoritesMapBody } from '../../domain/favorites/post-user-favorites-map.schema';
 import { userFavoritesQuerySchema } from '../../domain/favorites/favorites.schema';
 import { userExpertiseObjectsQuerySchema } from '../../domain/expertise/expertise.schema';
-import { messageHistoryBodySchema } from '../../domain/messaging/schemas/messaging.schema';
+import { objectActivityMessageHistoryBodySchema } from '../../domain/messaging/schemas/messaging.schema';
 import { userActivityBodyFieldsSchema } from '../../domain/feed/schemas/user-activity.schema';
 import {
   hiveAdvancedReportBodySchema,
@@ -644,14 +644,31 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
     'get_followed_objects_messages',
     {
       description: catalogDescription('get_followed_objects_messages'),
-      inputSchema: withMcpLocaleContext(messageHistoryBodySchema.extend(accountField)),
+      inputSchema: withMcpLocaleContext(
+        objectActivityMessageHistoryBodySchema.extend(accountField),
+      ),
     },
     async (args) => {
       const ctx = pickMcpContext(args);
-      const { account, limit, cursor, for_context, include_duplicates } = args;
+      const {
+        account,
+        limit,
+        cursor,
+        for_context,
+        include_duplicates,
+        authors_only,
+        authors_governance_object_id,
+      } = args;
       const result = await deps.getFollowedObjectsMessages.execute(
         account,
-        { limit, cursor, for_context, include_duplicates },
+        {
+          limit,
+          cursor,
+          for_context,
+          include_duplicates,
+          authors_only,
+          authors_governance_object_id,
+        },
         ctx.governanceObjectIdFromHeader,
         ctx.viewerAccount,
       );

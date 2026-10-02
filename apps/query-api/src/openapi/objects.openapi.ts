@@ -796,3 +796,71 @@ registry.registerPath({
     },
   },
 });
+
+const objectActivityMessageHistoryBodyOpenApi = registry.register(
+  'ObjectActivityMessageHistoryBody',
+  z.object({
+    limit: z.number().int().min(1).max(100).optional(),
+    cursor: z.string().optional(),
+    for_context: z.boolean().optional(),
+    include_duplicates: z.boolean().optional(),
+    authors_only: z.boolean().optional().openapi({
+      description:
+        'When true, return only activity whose author is in the governance authors list.',
+    }),
+    authors_governance_object_id: z.string().min(1).optional().openapi({
+      description:
+        'Optional second governance object id whose authors are unioned into the allowlist. Ignored unless authors_only is true.',
+    }),
+  }),
+);
+
+const objectChannelMessagesResponseSchema = registry.register(
+  'ObjectChannelMessagesResponse',
+  z.object({
+    items: z.array(z.unknown()),
+    cursor: z.string().nullable(),
+    hasMore: z.boolean(),
+  }),
+);
+
+registry.registerPath({
+  method: 'post',
+  path: '/query/v1/objects/{objectId}/channel/messages',
+  tags: [queryApiOpenApiTags.objects],
+  summary: 'Object channel message feed',
+  description:
+    'Public object activity feed. Unions native channel rows and mention cross-posts. Governance and viewer mute filters apply. Optional authors_only restricts to governance authors; authors_governance_object_id unions a second governance authors list.',
+  request: {
+    params: z.object({
+      objectId: z
+        .string()
+        .min(1)
+        .openapi({ param: { name: 'objectId', in: 'path', required: true } }),
+    }),
+    body: {
+      content: {
+        'application/json': {
+          schema: objectActivityMessageHistoryBodyOpenApi,
+        },
+      },
+      required: false,
+    },
+    headers: z.object({
+      'x-governance-object-id': z.string().optional(),
+      'x-viewer': z.string().optional(),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Keyset page of object activity messages.',
+      content: {
+        'application/json': { schema: objectChannelMessagesResponseSchema },
+      },
+    },
+    404: {
+      description: 'Object not found.',
+      content: { 'application/json': { schema: notFoundSchema } },
+    },
+  },
+});

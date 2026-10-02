@@ -100,8 +100,8 @@ import {
   type FollowedObjectsMessagesResponseDto,
 } from '../domain/messaging';
 import {
-  messageHistoryBodySchema,
-  type MessageHistoryBody,
+  objectActivityMessageHistoryBodySchema,
+  type ObjectActivityMessageHistoryBody,
 } from '../domain/messaging/schemas/messaging.schema';
 
 @Controller({ path: 'users', version: '1' })
@@ -233,7 +233,8 @@ export class UsersController {
   @Post(':name/following-objects/messages')
   async getFollowedObjectMessages(
     @Param('name') name: string,
-    @Body(new ZodBodyPipe(messageHistoryBodySchema)) body: MessageHistoryBody,
+    @Body(new ZodBodyPipe(objectActivityMessageHistoryBodySchema))
+    body: ObjectActivityMessageHistoryBody,
     @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
     @ReqViewer() viewer: string | undefined,
   ): Promise<FollowedObjectsMessagesResponseDto> {

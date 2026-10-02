@@ -14,16 +14,23 @@ import { UserAccountMutesRepository } from '../../repositories/user-account-mute
 import type { GovernanceResolverService } from '../governance';
 import { GetFollowedObjectsMessagesEndpoint } from './get-followed-objects-messages.endpoint';
 import { decodeMessageCursor, encodeMessageCursor } from './message-feed-cursor';
-import { messageHistoryBodySchema, type MessageHistoryBody } from './schemas/messaging.schema';
+import {
+  objectActivityMessageHistoryBodySchema,
+  type ObjectActivityMessageHistoryBody,
+} from './schemas/messaging.schema';
 
 const describeDb = process.env.POSTGRES_TEST_URL ? describe : describe.skip;
 
 type Trx = Kysely<OdlDatabase>;
 
-function endpoint(trx: Trx, muted: readonly string[] = []): GetFollowedObjectsMessagesEndpoint {
+function endpoint(
+  trx: Trx,
+  muted: readonly string[] = [],
+  authors: readonly string[] = [],
+): GetFollowedObjectsMessagesEndpoint {
   const db = trx as unknown as Kysely<Database>;
   const governance = {
-    resolveMergedForObjectView: async () => ({ muted: [...muted] }),
+    resolveMergedForObjectView: async () => ({ muted: [...muted], authors: [...authors] }),
   } as unknown as GovernanceResolverService;
   return new GetFollowedObjectsMessagesEndpoint(
     new AccountsCurrentRepository(db),
@@ -33,8 +40,8 @@ function endpoint(trx: Trx, muted: readonly string[] = []): GetFollowedObjectsMe
   );
 }
 
-function body(raw: Record<string, unknown> = {}): MessageHistoryBody {
-  return messageHistoryBodySchema.parse(raw);
+function body(raw: Record<string, unknown> = {}): ObjectActivityMessageHistoryBody {
+  return objectActivityMessageHistoryBodySchema.parse(raw);
 }
 
 async function insertAccount(trx: Trx, name: string): Promise<void> {
@@ -671,6 +678,117 @@ describeDb('followed objects message feed', () => {
       });
       expect(page2?.items[0]?.message_id).toBe('msg-lo');
       expect(page2?.items.map((item) => item.message_id)).not.toContain('msg-hi');
+    });
+  });
+
+  it('returns only allowlisted authors and excludes muted ones', async () => {
+    await withRollback(db, async (trx) => {
+      await insertAccount(trx, 'alice');
+      await insertAccount(trx, 'viewer');
+      await insertObject(trx, 'obj-a');
+      await insertChannel(trx, { channelId: 'ch-a', kind: 'object', objectId: 'obj-a' });
+      await follow(trx, 'alice', 'obj-a');
+      await trx
+        .insertInto('user_account_mutes')
+        .values({ muter: 'viewer', muted: 'carol' })
+        .execute();
+      await insertMessage(trx, {
+        messageId: 'msg-alice',
+        channelId: 'ch-a',
+        author: 'alice',
+        created: 30,
+        seq: BigInt(3),
+      });
+      await insertMessage(trx, {
+        messageId: 'msg-bob',
+        channelId: 'ch-a',
+        author: 'bob',
+        created: 20,
+        seq: BigInt(2),
+      });
+      await insertMessage(trx, {
+        messageId: 'msg-carol',
+        channelId: 'ch-a',
+        author: 'carol',
+        created: 10,
+        seq: BigInt(1),
+      });
+
+      const result = await endpoint(trx, [], ['alice', 'carol']).execute(
+        'alice',
+        body({ limit: 10, authors_only: true }),
+        undefined,
+        'viewer',
+      );
+
+      expect(result?.items.map((item) => item.author)).toEqual(['alice']);
+    });
+  });
+
+  it('keeps the allowlist on the next page', async () => {
+    await withRollback(db, async (trx) => {
+      await insertAccount(trx, 'alice');
+      await insertObject(trx, 'obj-a');
+      await insertChannel(trx, { channelId: 'ch-a', kind: 'object', objectId: 'obj-a' });
+      await follow(trx, 'alice', 'obj-a');
+      await insertMessage(trx, {
+        messageId: 'a1',
+        channelId: 'ch-a',
+        author: 'alice',
+        created: 60,
+        seq: BigInt(6),
+      });
+      await insertMessage(trx, {
+        messageId: 'a2',
+        channelId: 'ch-a',
+        author: 'alice',
+        created: 50,
+        seq: BigInt(5),
+      });
+      await insertMessage(trx, {
+        messageId: 'a3',
+        channelId: 'ch-a',
+        author: 'alice',
+        created: 40,
+        seq: BigInt(4),
+      });
+      await insertMessage(trx, {
+        messageId: 'b1',
+        channelId: 'ch-a',
+        author: 'bob',
+        created: 55,
+        seq: BigInt(55),
+      });
+      await insertMessage(trx, {
+        messageId: 'b2',
+        channelId: 'ch-a',
+        author: 'bob',
+        created: 45,
+        seq: BigInt(45),
+      });
+      await insertMessage(trx, {
+        messageId: 'b3',
+        channelId: 'ch-a',
+        author: 'bob',
+        created: 35,
+        seq: BigInt(35),
+      });
+
+      const api = endpoint(trx, [], ['alice']);
+      const page1 = await api.execute('alice', body({ limit: 2, authors_only: true }));
+      const page2 = await api.execute(
+        'alice',
+        body({ limit: 2, authors_only: true, cursor: page1?.cursor ?? '' }),
+      );
+
+      expect(page1?.items.map((item) => item.author)).toEqual(['alice', 'alice']);
+      expect(page1?.hasMore).toBe(true);
+      expect(page2?.items.map((item) => item.author)).toEqual(['alice']);
+      expect(page2?.hasMore).toBe(false);
+      expect([
+        ...(page1?.items ?? []),
+        ...(page2?.items ?? []),
+      ].map((item) => item.author)).not.toContain('bob');
     });
   });
 });

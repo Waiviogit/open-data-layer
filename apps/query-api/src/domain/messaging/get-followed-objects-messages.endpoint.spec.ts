@@ -5,7 +5,10 @@ import type { UserAccountMutesRepository } from '../../repositories/user-account
 import type { GovernanceResolverService } from '../governance';
 import { GetFollowedObjectsMessagesEndpoint } from './get-followed-objects-messages.endpoint';
 import { decodeMessageCursor } from './message-feed-cursor';
-import { messageHistoryBodySchema } from './schemas/messaging.schema';
+import {
+  messageHistoryBodySchema,
+  objectActivityMessageHistoryBodySchema,
+} from './schemas/messaging.schema';
 import { ZodBodyPipe } from '../../pipes/zod-body.pipe';
 
 function activityRow(
@@ -157,6 +160,67 @@ describe('GetFollowedObjectsMessagesEndpoint', () => {
 
     expect(result?.items[0]?.object).toEqual({ object_id: 'obj-a', name: 'obj-a' });
     expect(result?.items[0]?.source_object).toBeNull();
+  });
+
+  it('applies the allowlist with no path object', async () => {
+    accounts.findByName.mockResolvedValue({ name: 'bob' });
+    governance.resolveMergedForObjectView.mockResolvedValue({ muted: [], authors: ['alice'] });
+
+    await endpoint.execute(
+      'bob',
+      objectActivityMessageHistoryBodySchema.parse({ authors_only: true }),
+    );
+
+    expect(messaging.listFollowedObjectActivityMessages).toHaveBeenCalledWith(
+      'bob',
+      [],
+      null,
+      51,
+      undefined,
+      false,
+      ['alice'],
+    );
+  });
+
+  it('unions overlay authors without applying overlay mutes', async () => {
+    accounts.findByName.mockResolvedValue({ name: 'bob' });
+    governance.resolveMergedForObjectView.mockImplementation(async (id?: string) => {
+      if (id === 'gov-c') {
+        return { muted: ['alice'], authors: ['alice'] };
+      }
+      return { muted: ['eve'], authors: ['bob'] };
+    });
+
+    await endpoint.execute(
+      'bob',
+      objectActivityMessageHistoryBodySchema.parse({
+        authors_only: true,
+        authors_governance_object_id: 'gov-c',
+      }),
+    );
+
+    expect(messaging.listFollowedObjectActivityMessages).toHaveBeenCalledWith(
+      'bob',
+      ['eve'],
+      null,
+      51,
+      undefined,
+      false,
+      ['bob', 'alice'],
+    );
+  });
+
+  it('returns an empty page without querying when the allowlist is empty', async () => {
+    accounts.findByName.mockResolvedValue({ name: 'bob' });
+    governance.resolveMergedForObjectView.mockResolvedValue({ muted: [], authors: [] });
+
+    const result = await endpoint.execute(
+      'bob',
+      objectActivityMessageHistoryBodySchema.parse({ authors_only: true }),
+    );
+
+    expect(result).toEqual({ items: [], cursor: null, hasMore: false });
+    expect(messaging.listFollowedObjectActivityMessages).not.toHaveBeenCalled();
   });
 
   it('TC-025 rejects a limit outside 1-100', () => {

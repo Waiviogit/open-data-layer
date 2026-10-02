@@ -20,8 +20,8 @@ tags: [query-api, messaging]
 | GET | `/query/v1/channels/by-alias/{alias}` | Resolve `dm:` / `obj:` aliases |
 | POST | `/query/v1/channels/{id}/messages` | Keyset cursor `(created_at_unix, event_seq)` |
 | GET | `/query/v1/objects/{object_id}/channel` | Default object channel meta |
-| POST | `/query/v1/objects/{object_id}/channel/messages` | Public read; native channel **optional**; unions native + mention rows; governance + viewer mute filters; keyset cursor `(COALESCE(original_created_at_unix, created_at_unix), event_seq)`; optional `include_duplicates` (default false — canonical rows only) |
-| POST | `/query/v1/users/{account}/following-objects/messages` | Public read of object-channel messages for every **active** object `{account}` follows, plus mention cross-posts (`linked_object_ids` overlap), deduped by `message_id`. Same sort and keyset cursor as the object feed. `object` is the native channel (`title`, else `object_id`). `source_object` is null. `X-Viewer` / `X-Governance-Object-Id` apply mutes and `for_context` only |
+| POST | `/query/v1/objects/{object_id}/channel/messages` | Public read; native channel **optional**; unions native + mention rows; governance + viewer mute filters; keyset cursor `(COALESCE(original_created_at_unix, created_at_unix), event_seq)`; optional `include_duplicates` (default false — canonical rows only); optional `authors_only` / `authors_governance_object_id` (see [governance-resolution.md](../../../spec/governance-resolution.md) §14) |
+| POST | `/query/v1/users/{account}/following-objects/messages` | Public read of object-channel messages for every **active** object `{account}` follows, plus mention cross-posts (`linked_object_ids` overlap), deduped by `message_id`. Same sort and keyset cursor as the object feed. `object` is the native channel (`title`, else `object_id`). `source_object` is null. `X-Viewer` / `X-Governance-Object-Id` apply mutes and `for_context` only. Optional `authors_only` / `authors_governance_object_id` (see [governance-resolution.md](../../../spec/governance-resolution.md) §14) |
 | POST | `/query/v1/objects/{object_id}/channel/messages/dedup-check` | Preflight duplicate check before broadcasting archival imports; echoes fingerprint |
 | GET | `/query/v1/users/{account}/memo-public-key` | Public memo key for encryption; 404 if account missing |
 
@@ -53,6 +53,8 @@ Object must exist in `objects_core`. Returns messages where `channels.kind = 'ob
 
 Excludes authors in governance `muted` and (when `X-Viewer` set) viewer `user_account_mutes`.
 
+Optional `authors_only: true` restricts the page to authors in the merged governance `authors` list (platform config plus `X-Governance-Object-Id`). Optional `authors_governance_object_id` unions that governance object's `authors` into the allowlist and is ignored without `authors_only`. An empty allowlist returns `{ items: [], cursor: null, hasMore: false }`. The body overlay never changes mutes. See [governance-resolution.md](../../../spec/governance-resolution.md) §14.
+
 Mention-only rows include `source_object: { object_id, name }` (source = native channel object; name from object channel `title`).
 
 Object activity message history is ordered by `COALESCE(original_created_at_unix, created_at_unix) DESC, event_seq DESC`. The keyset cursor field `createdAtUnix` carries that sort unix (coerced with `Number(...)` before encode). DM/group channel history still uses chain `created_at_unix`.
@@ -65,6 +67,7 @@ Object activity message history is ordered by `COALESCE(original_created_at_unix
 - A row is included when `channels.kind = 'object'` and either the native `channels.object_id` is an active follow, or `linked_object_ids` overlaps that follow set. One `message_id` once. Non-object channels are excluded.
 - Default page is canonical rows only. `include_duplicates: true` returns cluster members. `for_context: true` with `X-Viewer` hides that viewer's `message_context_exclusions`; the same row stays in normal history.
 - Governance `muted` authors, and the viewer's `user_account_mutes` when `X-Viewer` is set, are omitted. The viewer header does not switch the follow set.
+- `authors_only` / `authors_governance_object_id` use the same merged governance `authors` allowlist as the object channel feed (no path object).
 - Each item adds `object: { object_id, name }` for the native channel. `source_object` is null.
 - Cursor is the same `(createdAtUnix, eventSeq)` codec. `createdAtUnix` is the coalesced sort unix of the last returned item.
 

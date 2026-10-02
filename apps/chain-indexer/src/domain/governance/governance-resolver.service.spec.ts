@@ -61,4 +61,20 @@ describe('GovernanceResolverService.resolveMergedForObjectView', () => {
     expect(resolveSpy).toHaveBeenCalledWith('gov-hdr');
     expect(result.admins).toEqual(['base', 'hdr']);
   });
+
+  it('unions authors when merging header and config snapshots', async () => {
+    const { service } = createService({ 'governance.objectId': 'gov-cfg' });
+    jest.spyOn(service, 'resolve').mockImplementation(async (id: string) => {
+      if (id === 'gov-cfg') {
+        return { ...DEFAULT_GOVERNANCE_SNAPSHOT, authors: ['alice'] };
+      }
+      if (id === 'gov-hdr') {
+        return { ...DEFAULT_GOVERNANCE_SNAPSHOT, authors: ['dave'] };
+      }
+      return DEFAULT_GOVERNANCE_SNAPSHOT;
+    });
+
+    const result = await service.resolveMergedForObjectView('gov-hdr');
+    expect(result.authors).toEqual(['alice', 'dave']);
+  });
 });

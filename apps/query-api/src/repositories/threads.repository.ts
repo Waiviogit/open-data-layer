@@ -99,6 +99,7 @@ export class ThreadsRepository {
     cursor: { feedAt: number; author: string; permlink: string } | null,
     sort: 'latest' | 'oldest',
     limitPlusOne: number,
+    includedAuthors?: readonly string[],
   ): Promise<Thread[]> {
     let qb = this.db
       .selectFrom('threads')
@@ -108,6 +109,10 @@ export class ThreadsRepository {
 
     if (mutedAuthors.length > 0) {
       qb = qb.where('author', 'not in', mutedAuthors);
+    }
+
+    if (includedAuthors && includedAuthors.length > 0) {
+      qb = qb.where('author', 'in', includedAuthors as string[]);
     }
 
     if (cursor) {

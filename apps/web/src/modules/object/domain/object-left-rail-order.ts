@@ -127,6 +127,7 @@ export const ABOUT_SECTION_BLOCK_ORDER = [
   'moderators',
   'trusted',
   'authorities',
+  'authors',
   'whitelist',
   'restricted',
   'banned',

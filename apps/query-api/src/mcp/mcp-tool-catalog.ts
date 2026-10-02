@@ -148,7 +148,7 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
   {
     name: 'get_object_threads',
     description:
-      'Paginated threads feed for an object (Reviews > Threads tab; legacy byHashtag scope).',
+      'Paginated threads feed for an object (Reviews > Threads tab; legacy byHashtag scope). Optional authors_only / authors_governance_object_id restrict threads to governance authors.',
     httpEquivalent: 'POST /query/v1/objects/:id/threads',
     specPath: 'docs/apps/query-api/spec/object-threads-feed.md',
   },
@@ -564,14 +564,14 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
   {
     name: 'get_object_channel_messages',
     description:
-      'Public object channel message feed with governance and viewer mute filters.',
+      'Public object channel message feed with governance and viewer mute filters. Optional authors_only restricts to governance authors; authors_governance_object_id unions a second governance authors list.',
     httpEquivalent: 'POST /query/v1/objects/:object_id/channel/messages',
     specPath: 'docs/apps/query-api/spec/osl-messaging.md',
   },
   {
     name: 'get_followed_objects_messages',
     description:
-      'Merged object-channel messages for every active object the account follows, newest coalesced publish time first.',
+      'Merged object-channel messages for every active object the account follows, newest coalesced publish time first. Optional authors_only restricts to governance authors; authors_governance_object_id unions a second governance authors list.',
     httpEquivalent: 'POST /query/v1/users/:name/following-objects/messages',
     specPath: 'docs/apps/query-api/spec/osl-messaging.md',
   },

@@ -1,6 +1,7 @@
 import { UPDATE_REGISTRY } from './update-registry';
 import { UPDATE_STRING_MAX, UPDATE_ARRAY_MAX } from './string-limits';
 import { UPDATE_ADMINS } from './updates/admins';
+import { UPDATE_AUTHORS } from './updates/authors';
 import { UPDATE_DESCRIPTION } from './updates/description';
 import { UPDATE_INGREDIENTS } from './updates/ingredients';
 import { UPDATE_NEWS_FILTER } from './updates/news-filter';
@@ -42,6 +43,11 @@ describe('UPDATE_REGISTRY string length limits', () => {
   it('admins accepts 16-char hive name and rejects 17', () => {
     expect(UPDATE_ADMINS.schema.safeParse('a'.repeat(16)).success).toBe(true);
     expect(UPDATE_ADMINS.schema.safeParse('a'.repeat(17)).success).toBe(false);
+  });
+
+  it('authors accepts 16-char hive name and rejects 17', () => {
+    expect(UPDATE_AUTHORS.schema.safeParse('a'.repeat(16)).success).toBe(true);
+    expect(UPDATE_AUTHORS.schema.safeParse('a'.repeat(17)).success).toBe(false);
   });
 
   it('url accepts 2048-char URL and rejects 2049', () => {

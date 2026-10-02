@@ -5,7 +5,8 @@ import {
   UserAccountMutesRepository,
 } from '../../repositories';
 import { GovernanceResolverService } from '../governance';
-import type { MessageHistoryBody } from './schemas/messaging.schema';
+import type { ObjectActivityMessageHistoryBody } from './schemas/messaging.schema';
+import { resolveActivityAuthorsAllowlist } from '../governance/resolve-activity-authors-allowlist';
 import {
   decodeMessageCursor,
   encodeMessageCursor,
@@ -38,7 +39,7 @@ export class GetFollowedObjectsMessagesEndpoint {
 
   async execute(
     username: string,
-    body: MessageHistoryBody,
+    body: ObjectActivityMessageHistoryBody,
     governanceObjectIdFromHeader?: string,
     viewerAccount?: string,
   ): Promise<FollowedObjectsMessagesResponseDto | null> {
@@ -69,6 +70,15 @@ export class GetFollowedObjectsMessagesEndpoint {
     const forContextViewer =
       body.for_context && viewerTrimmed.length > 0 ? viewerTrimmed : undefined;
 
+    const includedAuthors = await resolveActivityAuthorsAllowlist(this.governanceResolver, {
+      authorsOnly: body.authors_only,
+      governanceObjectIdFromHeader,
+      authorsGovernanceObjectId: body.authors_governance_object_id,
+    });
+    if (includedAuthors && includedAuthors.length === 0) {
+      return { items: [], cursor: null, hasMore: false };
+    }
+
     const limit = body.limit;
     const cursorPayload = body.cursor ? decodeMessageCursor(body.cursor) : null;
     if (body.cursor && !cursorPayload) {
@@ -82,6 +92,7 @@ export class GetFollowedObjectsMessagesEndpoint {
       limit + 1,
       forContextViewer,
       includeDuplicates,
+      includedAuthors,
     );
 
     const hasMore = rows.length > limit;

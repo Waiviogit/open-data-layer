@@ -108,6 +108,7 @@ describe('resolveEditModeLeftRailBlockOrder', () => {
     expect(order).toContain('moderators');
     expect(order).toContain('trusted');
     expect(order).toContain('authorities');
+    expect(order).toContain('authors');
     expect(order).toContain('whitelist');
     expect(order).toContain('restricted');
     expect(order).toContain('banned');
@@ -115,5 +116,7 @@ describe('resolveEditModeLeftRailBlockOrder', () => {
     expect(order).toContain('validityCutoff');
     expect(order.indexOf('objectControl')).toBeLessThan(order.indexOf('admins'));
     expect(order.indexOf('admins')).toBeLessThan(order.indexOf('inheritsFrom'));
+    expect(order.indexOf('authorities')).toBeLessThan(order.indexOf('authors'));
+    expect(order.indexOf('authors')).toBeLessThan(order.indexOf('inheritsFrom'));
   });
 });

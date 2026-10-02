@@ -6,15 +6,18 @@ describe('mergeGovernanceSnapshots', () => {
     const base = {
       ...DEFAULT_GOVERNANCE_SNAPSHOT,
       admins: ['a1'],
+      authors: ['alice', 'bob'],
       banned: ['b1'],
     };
     const overlay = {
       ...DEFAULT_GOVERNANCE_SNAPSHOT,
       admins: ['a2', 'a1'],
+      authors: ['bob', 'carol'],
       banned: ['b2'],
     };
     const merged = mergeGovernanceSnapshots(overlay, base);
     expect(merged.admins).toEqual(['a1', 'a2']);
+    expect(merged.authors).toEqual(['alice', 'bob', 'carol']);
     expect(merged.banned).toEqual(['b1', 'b2']);
   });
 

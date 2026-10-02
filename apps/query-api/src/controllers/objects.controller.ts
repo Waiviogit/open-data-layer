@@ -68,8 +68,8 @@ import {
   GetObjectThreadsFeedEndpoint,
   objectPostsFeedBodySchema,
   type ObjectPostsFeedBody,
-  userThreadsFeedBodySchema,
-  type UserThreadsFeedBody,
+  objectThreadsFeedBodySchema,
+  type ObjectThreadsFeedBody,
   type UserBlogFeedResponse,
 } from '../domain/feed';
 import {
@@ -79,9 +79,9 @@ import {
 } from '../domain/messaging';
 import {
   activityDedupCheckBodySchema,
-  messageHistoryBodySchema,
+  objectActivityMessageHistoryBodySchema,
   type ActivityDedupCheckBody,
-  type MessageHistoryBody,
+  type ObjectActivityMessageHistoryBody,
 } from '../domain/messaging/schemas/messaging.schema';
 import type {
   ActivityDedupCheckDto,
@@ -440,11 +440,17 @@ export class ObjectsController {
   @Post(':objectId/threads')
   async getObjectThreads(
     @Param('objectId') rawObjectId: string,
-    @Body(new ZodBodyPipe(userThreadsFeedBodySchema)) body: UserThreadsFeedBody,
+    @Body(new ZodBodyPipe(objectThreadsFeedBodySchema)) body: ObjectThreadsFeedBody,
     @ReqViewer() viewer: string | undefined,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
   ): Promise<UserBlogFeedResponse> {
     const objectId = decodeURIComponent(rawObjectId);
-    const result = await this.getObjectThreadsFeed.execute(objectId, body, viewer);
+    const result = await this.getObjectThreadsFeed.execute(
+      objectId,
+      body,
+      viewer,
+      governanceObjectIdFromHeader,
+    );
     if (!result) {
       throw new NotFoundException(`Object not found: ${objectId}`);
     }
@@ -467,7 +473,8 @@ export class ObjectsController {
   @Post(':objectId/channel/messages')
   async getObjectChannelMessages(
     @Param('objectId') rawObjectId: string,
-    @Body(new ZodBodyPipe(messageHistoryBodySchema)) body: MessageHistoryBody,
+    @Body(new ZodBodyPipe(objectActivityMessageHistoryBodySchema))
+    body: ObjectActivityMessageHistoryBody,
     @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
     @ReqViewer() viewer: string | undefined,
   ): Promise<MessageHistoryResponseDto> {

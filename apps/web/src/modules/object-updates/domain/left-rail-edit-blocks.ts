@@ -164,6 +164,8 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
       return { kind: 'trusted', headingLabel, accounts: [] };
     case 'authorities':
       return { kind: 'authorities', headingLabel, accounts: [] };
+    case 'authors':
+      return { kind: 'authors', headingLabel, accounts: [] };
     case 'whitelist':
       return { kind: 'whitelist', headingLabel, accounts: [] };
     case 'restricted':

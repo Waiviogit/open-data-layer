@@ -354,6 +354,7 @@ export type ObjectLeftRailBlock =
   | { kind: 'moderators'; headingLabel: string; accounts: string[] }
   | { kind: 'trusted'; headingLabel: string; accounts: string[] }
   | { kind: 'authorities'; headingLabel: string; accounts: string[] }
+  | { kind: 'authors'; headingLabel: string; accounts: string[] }
   | { kind: 'whitelist'; headingLabel: string; accounts: string[] }
   | { kind: 'restricted'; headingLabel: string; accounts: string[] }
   | { kind: 'banned'; headingLabel: string; accounts: string[] }

@@ -72,7 +72,9 @@ Same `UserBlogFeedResponse` as user threads:
 
 ## MCP
 
-Tool: `get_object_threads` — mirrors HTTP with `object_id`, `limit`, `cursor`, `sort`, `currency`, and locale context params.
+Tool: `get_object_threads` — mirrors HTTP with `object_id`, `limit`, `cursor`, `sort`, `currency`, optional `authors_only`, optional `authors_governance_object_id`, and locale context params (`viewer`, `governance_object_id`).
+
+`authors_only: true` restricts threads to the merged governance `authors` list (platform config plus `X-Governance-Object-Id` / `governance_object_id`). `authors_governance_object_id` unions a second governance `authors` list and is ignored without `authors_only`. Empty allowlist → empty page. See [governance-resolution.md](../../../spec/governance-resolution.md) §14.
 
 ## Verification
 

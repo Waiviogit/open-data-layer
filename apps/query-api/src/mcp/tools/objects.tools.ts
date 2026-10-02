@@ -15,6 +15,7 @@ import {
   userSocialListQuerySchema,
 } from '../../domain/social/user-social-list.schema';
 import { objectExpertListQuerySchema } from '../../domain/objects/object-expert-list.schema';
+import { activityAuthorsFilterFields } from '../../domain/governance/activity-authors-filter.schema';
 import { catalogDescription } from '../mcp-tool-catalog';
 import type { McpToolDeps } from '../mcp-tool.deps';
 import {
@@ -439,16 +440,28 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
           cursor: z.string().optional(),
           sort: z.enum(['latest', 'oldest']).default('latest'),
           currency: z.enum(SUPPORTED_CURRENCIES).default('USD'),
+          authors_only: activityAuthorsFilterFields.authors_only,
+          authors_governance_object_id:
+            activityAuthorsFilterFields.authors_governance_object_id,
         }),
       ),
     },
     async (args) => {
       const ctx = pickMcpContext(args);
-      const { object_id, limit, cursor, sort, currency } = args;
+      const {
+        object_id,
+        limit,
+        cursor,
+        sort,
+        currency,
+        authors_only,
+        authors_governance_object_id,
+      } = args;
       const result = await deps.getObjectThreadsFeed.execute(
         object_id,
-        { limit, cursor, sort, currency },
+        { limit, cursor, sort, currency, authors_only, authors_governance_object_id },
         ctx.viewerAccount,
+        ctx.governanceObjectIdFromHeader,
       );
       if (!result) {
         return toolError(`Object not found: ${object_id}`);

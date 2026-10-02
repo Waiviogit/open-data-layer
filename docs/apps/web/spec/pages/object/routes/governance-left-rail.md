@@ -19,7 +19,7 @@ related:
 
 ## Purpose
 
-On `object_type = governance`, the left rail shows governance update fields in **view mode**: administrators, moderators, trusted accounts, authorities, whitelist, restricted, banned, object control, inherits-from, and validity cutoff.
+On `object_type = governance`, the left rail shows governance update fields in **view mode**: administrators, moderators, trusted accounts, authorities, authors, whitelist, restricted, banned, object control, inherits-from, and validity cutoff.
 
 Values come from `POST /query/v1/objects/resolve` → `fields.*` (this object's VALID updates). They are **not** the merged governance snapshot used internally for vote validity.
 
@@ -28,7 +28,7 @@ Values come from `POST /query/v1/objects/resolve` → `fields.*` (this object's 
 | Block kind | Source field | View rendering |
 |------------|--------------|----------------|
 | `objectControl` | `fields.objectControl` | Scalar text (e.g. `full`) |
-| `admins`, `moderators`, `trusted`, `authorities`, `whitelist`, `restricted`, `banned` | `fields.<kind>` string array | Avatar + `@account` profile link |
+| `admins`, `moderators`, `trusted`, `authorities`, `authors`, `whitelist`, `restricted`, `banned` | `fields.<kind>` string array | Avatar + `@account` profile link |
 | `inheritsFrom` | `fields.inheritsFrom` | Object link + scope list |
 | `validityCutoff` | `fields.validityCutoff` | `@account` + ISO date from unix timestamp |
 

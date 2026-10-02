@@ -15,6 +15,7 @@ const GOVERNANCE_SCOPES = new Set<GovernanceScope>([
   'restricted',
   'whitelist',
   'authorities',
+  'authors',
   'banned',
   'muted',
 ]);

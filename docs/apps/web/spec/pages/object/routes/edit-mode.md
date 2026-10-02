@@ -53,7 +53,7 @@ Edit mode and `+` buttons require a logged-in viewer (`viewerUsername` from serv
 
 - Every `update_type` maps to one edit group (`header`, `details`, `community`, `gallery`, `visit`, `commerce`, …).
 - Web maps update types → left-rail block kinds (`edit-mode-block-order.ts`); empty groups are omitted at render time.
-- **Governance** (`object_type = governance`): `admins`, `moderators`, `trusted`, `authorities`, `whitelist`, `restricted`, `banned`, `objectControl`, `inheritsFrom`, `validityCutoff` map to dedicated block kinds — see [governance-left-rail.md](governance-left-rail.md).
+- **Governance** (`object_type = governance`): `admins`, `moderators`, `trusted`, `authorities`, `authors`, `whitelist`, `restricted`, `banned`, `objectControl`, `inheritsFrom`, `validityCutoff` map to dedicated block kinds — see [governance-left-rail.md](governance-left-rail.md).
 - **Restaurant / place / business:** `price` is grouped under **VISIT** (before hours/address/map), not commerce.
 
 Example restaurant edit groups (supported slots only):

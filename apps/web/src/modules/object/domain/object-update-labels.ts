@@ -140,6 +140,7 @@ export const OBJECT_LEFT_RAIL_BLOCK_LABEL: Record<string, string> = {
   moderators: 'Moderators',
   trusted: 'Trusted accounts',
   authorities: 'Authorities',
+  authors: 'Authors',
   whitelist: 'Whitelist',
   restricted: 'Restricted',
   banned: 'Banned',

@@ -13,6 +13,7 @@ export type GovernanceScope =
   | 'restricted'
   | 'whitelist'
   | 'authorities'
+  | 'authors'
   | 'banned'
   | 'muted';
 
@@ -39,6 +40,7 @@ export interface GovernanceSnapshot {
   restricted: string[];
   whitelist: string[];
   authorities: string[];
+  authors: string[];
   banned: string[];
   object_control: ObjectControlMode | null;
   muted: string[];
@@ -58,6 +60,7 @@ export const DEFAULT_GOVERNANCE_SNAPSHOT: GovernanceSnapshot = {
   restricted: [],
   whitelist: [],
   authorities: [],
+  authors: [],
   banned: [],
   object_control: null,
   muted: [],

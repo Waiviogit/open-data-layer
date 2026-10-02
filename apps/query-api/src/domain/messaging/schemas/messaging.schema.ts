@@ -3,6 +3,7 @@ import {
   ACTIVITY_MAX_IMAGE_PHASHES,
   ACTIVITY_SOURCE_PLATFORMS,
 } from '@opden-data-layer/core';
+import { activityAuthorsFilterFields } from '../../governance/activity-authors-filter.schema';
 
 export const channelListQuerySchema = z.object({
   kind: z.enum(['direct', 'group', 'object']).optional(),
@@ -20,6 +21,14 @@ export const messageHistoryBodySchema = z.object({
 });
 
 export type MessageHistoryBody = z.infer<typeof messageHistoryBodySchema>;
+
+export const objectActivityMessageHistoryBodySchema = messageHistoryBodySchema.extend(
+  activityAuthorsFilterFields,
+);
+
+export type ObjectActivityMessageHistoryBody = z.infer<
+  typeof objectActivityMessageHistoryBodySchema
+>;
 
 export const activityDedupCheckBodySchema = z
   .object({

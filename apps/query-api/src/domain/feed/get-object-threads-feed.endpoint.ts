@@ -7,8 +7,10 @@ import {
 } from '../../repositories';
 import { decodeFeedCursor } from './feed-cursor';
 import type { UserBlogFeedResponse } from './feed-story-dtos';
-import type { UserThreadsFeedBody } from './schemas/user-threads-feed.schema';
+import type { ObjectThreadsFeedBody } from './schemas/object-threads-feed.schema';
 import { hydrateThreadFeedPage } from './thread-feed-hydrator';
+import { GovernanceResolverService } from '../governance';
+import { resolveActivityAuthorsAllowlist } from '../governance/resolve-activity-authors-allowlist';
 
 @Injectable()
 export class GetObjectThreadsFeedEndpoint {
@@ -17,12 +19,14 @@ export class GetObjectThreadsFeedEndpoint {
     private readonly objectsCoreRepo: ObjectsCoreRepository,
     private readonly accounts: AccountsCurrentRepository,
     private readonly userAccountMutesRepo: UserAccountMutesRepository,
+    private readonly governanceResolver: GovernanceResolverService,
   ) {}
 
   async execute(
     objectId: string,
-    body: UserThreadsFeedBody,
+    body: ObjectThreadsFeedBody,
     viewerAccount?: string,
+    governanceObjectIdFromHeader?: string,
   ): Promise<UserBlogFeedResponse | null> {
     const trimmedId = objectId.trim();
     if (!trimmedId) {
@@ -51,12 +55,26 @@ export class GetObjectThreadsFeedEndpoint {
         ? await this.userAccountMutesRepo.listMutedForMuters([viewerTrimmed])
         : [];
 
+    const includedAuthors = await resolveActivityAuthorsAllowlist(this.governanceResolver, {
+      authorsOnly: body.authors_only,
+      governanceObjectIdFromHeader,
+      authorsGovernanceObjectId: body.authors_governance_object_id,
+    });
+    if (includedAuthors && includedAuthors.length === 0) {
+      return {
+        items: [],
+        cursor: null,
+        hasMore: false,
+      };
+    }
+
     const threadRows = await this.threadsRepo.findObjectThreadsFeed(
       trimmedId,
       mutedAuthors,
       cursorPayload,
       body.sort,
       limitPlusOne,
+      includedAuthors,
     );
 
     return hydrateThreadFeedPage(

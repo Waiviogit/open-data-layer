@@ -1208,6 +1208,7 @@ export function ObjectLeftRailPanel({
           case 'moderators':
           case 'trusted':
           case 'authorities':
+          case 'authors':
           case 'whitelist':
           case 'restricted':
           case 'banned':

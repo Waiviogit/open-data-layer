@@ -359,6 +359,7 @@ export class MessagingRepository {
     limitPlusOne: number,
     forContextViewer?: string,
     includeDuplicates = false,
+    includedAuthors?: readonly string[],
   ): Promise<ObjectActivityMessageRow[]> {
     const sortTime = sql`COALESCE(m.original_created_at_unix, m.created_at_unix)`;
     const duplicateCount = sql<number>`(
@@ -385,6 +386,10 @@ export class MessagingRepository {
 
     if (excludedAuthors.length > 0) {
       query = query.where('m.author', 'not in', excludedAuthors as string[]);
+    }
+
+    if (includedAuthors && includedAuthors.length > 0) {
+      query = query.where('m.author', 'in', includedAuthors as string[]);
     }
 
     if (forContextViewer) {
@@ -419,14 +424,20 @@ export class MessagingRepository {
     limitPlusOne: number,
     forContextViewer?: string,
     includeDuplicates = false,
+    includedAuthors?: readonly string[],
   ): Promise<ObjectActivityMessageRow[]> {
     const canonicalSql = includeDuplicates
       ? sql``
       : sql`AND m.message_id = m.dup_group_id`;
-    const authorSql =
+    const excludedSql =
       excludedAuthors.length > 0
         ? sql`AND m.author NOT IN (${sql.join(excludedAuthors.map((author) => sql`${author}`))})`
         : sql``;
+    const includedSql =
+      includedAuthors && includedAuthors.length > 0
+        ? sql`AND m.author IN (${sql.join(includedAuthors.map((author) => sql`${author}`))})`
+        : sql``;
+    const authorSql = sql`${excludedSql} ${includedSql}`;
     const contextSql = forContextViewer
       ? sql`AND NOT EXISTS (
           SELECT 1

@@ -110,6 +110,7 @@ export { UPDATE_ADMINS } from './updates/admins';
 export { UPDATE_TRUSTED } from './updates/trusted';
 export { UPDATE_MODERATORS } from './updates/moderators';
 export { UPDATE_AUTHORITIES } from './updates/authorities';
+export { UPDATE_AUTHORS } from './updates/authors';
 export { UPDATE_RESTRICTED } from './updates/restricted';
 export { UPDATE_BANNED } from './updates/banned';
 export { UPDATE_WHITELIST } from './updates/whitelist';

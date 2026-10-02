@@ -50,6 +50,10 @@ export {
   type UserThreadsFeedBody,
 } from './schemas/user-threads-feed.schema';
 export {
+  objectThreadsFeedBodySchema,
+  type ObjectThreadsFeedBody,
+} from './schemas/object-threads-feed.schema';
+export {
   userActivityBodySchema,
   type UserActivityBody,
 } from './schemas/user-activity.schema';

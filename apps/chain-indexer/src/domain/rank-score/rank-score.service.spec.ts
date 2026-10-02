@@ -95,6 +95,7 @@ describe('RankScoreService', () => {
             restricted: [],
             whitelist: [],
             authorities: [],
+            authors: [],
             banned: [],
             object_control: null,
             muted: [],

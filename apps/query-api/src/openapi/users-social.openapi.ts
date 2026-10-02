@@ -233,6 +233,14 @@ registry.registerPath({
             include_duplicates: z.boolean().optional().openapi({
               description: 'When omitted or false, only canonical rows (`message_id = dup_group_id`).',
             }),
+            authors_only: z.boolean().optional().openapi({
+              description:
+                'When true, return only activity whose author is in the governance authors list.',
+            }),
+            authors_governance_object_id: z.string().min(1).optional().openapi({
+              description:
+                'Optional second governance object id whose authors are unioned into the allowlist. Ignored unless authors_only is true.',
+            }),
           }),
         },
       },

@@ -44,7 +44,10 @@ export class GovernanceCacheService {
     const cached = await redis.get(key);
     if (cached) {
       try {
-        return JSON.parse(cached) as GovernanceSnapshot;
+        return {
+          ...DEFAULT_GOVERNANCE_SNAPSHOT,
+          ...(JSON.parse(cached) as Partial<GovernanceSnapshot>),
+        };
       } catch {
         this.logger.warn(`governance cache: corrupt JSON for ${trimmed}; refetching`);
       }

@@ -5,6 +5,7 @@ import {
   activityDedupCheckBodySchema,
   channelListQuerySchema,
   messageHistoryBodySchema,
+  objectActivityMessageHistoryBodySchema,
 } from '../../domain/messaging/schemas/messaging.schema';
 import { catalogDescription } from '../mcp-tool-catalog';
 import type { McpToolDeps } from '../mcp-tool.deps';
@@ -124,18 +125,28 @@ export function registerChannelTools(server: McpServer, deps: McpToolDeps): void
       inputSchema: withMcpLocaleContext(
         z.object({
           object_id: z.string().min(1),
-          limit: messageHistoryBodySchema.shape.limit,
-          cursor: messageHistoryBodySchema.shape.cursor,
-          include_duplicates: messageHistoryBodySchema.shape.include_duplicates,
+          limit: objectActivityMessageHistoryBodySchema.shape.limit,
+          cursor: objectActivityMessageHistoryBodySchema.shape.cursor,
+          include_duplicates: objectActivityMessageHistoryBodySchema.shape.include_duplicates,
+          authors_only: objectActivityMessageHistoryBodySchema.shape.authors_only,
+          authors_governance_object_id:
+            objectActivityMessageHistoryBodySchema.shape.authors_governance_object_id,
         }),
       ),
     },
     async (args) => {
       const ctx = pickMcpContext(args);
-      const { object_id, limit, cursor, include_duplicates } = args;
+      const {
+        object_id,
+        limit,
+        cursor,
+        include_duplicates,
+        authors_only,
+        authors_governance_object_id,
+      } = args;
       const result = await deps.getObjectChannelMessages.execute(
         object_id,
-        { limit, cursor, include_duplicates },
+        { limit, cursor, include_duplicates, authors_only, authors_governance_object_id },
         ctx.governanceObjectIdFromHeader,
         ctx.viewerAccount,
       );

@@ -79,6 +79,33 @@ describe('GovernanceCacheService', () => {
     expect(governanceResolver.resolve).not.toHaveBeenCalled();
   });
 
+  it('fills missing authors from defaults on a stale cache payload', async () => {
+    const config = { get: jest.fn() } as unknown as ConfigService;
+    const governanceResolver = {
+      resolve: jest.fn(),
+    } as unknown as GovernanceResolverService;
+    const stale = {
+      ...DEFAULT_GOVERNANCE_SNAPSHOT,
+      admins: ['a'],
+    };
+    const { authors: _authors, ...withoutAuthors } = stale;
+    const redis = {
+      get: jest.fn().mockResolvedValue(JSON.stringify(withoutAuthors)),
+      set: jest.fn(),
+      del: jest.fn(),
+    };
+    const redisFactory = {
+      getClient: jest.fn().mockReturnValue(redis),
+    } as unknown as RedisClientFactory;
+
+    const service = new GovernanceCacheService(governanceResolver, redisFactory, config);
+    const result = await service.resolve('gov-obj');
+
+    expect(result.authors).toEqual([]);
+    expect(result.admins).toEqual(['a']);
+    expect(governanceResolver.resolve).not.toHaveBeenCalled();
+  });
+
   it('invalidate deletes redis key', async () => {
     const config = { get: jest.fn() } as unknown as ConfigService;
     const governanceResolver = {
