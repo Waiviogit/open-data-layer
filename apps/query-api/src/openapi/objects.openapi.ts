@@ -580,12 +580,12 @@ function registerObjectRefListPath(
 registerObjectRefListPath(
   'related',
   'List related objects',
-  'Returns VALID `isRelatedTo` refs on the source object first, then backfills from `object_categories` using legacy close-products **related** rules: categories whose global count is ≥ the average across the source object’s categories; matches objects in any of those categories. Response rows are compact `RefSummary` projections. Pagination: numeric offset `cursor` (default page size 20, max 50).',
+  'Returns VALID `isRelatedTo` refs on the source object first, then backfills from `object_categories` using legacy close-products **related** rules: categories whose global count is ≥ the average across the source object’s categories; matches objects in any of those categories. Excludes the source object, its `meta_group_id` option siblings, explicit refs, and those refs’ groups. Response rows are compact `RefSummary` projections. Pagination: numeric offset `cursor` (default page size 20, max 50).',
 );
 registerObjectRefListPath(
   'similar',
   'List similar objects',
-  'Returns VALID `isSimilarTo` refs first, then backfills from `object_categories` using legacy **similar** rules: iterate source categories sorted by global count ascending; one category at a time, excluding objects that share already-used categories. Response rows are compact `RefSummary` projections. Pagination: numeric offset `cursor`.',
+  'Returns VALID `isSimilarTo` refs first, then backfills from `object_categories` using legacy **similar** rules: iterate source categories sorted by global count ascending; one category at a time, excluding objects that share already-used categories. Excludes the source object, its `meta_group_id` option siblings, explicit refs, and those refs’ groups. Response rows are compact `RefSummary` projections. Pagination: numeric offset `cursor`.',
 );
 registerObjectRefListPath(
   'add-on',

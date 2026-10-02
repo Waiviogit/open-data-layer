@@ -10,11 +10,12 @@ updated_at: 2026-07-09
 related:
   - docs/apps/query-api/spec/overview.md
   - docs/apps/query-api/spec/objects-resolve.md
+  - docs/apps/query-api/spec/object-ref-list-endpoints.md
 ---
 
 # Object variant options
 
-**Back:** [query-api overview](overview.md) · **Related:** [Objects resolve](objects-resolve.md)
+**Back:** [query-api overview](overview.md) · **Related:** [Objects resolve](objects-resolve.md), [Object reference lists](object-ref-list-endpoints.md)
 
 Returns option rows grouped by category (Color, Size, …) for a product variant object and all active siblings sharing the same `objects_core.meta_group_id`.
 

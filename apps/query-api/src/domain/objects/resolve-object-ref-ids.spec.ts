@@ -62,6 +62,49 @@ describe('resolveObjectRefIds', () => {
     expect(repo.findRelatedBackfillObjectIds).not.toHaveBeenCalled();
   });
 
+  it('looks up meta groups for the source object and explicit refs', async () => {
+    repo.findMetaGroupIdsByObjectIds.mockResolvedValueOnce(['host-group', 'explicit-group']);
+
+    await resolveObjectRefIds({
+      sourceId: 'host',
+      updateType: UPDATE_TYPES.IS_RELATED_TO,
+      explicitRefIds: ['explicit-1'],
+      skip: 0,
+      limit: 2,
+      repo: repo as never,
+    });
+
+    expect(repo.findMetaGroupIdsByObjectIds).toHaveBeenCalledWith(['host', 'explicit-1']);
+    expect(repo.findRelatedBackfillObjectIds).toHaveBeenCalledWith(
+      expect.objectContaining({
+        excludeMetaGroupIds: ['host-group', 'explicit-group'],
+      }),
+    );
+  });
+
+  it('excludes the source meta_group_id from similar backfill when there are no explicit refs', async () => {
+    repo.findMetaGroupIdsByObjectIds.mockResolvedValueOnce(['noresti-wrench']);
+    repo.findSimilarBackfillObjectIds.mockResolvedValueOnce(['other-product']);
+
+    const result = await resolveObjectRefIds({
+      sourceId: 'wrench-a',
+      updateType: UPDATE_TYPES.IS_SIMILAR_TO,
+      explicitRefIds: [],
+      skip: 0,
+      limit: 5,
+      repo: repo as never,
+    });
+
+    expect(result.pageIds).toEqual(['other-product']);
+    expect(repo.findMetaGroupIdsByObjectIds).toHaveBeenCalledWith(['wrench-a']);
+    expect(repo.findSimilarBackfillObjectIds).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sourceId: 'wrench-a',
+        excludeMetaGroupIds: ['noresti-wrench'],
+      }),
+    );
+  });
+
   it('uses reverse add-on lookup when explicit refs are absent', async () => {
     repo.findReverseAddOnObjectIds.mockResolvedValueOnce(['addon-1']);
     const result = await resolveObjectRefIds({

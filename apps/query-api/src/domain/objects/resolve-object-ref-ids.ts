@@ -12,7 +12,11 @@ export async function resolveObjectRefIds(params: {
 }): Promise<{ pageIds: string[]; hasMore: boolean; nextCursor: string | null }> {
   const explicitIds = [...new Set(params.explicitRefIds.map((id) => id.trim()).filter(Boolean))];
   const take = params.limit + 1;
-  const excludeMetaGroupIds = await params.repo.findMetaGroupIdsByObjectIds(explicitIds);
+  // Source group so option siblings (same meta_group_id) are not backfilled as similar/related.
+  const excludeMetaGroupIds = await params.repo.findMetaGroupIdsByObjectIds([
+    params.sourceId,
+    ...explicitIds,
+  ]);
 
   let pageIds: string[] = [];
   if (params.skip < explicitIds.length) {

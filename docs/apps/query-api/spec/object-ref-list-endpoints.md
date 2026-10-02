@@ -6,17 +6,18 @@ type: spec
 status: active
 scope: query-api
 tags: [query-api, object-ref-list-endpoints]
-updated_at: 2026-06-10
+updated_at: 2026-10-02
 related:
   - docs/apps/query-api/spec/overview.md
   - docs/apps/query-api/spec/objects-resolve.md
+  - docs/apps/query-api/spec/object-options.md
   - docs/spec/objects-domain.md
   - docs/README.md
 ---
 
 # Object reference lists (`related`, `similar`, `add-on`)
 
-**Back:** [query-api overview](overview.md) · **Related:** [Objects resolve](objects-resolve.md), [User social lists](user-social-lists.md), [Shop categories](categories.md)
+**Back:** [query-api overview](overview.md) · **Related:** [Objects resolve](objects-resolve.md), [Object variant options](object-options.md), [User social lists](user-social-lists.md), [Shop categories](categories.md)
 
 Paginated lists of objects linked to a source object for shop-style cards (Related / Similar / Add-On rails and center-column feeds).
 
@@ -111,7 +112,7 @@ Counts come from `object_categories_related` (global scope) with on-demand fallb
 
 - Keep categories whose global count ≥ **average** count across the source object’s categories.
 - Query objects whose categories **overlap** any kept category (`category_names && filtered`).
-- Exclude source id, explicit ref ids, and `meta_group_id` groups already represented in explicit refs.
+- Exclude source id, explicit ref ids, the source object’s one `meta_group_id` (so [option siblings](object-options.md) drop), and `meta_group_id` groups already represented in remaining explicit refs.
 - Order: `weight DESC NULLS LAST`, `object_id ASC`.
 
 **Similar** (legacy `getCloseProducts.getSimilar`):
