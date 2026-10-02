@@ -75,12 +75,12 @@ describe('DiscoverSidebar', () => {
   it('filters Popular and All types by search without hiding Users', () => {
     renderSidebar();
     fireEvent.change(screen.getByPlaceholderText('Find object type'), {
-      target: { value: 'offered' },
+      target: { value: 'offer' },
     });
 
     expect(screen.queryByRole('heading', { name: 'Popular' })).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Users' })).toBeInTheDocument();
-    expect(within(sectionByHeading('All types')).getByRole('link', { name: 'Service offered' })).toBeInTheDocument();
+    expect(within(sectionByHeading('All types')).getByRole('link', { name: 'Service offer' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Restaurant' })).not.toBeInTheDocument();
   });
 

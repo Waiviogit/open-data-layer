@@ -103,9 +103,9 @@ describe('DiscoverTypeSheet', () => {
   it('filters object types by partial label match', () => {
     renderSheet();
     fireEvent.change(screen.getByPlaceholderText('Search object types'), {
-      target: { value: 'offered' },
+      target: { value: 'offer' },
     });
-    expect(screen.getByRole('option', { name: 'Service offered' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Service offer' })).toBeInTheDocument();
     expect(screen.queryByRole('option', { name: 'Restaurant' })).not.toBeInTheDocument();
   });
 
