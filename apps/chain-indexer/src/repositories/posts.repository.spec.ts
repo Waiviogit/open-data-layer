@@ -54,6 +54,50 @@ describe('PostsRepository.syncActiveVotesFromHive', () => {
   });
 });
 
+function leastSqlFromConflict(value: unknown): string {
+  const raw = value as { toOperationNode?: () => unknown };
+  return JSON.stringify(
+    typeof raw.toOperationNode === 'function' ? raw.toOperationNode() : value,
+  );
+}
+
+describe('PostsRepository.insertRebloggedUser', () => {
+  it('on conflict keeps the earlier reblogged_at_unix via LEAST', async () => {
+    let conflictSet: { reblogged_at_unix?: unknown } | undefined;
+    const execute = jest.fn().mockResolvedValue(undefined);
+    const db = {
+      insertInto: () => ({
+        values: () => ({
+          onConflict: (build: (oc: {
+            columns: (cols: string[]) => {
+              doUpdateSet: (set: { reblogged_at_unix?: unknown }) => { execute: jest.Mock };
+            };
+          }) => { execute: jest.Mock }) =>
+            build({
+              columns: () => ({
+                doUpdateSet: (set) => {
+                  conflictSet = set;
+                  return { execute };
+                },
+              }),
+            }),
+        }),
+      }),
+    };
+
+    const repo = new PostsRepository(db as never);
+    await repo.insertRebloggedUser({
+      author: 'cryptodive',
+      permlink: 'p',
+      account: 'grampo',
+      reblogged_at_unix: Math.floor(Date.parse('2023-10-23T23:46:06Z') / 1000),
+    });
+
+    expect(execute).toHaveBeenCalled();
+    expect(leastSqlFromConflict(conflictSet?.reblogged_at_unix)).toContain('LEAST');
+  });
+});
+
 describe('PostsRepository.incrementWaivRewards', () => {
   function makeRepo(numUpdatedRows: bigint): PostsRepository {
     const executeTakeFirst = jest.fn().mockResolvedValue({ numUpdatedRows });

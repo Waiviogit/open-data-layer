@@ -11,6 +11,7 @@ import {
 import type {
   HiveAccountHistoryPage,
   HiveAccountHistoryRow,
+  HiveBlogEntry,
   HiveDynamicGlobalProperties,
   HiveRewardFund,
   HiveOperationFilter,
@@ -25,6 +26,10 @@ import { CommentOptionsOperation } from '@hiveio/dhive/lib/chain/operation';
 import { BeneficiaryRoute } from '@hiveio/dhive/lib/chain/comment';
 import { SignedBlock } from '@hiveio/dhive/lib/chain/block';
 import { CONDENSER_API, BRIDGE, RC_API, DATABASE_API, HIVE_ACCOUNT_HISTORY_ATTEMPTS, HIVE_ACCOUNT_HISTORY_MAX_LIMIT } from './constants';
+import {
+  clampHiveBlogEntriesLimit,
+  clampHiveBlogEntriesStart,
+} from './blog-entries';
 import { HiveNodeUnavailableError } from './hive-node-unavailable.error';
 import { parseHiveAccountHistoryAssertContinueFrom } from './parse-hive-account-history-assert';
 import { UrlRotationManager, UrlRotationService } from '../redis-client';
@@ -184,6 +189,24 @@ export class HiveClient implements HiveClientInterface {
         CONDENSER_API.GET_DISCUSSIONS_BY_COMMENTS,
         [payload],
       )) ?? []
+    );
+  }
+
+  async getBlogEntries(
+    account: string,
+    start: number,
+    limit: number,
+  ): Promise<HiveBlogEntry[]> {
+    const name = account.trim().toLowerCase();
+    if (name === '') {
+      return [];
+    }
+    return (
+      (await this.hiveRequest<HiveBlogEntry[]>(CONDENSER_API.GET_BLOG_ENTRIES, [
+        name,
+        clampHiveBlogEntriesStart(start),
+        clampHiveBlogEntriesLimit(limit),
+      ])) ?? []
     );
   }
 

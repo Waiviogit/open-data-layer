@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: chain-indexer
 tags: [chain-indexer, social-parsers]
-updated_at: 2026-09-11
+updated_at: 2026-10-02
 related:
   - docs/apps/chain-indexer/spec/overview.md
   - docs/apps/chain-indexer/spec/account-sync.md
@@ -51,9 +51,11 @@ Parsed array:
 
 ## Reblog
 
-Reblog is **not** a new row in `posts`. It inserts into `post_reblogged_users` for the **resolved source** post (`author`, `permlink`), with `account` = reblogger and `reblogged_at_unix` from block time. Source resolution: exact `(author, permlink)` first, else `(root_author, permlink)`. Idempotent insert: `ON CONFLICT DO NOTHING`.
+Reblog is **not** a new row in `posts`. It inserts into `post_reblogged_users` for the **resolved source** post (`author`, `permlink`), with `account` = reblogger and `reblogged_at_unix` from block time. Source resolution: exact `(author, permlink)` first, else `(root_author, permlink)`. Idempotent insert: `ON CONFLICT` updates `reblogged_at_unix = LEAST(existing, excluded)` so a later chain replay can heal a too-new row; a re-index cannot push a correct time forward.
 
-If the source post is still missing locally after resolution, the pair is **enqueued** on `post_sync_queue` with `needs_post_create = true` (same queue as [vote ingestion](vote-ingestion.md)) so `HivePostSyncWorker` can materialize the post from Hive. The original reblog row is **not** replayed automatically after sync; only the post row and vote sync run there.
+If the source post is still missing locally after resolution, the indexer writes `post_reblog_pending` with the **block** timestamp (`LEAST` on conflict) and enqueues `post_sync_queue` with `needs_post_create = true` (same queue as [vote ingestion](vote-ingestion.md)). After `HivePostSyncWorker` materializes the post (`ensurePostFromHiveForVoteSync` → `'ready'`), it drains pending rows through `findSourcePostForReblog` and `insertRebloggedUser` using the **stored** `reblogged_at_unix` (never `enqueued_at` / `Date.now()`). Terminal outcomes (`is_comment`, `muted`, attempts exhausted) delete matching pending rows so they cannot leak. Drain does **not** re-emit `reblog` / `bell_reblog`.
+
+Mongo imports stamp a provisional `reblogged_at_unix` (post `created_unix`). Heal with `pnpm backfill:reblog-timestamps` from Hive `get_blog_entries.reblogged_on`.
 
 ## Configuration
 
@@ -64,4 +66,4 @@ If the source post is still missing locally after resolution, the pair is **enqu
 
 ## Tests
 
-Co-located unit tests: `follow-json.parse.spec.ts` (parse helpers).
+Co-located unit tests: `follow-json.parse.spec.ts`, `reblog-social.service.spec.ts`, `hive-post-sync.worker.spec.ts`.

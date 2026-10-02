@@ -5,6 +5,7 @@ import { PostSyncQueueRow } from '@opden-data-layer/odl-db-types';
 
 import { HiveClient } from '@opden-data-layer/clients';
 import { PostSyncQueueRepository } from '../../repositories/post-sync-queue.repository';
+import { PostReblogPendingRepository } from '../../repositories/post-reblog-pending.repository';
 import { PostsRepository } from '../../repositories/posts.repository';
 import { PostUpsertService } from '../hive-comment/post-upsert.service';
 import { hivePayoutFieldsFromContent } from './hive-payout-from-content';
@@ -25,6 +26,7 @@ export class HivePostSyncWorker implements OnModuleInit, OnModuleDestroy {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly postSyncQueueRepository: PostSyncQueueRepository,
     private readonly postsRepository: PostsRepository,
+    private readonly postReblogPendingRepository: PostReblogPendingRepository,
     private readonly postUpsertService: PostUpsertService,
     private readonly hiveClient: HiveClient,
   ) {}
@@ -89,14 +91,14 @@ export class HivePostSyncWorker implements OnModuleInit, OnModuleDestroy {
           this.logger.log(
             `Sync queue: ${author}/${permlink} is a comment (depth > 0), skipping vote sync`,
           );
-          await this.postSyncQueueRepository.deleteOne(author, permlink);
+          await this.dropQueueAndPending(author, permlink);
           return;
         }
         if (result === 'muted') {
           this.logger.log(
             `Sync queue: ${author}/${permlink} author is governance-muted; skipping vote sync`,
           );
-          await this.postSyncQueueRepository.deleteOne(author, permlink);
+          await this.dropQueueAndPending(author, permlink);
           return;
         }
         if (result === 'not_found') {
@@ -104,12 +106,13 @@ export class HivePostSyncWorker implements OnModuleInit, OnModuleDestroy {
             `Hive post not found for sync queue ${author}/${permlink} (attempt ${task.attempts})`,
           );
           if (task.attempts >= maxAttempts) {
-            await this.postSyncQueueRepository.deleteOne(author, permlink);
+            await this.dropQueueAndPending(author, permlink);
           } else {
             await this.postSyncQueueRepository.resetAttempt(author, permlink);
           }
           return;
         }
+        await this.applyPendingReblogs(author, permlink);
       } catch (error: unknown) {
         this.logger.error(
           `ensurePostFromHiveForVoteSync failed ${author}/${permlink}: ${
@@ -119,6 +122,8 @@ export class HivePostSyncWorker implements OnModuleInit, OnModuleDestroy {
         await this.postSyncQueueRepository.resetAttempt(author, permlink);
         return;
       }
+    } else {
+      await this.applyPendingReblogs(author, permlink);
     }
 
     try {
@@ -143,5 +148,37 @@ export class HivePostSyncWorker implements OnModuleInit, OnModuleDestroy {
       );
       await this.postSyncQueueRepository.resetAttempt(author, permlink);
     }
+  }
+
+  private async applyPendingReblogs(author: string, permlink: string): Promise<void> {
+    const pending = await this.postReblogPendingRepository.findByPost(
+      author,
+      permlink,
+    );
+    for (const row of pending) {
+      const source = await this.postsRepository.findSourcePostForReblog(
+        row.author,
+        row.permlink,
+      );
+      if (!source) {
+        continue;
+      }
+      await this.postsRepository.insertRebloggedUser({
+        author: source.author,
+        permlink: source.permlink,
+        account: row.account,
+        reblogged_at_unix: row.reblogged_at_unix,
+      });
+      await this.postReblogPendingRepository.deleteOne(
+        row.author,
+        row.permlink,
+        row.account,
+      );
+    }
+  }
+
+  private async dropQueueAndPending(author: string, permlink: string): Promise<void> {
+    await this.postReblogPendingRepository.deleteByPost(author, permlink);
+    await this.postSyncQueueRepository.deleteOne(author, permlink);
   }
 }

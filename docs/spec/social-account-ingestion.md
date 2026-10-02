@@ -45,7 +45,7 @@ The normative DDL lives in [`data-model/schema.sql`](data-model/schema.sql). Log
 |--------------------|------------------|--------|
 | `social_follows_current` | `user_subscriptions` | PK `(follower, following)`; optional `bell`. No `updated_*` columns — chain replay order is implicit in block processing. |
 | `social_mutes_current` | `user_account_mutes` | PK `(muter, muted)` — pair-level Hive ignore only. |
-| Reblog events | `post_reblogged_users` | PK `(author, permlink, account)` on the **source** post; `reblogged_at_unix` from block time. Not a second row in `posts` (Waivio-style synthetic reblog posts are not stored as posts in ODL). |
+| Reblog events | `post_reblogged_users` | PK `(author, permlink, account)` on the **source** post; `reblogged_at_unix` from block time (`LEAST` on conflict). Missing source posts go to `post_reblog_pending` until post sync. Not a second row in `posts`. |
 
 `account_update` updates `accounts_current` display fields only when a row already exists (no upsert); recovery is via Hive API sync. See [chain-indexer social parsers](../apps/chain-indexer/spec/social-parsers.md).
 

@@ -47,7 +47,7 @@ On conflict, `needs_post_create` is merged with **OR** (once `true`, it stays `t
 1. **Valid vote payload** — Parsed with Zod; invalid payloads are logged and skipped.
 2. **`post_active_votes` and FK** — Rows reference `posts (author, permlink)`. If the post **does not** exist locally, the indexer **cannot** insert a vote row yet; it still **enqueues** the pair with `needs_post_create = true`. After `HivePostSyncWorker` creates the post from Hive (`getContent` / `ensurePostFromHiveForVoteSync`), votes are reconciled from `get_active_votes`.
 3. **Post exists** — Non-zero `weight`: upsert `(weight, percent)` with `rshares` left `null` until the worker fills them from Hive. `weight === 0`: delete the voter row (unvote) and still enqueue so `net_votes` / rshares can be refreshed from the API.
-4. **Worker** — Claims batches (`FOR UPDATE SKIP LOCKED`), optionally materializes the post when `needs_post_create`, then calls `get_active_votes`, syncs `post_active_votes`, and deletes the queue row. Transient Hive errors reset `last_attempt_at` for retry; repeated “post unknown on Hive” beyond `POST_SYNC_MAX_ATTEMPTS` drops the queue row.
+4. **Worker** — Claims batches (`FOR UPDATE SKIP LOCKED`), optionally materializes the post when `needs_post_create`, drains any `post_reblog_pending` rows for that pair (see [social parsers](social-parsers.md) § Reblog), then calls `get_active_votes`, syncs `post_active_votes`, and deletes the queue row. Transient Hive errors reset `last_attempt_at` for retry; repeated “post unknown on Hive” beyond `POST_SYNC_MAX_ATTEMPTS` drops the queue row **and** matching pending reblogs.
 
 ## Notifications
 

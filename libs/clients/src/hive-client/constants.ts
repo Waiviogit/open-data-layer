@@ -18,7 +18,11 @@ export const CONDENSER_API = Object.freeze({
   GET_REWARD_FUND: `${HIVE_API.CONDENSER_API}.get_reward_fund`,
   GET_VESTING_DELEGATIONS: `${HIVE_API.CONDENSER_API}.get_vesting_delegations`,
   GET_SAVINGS_WITHDRAW_FROM: `${HIVE_API.CONDENSER_API}.get_savings_withdraw_from`,
+  GET_BLOG_ENTRIES: `${HIVE_API.CONDENSER_API}.get_blog_entries`,
 } as const);
+
+/** Hive `get_blog_entries` RPC limit ceiling (`limit` in `[1, 500]`). */
+export const HIVE_BLOG_ENTRIES_MAX_LIMIT = 500;
 
 export const RC_API = Object.freeze({
   FIND_RC_ACCOUNTS: `${HIVE_API.RC_API}.find_rc_accounts`,

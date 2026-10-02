@@ -65,6 +65,7 @@ import * as m00064 from './00064_messages_activity_dedup';
 import * as m00065 from './00065_rename_service_offer_object_types';
 import * as m00066 from './00066_messages_channel_activity_time';
 import * as m00067 from './00067_obl_service_order_cancel';
+import * as m00068 from './00068_post_reblog_pending';
 import type { Migration } from 'kysely';
 
 /** Ordered migrations for OdlMigrationProvider. Schema matches @opden-data-layer/odl-db-types OdlDatabase and docs/spec/data-model/schema.sql */
@@ -145,4 +146,5 @@ export const MIGRATIONS: Record<string, Migration> = {
   '00065_rename_service_offer_object_types': { up: m00065.up, down: m00065.down },
   '00066_messages_channel_activity_time': { up: m00066.up, down: m00066.down },
   '00067_obl_service_order_cancel': { up: m00067.up, down: m00067.down },
+  '00068_post_reblog_pending': { up: m00068.up, down: m00068.down },
 };

@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: platform
 tags: [platform, domain, data-model]
-updated_at: 2026-06-10
+updated_at: 2026-10-02
 related:
   - docs/spec/README.md
   - docs/spec/data-model/flow.md
@@ -27,6 +27,7 @@ This schema normalizes the legacy Mongo `PostSchema` (embedded arrays and denorm
 | **post_objects** | Many-to-many: post ↔ `objects_core`. `object_type` denormalized for filters without JOIN. |
 | **post_object_related_images** | Virtual Related gallery: one HTTPS image URL per object per post (from `json_metadata.image`). See [post-object-related-images.md](post-object-related-images.md). |
 | **post_reblogged_users** | Who reblogged which post; `reblogged_at_unix` drives chronological “reblog in my feed” ordering. |
+| **post_reblog_pending** | Reblog of a post not yet in `posts` (no FK). Drained into `post_reblogged_users` after `HivePostSyncWorker` materializes the post. |
 | **post_languages** | Primary language subtags per post (multi-value, e.g. `en`, `es`); filter hashtag/news streams by language. See [post-languages.md](post-languages.md). |
 | **post_links** | URLs extracted for indexed lookup. |
 | **post_mentions** | Hive account names mentioned in the post for indexed lookup. |
@@ -93,6 +94,7 @@ erDiagram
 | post_objects | `(object_id)` | Posts for an object |
 | post_objects | `(object_type)` partial | Filter by type |
 | post_reblogged_users | `(account, reblogged_at_unix DESC)` | User feed including reblogs |
+| post_reblog_pending | `(author, permlink)` | Drain deferred reblogs after ghost-post sync |
 | post_languages | `(language)` | Language-filtered streams |
 | post_links | `(url)` | Reverse lookup by URL |
 | post_mentions | `(account)` | Posts mentioning an account |

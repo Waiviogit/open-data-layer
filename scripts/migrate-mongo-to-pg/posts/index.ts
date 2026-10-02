@@ -180,26 +180,6 @@ function parseCreatedUnix(doc: MongoPost): number {
   return 0;
 }
 
-function rebloggedAtUnix(doc: MongoPost, createdUnix: number): number {
-  const fromUpdated = parseMongoDate(doc.updatedAt);
-  if (fromUpdated !== null) {
-    return fromUpdated;
-  }
-  const fromCreatedAt = parseMongoDate(doc.createdAt);
-  if (fromCreatedAt !== null) {
-    return fromCreatedAt;
-  }
-  for (const s of [doc.last_update, doc.active]) {
-    if (s?.trim()) {
-      const t = Date.parse(s.trim());
-      if (!Number.isNaN(t)) {
-        return Math.floor(t / 1000);
-      }
-    }
-  }
-  return createdUnix;
-}
-
 function strOrEmpty(v: unknown, fallback = ''): string {
   if (v == null) {
     return fallback;
@@ -601,7 +581,6 @@ class MongoPostsMigrator {
     }
 
     const createdUnix = parseCreatedUnix(doc);
-    const reblogTs = rebloggedAtUnix(doc, createdUnix);
 
     const rootAuthor = strOrEmpty(doc.root_author, author);
     const rootPermlink = strOrEmpty(doc.root_permlink, permlink);
@@ -716,7 +695,9 @@ class MongoPostsMigrator {
         author,
         permlink,
         account: acc,
-        reblogged_at_unix: reblogTs,
+        // Provisional: Hive `get_blog_entries.reblogged_on` is the real time.
+        // Required after this importer: `pnpm backfill:reblog-timestamps`.
+        reblogged_at_unix: createdUnix,
       });
     }
 

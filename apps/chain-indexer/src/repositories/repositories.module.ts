@@ -13,6 +13,7 @@ import { ThreadRepliesRepository } from './thread-replies.repository';
 import { SocialGraphRepository } from './social-graph.repository';
 import { ThreadsRepository } from './threads.repository';
 import { PostSyncQueueRepository } from './post-sync-queue.repository';
+import { PostReblogPendingRepository } from './post-reblog-pending.repository';
 import { AccountSyncQueueRepository } from './account-sync-queue.repository';
 import { CanonicalRecomputeRepository } from './canonical-recompute.repository';
 import { SiteRegistryRepository } from './site-registry.repository';
@@ -53,6 +54,7 @@ import { MessagesRepository } from './messages.repository';
     ThreadsRepository,
     ThreadRepliesRepository,
     PostSyncQueueRepository,
+    PostReblogPendingRepository,
     AccountSyncQueueRepository,
     CanonicalRecomputeRepository,
     SiteRegistryRepository,
@@ -92,6 +94,7 @@ import { MessagesRepository } from './messages.repository';
     ThreadsRepository,
     ThreadRepliesRepository,
     PostSyncQueueRepository,
+    PostReblogPendingRepository,
     AccountSyncQueueRepository,
     CanonicalRecomputeRepository,
     SiteRegistryRepository,

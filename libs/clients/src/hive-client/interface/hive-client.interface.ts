@@ -9,6 +9,7 @@ import {
   HiveMutedAccount,
   HiveAccountHistoryPage,
   HiveAccountHistoryRow,
+  HiveBlogEntry,
   HiveDynamicGlobalProperties,
   HiveRewardFund,
   HiveOperationFilter,
@@ -37,6 +38,13 @@ export interface HiveClientInterface {
     start_permlink?: string;
     limit: number;
   }): Promise<HiveContentType[]>;
+
+  /** `condenser_api.get_blog_entries` — blog index incl. reblogs. `start` = entry_id (0 = newest). */
+  getBlogEntries(
+    account: string,
+    start: number,
+    limit: number,
+  ): Promise<HiveBlogEntry[]>;
   getActiveVotes(author: string, permlink: string): Promise<ActiveVotesType[]>;
   getVote({
     author,

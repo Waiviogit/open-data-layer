@@ -5,3 +5,4 @@ export { HiveNodeUnavailableError } from './hive-node-unavailable.error';
 export * from './constants';
 export * from './interface';
 export * from './type';
+export * from './blog-entries';

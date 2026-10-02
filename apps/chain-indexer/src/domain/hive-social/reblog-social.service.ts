@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PostSyncQueueRepository } from '../../repositories/post-sync-queue.repository';
+import { PostReblogPendingRepository } from '../../repositories/post-reblog-pending.repository';
 import { PostsRepository } from '../../repositories/posts.repository';
 import type { HiveOperationHandlerContext } from '../hive-parser/hive-handler-context';
 import { blockTimestampToUnixSeconds } from '@opden-data-layer/core';
@@ -14,6 +15,7 @@ export class ReblogSocialService {
   constructor(
     private readonly postsRepository: PostsRepository,
     private readonly postSyncQueueRepository: PostSyncQueueRepository,
+    private readonly postReblogPendingRepository: PostReblogPendingRepository,
     private readonly accountEnsure: AccountEnsureService,
     private readonly notificationEmitter: NotificationEmitterService,
   ) {}
@@ -42,6 +44,12 @@ export class ReblogSocialService {
         `Reblog: source post not found ${srcAuthor}/${srcPermlink}`,
       );
       const enqueuedAt = blockTimestampToUnixSeconds(context.timestamp);
+      await this.postReblogPendingRepository.upsert({
+        author: srcAuthor,
+        permlink: srcPermlink,
+        account: reblogger,
+        reblogged_at_unix: enqueuedAt,
+      });
       await this.postSyncQueueRepository.enqueue(
         srcAuthor,
         srcPermlink,

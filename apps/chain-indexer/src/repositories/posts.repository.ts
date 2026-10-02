@@ -143,12 +143,16 @@ export class PostsRepository {
       .executeTakeFirst();
   }
 
-  /** Idempotent reblog marker; first timestamp wins. */
+  /** Idempotent reblog marker; earlier timestamp wins so a later chain replay can heal a bad row. */
   async insertRebloggedUser(row: NewPostRebloggedUser): Promise<void> {
     await this.db
       .insertInto('post_reblogged_users')
       .values(row)
-      .onConflict((oc) => oc.columns(['author', 'permlink', 'account']).doNothing())
+      .onConflict((oc) =>
+        oc.columns(['author', 'permlink', 'account']).doUpdateSet({
+          reblogged_at_unix: sql`LEAST(post_reblogged_users.reblogged_at_unix, excluded.reblogged_at_unix)`,
+        }),
+      )
       .execute();
   }
 

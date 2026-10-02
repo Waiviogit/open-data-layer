@@ -56,6 +56,7 @@ export interface OdlDatabase {
   post_objects: PostObjectsTable;
   post_object_related_images: PostObjectRelatedImagesTable;
   post_reblogged_users: PostRebloggedUsersTable;
+  post_reblog_pending: PostReblogPendingTable;
   post_languages: PostLanguagesTable;
   post_links: PostLinksTable;
   post_mentions: PostMentionsTable;
@@ -687,6 +688,22 @@ export interface PostRebloggedUsersTable {
 export type PostRebloggedUser = Selectable<PostRebloggedUsersTable>;
 export type NewPostRebloggedUser = Insertable<PostRebloggedUsersTable>;
 export type PostRebloggedUserUpdate = Updateable<PostRebloggedUsersTable>;
+
+// ---------------------------------------------------------------------------
+// post_reblog_pending (reblog of a post not yet in posts)
+// ---------------------------------------------------------------------------
+
+export interface PostReblogPendingTable {
+  author: string;
+  permlink: string;
+  account: string;
+  /** Block time of the reblog op; applied after the post is materialized. */
+  reblogged_at_unix: number;
+}
+
+export type PostReblogPending = Selectable<PostReblogPendingTable>;
+export type NewPostReblogPending = Insertable<PostReblogPendingTable>;
+export type PostReblogPendingUpdate = Updateable<PostReblogPendingTable>;
 
 // ---------------------------------------------------------------------------
 // post_languages

@@ -98,6 +98,15 @@ export type ReblogToType = {
   permlink: string;
 };
 
+/** One row from `condenser_api.get_blog_entries`. */
+export type HiveBlogEntry = {
+  blog: string;
+  author: string;
+  permlink: string;
+  entry_id: number;
+  reblogged_on: string;
+};
+
 export type CommentStateType = {
   content: Record<string, HiveContentType>;
 };

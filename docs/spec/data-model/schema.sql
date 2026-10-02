@@ -529,6 +529,19 @@ CREATE TABLE post_reblogged_users (
 CREATE INDEX idx_post_reblogged_users_account_reblogged_at ON post_reblogged_users (account, reblogged_at_unix DESC);
 
 -- ---------------------------------------------------------------------------
+-- post_reblog_pending (reblog of a post not yet in posts; no FK)
+-- ---------------------------------------------------------------------------
+CREATE TABLE post_reblog_pending (
+  author             TEXT   NOT NULL,
+  permlink           TEXT   NOT NULL,
+  account            TEXT   NOT NULL,
+  reblogged_at_unix  BIGINT NOT NULL,
+  PRIMARY KEY (author, permlink, account)
+);
+
+CREATE INDEX idx_post_reblog_pending_post ON post_reblog_pending (author, permlink);
+
+-- ---------------------------------------------------------------------------
 -- post_languages
 -- ---------------------------------------------------------------------------
 CREATE TABLE post_languages (

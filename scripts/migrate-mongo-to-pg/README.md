@@ -175,7 +175,7 @@ Source shape: legacy Mongo [`PostSchema`](../../tmp/PostSchema.js). ODL columns:
 - **`post_languages`:** `languages[]` may use regional tags (`en-US`). The importer stores the **primary language subtag** only (`en`), canonicalized with `Intl`, and dedupes per post (e.g. `en-US` + `en-GB` → one `en` row).
 - **`post_objects`:** Built with the same merge rules as chain-indexer (`json_metadata.objects` or legacy `wobjects`, `tags` / `json_metadata.tags`, body `/object/...`). `object_type` from legacy `wobjects` when present. Rows are inserted only when `object_id` exists in `objects_core` (missing FKs are skipped; see migrator stats `postObjectsSkippedNoFk`).
 - **`post_object_related_images`:** Derived from `json_metadata.image` (HTTPS URLs) × eligible `post_objects` rows (same rules as chain-indexer `buildRelatedImageRows`). Stats: `relatedImageRowsBuffered`, `relatedImageRowsSkippedNoFk`, `relatedImageRowsSkippedNoImages`, `relatedImageRowsSkippedIneligibleType`. Re-runs use `ON CONFLICT DO NOTHING`. For a full rebuild: `TRUNCATE post_object_related_images` then re-run `migrate:mongo-posts`.
-- **`post_reblogged_users.reblogged_at_unix`:** Mongo stores only account names. The importer sets a single timestamp per post from, in order: `updatedAt`, `createdAt` (mongoose), `last_update` / `active` (parsed), else `created_unix` of the post.
+- **`post_reblogged_users.reblogged_at_unix`:** Mongo stores only account names — there is no per-reblog time. The importer writes a **provisional** `created_unix` of the post (never `updatedAt`; that stamped one mongo-touch time onto every reblogger). **Required after this importer:** `pnpm backfill:reblog-timestamps` (Hive `condenser_api.get_blog_entries.reblogged_on`). Until that runs, profile blogs sort reblogs by post creation, not reblog time.
 - **`created_unix`:** `created` string, then mongoose `createdAt` / `updatedAt`, then `_id` ObjectId seconds.
 
 Inserts use `ON CONFLICT DO NOTHING` on natural keys so re-runs are idempotent.
@@ -189,6 +189,15 @@ Source: [`tmp/UserSchema.js`](../../tmp/UserSchema.js). ODL: [`libs/odl-db-types
 - **`user_object_follows`:** only rows whose `object_id` exists in `objects_core` are inserted; see migrator stats `objectFollowsSkippedNoFk`.
 - **`hive_id`, `comment_count`, `lifetime_vote_count`, `last_post`, `object_reputation`:** not present on Mongo user export; importer uses 0 / null defaults on **insert** only. Re-runs **update** Mongo-sourced Waivio columns (`posting_json_metadata`, `json_metadata`, `alias`, counts, …) but do **not** overwrite Hive indexer fields (`hive_id`, `created`, `comment_count`, …).
 - Re-running the same users export refreshes Mongo-sourced Waivio columns. **`json_metadata` / `posting_json_metadata`:** upsert uses `COALESCE(excluded, existing)` — a null/empty value in the export does **not** wipe a non-null value already in Postgres (from a prior export or chain-indexer). For chain-authoritative profile text, rely on chain-indexer `account_update` / [account sync](../../docs/apps/chain-indexer/spec/account-sync.md), or query-api live Hive reads on profile endpoints.
+
+## Required post-migration: reblog timestamps
+
+```bash
+pnpm backfill:reblog-timestamps --dry-run
+pnpm backfill:reblog-timestamps
+```
+
+Pages every account in `post_reblogged_users` through Hive `get_blog_entries` and overwrites `reblogged_at_unix` when `|existing − hive| > 60s`. Resumable via `scripts/.backfill-reblog-timestamps.checkpoint.json` (completed-set; failed RPC accounts are retried on rerun, no `--reset-checkpoint` needed). Non-zero exit means some accounts failed — rerun. `--account=name` limits to one profile.
 
 ## Related
 

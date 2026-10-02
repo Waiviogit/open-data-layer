@@ -11,6 +11,7 @@ export { PostsRepository } from './posts.repository';
 export { SocialGraphRepository } from './social-graph.repository';
 export { ThreadsRepository } from './threads.repository';
 export { PostSyncQueueRepository } from './post-sync-queue.repository';
+export { PostReblogPendingRepository } from './post-reblog-pending.repository';
 export { AccountSyncQueueRepository } from './account-sync-queue.repository';
 export { CanonicalRecomputeRepository } from './canonical-recompute.repository';
 export { SiteRegistryRepository } from './site-registry.repository';
