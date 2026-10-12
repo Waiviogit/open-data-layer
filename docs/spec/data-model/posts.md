@@ -16,7 +16,7 @@ related:
 
 Normative DDL lives in [schema.sql](schema.sql). Kysely row types: `@opden-data-layer/core` (`OdlDatabase`, `PostsTable`, etc.).
 
-This schema normalizes the legacy Mongo `PostSchema` (embedded arrays and denormalized fields) into relational tables. **Not migrated:** `blocked_for_apps`, singular `language`, `reblog_to` (reblogs modeled via `post_reblogged_users` + join to `posts`).
+This schema normalizes the legacy Mongo `PostSchema` (embedded arrays and denormalized fields) into relational tables. **Not migrated:** `blocked_for_apps`, singular `language`. Waivio **reblog stub** docs (`reblog_to` + empty title/body) are not rows in `posts`; the posts importer maps them to `post_reblogged_users` with `createdAt` as `reblogged_at_unix`.
 
 ## Roles of the tables
 

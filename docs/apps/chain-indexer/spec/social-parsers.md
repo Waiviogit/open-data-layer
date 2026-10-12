@@ -55,7 +55,7 @@ Reblog is **not** a new row in `posts`. It inserts into `post_reblogged_users` f
 
 If the source post is still missing locally after resolution, the indexer writes `post_reblog_pending` with the **block** timestamp (`LEAST` on conflict) and enqueues `post_sync_queue` with `needs_post_create = true` (same queue as [vote ingestion](vote-ingestion.md)). After `HivePostSyncWorker` materializes the post (`ensurePostFromHiveForVoteSync` → `'ready'`), it drains pending rows through `findSourcePostForReblog` and `insertRebloggedUser` using the **stored** `reblogged_at_unix` (never `enqueued_at` / `Date.now()`). Terminal outcomes (`is_comment`, `muted`, attempts exhausted) delete matching pending rows so they cannot leak. Drain does **not** re-emit `reblog` / `bell_reblog`.
 
-Mongo imports stamp a provisional `reblogged_at_unix` (post `created_unix`). Heal with `pnpm backfill:reblog-timestamps` from Hive `get_blog_entries.reblogged_on`.
+Mongo imports: source-post `reblogged_users[]` stamps a provisional `reblogged_at_unix` (post `created_unix`). Waivio reblog stubs (`reblog_to`, empty title/body) write `reblogged_at_unix` from stub `createdAt` and overwrite on conflict. Indexer upserts still use SQL `LEAST`. Optional heal: `pnpm backfill:reblog-timestamps` (Hive `get_blog_entries.reblogged_on`).
 
 ## Configuration
 

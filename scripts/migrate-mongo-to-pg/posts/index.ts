@@ -47,6 +47,12 @@ import {
   serializeMongoPostJsonMetadata,
 } from './build-mongo-post-metadata';
 import { deriveRewardsFinalizedAt } from '../../../libs/core/src/post-reward/derive-rewards-finalized-at';
+import {
+  dedupeReblogsLastWins,
+  mongoReblogPostKey,
+  partitionStubsByExistingPosts,
+  reblogFromMongoStub,
+} from './mongo-reblog-stub';
 import { normalizeMongoPostLanguage } from './normalize-post-language';
 import type { MongoDate, MongoPost } from './types';
 const BATCH_SIZE = 5000;
@@ -72,6 +78,8 @@ interface MigrationStats {
   voteRowsBuffered: number;
   objectRowsBuffered: number;
   reblogRowsBuffered: number;
+  reblogStubsBuffered: number;
+  reblogStubsSkippedNoFk: number;
   languageRowsBuffered: number;
   linkRowsBuffered: number;
   mentionRowsBuffered: number;
@@ -210,6 +218,8 @@ class MongoPostsMigrator {
 
   private reblogBuffer: NewPostRebloggedUser[] = [];
 
+  private stubReblogBuffer: NewPostRebloggedUser[] = [];
+
   private languageBuffer: NewPostLanguage[] = [];
 
   private linkBuffer: NewPostLink[] = [];
@@ -228,6 +238,8 @@ class MongoPostsMigrator {
     voteRowsBuffered: 0,
     objectRowsBuffered: 0,
     reblogRowsBuffered: 0,
+    reblogStubsBuffered: 0,
+    reblogStubsSkippedNoFk: 0,
     languageRowsBuffered: 0,
     linkRowsBuffered: 0,
     mentionRowsBuffered: 0,
@@ -339,6 +351,77 @@ class MongoPostsMigrator {
       .execute();
   }
 
+  private async resolveExistingPostKeys(
+    rows: readonly NewPostRebloggedUser[],
+  ): Promise<Set<string>> {
+    const unique = new Map<string, { author: string; permlink: string }>();
+    for (const row of rows) {
+      unique.set(mongoReblogPostKey(row.author, row.permlink), {
+        author: row.author,
+        permlink: row.permlink,
+      });
+    }
+    const keys = [...unique.values()];
+    const existing = new Set<string>();
+    for (let i = 0; i < keys.length; i += BATCH_SIZE) {
+      const slice = keys.slice(i, i + BATCH_SIZE);
+      const found = await this.db
+        .selectFrom('posts')
+        .select(['author', 'permlink'])
+        .where((eb) =>
+          eb.or(
+            slice.map((k) =>
+              eb.and([
+                eb('author', '=', k.author),
+                eb('permlink', '=', k.permlink),
+              ]),
+            ),
+          ),
+        )
+        .execute();
+      for (const row of found) {
+        existing.add(mongoReblogPostKey(row.author, row.permlink));
+      }
+    }
+    return existing;
+  }
+
+  /**
+   * Insert stubs whose source post already exists.
+   * Orphans stay in the buffer unless `dropMissing` (EOF only).
+   */
+  private async flushStubReblogs(dropMissing: boolean): Promise<void> {
+    if (this.stubReblogBuffer.length === 0) {
+      return;
+    }
+    await this.flushPosts();
+    const existing = await this.resolveExistingPostKeys(this.stubReblogBuffer);
+    const { ready, pending } = partitionStubsByExistingPosts(
+      this.stubReblogBuffer,
+      existing,
+    );
+    this.stubReblogBuffer = dropMissing ? [] : pending;
+    if (dropMissing) {
+      this.stats.reblogStubsSkippedNoFk += pending.length;
+    }
+    const rows = dedupeReblogsLastWins(ready);
+    if (rows.length === 0) {
+      return;
+    }
+    for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+      const chunk = rows.slice(i, i + BATCH_SIZE);
+      await this.db
+        .insertInto('post_reblogged_users')
+        .values(chunk)
+        .onConflict((oc) =>
+          oc.columns(['author', 'permlink', 'account']).doUpdateSet({
+            reblogged_at_unix: sql`excluded.reblogged_at_unix`,
+          }),
+        )
+        .execute();
+    }
+  }
+
   private async flushLanguages(): Promise<void> {
     if (this.languageBuffer.length === 0) {
       return;
@@ -440,19 +523,21 @@ class MongoPostsMigrator {
       .execute();
   }
 
-  /** FK-safe order: posts → children. */
+  /** FK-safe order: posts → children. Stubs last so createdAt overwrites provisional array times. */
   async flushAll(): Promise<void> {
     await this.flushPosts();
     await this.flushVotes();
     await this.flushObjects();
     await this.flushRelatedImages();
     await this.flushReblogs();
+    await this.flushStubReblogs(true);
     await this.flushLanguages();
     await this.flushLinks();
     await this.flushMentions();
   }
 
   async flushAfterPostIfNeeded(): Promise<void> {
+    const postsPending = this.postBuffer.length;
     if (this.postBuffer.length >= BATCH_SIZE) {
       await this.flushPosts();
     }
@@ -506,6 +591,14 @@ class MongoPostsMigrator {
       await this.flushObjects();
       await this.flushRelatedImages();
     }
+    // Drain stubs only after this call flushed posts (source may now exist).
+    // Do not probe FK on every doc once the stub buffer is large — wait for EOF.
+    if (
+      this.stubReblogBuffer.length >= BATCH_SIZE &&
+      this.postBuffer.length < postsPending
+    ) {
+      await this.flushStubReblogs(false);
+    }
   }
 
   private pushPost(row: PostInsertBuffer): void {
@@ -526,6 +619,11 @@ class MongoPostsMigrator {
   private pushReblog(row: NewPostRebloggedUser): void {
     this.reblogBuffer.push(row);
     this.stats.reblogRowsBuffered += 1;
+  }
+
+  private pushStubReblog(row: NewPostRebloggedUser): void {
+    this.stubReblogBuffer.push(row);
+    this.stats.reblogStubsBuffered += 1;
   }
 
   private pushLanguage(row: NewPostLanguage): void {
@@ -570,6 +668,12 @@ class MongoPostsMigrator {
     }
     if (author.includes('_')) {
       this.stats.postsSkippedUnderscoreInAuthor += 1;
+      return;
+    }
+
+    const stubReblog = reblogFromMongoStub(doc);
+    if (stubReblog) {
+      this.pushStubReblog(stubReblog);
       return;
     }
 
@@ -695,8 +799,7 @@ class MongoPostsMigrator {
         author,
         permlink,
         account: acc,
-        // Provisional: Hive `get_blog_entries.reblogged_on` is the real time.
-        // Required after this importer: `pnpm backfill:reblog-timestamps`.
+        // Provisional membership time; stub createdAt overwrites on conflict.
         reblogged_at_unix: createdUnix,
       });
     }
