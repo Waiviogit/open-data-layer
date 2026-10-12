@@ -76,6 +76,8 @@ export const engineDepositAddressResponseSchema = z.object({
   address: z.string().nullable(),
   pair: z.string().nullable(),
   exRate: z.number().nullable(),
+  swapSymbol: z.string(),
+  destination: z.string(),
 });
 
 export type EngineDepositAddressResponse = z.infer<

@@ -41,4 +41,10 @@ describe('curated-routes', () => {
     expect(hits[0]?.path).toBe('docs/skills/obl-disputes.md');
     expect(hits[0]?.confidence).toBeGreaterThan(0);
   });
+
+  it('matches hive engine deposit intent', () => {
+    const hits = matchCuratedRoutes('btc deposit swap.btc');
+    expect(hits[0]?.path).toBe('docs/skills/hive-engine-deposit-for-agents.md');
+    expect(hits[0]?.confidence).toBeGreaterThan(0);
+  });
 });

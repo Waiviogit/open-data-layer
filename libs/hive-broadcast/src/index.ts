@@ -143,10 +143,12 @@ export {
 } from './obl-operations';
 export {
   buildOslEnvelopeOp,
+  buildHiveEngineDepositPayload,
   buildOslHiveEngineDepositOp,
   buildOslUpdateUserNotificationSettingsOp,
   buildOslUpdateUserMetadataOp,
   type BuildOslEnvelopeOpInput,
+  type BuildHiveEngineDepositPayloadInput,
   type BuildOslHiveEngineDepositOpInput,
   type BuildOslUpdateUserNotificationSettingsOpInput,
   type BuildOslUpdateUserMetadataOpInput,

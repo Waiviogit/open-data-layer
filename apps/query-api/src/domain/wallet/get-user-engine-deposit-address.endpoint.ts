@@ -46,7 +46,7 @@ export class GetUserEngineDepositAddressEndpoint {
     if (symbol === 'HIVE') {
       const swapAccount =
         process.env.HIVE_SWAP_ACCOUNT?.trim() || DEFAULT_HIVE_SWAP_ACCOUNT;
-      return buildHivePeggedDepositRouting(swapAccount, 'HIVE');
+      return buildHivePeggedDepositRouting(swapAccount, 'HIVE', profileAccountName);
     }
 
     const swapSymbol = resolveDepositSwapSymbol(symbol);
@@ -77,6 +77,8 @@ export class GetUserEngineDepositAddressEndpoint {
           null,
         pair: convert.pair ?? null,
         exRate: convert.ex_rate ?? null,
+        swapSymbol,
+        destination: profileAccountName,
       };
     } catch (e) {
       if (e instanceof HiveEngineUnavailableError) {

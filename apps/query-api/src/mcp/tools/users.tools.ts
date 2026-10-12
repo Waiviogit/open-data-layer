@@ -386,6 +386,23 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
   );
 
   server.registerTool(
+    'get_user_engine_deposit_list',
+    {
+      description: catalogDescription('get_user_engine_deposit_list'),
+      inputSchema: z.object({
+        ...accountField,
+      }),
+    },
+    async (args) => {
+      const result = await deps.getUserEngineDepositList.execute(args.account);
+      if (!result) {
+        return toolError(`User not found: ${args.account}`);
+      }
+      return jsonToolResult(result);
+    },
+  );
+
+  server.registerTool(
     'get_user_engine_deposit_address',
     {
       description: catalogDescription('get_user_engine_deposit_address'),

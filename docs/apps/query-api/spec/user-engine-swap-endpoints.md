@@ -10,6 +10,7 @@ updated_at: 2026-07-07
 related:
   - docs/apps/query-api/spec/user-engine-wallet-endpoint.md
   - docs/apps/web/spec/pages/user-profile/routes/engine-wallet-operations.md
+  - docs/skills/hive-engine-deposit-for-agents.md
 ---
 
 # User ENGINE swap / deposit / withdraw endpoints
@@ -53,16 +54,24 @@ Returns AMM quote only (`amountOut`, `minAmountOut`, `priceImpact`, `customJson[
 
 `GET /query/v1/users/:name/wallet/engine/deposit/list`
 
+MCP: `get_user_engine_deposit_list`.
+
 Returns depositable external/Hive tokens from `converter-api.hive-engine.com/api/pairs/` + `/api/coins/`, plus manual **HIVE** (hivepegged). Returns **503** when converter-api is unavailable.
 
 ## Deposit address
 
 `GET /query/v1/users/:name/wallet/engine/deposit/address?symbol=<TOKEN>`
 
+MCP: `get_user_engine_deposit_address`.
+
 Returns deposit routing instructions:
 
 - **HIVE** — fixed Hive L1 route via `hivepegged` buy to `HIVE_SWAP_ACCOUNT` (default `honey-swap`); memo is the hivepegged JSON payload.
 - **BTC, LTC, HBD** — proxied from `converter-api.hive-engine.com/api/convert/` (`address` and/or `account` + `memo`). **ETH** is not supported (disabled pegged token).
+
+Response fields: `symbol`, `account` (Hive Engine swap account or null), `memo`, `address`, `pair`, `exRate`, `swapSymbol` (e.g. `SWAP.BTC`), `destination` (profile account). `account` is **not** the user.
+
+This endpoint does **not** write `hive_engine_deposit` history. Agents must broadcast OSL `hive_engine_deposit` via agent-wallet `osl_build_hive_engine_deposit` + `wallet_broadcast` (`keyType: posting`) before showing the address. Skill: [hive-engine-deposit-for-agents.md](../../skills/hive-engine-deposit-for-agents.md).
 
 ## Withdraw list
 

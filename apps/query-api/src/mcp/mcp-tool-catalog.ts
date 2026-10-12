@@ -257,8 +257,15 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     specPath: 'docs/apps/query-api/spec/user-engine-swap-endpoints.md',
   },
   {
+    name: 'get_user_engine_deposit_list',
+    description: 'Depositable L1 tokens (BTC, LTC, HBD, HIVE, …) and their SWAP.* counterparts.',
+    httpEquivalent: 'GET /query/v1/users/:name/wallet/engine/deposit/list',
+    specPath: 'docs/apps/query-api/spec/user-engine-swap-endpoints.md',
+  },
+  {
     name: 'get_user_engine_deposit_address',
-    description: 'Deposit routing instructions via Hive Engine converter API.',
+    description:
+      'Hive Engine converter routing only (address/account/memo/pair/exRate/swapSymbol/destination). Does NOT write wallet history. Next: agent-wallet osl_build_hive_engine_deposit with this result as routing, then wallet_broadcast keyType posting, then show the address. Skill: docs/skills/hive-engine-deposit-for-agents.md.',
     httpEquivalent: 'GET /query/v1/users/:name/wallet/engine/deposit/address',
     specPath: 'docs/apps/query-api/spec/user-engine-swap-endpoints.md',
   },

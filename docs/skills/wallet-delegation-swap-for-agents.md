@@ -14,6 +14,7 @@ related:
   - docs/apps/query-api/spec/user-hive-wallet-endpoint.md
   - docs/apps/query-api/spec/user-waiv-wallet-endpoint.md
   - docs/apps/query-api/spec/user-engine-swap-endpoints.md
+  - docs/skills/hive-engine-deposit-for-agents.md
   - docs/apps/chain-indexer/spec/hive-delegations.md
 ---
 
@@ -32,6 +33,7 @@ Read **Hive L1**, **WAIV**, and **Engine** wallet state via **query-api MCP**; b
 - ODL object writes — [hive-blockchain-broadcast.md](hive-blockchain-broadcast.md).
 - OSL messaging — [osl-messaging.md](osl-messaging.md).
 - Incoming delegator lists from **Hive RPC alone** — not available without query-api/indexer (see Fallback limits).
+- Hive Engine **deposits** (BTC → SWAP.BTC, …) — [hive-engine-deposit-for-agents.md](hive-engine-deposit-for-agents.md).
 
 ## MCP servers
 

@@ -18,6 +18,7 @@ import { PendingRequestsStore } from './pending-requests.store';
 import { WaivioAuthClientService } from './waivio-auth-client.service';
 import { WaivioAuthOrchestratorService } from './waivio-auth-orchestrator.service';
 import { WaivioAuthSessionService } from './waivio-auth-session.service';
+import { HiveEngineDepositBuildService } from './hive-engine-deposit-build.service';
 import { WalletDelegationBuildService } from './wallet-delegation-build.service';
 import { WalletSignerResolverService } from './wallet-signer-resolver.service';
 
@@ -39,6 +40,7 @@ import { WalletSignerResolverService } from './wallet-signer-resolver.service';
     HivePostBuildService,
     HiveChainContextService,
     WalletDelegationBuildService,
+    HiveEngineDepositBuildService,
     HivePostingAuthorityGrantBuildService,
     IpfsUploadService,
   ],
@@ -46,6 +48,7 @@ import { WalletSignerResolverService } from './wallet-signer-resolver.service';
     HasSessionService,
     HivePostBuildService,
     WalletDelegationBuildService,
+    HiveEngineDepositBuildService,
     HivePostingAuthorityGrantBuildService,
     WaivioAuthOrchestratorService,
     WaivioAuthSessionService,

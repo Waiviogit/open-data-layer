@@ -18,16 +18,17 @@ export function buildHivePeggedDepositMemo(): string {
 export function buildHivePeggedDepositRouting(
   swapAccount: string,
   symbol: 'HIVE',
+  destination: string,
 ): EngineDepositAddressResponse {
-  const swapSymbol = AVAILABLE_TOKEN_WITHDRAW[symbol];
+  const swapSymbol = AVAILABLE_TOKEN_WITHDRAW[symbol] ?? `SWAP.${symbol}`;
   return {
     symbol,
     account: swapAccount,
     memo: buildHivePeggedDepositMemo(),
     address: null,
-    pair: swapSymbol
-      ? `${symbol} -> ${swapSymbol} (1.0000 ${swapSymbol} per ${symbol})`
-      : null,
+    pair: `${symbol} -> ${swapSymbol} (1.0000 ${swapSymbol} per ${symbol})`,
     exRate: 1,
+    swapSymbol,
+    destination,
   };
 }

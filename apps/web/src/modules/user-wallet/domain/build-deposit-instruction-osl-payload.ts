@@ -1,4 +1,7 @@
-import type { BuildOslHiveEngineDepositOpInput } from '@opden-data-layer/hive-broadcast';
+import {
+  buildHiveEngineDepositPayload,
+  type BuildOslHiveEngineDepositOpInput,
+} from '@opden-data-layer/hive-broadcast';
 
 export type BuildDepositInstructionOslPayloadInput = {
   account: string;
@@ -20,24 +23,15 @@ export type BuildDepositInstructionBroadcastInput = Omit<
 export function buildDepositInstructionOslPayload(
   input: BuildDepositInstructionOslPayloadInput,
 ): BuildOslHiveEngineDepositOpInput['payload'] {
-  const depositAccount = input.depositAccount?.trim() || undefined;
-  const address = input.address?.trim() || undefined;
-  if (!depositAccount && !address) {
-    throw new Error('deposit instruction requires deposit account or address');
-  }
-  if (depositAccount && address) {
-    throw new Error('deposit instruction cannot have both account and address');
-  }
-
-  return {
+  return buildHiveEngineDepositPayload({
     author: input.account,
     destination: input.destination,
     symbol_in: input.symbolIn,
     symbol_out: input.symbolOut,
     pair: input.pair,
     ex_rate: input.exRate,
-    ...(input.memo ? { memo: input.memo } : {}),
-    ...(depositAccount ? { deposit_account: depositAccount } : {}),
-    ...(address ? { address } : {}),
-  };
+    memo: input.memo,
+    deposit_account: input.depositAccount,
+    address: input.address,
+  });
 }

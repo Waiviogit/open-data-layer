@@ -11,6 +11,7 @@ related:
   - docs/skills/hive-has-agent-wallet.md
   - docs/skills/osl-messaging.md
   - docs/skills/wallet-delegation-swap-for-agents.md
+  - docs/skills/hive-engine-deposit-for-agents.md
   - docs/skills/hive-account-authority-for-agents.md
   - docs/skills/hive-blockchain-broadcast.md
   - docs/apps/knowledge-api/spec/overview.md
@@ -55,6 +56,7 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 | HAS agent wallet (MCP tools, session, security) | [hive-has-agent-wallet skill](../../skills/hive-has-agent-wallet.md) |
 | OSL messaging (read/send/encrypt/notify) | [osl-messaging skill](../../skills/osl-messaging.md) |
 | Wallet delegations / balances / swaps | [wallet-delegation-swap-for-agents skill](../../skills/wallet-delegation-swap-for-agents.md) |
+| Hive Engine deposit instructions | [hive-engine-deposit-for-agents skill](../../skills/hive-engine-deposit-for-agents.md) |
 | Hive posting authority / act-as grantor | [hive-account-authority-for-agents skill](../../skills/hive-account-authority-for-agents.md) |
 | HAS login from chat (Telegram, Slack) | [has-login-from-chat skill](../../skills/has-login-from-chat.md) |
 | IPFS image upload + avatar/gallery policy | [ipfs-image-upload skill](../../skills/ipfs-image-upload.md) |
@@ -95,6 +97,7 @@ Leo object threads (Reviews > Threads) are **not** built by agent-wallet — see
 | `hive_build_hp_delegation` | `ops`, `keyType: active`, `warnings` — HP delegate/undelegate |
 | `hive_build_rc_delegation` | `ops`, `keyType: posting`, `warnings` — RC delegate/remove (`maxRc: 0`) |
 | `engine_build_token_delegation` | `ops`, `keyType: active`, `warnings` — WAIV/Engine delegate/undelegate |
+| `osl_build_hive_engine_deposit` | `ops`, `keyType: posting`, `warnings` — OSL `hive_engine_deposit` from query-api deposit routing |
 
 ## Environment
 

@@ -11,6 +11,7 @@ related:
   - docs/apps/query-api/spec/overview.md
   - docs/skills/query-api-mcp-routing.md
   - docs/skills/wallet-delegation-swap-for-agents.md
+  - docs/skills/hive-engine-deposit-for-agents.md
   - docs/skills/knowledge-api-routing.md
 ---
 
@@ -97,6 +98,7 @@ Set `QUERY_API_DOCS_ROOT` to repo root in dev if `odl-query://routing` cannot re
 | `get_user_engine_wallet_history` | `POST .../wallet/engine/history` | [user-engine-wallet-endpoint.md](user-engine-wallet-endpoint.md) |
 | `get_user_engine_swap_list` | `GET .../wallet/engine/swap/list` | [user-engine-swap-endpoints.md](user-engine-swap-endpoints.md) |
 | `post_user_engine_swap_quote` | `POST .../wallet/engine/swap/quote` | [user-engine-swap-endpoints.md](user-engine-swap-endpoints.md) |
+| `get_user_engine_deposit_list` | `GET .../wallet/engine/deposit/list` | [user-engine-swap-endpoints.md](user-engine-swap-endpoints.md) |
 | `get_user_engine_deposit_address` | `GET .../wallet/engine/deposit/address` | [user-engine-swap-endpoints.md](user-engine-swap-endpoints.md) |
 | `post_user_engine_withdraw_quote` | `POST .../wallet/engine/withdraw/quote` | [user-engine-swap-endpoints.md](user-engine-swap-endpoints.md) |
 | `get_user_engine_token_delegations` | `GET .../wallet/engine/{symbol}/delegations` | [user-waiv-wallet-endpoint.md](user-waiv-wallet-endpoint.md) |

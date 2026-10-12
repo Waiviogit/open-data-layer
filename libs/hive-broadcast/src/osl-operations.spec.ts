@@ -1,4 +1,9 @@
-import { buildOslHiveEngineDepositOp, buildOslUpdateUserMetadataOp, buildOslUpdateUserNotificationSettingsOp } from './osl-operations';
+import {
+  buildHiveEngineDepositPayload,
+  buildOslHiveEngineDepositOp,
+  buildOslUpdateUserMetadataOp,
+  buildOslUpdateUserNotificationSettingsOp,
+} from './osl-operations';
 
 describe('osl-operations', () => {
   it('buildOslHiveEngineDepositOp uses osl-mainnet and hive_engine_deposit', () => {
@@ -24,6 +29,90 @@ describe('osl-operations', () => {
     expect(parsed.events[0]?.action).toBe('hive_engine_deposit');
     expect(parsed.events[0]?.v).toBe(1);
     expect(parsed.events[0]?.payload['symbol_in']).toBe('HIVE');
+  });
+
+  it('buildHiveEngineDepositPayload keeps address-only routing', () => {
+    expect(
+      buildHiveEngineDepositPayload({
+        author: 'alice',
+        destination: 'alice',
+        symbol_in: 'BTC',
+        symbol_out: 'SWAP.BTC',
+        pair: 'BTC/SWAP.BTC',
+        ex_rate: 1.02,
+        address: ' bc1qabc ',
+        deposit_account: null,
+      }),
+    ).toEqual({
+      author: 'alice',
+      destination: 'alice',
+      symbol_in: 'BTC',
+      symbol_out: 'SWAP.BTC',
+      pair: 'BTC/SWAP.BTC',
+      ex_rate: 1.02,
+      address: 'bc1qabc',
+    });
+  });
+
+  it('buildHiveEngineDepositPayload keeps account-only routing', () => {
+    expect(
+      buildHiveEngineDepositPayload({
+        author: 'alice',
+        destination: 'alice',
+        symbol_in: 'HIVE',
+        symbol_out: 'SWAP.HIVE',
+        pair: 'HIVE -> SWAP.HIVE',
+        ex_rate: 1,
+        deposit_account: 'honey-swap',
+        memo: '{}',
+      }),
+    ).toMatchObject({
+      deposit_account: 'honey-swap',
+      memo: '{}',
+    });
+  });
+
+  it('buildHiveEngineDepositPayload rejects both or neither routing target', () => {
+    expect(() =>
+      buildHiveEngineDepositPayload({
+        author: 'alice',
+        destination: 'alice',
+        symbol_in: 'BTC',
+        symbol_out: 'SWAP.BTC',
+        address: 'bc1qabc',
+        deposit_account: 'honey-swap',
+      }),
+    ).toThrow(/both account and address/);
+    expect(() =>
+      buildHiveEngineDepositPayload({
+        author: 'alice',
+        destination: 'alice',
+        symbol_in: 'BTC',
+        symbol_out: 'SWAP.BTC',
+      }),
+    ).toThrow(/deposit account or address/);
+  });
+
+  it('buildHiveEngineDepositPayload falls back ex_rate null to 1 and pair to symbol arrow', () => {
+    expect(
+      buildHiveEngineDepositPayload({
+        author: 'alice',
+        destination: 'alice',
+        symbol_in: 'BTC',
+        symbol_out: 'SWAP.BTC',
+        pair: null,
+        ex_rate: null,
+        address: 'bc1qabc',
+      }),
+    ).toEqual({
+      author: 'alice',
+      destination: 'alice',
+      symbol_in: 'BTC',
+      symbol_out: 'SWAP.BTC',
+      pair: 'BTC -> SWAP.BTC',
+      ex_rate: 1,
+      address: 'bc1qabc',
+    });
   });
 
   it('buildOslUpdateUserNotificationSettingsOp uses osl-mainnet envelope', () => {

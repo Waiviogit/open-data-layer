@@ -24,7 +24,7 @@ ODL build decision table:
 - EXISTING object, one field (avatar image, title, description, …) → odl_build_update_create
 - EXISTING object, gallery photo → odl_build_gallery_item (pass existingGalleryAlbumNames from resolve_object fields.imageGallery)
 - Social post (Instagram/Facebook) onto an EXISTING object → osl_activity_fingerprint → query-api check_object_activity_duplicate → if not duplicate, osl_build_message_create with channelId "obj-ch-{objectId}", originalCreatedAtUnix, and source → wallet_broadcast
-- Hive root post (article, companion post, recipe walkthrough) → hive_build_post (author may be a grantor — see posting authority above) → wallet_broadcast
+- Hive Engine deposit (BTC/LTC/HBD/HIVE → SWAP.*) → query-api get_user_engine_deposit_address → osl_build_hive_engine_deposit({ account, routing }) → wallet_broadcast({ ops, keyType: "posting" }) before showing the address. Instruction is history only; SWAP.* credit is Hive Engine converter.
 - Grant/revoke posting authority → hive_build_posting_authority_grant → wallet_broadcast when canSignLocally; HAS grantor session → has_broadcast with keyType active
 - Avatar on existing object: ipfs_upload_image → odl_build_update_create({ updateType: "image", value: { cid } }) → wallet_broadcast
 - Large body on EXISTING object (pageContent, skillContent, legalText, …): odl_build_update_create → if requiresIpfsBatch then ipfs_upload_file + odl_build_batch_import (never broadcast oversize custom_json)

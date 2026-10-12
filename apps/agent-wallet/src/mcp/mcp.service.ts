@@ -10,6 +10,7 @@ import { IpfsUploadService } from '../domain/ipfs-upload.service';
 import { NotificationsSocketService } from '../domain/notifications-socket.service';
 import { OslMessagingService } from '../domain/osl-messaging.service';
 import { WaivioAuthOrchestratorService } from '../domain/waivio-auth-orchestrator.service';
+import { HiveEngineDepositBuildService } from '../domain/hive-engine-deposit-build.service';
 import { WalletDelegationBuildService } from '../domain/wallet-delegation-build.service';
 import { HivePostingAuthorityGrantBuildService } from '../domain/hive-posting-authority-grant-build.service';
 import { AGENT_WALLET_MCP_INSTRUCTIONS } from './mcp-instructions';
@@ -30,6 +31,7 @@ export class McpService {
     private readonly oslMessaging: OslMessagingService,
     private readonly notificationsSocket: NotificationsSocketService,
     private readonly walletDelegationBuild: WalletDelegationBuildService,
+    private readonly hiveEngineDepositBuild: HiveEngineDepositBuildService,
     private readonly postingAuthorityGrantBuild: HivePostingAuthorityGrantBuildService,
   ) {}
 
@@ -53,6 +55,7 @@ export class McpService {
       oslMessaging: this.oslMessaging,
       notificationsSocket: this.notificationsSocket,
       walletDelegationBuild: this.walletDelegationBuild,
+      hiveEngineDepositBuild: this.hiveEngineDepositBuild,
       postingAuthorityGrantBuild: this.postingAuthorityGrantBuild,
     });
     return server;

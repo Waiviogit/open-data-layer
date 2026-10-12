@@ -120,3 +120,9 @@
 **Pattern:** `{ authors: ['alice'] }` fails `strict` against the required snapshot. Zod 4 `schema.shape.foo` is `$ZodType` with no `.description`. `Partial<McpToolDeps>` still requires the full class when a key is present.
 
 **Rule:** Spread `DEFAULT_GOVERNANCE_SNAPSHOT`. Read Zod descriptions via a `{ description?: string }` cast. Pass MCP deps as `as unknown as McpToolDeps` / `as unknown as Partial<McpToolDeps>`. Access `OBJECT_TYPE_REGISTRY` with `OBJECT_TYPES.*` brackets (TS4111).
+
+## Network ids (`ODL_NETWORK`): config only, no assumptions
+
+**Pattern:** While planning, a code default (`chain-indexer` falls back to `osl-mainnet` when `ODL_NETWORK` is unset) was treated as the actual deployment. The plan then added a testnet "risk" warning to agent-wallet. All stacks are on testnet right now and there is no mainnet indexer.
+
+**Rule:** Custom-json network ids (`odl-*`, `osl-*`, `obl-*`) come only from the app's config (`config.oslCustomJsonId` and so on). Do not infer the deployed network from a code default. Do not add network warnings, overrides or hardcoded ids. If the deployed network matters, ask.

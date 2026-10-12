@@ -158,6 +158,17 @@ export const CURATED_ROUTES: CuratedRoute[] = [
     ],
     reason: 'curated:build-tenant-site',
   },
+  {
+    path: 'docs/skills/hive-engine-deposit-for-agents.md',
+    keywords: [
+      'btc deposit',
+      'swap.btc',
+      'hive engine deposit',
+      'deposit instruction',
+      'deposit address',
+    ],
+    reason: 'curated:hive-engine-deposit',
+  },
 ];
 
 export function matchCuratedRoutes(topic: string, scope?: string): Array<CuratedRoute & { confidence: number }> {

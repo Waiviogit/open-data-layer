@@ -15,6 +15,8 @@ related:
   - docs/skills/obl-offers-contracts.md
   - docs/skills/obl-ledger.md
   - docs/skills/obl-disputes.md
+  - docs/skills/wallet-delegation-swap-for-agents.md
+  - docs/skills/hive-engine-deposit-for-agents.md
   - docs/getting-started.md
 ---
 
@@ -35,7 +37,7 @@ related:
 ## First visit steps
 
 1. Read MCP **server instructions** (returned on `initialize`) or resource `odl-knowledge://routing`.
-2. `list_files({ type: "skill" })` — procedural skills with `description` one-liners (22 skills; excludes 27 object-create playbooks).
+2. `list_files({ type: "skill" })` — procedural skills with `description` one-liners (24 skills; excludes 27 object-create playbooks).
 3. `resolve_doc({ topic: "<user task>" })` — best path(s) before opening files.
 4. `get_file({ path: "<chosen path>" })` — full markdown before implementing.
 5. `get_context({ topic })` — compact chunks when you need excerpts without full files.
@@ -67,6 +69,7 @@ related:
 | Write object thread (Reviews > Threads) | skill | [hive-thread-create.md](hive-thread-create.md) |
 | OSL messaging (DM / group / object channels) | skill | [osl-messaging.md](osl-messaging.md) |
 | Wallet delegations / balances / swaps | skill | [wallet-delegation-swap-for-agents.md](wallet-delegation-swap-for-agents.md) |
+| Hive Engine deposit (BTC → SWAP.BTC) | skill | `docs/skills/hive-engine-deposit-for-agents.md` |
 | Hive posting authority / act as grantor | skill + spec | [hive-account-authority-for-agents.md](hive-account-authority-for-agents.md) · [hive-account-authority.md](../spec/hive-account-authority.md) |
 | Coding style in this repo | agents | `AGENTS.md` or `apps/<app>/AGENTS.md` |
 

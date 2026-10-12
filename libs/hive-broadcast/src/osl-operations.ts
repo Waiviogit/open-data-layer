@@ -40,6 +40,50 @@ export type BuildOslHiveEngineDepositOpInput = {
   };
 };
 
+export type BuildHiveEngineDepositPayloadInput = {
+  readonly author: string;
+  readonly destination: string;
+  readonly symbol_in: string;
+  readonly symbol_out: string;
+  readonly pair?: string | null;
+  readonly ex_rate?: number | null;
+  readonly memo?: string | null;
+  readonly deposit_account?: string | null;
+  readonly address?: string | null;
+};
+
+export function buildHiveEngineDepositPayload(
+  input: BuildHiveEngineDepositPayloadInput,
+): BuildOslHiveEngineDepositOpInput['payload'] {
+  const depositAccount = input.deposit_account?.trim() || undefined;
+  const address = input.address?.trim() || undefined;
+  if (!depositAccount && !address) {
+    throw new Error('deposit instruction requires deposit account or address');
+  }
+  if (depositAccount && address) {
+    throw new Error('deposit instruction cannot have both account and address');
+  }
+
+  const symbolIn = input.symbol_in.trim();
+  const symbolOut = input.symbol_out.trim();
+  const pair = input.pair?.trim() || `${symbolIn} -> ${symbolOut}`;
+  const exRate =
+    input.ex_rate != null && Number.isFinite(input.ex_rate) ? input.ex_rate : 1;
+  const memo = input.memo?.trim() || undefined;
+
+  return {
+    author: input.author,
+    destination: input.destination,
+    symbol_in: symbolIn,
+    symbol_out: symbolOut,
+    pair,
+    ex_rate: exRate,
+    ...(memo ? { memo } : {}),
+    ...(depositAccount ? { deposit_account: depositAccount } : {}),
+    ...(address ? { address } : {}),
+  };
+}
+
 export function buildOslEnvelopeOp(input: BuildOslEnvelopeOpInput): CustomJsonOp {
   const envelope = {
     events: [

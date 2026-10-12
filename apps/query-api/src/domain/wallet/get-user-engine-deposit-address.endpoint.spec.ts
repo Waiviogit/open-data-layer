@@ -40,6 +40,8 @@ describe('GetUserEngineDepositAddressEndpoint', () => {
     expect(result?.symbol).toBe('HIVE');
     expect(result?.account).toBeTruthy();
     expect(result?.memo).toContain('buy');
+    expect(result?.swapSymbol).toBe('SWAP.HIVE');
+    expect(result?.destination).toBe('alice');
     expect(convertClient.convert).not.toHaveBeenCalled();
   });
 
@@ -62,6 +64,8 @@ describe('GetUserEngineDepositAddressEndpoint', () => {
     );
     expect(result?.address).toBe('0xabc');
     expect(result?.memo).toBe('memo-123');
+    expect(result?.swapSymbol).toBe('SWAP.BTC');
+    expect(result?.destination).toBe('alice');
   });
 
   it('throws BadRequestException when converter fails', async () => {

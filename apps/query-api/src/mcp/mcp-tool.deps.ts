@@ -89,6 +89,7 @@ import type {
   GetUserEngineSwapListEndpoint,
   PostUserEngineSwapQuoteEndpoint,
   GetUserEngineDepositAddressEndpoint,
+  GetUserEngineDepositListEndpoint,
   PostUserEngineWithdrawQuoteEndpoint,
   GetUserHiveWithdrawRangeEndpoint,
   PostUserHiveWithdrawEstimateEndpoint,
@@ -136,6 +137,7 @@ export interface McpToolDeps {
   getUserEngineSwapList: GetUserEngineSwapListEndpoint;
   postUserEngineSwapQuote: PostUserEngineSwapQuoteEndpoint;
   getUserEngineDepositAddress: GetUserEngineDepositAddressEndpoint;
+  getUserEngineDepositList: GetUserEngineDepositListEndpoint;
   postUserEngineWithdrawQuote: PostUserEngineWithdrawQuoteEndpoint;
   getUserEngineTokenDelegations: GetUserEngineTokenDelegationsEndpoint;
   getUserHiveHpDelegations: GetUserHiveHpDelegationsEndpoint;

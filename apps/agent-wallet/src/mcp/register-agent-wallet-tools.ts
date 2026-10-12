@@ -9,6 +9,7 @@ import { IpfsUploadService } from '../domain/ipfs-upload.service';
 import { NotificationsSocketService } from '../domain/notifications-socket.service';
 import { OslMessagingService } from '../domain/osl-messaging.service';
 import { WaivioAuthOrchestratorService } from '../domain/waivio-auth-orchestrator.service';
+import { HiveEngineDepositBuildService } from '../domain/hive-engine-deposit-build.service';
 import { WalletDelegationBuildService } from '../domain/wallet-delegation-build.service';
 import { jsonToolResult, toolError } from './mcp-tool.helpers';
 
@@ -25,6 +26,7 @@ export function registerAgentWalletTools(
     oslMessaging: OslMessagingService;
     notificationsSocket: NotificationsSocketService;
     walletDelegationBuild: WalletDelegationBuildService;
+    hiveEngineDepositBuild: HiveEngineDepositBuildService;
     postingAuthorityGrantBuild: HivePostingAuthorityGrantBuildService;
   },
 ): void {
@@ -772,6 +774,37 @@ export function registerAgentWalletTools(
     async (args) => {
       try {
         const result = deps.walletDelegationBuild.buildEngineDelegation(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'osl_build_hive_engine_deposit',
+    {
+      description:
+        'Build OSL hive_engine_deposit custom_json (posting) from get_user_engine_deposit_address routing. Pass the query-api result as routing as-is (routing.account is the Hive Engine swap account, not the user). Broadcast wallet_broadcast({ ops, keyType: "posting" }) once before showing the user the address. One broadcast per routing — repeats duplicate history. Does not credit SWAP.* (Hive Engine converter does). Verify via get_user_engine_wallet_history.',
+      inputSchema: z.object({
+        account: z
+          .string()
+          .min(1)
+          .describe('Hive destination and posting signer (e.g. irenok.agent)'),
+        routing: z.object({
+          symbol: z.string().min(1),
+          account: z.string().nullable(),
+          memo: z.string().nullable(),
+          address: z.string().nullable(),
+          pair: z.string().nullable(),
+          exRate: z.number().nullable(),
+          swapSymbol: z.string().optional(),
+        }),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = deps.hiveEngineDepositBuild.build(args);
         return jsonToolResult(result);
       } catch (error) {
         return toolError((error as Error).message);

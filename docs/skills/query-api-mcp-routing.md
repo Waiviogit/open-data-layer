@@ -14,6 +14,7 @@ related:
   - docs/skills/knowledge-api-routing.md
   - docs/skills/osl-messaging.md
   - docs/skills/wallet-delegation-swap-for-agents.md
+  - docs/skills/hive-engine-deposit-for-agents.md
   - docs/skills/hive-account-authority-for-agents.md
   - docs/skills/obl-offers-contracts.md
   - docs/skills/obl-ledger.md
@@ -75,6 +76,7 @@ related:
 | WAIV / Engine balances | `get_user_waiv_wallet`, `get_user_engine_wallet` |
 | Engine token delegations | `get_user_engine_token_delegations` (symbol e.g. `WAIV`) |
 | Engine swaps / withdraw quotes | `get_user_engine_swap_list`, `post_user_engine_swap_quote`, `post_user_engine_withdraw_quote` |
+| Engine deposit address / list | `get_user_engine_deposit_list`, `get_user_engine_deposit_address` — then [hive-engine-deposit-for-agents](hive-engine-deposit-for-agents.md) + **agent-wallet** `osl_build_hive_engine_deposit` |
 | Who delegated authority to me / who can I post as | `get_user_authority_grantors` (404 = account absent from indexer, not “no grantors”) |
 | Who did this account delegate authority to | `get_user_authority_grantees` |
 | Build / broadcast delegations | Not in query-api MCP — [wallet-delegation-swap-for-agents](wallet-delegation-swap-for-agents.md) + **agent-wallet** (`hive_build_*`, `engine_build_*`, `wallet_broadcast`) |
