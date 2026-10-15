@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 
 jest.mock('@/i18n/providers/i18n-provider', () => ({
   useI18n: () => ({
@@ -115,5 +115,76 @@ describe('ObjectHero layout and styling', () => {
       name: 'object_detail_favorites_add',
     });
     expect(favoriteBtn.className).toContain('rounded-circle');
+  });
+});
+
+describe('ObjectHero avatar gallery', () => {
+  const photosAlbum = {
+    name: 'Photos',
+    items: [
+      {
+        url: 'https://cdn.example.com/avatar.jpg',
+        rankScore: 100,
+        isAvatar: true,
+      },
+      {
+        url: 'https://cdn.example.com/other.jpg',
+        rankScore: 90,
+        isAvatar: false,
+      },
+    ],
+  };
+
+  it('opens the Photos album on the avatar index when the avatar is clicked', () => {
+    const onOpenGalleryPhoto = jest.fn();
+
+    render(
+      <ObjectHero
+        {...baseProps}
+        avatarUrl="https://cdn.example.com/avatar.jpg"
+        galleryPhotosAlbum={photosAlbum}
+        onOpenGalleryPhoto={onOpenGalleryPhoto}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'gallery' }));
+    expect(onOpenGalleryPhoto).toHaveBeenCalledWith(photosAlbum, 0);
+  });
+
+  it('does not render a gallery button when avatarUrl is null', () => {
+    render(
+      <ObjectHero
+        {...baseProps}
+        galleryPhotosAlbum={photosAlbum}
+        onOpenGalleryPhoto={jest.fn()}
+      />,
+    );
+
+    expect(screen.queryByRole('button', { name: 'gallery' })).toBeNull();
+  });
+
+  it('keeps the edit overlay in edit mode and does not open the gallery', () => {
+    const onOpenGalleryPhoto = jest.fn();
+
+    render(
+      <ObjectHero
+        {...baseProps}
+        avatarUrl="https://cdn.example.com/avatar.jpg"
+        isEditMode
+        galleryPhotosAlbum={photosAlbum}
+        onOpenGalleryPhoto={onOpenGalleryPhoto}
+        editContext={{
+          objectId: 'obj-1',
+          viewerUsername: 'alice',
+          supportedUpdateTypes: ['image', 'imageBackground'],
+        }}
+      />,
+    );
+
+    expect(screen.queryByRole('button', { name: 'gallery' })).toBeNull();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'object_detail_edit_avatar_background' }),
+    );
+    expect(onOpenGalleryPhoto).not.toHaveBeenCalled();
   });
 });

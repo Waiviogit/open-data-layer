@@ -618,6 +618,8 @@ export function ObjectPageShellClient({
             onBellToggle={onBellToggle}
             onFavoriteToggle={onFavoriteToggle}
             primaryNav={primaryNav}
+            galleryPhotosAlbum={galleryPhotosAlbum}
+            onOpenGalleryPhoto={onOpenGalleryPhoto}
             editContext={
               isEditMode && viewerUsername
                 ? {

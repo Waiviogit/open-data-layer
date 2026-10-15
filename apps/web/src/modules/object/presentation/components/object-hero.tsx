@@ -10,6 +10,8 @@ import { ObjectThumbnail, OptimisticNavLink } from '@/shared/presentation';
 import { ShellFullBleedBand, ShellInset } from '@/shared/presentation/layout';
 import { HIDDEN_ON_DESKTOP_CLASS, shouldHideHeroOnDesktop, useShellMode } from '@/shell-mode';
 
+import type { ProjectedGalleryAlbumView } from '../../domain/object-page.types';
+import { resolveGalleryPhotoIndexByUrl } from '../../domain/resolve-gallery-photos-album';
 import { ObjectHeroCoverImage } from './object-hero-cover-image';
 
 export type ObjectHeroEditContext = {
@@ -40,6 +42,8 @@ export type ObjectHeroProps = {
   onFavoriteToggle: () => void;
   primaryNav: ReactNode;
   editContext?: ObjectHeroEditContext;
+  galleryPhotosAlbum?: ProjectedGalleryAlbumView | null;
+  onOpenGalleryPhoto?: (album: ProjectedGalleryAlbumView, photoIndex: number) => void;
 };
 
 type HeroModalTarget = 'avatar-background' | 'name' | 'title';
@@ -202,6 +206,8 @@ export function ObjectHero({
   onFavoriteToggle,
   primaryNav,
   editContext,
+  galleryPhotosAlbum = null,
+  onOpenGalleryPhoto,
 }: ObjectHeroProps) {
   const { t } = useI18n();
   const { resolvedMode } = useShellMode();
@@ -218,6 +224,21 @@ export function ObjectHero({
     isEditMode && editContext?.supportedUpdateTypes.includes('name');
   const canEditTitle =
     isEditMode && editContext?.supportedUpdateTypes.includes('title');
+  const canOpenAvatarGallery =
+    !(canEditAvatar || canEditBackground) &&
+    Boolean(avatarUrl?.trim()) &&
+    Boolean(galleryPhotosAlbum?.items.length) &&
+    Boolean(onOpenGalleryPhoto);
+
+  function openAvatarGallery(): void {
+    if (!avatarUrl || !galleryPhotosAlbum || !onOpenGalleryPhoto) {
+      return;
+    }
+    const byUrl = resolveGalleryPhotoIndexByUrl(galleryPhotosAlbum, avatarUrl);
+    const byAvatar = galleryPhotosAlbum.items.findIndex((photo) => photo.isAvatar);
+    const index = byUrl >= 0 ? byUrl : byAvatar >= 0 ? byAvatar : 0;
+    onOpenGalleryPhoto(galleryPhotosAlbum, index);
+  }
 
   function modalCandidates(target: HeroModalTarget): string[] {
     if (target === 'avatar-background') {
@@ -229,6 +250,23 @@ export function ObjectHero({
     if (target === 'title') return ['title'];
     return [];
   }
+
+  const avatarThumbnail = (
+    <ObjectThumbnail
+      src={avatarUrl}
+      alt={title}
+      size={96}
+      avatarSize="large"
+      priority
+      className={[
+        'rounded-card bg-surface-alt object-cover shadow-card',
+        hasCoverPhoto ? 'hero-on-photo-avatar' : '',
+        canOpenAvatarGallery ? 'pointer-events-none' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    />
+  );
 
   return (
     <header className={hiddenOnDesktop ? HIDDEN_ON_DESKTOP_CLASS : undefined}>
@@ -256,19 +294,18 @@ export function ObjectHero({
             ].join(' ')}
           >
             <div className="relative shrink-0 self-start sm:col-start-1 sm:row-start-1 sm:self-end">
-              <ObjectThumbnail
-                src={avatarUrl}
-                alt={title}
-                size={96}
-                avatarSize="large"
-                priority
-                className={[
-                  'rounded-card bg-surface-alt object-cover shadow-card',
-                  hasCoverPhoto ? 'hero-on-photo-avatar' : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-              />
+              {canOpenAvatarGallery ? (
+                <button
+                  type="button"
+                  className="cursor-pointer rounded-card"
+                  aria-label={t('gallery')}
+                  onClick={openAvatarGallery}
+                >
+                  {avatarThumbnail}
+                </button>
+              ) : (
+                avatarThumbnail
+              )}
               {(canEditAvatar || canEditBackground) ? (
                 <button
                   type="button"
