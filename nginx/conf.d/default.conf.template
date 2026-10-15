@@ -46,6 +46,12 @@ upstream auth_api_app {
     server auth-api:7100 resolve;
 }
 
+upstream vip_tickets_app {
+    zone vip_tickets_app 64k;
+
+    server vip-tickets:7611 resolve;
+}
+
 # Per-IP rate limit for auth challenge/verify endpoints
 limit_req_zone $binary_remote_addr zone=auth_api_limit:10m rate=10r/s;
 
@@ -94,6 +100,17 @@ server {
         proxy_read_timeout 300s;
     }
 
+    location = /vip-tickets/mcp {
+        limit_except POST { deny all; }
+        proxy_pass http://vip_tickets_app;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 300s;
+    }
+
     # ipfs-gateway (content/namespaces public; upload JWT in app)
     location /ipfs-gateway/ {
         proxy_pass http://ipfs_gateway_app;
@@ -111,6 +128,21 @@ server {
         limit_req zone=auth_api_limit burst=20 nodelay;
         client_max_body_size 64k;
         proxy_pass http://auth_api_app;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 10s;
+        proxy_send_timeout 30s;
+        proxy_read_timeout 30s;
+    }
+
+    # vip-tickets (health GET, redeem POST; MCP is the exact location above)
+    location /vip-tickets/ {
+        limit_except GET POST { deny all; }
+        client_max_body_size 64k;
+        proxy_pass http://vip_tickets_app;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
