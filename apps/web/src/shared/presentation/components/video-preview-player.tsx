@@ -9,6 +9,7 @@ import {
   buildVideoEmbedUrl,
   parseVideoUrl,
   type ParsedVideoPreview,
+  type VideoPreviewLayout,
 } from '@/shared/infrastructure/video-preview';
 
 import { useVideoPreviewThumbnail } from '../hooks/use-video-preview-thumbnail';
@@ -31,7 +32,14 @@ export type VideoPreviewPlayerProps = {
   onPlayClick?: (event: MouseEvent<HTMLButtonElement>) => void;
 };
 
-function variantClasses(variant: VideoPreviewPlayerProps['variant']): {
+/** Portrait box lives in `global.css` (`.video-embed-portrait`) so width tracks the 9:16 height cap. */
+const FEED_PORTRAIT_BOX = 'video-embed-portrait';
+const FEED_LANDSCAPE_BOX = 'relative aspect-video w-full overflow-hidden bg-bg';
+
+function variantClasses(
+  variant: VideoPreviewPlayerProps['variant'],
+  layout: VideoPreviewLayout,
+): {
   wrapper: string;
   playingWrapper: string;
   posterImg: string;
@@ -60,14 +68,15 @@ function variantClasses(variant: VideoPreviewPlayerProps['variant']): {
         minHeight: 'min-h-0',
       };
     case 'feed':
-    default:
+    default: {
+      const box = layout === 'portrait' ? FEED_PORTRAIT_BOX : FEED_LANDSCAPE_BOX;
       return {
-        wrapper: 'border border-border bg-surface-control',
-        playingWrapper:
-          'relative aspect-video w-full overflow-hidden border border-border bg-black',
-        posterImg: 'block h-auto w-full',
-        minHeight: 'min-h-[180px]',
+        wrapper: box,
+        playingWrapper: box,
+        posterImg: 'absolute inset-0 size-full object-cover',
+        minHeight: 'min-h-0',
       };
+    }
   }
 }
 
@@ -100,11 +109,21 @@ export function VideoPreviewPlayer({
   );
 
   const embedUrl = preview?.embedUrl ?? null;
-  const previewMediaUrl = useVideoPreviewThumbnail(embedUrl, staticThumbnailUrl ?? preview?.thumbnailUrl);
+  /** TikTok oEmbed is unreliable; feed mounts the native player like the article view. */
+  const mountNativeFeedPlayer =
+    preview?.provider === 'tiktok' && variant === 'feed' && !previewOnly;
+  const previewMediaUrl = useVideoPreviewThumbnail(
+    mountNativeFeedPlayer ? null : embedUrl,
+    mountNativeFeedPlayer
+      ? null
+      : preview?.provider === 'youtube' && preview.layout === 'portrait'
+        ? preview.thumbnailUrl
+        : (staticThumbnailUrl ?? preview?.thumbnailUrl),
+  );
   const previewMediaDisplayUrl = previewMediaUrl ? getImagePathPost(previewMediaUrl) : null;
   const canPlay = Boolean(embedUrl) && !previewOnly && variant !== 'viewer';
   const showHostEmbed = variant === 'viewer' && !previewOnly && Boolean(embedUrl);
-  const showInlineVideo = canPlay && playing;
+  const showInlineVideo = canPlay && (playing || mountNativeFeedPlayer);
 
   useEffect(() => {
     setPosterFailed(false);
@@ -120,8 +139,12 @@ export function VideoPreviewPlayer({
     return null;
   }
 
-  const classes = variantClasses(variant);
+  const classes = variantClasses(variant, preview.layout);
   const iframeTitle = title?.trim() ? `${title.trim()} — video` : 'Video';
+  const iframeFillClass =
+    variant === 'viewer'
+      ? 'absolute inset-0 h-full w-full border-0 bg-black'
+      : 'absolute inset-0 h-full w-full border-0 bg-bg';
 
   const previewPlayGlyph = previewOnly ? (
     <span
@@ -185,7 +208,7 @@ export function VideoPreviewPlayer({
         <iframe
           title={iframeTitle}
           src={embedUrl}
-          className="absolute inset-0 h-full w-full border-0 bg-black"
+          className={iframeFillClass}
           referrerPolicy="strict-origin-when-cross-origin"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
@@ -194,30 +217,32 @@ export function VideoPreviewPlayer({
         <>
           <iframe
             title={iframeTitle}
-            src={buildVideoEmbedUrl(preview, { autoplay: true })}
-            className="absolute inset-0 h-full w-full border-0 bg-black"
+            src={buildVideoEmbedUrl(preview, { autoplay: !mountNativeFeedPlayer })}
+            className={iframeFillClass}
             referrerPolicy="strict-origin-when-cross-origin"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen
           />
-          <button
-            type="button"
-            className="absolute right-2 top-2 z-30 rounded-btn bg-overlay/90 px-2 py-1 text-caption font-weight-label text-fg shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-            onClick={() => setPlaying(false)}
-          >
-            {t('close_video')}
-          </button>
+          {mountNativeFeedPlayer ? null : (
+            <button
+              type="button"
+              className="absolute right-2 top-2 z-30 rounded-btn bg-overlay/90 px-2 py-1 text-caption font-weight-label text-fg shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              onClick={() => setPlaying(false)}
+            >
+              {t('close_video')}
+            </button>
+          )}
         </>
       ) : posterFailed ? (
         <div
-          className={`relative flex ${classes.minHeight} w-full items-center justify-center text-caption text-muted`}
+          className={`relative flex size-full ${classes.minHeight} items-center justify-center text-caption text-muted`}
           role="status"
         >
           {t('video_preview_unavailable')}
           {previewPlayGlyph}
         </div>
       ) : previewMediaDisplayUrl ? (
-        <div className={variant === 'feed' ? 'relative w-full' : 'relative size-full'}>
+        <div className="relative size-full">
           {/* External video posters — plain img avoids Next/Image aspect-ratio crop. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -250,13 +275,13 @@ export function VideoPreviewPlayer({
         </div>
       ) : previewOnly ? (
         <div
-          className={`relative flex ${classes.minHeight} w-full items-center justify-center`}
+          className={`relative flex size-full ${classes.minHeight} items-center justify-center`}
         >
           {previewPlayGlyph}
         </div>
       ) : canPlay ? (
         <div
-          className={`relative flex ${classes.minHeight} w-full items-center justify-center`}
+          className={`relative flex size-full ${classes.minHeight} items-center justify-center`}
         >
           <button
             type="button"
@@ -277,7 +302,7 @@ export function VideoPreviewPlayer({
         </div>
       ) : (
         <div
-          className={`flex ${classes.minHeight} w-full items-center justify-center text-caption text-muted`}
+          className={`flex size-full ${classes.minHeight} items-center justify-center text-caption text-muted`}
           role="status"
         >
           {t('video_preview_unavailable')}

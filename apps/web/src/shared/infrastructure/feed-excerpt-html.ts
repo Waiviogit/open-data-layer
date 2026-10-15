@@ -104,6 +104,8 @@ export type FeedExcerptToSafeHtmlOptions = {
   omitImageUrls?: Array<string | null | undefined>;
   /** Remove 3Speak watch/embed links from excerpt text when the card already shows the player. */
   stripThreeSpeakLinks?: boolean;
+  /** Remove YouTube / Vimeo / DTube / TikTok share URLs when the card already shows the player. */
+  stripVideoLinks?: boolean;
 };
 
 function collectOmitImageUrls(options?: FeedExcerptToSafeHtmlOptions): string[] {
@@ -157,6 +159,25 @@ function stripThreeSpeakLinksFromExcerpt(raw: string): string {
   return result.replace(/\s+/g, ' ').trim();
 }
 
+const VIDEO_SHARE_URL =
+  /https?:\/\/(?:(?:www\.|m\.)?(?:youtube\.com|youtube-nocookie\.com)\/[^\s)<]+|youtu\.be\/[^\s)<]+|(?:www\.)?vimeo\.com\/[^\s)<]+|player\.vimeo\.com\/[^\s)<]+|(?:emb\.)?d\.tube[^\s)<]*|(?:www\.)?tiktok\.com\/[^\s)<]+)/gi;
+
+function stripVideoLinksFromExcerpt(raw: string): string {
+  let result = raw;
+  result = result.replace(
+    /\[!\[[^\]]*\]\([^)]*\)\]\(\s*https?:\/\/(?:(?:www\.|m\.)?youtube\.com|youtu\.be|vimeo\.com|tiktok\.com)[^)]+\)/gi,
+    ' ',
+  );
+  result = result.replace(
+    /\[[^\]]*\]\(\s*https?:\/\/(?:(?:www\.|m\.)?youtube\.com|youtu\.be|vimeo\.com|player\.vimeo\.com|(?:emb\.)?d\.tube|(?:www\.)?tiktok\.com)[^)]+\)/gi,
+    ' ',
+  );
+  result = result.replace(VIDEO_SHARE_URL, ' ');
+  result = result.replace(/\[\s*\]\(\s*\)/g, ' ');
+  result = result.replace(/\[\s*\]\(\s+/g, ' ');
+  return result.replace(/\s+/g, ' ').trim();
+}
+
 /**
  * Turn feed excerpt text (often Markdown) into safe HTML for `dangerouslySetInnerHTML`.
  * Client-safe — use in `Story` and other client components (unlike `sanitize-post-html`).
@@ -172,6 +193,12 @@ export function feedExcerptToSafeHtml(
   }
   if (options?.stripThreeSpeakLinks) {
     source = stripThreeSpeakLinksFromExcerpt(source);
+    if (source === '') {
+      return '';
+    }
+  }
+  if (options?.stripVideoLinks) {
+    source = stripVideoLinksFromExcerpt(source);
     if (source === '') {
       return '';
     }

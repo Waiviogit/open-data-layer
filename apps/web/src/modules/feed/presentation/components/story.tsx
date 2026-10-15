@@ -7,6 +7,7 @@ import { CommentIcon } from '@/icons';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { feedExcerptToSafeHtml } from '@/shared/infrastructure/feed-excerpt-html';
 import { isThreeSpeakEmbedUrl } from '@/shared/infrastructure/three-speak-preview';
+import { isTikTokEmbedUrl } from '@/shared/infrastructure/video-preview';
 import {
   getImagePathPost,
   ObjectThumbnail,
@@ -80,7 +81,8 @@ export function Story({
     ? getImagePathPost(previewMediaUrl)
     : null;
   const showPreviewBlock = Boolean(previewMediaUrl || story.videoEmbedUrl);
-  const isPostVideoActive = videoPlaying;
+  const isNativeFeedVideo = isTikTokEmbedUrl(story.videoEmbedUrl);
+  const isPostVideoActive = videoPlaying || isNativeFeedVideo;
 
   const isOwnPost = viewerIsAuthor(currentUsername, story.authorName);
   const editorSearch = new URLSearchParams({
@@ -293,9 +295,11 @@ export function Story({
                       story.videoThumbnailUrl,
                     ],
                     stripThreeSpeakLinks: true,
+                    stripVideoLinks: true,
                   }
                 : {
                     omitImageUrl: previewMediaUrl,
+                    stripVideoLinks: Boolean(story.videoEmbedUrl),
                   }),
             }}
           />

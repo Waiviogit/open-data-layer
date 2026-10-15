@@ -68,8 +68,8 @@ JSON object (Zod-validated):
 | `totalPayout` | string | `posts.total_payout_value` |
 | `netRshares` | string | `posts.net_rshares` (bigint as string) |
 | `thumbnailUrl` | string \| null | First image: `json_metadata.image[0]`, else first markdown/HTML image in `posts.body` |
-| `videoThumbnailUrl` | string \| null | Video poster when detectable: `json_metadata.video` (DTube / 3Speak IPFS or `thumbnail`), else YouTube / Vimeo / 3Speak links in `posts.body` (including Peakd `<center>` linked-image blocks) |
-| `videoEmbedUrl` | string \| null | HTTPS iframe `src` for inline playback when derivable (YouTube / Vimeo / 3Speak / DTube embed patterns); `null` when only a poster URL is known. 3Speak posters are resolved client-side via `play.3speak.tv/api/watch` when not in metadata. |
+| `videoThumbnailUrl` | string \| null | Video poster when detectable: `json_metadata.video` (DTube / 3Speak IPFS or `thumbnail`), else YouTube / Vimeo / 3Speak links in `posts.body` (including Peakd `<center>` linked-image blocks). YouTube watch uses `hqdefault`; Shorts use `oar2` (9:16). TikTok has no static poster — web feed mounts the native player instead. |
+| `videoEmbedUrl` | string \| null | HTTPS URL for inline playback when derivable (YouTube watch → embed, YouTube Shorts share URL, Vimeo / 3Speak / DTube embed, TikTok `player/v1/{id}`); `null` when only a poster URL is known. 3Speak posters are resolved client-side via `play.3speak.tv/api/watch` when not in metadata. TikTok oEmbed is optional (web feed uses the native player). |
 | `authorProfile` | object | From `accounts_current` via batch `findByNames` — `name`, `displayName`, `avatarUrl`, `reputation` (`object_reputation`), `wobjectsWeight` (`wobjects_weight` — user expertise for display) |
 | `objects` | array | Tagged objects for the post — see [Tagged objects](#tagged-objects-objects) |
 | `votes` | object | `totalCount`, `previewVoters` (top voters by `rshares`), and `voted` (boolean: viewer from `X-Viewer` has an active vote) from `post_active_votes` |

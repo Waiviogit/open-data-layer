@@ -154,7 +154,18 @@ describe('sanitizePostBodyHtml', () => {
       'https://www.youtube.com/shorts/abcdefghijk',
     );
     expect(shorts).toContain('blog-post-youtube-embed');
+    expect(shorts).toContain('blog-post-youtube-embed--portrait');
     expect(shorts).toContain('src="https://www.youtube.com/embed/abcdefghijk"');
+  });
+
+  it('embeds TikTok share URLs', () => {
+    const html = sanitizePostBodyHtml(
+      'See https://www.tiktok.com/@paulchefstudio/video/7660467808018386206',
+    );
+    expect(html).toContain('blog-post-tiktok-embed');
+    expect(html).toContain(
+      'src="https://www.tiktok.com/player/v1/7660467808018386206"',
+    );
   });
 
   it('does not nest a second iframe around an existing YouTube embed src', () => {

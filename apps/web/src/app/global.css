@@ -413,20 +413,38 @@
     overflow: hidden;
   }
 
-  /* Injected by sanitize-post-html for YouTube / 3Speak / Instagram URLs in body */
-  .blog-post-youtube-embed {
-    @apply relative my-4 aspect-video w-full max-w-full overflow-hidden border border-border bg-black;
-  }
-
-  .blog-post-youtube-embed iframe {
-    @apply absolute inset-0 h-full w-full border-0;
-  }
-
+  /* Injected by sanitize-post-html for YouTube / 3Speak / Instagram / TikTok URLs in body */
+  .blog-post-youtube-embed,
   .blog-post-3speak-embed {
-    @apply relative my-4 aspect-video w-full max-w-full overflow-hidden border border-border bg-black;
+    @apply relative my-4 aspect-video w-full max-w-full overflow-hidden bg-bg;
   }
 
-  .blog-post-3speak-embed iframe {
+  /**
+   * Portrait Shorts / TikTok: derive width from the height cap so `aspect-ratio: 9/16`
+   * stays exact. `w-full` + `max-h` without shrinking width makes the box too wide
+   * and YouTube/TikTok pillarbox inside the iframe.
+   */
+  .video-embed-portrait,
+  .blog-post-youtube-embed--portrait,
+  .blog-post-tiktok-embed {
+    position: relative;
+    margin-inline: auto;
+    overflow: hidden;
+    background-color: var(--color-bg);
+    aspect-ratio: 9 / 16;
+    width: min(100%, 22.5rem, calc(min(70vh, 32rem) * 9 / 16));
+  }
+
+  .blog-post-youtube-embed--portrait,
+  .blog-post-tiktok-embed {
+    margin-block: 1rem;
+  }
+
+  .blog-post-youtube-embed iframe,
+  .blog-post-youtube-embed--portrait iframe,
+  .blog-post-3speak-embed iframe,
+  .blog-post-tiktok-embed iframe,
+  .video-embed-portrait iframe {
     @apply absolute inset-0 h-full w-full border-0;
   }
 

@@ -4,14 +4,22 @@
 
 const HIVE_IMAGE_PROXY_BASE = 'https://images.hive.blog/p';
 
+const YOUTUBE_SHORTS_PATTERN = /(?:m\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})\b/;
+
 const YOUTUBE_ID_PATTERNS: RegExp[] = [
   /youtube\.com\/watch\?[^#\s]*?v=([a-zA-Z0-9_-]{11})\b/,
   /youtu\.be\/([a-zA-Z0-9_-]{11})\b/,
   /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})\b/,
-  /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})\b/,
+  YOUTUBE_SHORTS_PATTERN,
   /m\.youtube\.com\/watch\?[^#\s]*?v=([a-zA-Z0-9_-]{11})\b/,
   /youtube-nocookie\.com\/embed\/([a-zA-Z0-9_-]{11})\b/,
 ];
+
+const TIKTOK_VIDEO_PATTERN =
+  /(?:www\.)?tiktok\.com\/@[^/\s"'<>]+\/video\/(\d{10,20})\b/i;
+
+const TIKTOK_PLAYER_PATTERN =
+  /(?:www\.)?tiktok\.com\/(?:player\/v1|embed\/v2)\/(\d{10,20})\b/i;
 
 const VIMEO_ID_PATTERN = /(?:vimeo\.com\/(?:video\/)?|player\.vimeo\.com\/video\/)(\d+)/;
 
@@ -115,11 +123,21 @@ function videoThumbFromJsonMetadata(jsonMetadata: string): string | null {
   return null;
 }
 
+function youtubeThumbnailUrl(videoId: string, portrait: boolean): string {
+  return portrait
+    ? `https://i.ytimg.com/vi/${videoId}/oar2.jpg`
+    : `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+}
+
 function extractYouTubeThumbnail(body: string): string | null {
+  const shorts = body.match(YOUTUBE_SHORTS_PATTERN);
+  if (shorts?.[1]) {
+    return youtubeThumbnailUrl(shorts[1], true);
+  }
   for (const re of YOUTUBE_ID_PATTERNS) {
     const m = body.match(re);
     if (m?.[1]) {
-      return `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg`;
+      return youtubeThumbnailUrl(m[1], false);
     }
   }
   return null;
@@ -201,6 +219,15 @@ function extractVideoUrlFromCenterBlock(body: string): string | null {
     return vimeo[0];
   }
 
+  const tiktokPlayer = center.match(TIKTOK_PLAYER_PATTERN);
+  if (tiktokPlayer?.[0]) {
+    return tiktokPlayer[0];
+  }
+  const tiktokShare = center.match(TIKTOK_VIDEO_PATTERN);
+  if (tiktokShare?.[0]) {
+    return tiktokShare[0];
+  }
+
   const linked = center.match(MARKDOWN_LINKED_VIDEO);
   if (linked?.[1]) {
     return linked[1].trim();
@@ -267,6 +294,24 @@ function extractYouTubeIdFromBody(body: string): string | null {
   return null;
 }
 
+function extractYouTubeShortsIdFromBody(body: string): string | null {
+  const m = body.match(YOUTUBE_SHORTS_PATTERN);
+  return m?.[1] ?? null;
+}
+
+function extractTikTokVideoIdFromBody(body: string): string | null {
+  const player = body.match(TIKTOK_PLAYER_PATTERN);
+  if (player?.[1]) {
+    return player[1];
+  }
+  const share = body.match(TIKTOK_VIDEO_PATTERN);
+  return share?.[1] ?? null;
+}
+
+function buildTikTokEmbedUrl(videoId: string): string {
+  return `https://www.tiktok.com/player/v1/${videoId}`;
+}
+
 function extractYouTubeIdFromThumbnailUrl(url: string): string | null {
   const m = url.match(YOUTUBE_THUMB_HOST);
   return m?.[1] ?? null;
@@ -326,9 +371,17 @@ function embedFromJsonMetadataVideo(
 }
 
 function embedFromBody(body: string): string | null {
+  const shorts = extractYouTubeShortsIdFromBody(body);
+  if (shorts) {
+    return `https://www.youtube.com/shorts/${shorts}`;
+  }
   const yt = extractYouTubeIdFromBody(body);
   if (yt) {
     return `https://www.youtube.com/embed/${yt}?autoplay=1&rel=0`;
+  }
+  const tiktok = extractTikTokVideoIdFromBody(body);
+  if (tiktok) {
+    return buildTikTokEmbedUrl(tiktok);
   }
   const vm = extractVimeoIdFromBody(body);
   if (vm) {
@@ -344,9 +397,17 @@ function embedFromBody(body: string): string | null {
     return null;
   }
 
+  const centerShorts = extractYouTubeShortsIdFromBody(centerVideoUrl);
+  if (centerShorts) {
+    return `https://www.youtube.com/shorts/${centerShorts}`;
+  }
   const centerYt = extractYouTubeIdFromBody(centerVideoUrl);
   if (centerYt) {
     return `https://www.youtube.com/embed/${centerYt}?autoplay=1&rel=0`;
+  }
+  const centerTiktok = extractTikTokVideoIdFromBody(centerVideoUrl);
+  if (centerTiktok) {
+    return buildTikTokEmbedUrl(centerTiktok);
   }
   const centerVm = extractVimeoIdFromBody(centerVideoUrl);
   if (centerVm) {

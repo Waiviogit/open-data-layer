@@ -64,10 +64,14 @@ Validated with `feedStoryViewSchema`. Core fields: `id`, `authorName`, optional 
 
 - Header: [`UserAvatar`](avatar.md); when `rebloggedBy` is set, a **reblog line** (“Reblogged by @account”); display name, `@author`, formatted timestamp (`feedAt` when present, else `createdAt`).
 - Body: optional title, excerpt, and **preview media** when `thumbnailUrl` / `videoThumbnailUrl` / `videoEmbedUrl` is set:
-  - **Poster-first (all video embeds including 3Speak):** shows poster + play button; inline iframe only after click. Poster uses a plain `<img class="block h-auto w-full">` (not `next/image`) so wide 3Speak/Ecency thumbs are not cropped.
-  - **Active iframe:** `aspect-video w-full` container with Close control; full-card overlay link is removed so the iframe receives clicks.
+  - **Poster-first (YouTube / Vimeo / 3Speak / DTube):** shows poster + play button; inline iframe only after click. Poster uses a plain `<img class="absolute inset-0 size-full object-cover">` (not `next/image`) inside an aspect box. Landscape YouTube uses `hqdefault` (object-cover crops 4:3 letterbox); Shorts use `oar2` (true 9:16).
+  - **TikTok in feed:** no oEmbed poster — mounts the native `player/v1` iframe immediately (same as the article view). Story overlay is off so the iframe receives clicks; no Close control.
+  - **Frame:** landscape providers use `aspect-video`; YouTube Shorts and TikTok use `.video-embed-portrait` / article portrait classes: `aspect-ratio: 9/16` and `width: min(100%, 22.5rem, calc(min(70vh, 32rem) * 9 / 16))` so the height cap cannot widen the box. Residual fill is `bg-bg` (theme), not a CSS border.
+  - **Active iframe (non-TikTok):** same aspect box as the poster, with Close control; full-card overlay link is removed so the iframe receives clicks.
+  - **TikTok poster (tiles / gallery):** no static CDN; client fetches `/api/video-preview/tiktok?id=` (BFF oEmbed) when a poster is needed.
   - **Title navigation:** when inline video is playing, title renders as `<Link href={permalinkPath}>` (overlay link is off); otherwise a full-body overlay link opens the post modal.
-  - **3Speak excerpt:** when `videoEmbedUrl` is a 3Speak embed, excerpt HTML uses `feedExcerptToSafeHtml(…, { stripThreeSpeakLinks: true })` to drop Peakd prefix markdown (`[![](poster)](3speak) ▶ [Watch on 3Speak](…) ---`) and show `▶ Watch on 3Speak` + body text.
+  - **3Speak excerpt:** when `videoEmbedUrl` is a 3Speak embed, excerpt HTML uses `feedExcerptToSafeHtml(…, { stripThreeSpeakLinks: true, stripVideoLinks: true })` to drop Peakd prefix markdown (`[![](poster)](3speak) ▶ [Watch on 3Speak](…) ---`) and show `▶ Watch on 3Speak` + body text.
+  - **Video excerpt:** when `videoEmbedUrl` is set, `stripVideoLinks: true` drops leftover YouTube / Vimeo / DTube / TikTok share URLs (the card already shows the player).
   - **Object chips** (name + optional avatar; up to four) when `objects` is non-empty; optional NSFW line.
 - Footer: **`StoryVoteButton`**, comment toggle (**`StoryStatButton`** — muted until expanded), **`StoryReblogButton`** (hidden on own posts), overflow menu; payout when present.
 - Below footer when expanded: **`StoryCommentsSection`** (`layout="quick"` — no sort dropdown), then **`StoryCommentEditor`** when logged in. Sort UI is only on **`BlogPostScreen`** / post modal (`layout="full"`).

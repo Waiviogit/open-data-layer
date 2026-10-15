@@ -95,6 +95,13 @@ describe('getProxyImageUrl', () => {
     expect(getProxyImageUrl(yt)).toBe(yt);
   });
 
+  it('skips TikTok poster CDNs (Hive 0x0 returns 403)', () => {
+    const thumb =
+      'https://p16.muscdn.com/obj/tos-maliva-p-0068/06kv6rfcesljdjr45ukb0000d844090v0200010605';
+    expect(getProxyImageUrl(thumb)).toBe(thumb);
+    expect(getImagePathPost(thumb)).toBe(thumb);
+  });
+
   it('skips Google Shopping gstatic thumbnails (Hive 0x0 returns 403)', () => {
     const gstatic =
       'https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcExample&usqp=CAY';

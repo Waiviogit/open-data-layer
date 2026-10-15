@@ -39,6 +39,8 @@ const SKIP_PROXY_SUBSTRINGS = [
   'vumbnail.com',
   'i.ytimg.com',
   'img.youtube.com',
+  'tiktokcdn',
+  'muscdn',
   'gstatic.com',
   'ecency.com',
   // First-party ipfs-gateway content URLs — Hive 0x0 returns 403.

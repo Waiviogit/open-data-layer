@@ -67,8 +67,26 @@ describe('parseMediaEmbedUrl', () => {
       'https://www.youtube.com/embed/abcdefghijk',
     );
     expect(
-      parseMediaEmbedUrl('https://www.youtube.com/shorts/abcdefghijk')?.embedSrc,
-    ).toBe('https://www.youtube.com/embed/abcdefghijk');
+      parseMediaEmbedUrl('https://www.youtube.com/shorts/abcdefghijk'),
+    ).toEqual(
+      expect.objectContaining({
+        embedSrc: 'https://www.youtube.com/embed/abcdefghijk',
+        wrapperClass: 'blog-post-youtube-embed blog-post-youtube-embed--portrait',
+      }),
+    );
+  });
+
+  it('embeds TikTok share URLs in a portrait player', () => {
+    expect(
+      parseMediaEmbedUrl(
+        'https://www.tiktok.com/@paulchefstudio/video/7660467808018386206',
+      ),
+    ).toEqual({
+      provider: 'tiktok',
+      embedSrc: 'https://www.tiktok.com/player/v1/7660467808018386206',
+      wrapperClass: 'blog-post-tiktok-embed',
+      title: 'TikTok video',
+    });
   });
 
   it('accepts protocol-relative and scheme-less Instagram URLs', () => {
@@ -104,6 +122,14 @@ describe('isProviderEmbedSrc', () => {
     ).toBe(false);
     expect(
       isProviderEmbedSrc('https://www.instagram.com/p/DcncWF8DaIb/'),
+    ).toBe(false);
+    expect(
+      isProviderEmbedSrc('https://www.tiktok.com/player/v1/7660467808018386206'),
+    ).toBe(true);
+    expect(
+      isProviderEmbedSrc(
+        'https://www.tiktok.com/@paulchefstudio/video/7660467808018386206',
+      ),
     ).toBe(false);
   });
 });

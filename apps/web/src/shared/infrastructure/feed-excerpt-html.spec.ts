@@ -88,4 +88,15 @@ describe('feedExcerptToSafeHtml', () => {
     expect(html).toContain('▶ Watch on 3Speak');
     expect(html).toContain('HiveReactKit improves profile translations');
   });
+
+  it('strips YouTube and TikTok share URLs when the card already shows a player', () => {
+    const html = feedExcerptToSafeHtml(
+      'Roman carbonara: spaghetti. https://www.youtube.com/watch?v=YCLDgh8WJFA and https://www.tiktok.com/@paulchefstudio/video/7660467808018386206 extra',
+      { stripVideoLinks: true },
+    );
+    expect(html).not.toContain('youtube.com');
+    expect(html).not.toContain('tiktok.com');
+    expect(html).toContain('Roman carbonara');
+    expect(html).toContain('extra');
+  });
 });

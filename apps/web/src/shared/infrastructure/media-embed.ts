@@ -1,6 +1,6 @@
 import { parseVideoUrl } from './video-preview';
 
-export type MediaEmbedProvider = 'youtube' | 'instagram';
+export type MediaEmbedProvider = 'youtube' | 'instagram' | 'tiktok';
 
 export type ParsedMediaEmbed = {
   provider: MediaEmbedProvider;
@@ -14,6 +14,9 @@ const INSTAGRAM_POST =
 
 const YOUTUBE_IFRAME_ALLOW =
   'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+
+const TIKTOK_IFRAME_ALLOW =
+  'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
 
 const TRAILING_PUNCTUATION = /[).,;!?]+$/;
 
@@ -41,7 +44,7 @@ export function canonicalizeMediaUrl(url: string): string {
 }
 
 /**
- * Detects Instagram post/reel/tv and YouTube watch/shorts/youtu.be URLs.
+ * Detects Instagram post/reel/tv, YouTube watch/shorts/youtu.be, and TikTok video URLs.
  * Profile URLs like instagram.com/username return null.
  */
 export function parseMediaEmbedUrl(url: string): ParsedMediaEmbed | null {
@@ -62,13 +65,24 @@ export function parseMediaEmbedUrl(url: string): ParsedMediaEmbed | null {
     };
   }
 
-  const youtube = parseVideoUrl(normalized);
-  if (youtube?.provider === 'youtube') {
+  const parsed = parseVideoUrl(normalized);
+  if (parsed?.provider === 'youtube') {
     return {
       provider: 'youtube',
-      embedSrc: youtube.embedUrl,
-      wrapperClass: 'blog-post-youtube-embed',
+      embedSrc: parsed.embedUrl,
+      wrapperClass:
+        parsed.layout === 'portrait'
+          ? 'blog-post-youtube-embed blog-post-youtube-embed--portrait'
+          : 'blog-post-youtube-embed',
       title: 'YouTube video',
+    };
+  }
+  if (parsed?.provider === 'tiktok') {
+    return {
+      provider: 'tiktok',
+      embedSrc: parsed.embedUrl,
+      wrapperClass: 'blog-post-tiktok-embed',
+      title: 'TikTok video',
     };
   }
 
@@ -77,7 +91,7 @@ export function parseMediaEmbedUrl(url: string): ParsedMediaEmbed | null {
 
 /** True when `url` is already a provider embed src (do not wrap again). */
 export function isProviderEmbedSrc(url: string): boolean {
-  return /(?:youtube(?:-nocookie)?\.com\/embed\/|instagram\.com\/(?:p|reel|tv)\/[^/]+\/embed)/i.test(
+  return /(?:youtube(?:-nocookie)?\.com\/embed\/|instagram\.com\/(?:p|reel|tv)\/[^/]+\/embed|tiktok\.com\/(?:player\/v1|embed\/v2)\/)/i.test(
     url,
   );
 }
@@ -91,6 +105,9 @@ export function mediaEmbedIframeHtml(parsed: ParsedMediaEmbed): string {
   const title = escapeHtmlAttr(parsed.title);
   if (parsed.provider === 'youtube') {
     return `<div class="${parsed.wrapperClass}"><iframe src="${src}" title="${title}" frameborder="0" allow="${YOUTUBE_IFRAME_ALLOW}" allowfullscreen loading="lazy"></iframe></div>`;
+  }
+  if (parsed.provider === 'tiktok') {
+    return `<div class="${parsed.wrapperClass}"><iframe src="${src}" title="${title}" frameborder="0" allow="${TIKTOK_IFRAME_ALLOW}" allowfullscreen loading="lazy"></iframe></div>`;
   }
   return `<div class="${parsed.wrapperClass}"><iframe src="${src}" title="${title}" frameborder="0" scrolling="no" allowfullscreen loading="lazy"></iframe></div>`;
 }

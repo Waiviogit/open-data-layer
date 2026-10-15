@@ -22,7 +22,7 @@ describe('extractVideoThumbnailUrl', () => {
 
   it('returns YouTube thumbnail from shorts URL', () => {
     expect(extractVideoThumbnailUrl('', 'https://youtube.com/shorts/abcdefghijk')).toBe(
-      'https://img.youtube.com/vi/abcdefghijk/hqdefault.jpg',
+      'https://i.ytimg.com/vi/abcdefghijk/oar2.jpg',
     );
   });
 
@@ -214,5 +214,21 @@ describe('extractVideoEmbedUrl', () => {
     expect(extractVideoEmbedUrl('', body, ctx)).toBe(
       'https://emb.d.tube/#!/alice/my-video',
     );
+  });
+
+  it('returns a YouTube shorts share URL so the client can use a portrait frame', () => {
+    expect(
+      extractVideoEmbedUrl('', 'https://www.youtube.com/shorts/abcdefghijk', ctx),
+    ).toBe('https://www.youtube.com/shorts/abcdefghijk');
+  });
+
+  it('returns a TikTok player URL from a share link in the body', () => {
+    expect(
+      extractVideoEmbedUrl(
+        '',
+        'https://www.tiktok.com/@paulchefstudio/video/7660467808018386206',
+        ctx,
+      ),
+    ).toBe('https://www.tiktok.com/player/v1/7660467808018386206');
   });
 });

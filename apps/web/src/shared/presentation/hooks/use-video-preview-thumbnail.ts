@@ -8,9 +8,14 @@ import {
   isThreeSpeakEmbedUrl,
   parseThreeSpeakVideoIdFromEmbedUrl,
 } from '@/shared/infrastructure/three-speak-preview';
+import {
+  fetchTikTokThumbnail,
+  parseTikTokVideoIdFromEmbedUrl,
+} from '@/shared/infrastructure/tiktok-preview';
+import { isTikTokEmbedUrl } from '@/shared/infrastructure/video-preview';
 
 /**
- * Resolves video preview poster: static thumbnail first, then 3Speak play API when needed.
+ * Resolves video preview poster: static thumbnail first, then 3Speak / TikTok when needed.
  */
 export function useVideoPreviewThumbnail(
   embedUrl: string | null | undefined,
@@ -20,26 +25,37 @@ export function useVideoPreviewThumbnail(
     staticThumbnailUrl && !isBrokenThreeSpeakStaticThumbnail(staticThumbnailUrl)
       ? staticThumbnailUrl
       : null;
-  const [fetchedThreeSpeakThumb, setFetchedThreeSpeakThumb] = useState<string | null>(null);
+  const [fetchedThumb, setFetchedThumb] = useState<string | null>(null);
   const threeSpeakVideoId = isThreeSpeakEmbedUrl(embedUrl)
     ? parseThreeSpeakVideoIdFromEmbedUrl(embedUrl ?? '')
     : null;
+  const tiktokVideoId = isTikTokEmbedUrl(embedUrl)
+    ? parseTikTokVideoIdFromEmbedUrl(embedUrl)
+    : null;
 
   useEffect(() => {
-    setFetchedThreeSpeakThumb(null);
-    if (!threeSpeakVideoId || staticVideoThumb) {
+    setFetchedThumb(null);
+    if (staticVideoThumb) {
+      return undefined;
+    }
+    const fetchThumb = threeSpeakVideoId
+      ? () => fetchThreeSpeakThumbnail(threeSpeakVideoId)
+      : tiktokVideoId
+        ? () => fetchTikTokThumbnail(tiktokVideoId)
+        : null;
+    if (!fetchThumb) {
       return undefined;
     }
     let cancelled = false;
-    void fetchThreeSpeakThumbnail(threeSpeakVideoId).then((url) => {
+    void fetchThumb().then((url) => {
       if (!cancelled) {
-        setFetchedThreeSpeakThumb(url);
+        setFetchedThumb(url);
       }
     });
     return () => {
       cancelled = true;
     };
-  }, [threeSpeakVideoId, staticVideoThumb]);
+  }, [threeSpeakVideoId, tiktokVideoId, staticVideoThumb]);
 
-  return fetchedThreeSpeakThumb ?? staticVideoThumb ?? null;
+  return fetchedThumb ?? staticVideoThumb ?? null;
 }

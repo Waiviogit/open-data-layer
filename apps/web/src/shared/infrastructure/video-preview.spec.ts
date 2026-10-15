@@ -7,6 +7,7 @@ describe('parseVideoUrl', () => {
       videoId: 'dQw4w9WgXcQ',
       embedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
       thumbnailUrl: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
+      layout: 'landscape',
     });
   });
 
@@ -16,6 +17,7 @@ describe('parseVideoUrl', () => {
       videoId: 'abcdefghijk',
       embedUrl: 'https://www.youtube.com/embed/abcdefghijk',
       thumbnailUrl: 'https://img.youtube.com/vi/abcdefghijk/hqdefault.jpg',
+      layout: 'landscape',
     });
   });
 
@@ -25,15 +27,17 @@ describe('parseVideoUrl', () => {
       videoId: 'abcdefghijk',
       embedUrl: 'https://www.youtube.com/embed/abcdefghijk',
       thumbnailUrl: 'https://img.youtube.com/vi/abcdefghijk/hqdefault.jpg',
+      layout: 'landscape',
     });
   });
 
-  it('returns YouTube preview from shorts URL', () => {
+  it('returns a portrait YouTube preview from shorts URL', () => {
     expect(parseVideoUrl('https://youtube.com/shorts/abcdefghijk')).toEqual({
       provider: 'youtube',
       videoId: 'abcdefghijk',
       embedUrl: 'https://www.youtube.com/embed/abcdefghijk',
-      thumbnailUrl: 'https://img.youtube.com/vi/abcdefghijk/hqdefault.jpg',
+      thumbnailUrl: 'https://i.ytimg.com/vi/abcdefghijk/oar2.jpg',
+      layout: 'portrait',
     });
   });
 
@@ -43,6 +47,7 @@ describe('parseVideoUrl', () => {
       videoId: '123456789',
       embedUrl: 'https://player.vimeo.com/video/123456789',
       thumbnailUrl: 'https://vumbnail.com/123456789.jpg',
+      layout: 'landscape',
     });
   });
 
@@ -55,6 +60,7 @@ describe('parseVideoUrl', () => {
       embedUrl:
         'https://play.3speak.tv/watch?v=author%2Fmy-post-permlink&mode=iframe&layout=desktop',
       thumbnailUrl: null,
+      layout: 'landscape',
     });
   });
 
@@ -69,6 +75,7 @@ describe('parseVideoUrl', () => {
       embedUrl:
         'https://play.3speak.tv/watch?v=author%2Fpermlink&mode=iframe&layout=desktop',
       thumbnailUrl: null,
+      layout: 'landscape',
     });
   });
 
@@ -78,6 +85,33 @@ describe('parseVideoUrl', () => {
       videoId: 'alice/my-video',
       embedUrl: 'https://emb.d.tube/#!/alice/my-video',
       thumbnailUrl: null,
+      layout: 'landscape',
+    });
+  });
+
+  it('returns a portrait TikTok preview from a share URL', () => {
+    expect(
+      parseVideoUrl(
+        'https://www.tiktok.com/@paulchefstudio/video/7660467808018386206',
+      ),
+    ).toEqual({
+      provider: 'tiktok',
+      videoId: '7660467808018386206',
+      embedUrl: 'https://www.tiktok.com/player/v1/7660467808018386206',
+      thumbnailUrl: null,
+      layout: 'portrait',
+    });
+  });
+
+  it('returns a portrait TikTok preview from a player embed URL', () => {
+    expect(
+      parseVideoUrl('https://www.tiktok.com/player/v1/7660467808018386206'),
+    ).toEqual({
+      provider: 'tiktok',
+      videoId: '7660467808018386206',
+      embedUrl: 'https://www.tiktok.com/player/v1/7660467808018386206',
+      thumbnailUrl: null,
+      layout: 'portrait',
     });
   });
 
@@ -91,6 +125,7 @@ describe('parseVideoUrl', () => {
       videoId: 'abcdefghijk',
       embedUrl: 'https://www.youtube.com/embed/abcdefghijk',
       thumbnailUrl: 'https://img.youtube.com/vi/abcdefghijk/hqdefault.jpg',
+      layout: 'landscape',
     });
   });
 
@@ -99,7 +134,8 @@ describe('parseVideoUrl', () => {
       provider: 'youtube',
       videoId: 'abcdefghijk',
       embedUrl: 'https://www.youtube.com/embed/abcdefghijk',
-      thumbnailUrl: 'https://img.youtube.com/vi/abcdefghijk/hqdefault.jpg',
+      thumbnailUrl: 'https://i.ytimg.com/vi/abcdefghijk/oar2.jpg',
+      layout: 'portrait',
     });
   });
 
@@ -109,6 +145,7 @@ describe('parseVideoUrl', () => {
       videoId: 'abcdefghijk',
       embedUrl: 'https://www.youtube.com/embed/abcdefghijk',
       thumbnailUrl: 'https://img.youtube.com/vi/abcdefghijk/hqdefault.jpg',
+      layout: 'landscape',
     });
   });
 
@@ -124,12 +161,12 @@ describe('parseVideoUrl', () => {
       videoId: 'alice/my-video',
       embedUrl: 'https://emb.d.tube/#!/alice/my-video',
       thumbnailUrl: null,
+      layout: 'landscape',
     });
   });
 
   it('leaves out-of-scope hosts unclassified', () => {
     const urls = [
-      'https://www.tiktok.com/@name/video/1',
       'https://www.twitch.tv/videos/1',
       'https://www.dailymotion.com/video/x7tgad0',
       'https://rumble.com/v1-example.html',
@@ -163,6 +200,7 @@ describe('parseVideoUrl', () => {
       videoId: 'abcdefghijk',
       embedUrl: 'https://www.youtube.com/embed/abcdefghijk',
       thumbnailUrl: 'https://img.youtube.com/vi/abcdefghijk/hqdefault.jpg',
+      layout: 'landscape',
     });
   });
 
@@ -189,6 +227,16 @@ describe('buildVideoEmbedUrl', () => {
     expect(preview).not.toBeNull();
     expect(buildVideoEmbedUrl(preview!, { autoplay: true })).toBe(
       'https://player.vimeo.com/video/123456789?autoplay=1',
+    );
+  });
+
+  it('keeps the TikTok player URL', () => {
+    const preview = parseVideoUrl(
+      'https://www.tiktok.com/@paulchefstudio/video/7660467808018386206',
+    );
+    expect(preview).not.toBeNull();
+    expect(buildVideoEmbedUrl(preview!, { autoplay: true })).toBe(
+      'https://www.tiktok.com/player/v1/7660467808018386206',
     );
   });
 });

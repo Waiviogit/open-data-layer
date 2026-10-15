@@ -164,7 +164,7 @@ export function embedThreeSpeakInBody(html: string): string {
 }
 
 /**
- * Replace Instagram / YouTube `<a href>` and leftover bare URLs with iframes.
+ * Replace Instagram / YouTube / TikTok `<a href>` and leftover bare URLs with iframes.
  * Skip already-embed srcs so existing iframe `src` values are not nested.
  */
 export function embedMediaUrls(html: string): string {
@@ -172,7 +172,8 @@ export function embedMediaUrls(html: string): string {
   if (
     !lower.includes('youtube') &&
     !lower.includes('youtu.be') &&
-    !lower.includes('instagram.com')
+    !lower.includes('instagram.com') &&
+    !lower.includes('tiktok.com')
   ) {
     return html;
   }
@@ -249,6 +250,8 @@ const POST_BODY_SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     'embed.twitch.tv',
     'www.instagram.com',
     'instagram.com',
+    'www.tiktok.com',
+    'tiktok.com',
   ],
   transformTags: {
     img: (tagName, attribs) => {
