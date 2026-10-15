@@ -113,6 +113,7 @@ describe('mergeLeftRailBlocksForEditMode', () => {
       UPDATE_TYPES.COOK_TIME,
       UPDATE_TYPES.NUTRITION,
       UPDATE_TYPES.INGREDIENTS,
+      UPDATE_TYPES.SERVINGS,
       UPDATE_TYPES.CATEGORY,
       UPDATE_TYPES.AGGREGATE_RATING,
       UPDATE_TYPES.TAG_CATEGORY,
@@ -125,6 +126,7 @@ describe('mergeLeftRailBlocksForEditMode', () => {
     expect(kinds.indexOf('budget')).toBeLessThan(kinds.indexOf('cookTime'));
     expect(kinds.indexOf('description')).toBeLessThan(kinds.indexOf('nutrition'));
     expect(kinds.indexOf('rating')).toBeLessThan(kinds.indexOf('ingredients'));
+    expect(kinds.indexOf('servings')).toBeGreaterThan(kinds.indexOf('ingredients'));
     expect(kinds).toContain('budget');
   });
 

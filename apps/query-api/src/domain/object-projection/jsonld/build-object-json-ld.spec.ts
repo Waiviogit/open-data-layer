@@ -42,12 +42,14 @@ describe('buildObjectJsonLd', () => {
           name: 'Soup',
           ingredients: ['water', 'salt'],
           cookTime: 'PT30M',
+          servings: '4',
         },
       },
       'https://site.com/object/obj-1',
     );
     expect(json['@type']).toBe('Recipe');
     expect(json.recipeIngredient).toEqual(['water', 'salt']);
+    expect(json.recipeYield).toBe('4');
   });
 
   it('includes telephone from JSON rows in Place JSON-LD', () => {

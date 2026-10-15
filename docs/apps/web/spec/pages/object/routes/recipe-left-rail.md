@@ -37,7 +37,8 @@ After optional menu cluster (when present):
 | 7 | `category` | Categories | First 2 + **Show all categories** |
 | 8 | `rating` | Ratings | Star rows per dimension |
 | 9 | `ingredients` | Ingredients | Bulleted list; first 5 + **Show all {count} ingredients**; discover `q` cleaned via `cleanIngredientSearchQuery` (display stays raw) |
-| 10+ | `gallery`, `featureList`, `identifier` | As populated | After ingredients |
+| 10 | `servings` | Servings | Raw text |
+| 11+ | `gallery`, `featureList`, `identifier` | As populated | After servings |
 
 Tag sections order: **Cuisine**, **Pros**, then remaining categories (`Meal Type`, `Diet`, custom).
 

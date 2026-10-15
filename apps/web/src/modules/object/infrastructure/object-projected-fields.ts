@@ -1000,6 +1000,10 @@ export function projectedNutrition(o: ProjectedObjectView): string | null {
   return readString(o.fields.nutrition) ?? null;
 }
 
+export function projectedServings(o: ProjectedObjectView): string | null {
+  return readString(o.fields.servings) ?? null;
+}
+
 export function projectedIngredients(o: ProjectedObjectView): string[] {
   const raw = o.fields.ingredients;
   if (!Array.isArray(raw)) {

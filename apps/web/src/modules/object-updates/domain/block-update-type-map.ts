@@ -30,6 +30,7 @@ export const BLOCK_KIND_TO_UPDATE_TYPES: Record<ObjectLeftRailBlockKind, readonl
   budget: [UPDATE_TYPES.BUDGET],
   cookTime: [UPDATE_TYPES.COOK_TIME],
   ingredients: [UPDATE_TYPES.INGREDIENTS],
+  servings: [UPDATE_TYPES.SERVINGS],
   nutrition: [UPDATE_TYPES.NUTRITION],
   author: [UPDATE_TYPES.AUTHOR],
   publisher: [UPDATE_TYPES.PUBLISHER],

@@ -130,6 +130,8 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
       return { kind: 'cookTime', headingLabel, text: '' };
     case 'ingredients':
       return { kind: 'ingredients', headingLabel, items: [] };
+    case 'servings':
+      return { kind: 'servings', headingLabel, text: '' };
     case 'nutrition':
       return { kind: 'nutrition', headingLabel, text: '' };
     case 'author':

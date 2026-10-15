@@ -77,6 +77,7 @@ import {
   projectedCookTime,
   projectedNutrition,
   projectedIngredients,
+  projectedServings,
   orderRecipeTagCategorySections,
   projectedSortCustom,
   projectedTagCategoryNames,
@@ -374,6 +375,17 @@ function appendAboutSectionBlock(
           kind: 'ingredients',
           headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.ingredients,
           items,
+        });
+      }
+      break;
+    }
+    case 'servings': {
+      const text = projectedServings(viewLike);
+      if (text) {
+        blocks.push({
+          kind: 'servings',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.servings,
+          text,
         });
       }
       break;

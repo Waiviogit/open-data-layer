@@ -56,6 +56,7 @@ export { UPDATE_CALORIES } from './updates/calories';
 export { UPDATE_BUDGET } from './updates/budget';
 export { UPDATE_COOK_TIME } from './updates/cook-time';
 export { UPDATE_INGREDIENTS } from './updates/ingredients';
+export { UPDATE_SERVINGS } from './updates/servings';
 export { UPDATE_GROUP_EXPERTISE } from './updates/group-expertise';
 export { UPDATE_GROUP_FOLLOWERS } from './updates/group-followers';
 export { UPDATE_GROUP_FOLLOWING } from './updates/group-following';

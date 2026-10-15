@@ -915,6 +915,7 @@ describe('projectedObjectWithCountsToPageModel closed venue status block', () =>
           },
         ],
         ingredients: ['Napa Cabbage — 8 lbs 8 oz', 'Sea Salt', 'Water'],
+        servings: '4-6',
       },
       previewGallery: [],
       galleryAlbums: [],
@@ -931,6 +932,7 @@ describe('projectedObjectWithCountsToPageModel closed venue status block', () =>
     expect(kinds.indexOf('tags')).toBeLessThan(kinds.indexOf('category'));
     expect(kinds.indexOf('category')).toBeLessThan(kinds.indexOf('rating'));
     expect(kinds.indexOf('rating')).toBeLessThan(kinds.indexOf('ingredients'));
+    expect(kinds.indexOf('ingredients')).toBeLessThan(kinds.indexOf('servings'));
 
     const cookTime = model.leftRailBlocks.find((b) => b.kind === 'cookTime');
     expect(cookTime?.kind).toBe('cookTime');
@@ -942,6 +944,12 @@ describe('projectedObjectWithCountsToPageModel closed venue status block', () =>
     expect(ingredients?.kind).toBe('ingredients');
     if (ingredients?.kind === 'ingredients') {
       expect(ingredients.items).toHaveLength(3);
+    }
+
+    const servings = model.leftRailBlocks.find((b) => b.kind === 'servings');
+    expect(servings?.kind).toBe('servings');
+    if (servings?.kind === 'servings') {
+      expect(servings.text).toBe('4-6');
     }
 
     const tags = model.leftRailBlocks.find((b) => b.kind === 'tags');

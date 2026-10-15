@@ -47,6 +47,7 @@ export const UPDATE_TYPES = {
   BUDGET: 'budget',
   COOK_TIME: 'cookTime',
   INGREDIENTS: 'ingredients',
+  SERVINGS: 'servings',
   GROUP_EXPERTISE: 'groupExpertise',
   GROUP_FOLLOWERS: 'groupFollowers',
   GROUP_FOLLOWING: 'groupFollowing',

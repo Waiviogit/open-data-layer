@@ -96,6 +96,7 @@ export const EDIT_GROUP_FIELD_ORDER: Readonly<Record<EditFieldGroupId, readonly 
     UPDATE_TYPES.CALORIES,
     UPDATE_TYPES.NUTRITION,
     UPDATE_TYPES.INGREDIENTS,
+    UPDATE_TYPES.SERVINGS,
   ],
   contact: [
     UPDATE_TYPES.WEBSITE,

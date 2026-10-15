@@ -82,6 +82,7 @@ describe('resolveEditModeLeftRailBlockOrder', () => {
     expect(order.indexOf('tags')).toBeLessThan(order.indexOf('category'));
     expect(order.indexOf('category')).toBeLessThan(order.indexOf('rating'));
     expect(order.indexOf('rating')).toBeLessThan(order.indexOf('ingredients'));
+    expect(order.indexOf('ingredients')).toBeLessThan(order.indexOf('servings'));
   });
 
   it('uses grouped recipe edit order with commerce before recipe fields', () => {
@@ -90,6 +91,7 @@ describe('resolveEditModeLeftRailBlockOrder', () => {
     expect(order.indexOf('budget')).toBeLessThan(order.indexOf('cookTime'));
     expect(order.indexOf('description')).toBeLessThan(order.indexOf('nutrition'));
     expect(order.indexOf('ingredients')).toBeGreaterThan(order.indexOf('rating'));
+    expect(order.indexOf('servings')).toBeGreaterThan(order.indexOf('ingredients'));
     expect(order.includes('budget')).toBe(true);
   });
 

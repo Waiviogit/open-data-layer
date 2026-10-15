@@ -329,6 +329,7 @@ export type ObjectLeftRailBlock =
   | { kind: 'budget'; headingLabel: string; text: string }
   | { kind: 'cookTime'; headingLabel: string; text: string }
   | { kind: 'ingredients'; headingLabel: string; items: string[] }
+  | { kind: 'servings'; headingLabel: string; text: string }
   | { kind: 'nutrition'; headingLabel: string; text: string }
   | {
       kind: 'author';

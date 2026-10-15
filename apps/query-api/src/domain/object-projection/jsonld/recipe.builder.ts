@@ -8,11 +8,13 @@ export function buildRecipeJsonLd(
   const ingredients = stringArrayField(obj.fields, 'ingredients');
   const cookTime = fieldString(obj.fields, 'cookTime');
   const calories = fieldString(obj.fields, 'calories');
+  const servings = fieldString(obj.fields, 'servings');
 
   return {
     ...baseJsonLdFields(obj, canonical, 'Recipe'),
     ...(ingredients.length > 0 ? { recipeIngredient: ingredients } : {}),
     ...(cookTime ? { cookTime } : {}),
+    ...(servings ? { recipeYield: servings } : {}),
     ...(calories
       ? {
           nutrition: {

@@ -153,6 +153,7 @@ export const RECIPE_ABOUT_SECTION_BLOCK_ORDER = [
   'category',
   'rating',
   'ingredients',
+  'servings',
   'gallery',
   'featureList',
   'identifier',
@@ -254,6 +255,7 @@ export type EditModeLeftRailBlockId =
   | (typeof EDIT_MODE_LEFT_RAIL_BLOCK_ORDER)[number]
   | ListEditModeLeftRailBlockId
   | BookAboutSectionBlockId
+  | RecipeAboutSectionBlockId
   | NavigateSectionBlockId
   | SkillAboutSectionBlockId
   | ServiceCatalogFieldBlockId

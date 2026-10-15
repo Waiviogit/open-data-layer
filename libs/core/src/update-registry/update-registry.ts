@@ -43,6 +43,7 @@ import { UPDATE_CALORIES } from './updates/calories';
 import { UPDATE_BUDGET } from './updates/budget';
 import { UPDATE_COOK_TIME } from './updates/cook-time';
 import { UPDATE_INGREDIENTS } from './updates/ingredients';
+import { UPDATE_SERVINGS } from './updates/servings';
 import { UPDATE_GROUP_EXPERTISE } from './updates/group-expertise';
 import { UPDATE_GROUP_FOLLOWERS } from './updates/group-followers';
 import { UPDATE_GROUP_FOLLOWING } from './updates/group-following';
@@ -156,6 +157,7 @@ export const UPDATE_REGISTRY: UpdateRegistry = {
   [UPDATE_TYPES.BUDGET]: UPDATE_BUDGET,
   [UPDATE_TYPES.COOK_TIME]: UPDATE_COOK_TIME,
   [UPDATE_TYPES.INGREDIENTS]: UPDATE_INGREDIENTS,
+  [UPDATE_TYPES.SERVINGS]: UPDATE_SERVINGS,
   [UPDATE_TYPES.GROUP_EXPERTISE]: UPDATE_GROUP_EXPERTISE,
   [UPDATE_TYPES.GROUP_FOLLOWERS]: UPDATE_GROUP_FOLLOWERS,
   [UPDATE_TYPES.GROUP_FOLLOWING]: UPDATE_GROUP_FOLLOWING,

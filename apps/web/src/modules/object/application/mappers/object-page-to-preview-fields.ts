@@ -222,6 +222,11 @@ function appendLeftRailBlock(
         pushEntry(fields, counters, UPDATE_TYPES.INGREDIENTS, block.items);
       }
       break;
+    case 'servings':
+      if (block.text.trim()) {
+        pushEntry(fields, counters, UPDATE_TYPES.SERVINGS, block.text);
+      }
+      break;
     case 'datePublished':
     case 'inLanguage':
     case 'typicalAgeRange':

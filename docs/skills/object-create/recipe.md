@@ -1,6 +1,6 @@
 ---
 title: Create recipe object
-description: Agent playbook for ODL recipe object_create — ingredients, cook time, nutrition, categories, budget, images.
+description: Agent playbook for ODL recipe object_create — ingredients, servings, cook time, nutrition, categories, budget, images.
 type: playbook
 status: active
 scope: platform
@@ -33,6 +33,7 @@ Recipe or cooking instructions with ingredients.
 | `name` | Recipe title |
 | `description` | Appetizing dish summary — **not** step-by-step instructions |
 | `ingredients` | Multi-value JSON array; one ingredient per line (e.g. `🥚 2 eggs`) |
+| `servings` | Yield or portion count (e.g. `4`, `4-6`, `Serves 6`) |
 | `cookTime` | Total time (e.g. `15 mins`, `1 hr 30 mins`) |
 | `calories` | Total calories (e.g. `291 Calories`) |
 | `budget` | Cost to prepare: `$` (under $10), `$$` (under $100), `$$$` (under $1000) |
@@ -70,7 +71,7 @@ Keep `description` as a short appetizing summary for cards and search. Put the f
 
 ## Locales
 
-Follow [object content standards](../object-content-standards.md). Localizable: `name`, `description`, `ingredients`, `calories`, `budget`, `nutrition`, tag `value`. Not localizable: `cookTime`, `identifier`, refs. Confirm per field via `get_update_schema`.
+Follow [object content standards](../object-content-standards.md). Localizable: `name`, `description`, `ingredients`, `servings`, `calories`, `budget`, `nutrition`, tag `value`. Not localizable: `cookTime`, `identifier`, refs. Confirm per field via `get_update_schema`.
 
 ## Research and source hierarchy
 
@@ -97,7 +98,7 @@ Follow [object content standards](../object-content-standards.md). Localizable: 
 `resolve_object`:
 
 - `fields.name`, `fields.description`, `fields.image`, `fields.ingredients`
-- `fields.budget`, `fields.cookTime`, `fields.calories` when set
+- `fields.budget`, `fields.cookTime`, `fields.calories`, `fields.servings` when set
 - Locale variants when bilingual
 
 ## Related workflows

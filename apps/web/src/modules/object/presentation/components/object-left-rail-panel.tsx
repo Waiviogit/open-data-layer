@@ -1074,6 +1074,7 @@ export function ObjectLeftRailPanel({
           case 'budget':
           case 'cookTime':
           case 'nutrition':
+          case 'servings':
             return (
               <div key={`${block.kind}-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
                 <LeftRailScalarFieldSection
