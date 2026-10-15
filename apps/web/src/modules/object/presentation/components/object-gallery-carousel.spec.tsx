@@ -78,6 +78,10 @@ describe('ObjectGalleryCarousel preview mode', () => {
     const prev = screen.getByRole('button', { name: 'Previous photo' });
     expect(frameButton.contains(prev)).toBe(false);
     expect(prev.className).toContain('absolute');
+    expect(prev.className).toContain('gallery-nav-arrow');
+    expect(prev.className).not.toMatch(/\bbg-bg\b/);
+    expect(prev.className).not.toMatch(/rounded-/);
+    expect(frameButton.className).not.toMatch(/rounded-/);
   });
 
   it('uses object-contain for preview images', () => {

@@ -305,6 +305,16 @@
     border-radius: var(--radius-btn);
   }
 
+  /** Left-rail carousel: same transparent chevron, readable on light or dark photos. */
+  .gallery-nav-arrow--on-photo {
+    color: rgb(255 255 255 / 0.88);
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.45));
+  }
+
+  .gallery-nav-arrow--on-photo:hover {
+    color: rgb(255 255 255);
+  }
+
   .gallery-chrome-footer {
     border-top: 1px solid rgb(255 255 255 / 0.12);
     color: rgb(255 255 255 / 0.75);

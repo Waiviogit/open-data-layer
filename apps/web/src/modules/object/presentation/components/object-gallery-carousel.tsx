@@ -10,6 +10,7 @@ import {
   type TouchEvent,
 } from 'react';
 
+import { ChevronLeftIcon, ChevronRightIcon } from '@/icons';
 import { useI18n } from '@/i18n/providers/i18n-provider';
 
 import type { ProjectedGalleryPhotoView } from '../../domain/object-page.types';
@@ -28,9 +29,10 @@ export type ObjectGalleryCarouselProps = {
 
 const VIDEO_FRAME_ASPECT = 16 / 9;
 
-/** Solid `bg-bg`: opacity modifiers do not apply to hex theme tokens, so `bg-bg/80` paints transparent. */
+const CAROUSEL_ARROW_ICON_SIZE = 32;
+
 const CAROUSEL_CONTROL_CLASS =
-  'absolute top-1/2 z-[1] inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-btn border border-border bg-bg text-section leading-none text-fg shadow-card transition-colors hover:bg-surface-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
+  'gallery-nav-arrow gallery-nav-arrow--on-photo absolute z-[1] inline-flex size-10 items-center justify-center';
 
 const CAROUSEL_CONTROL_DISABLED_CLASS = 'pointer-events-none opacity-40';
 
@@ -199,7 +201,7 @@ export function ObjectGalleryCarousel({
     ? `${CAROUSEL_CONTROL_CLASS} ${CAROUSEL_CONTROL_DISABLED_CLASS}`
     : CAROUSEL_CONTROL_CLASS;
   const frameClassName = [
-    'relative block w-full min-w-0 overflow-hidden rounded-btn touch-pan-y select-none',
+    'relative block w-full min-w-0 overflow-hidden touch-pan-y select-none',
     onPhotoClick ? 'cursor-pointer' : '',
   ]
     .filter(Boolean)
@@ -266,7 +268,7 @@ export function ObjectGalleryCarousel({
           disabled={isPreviewActive}
           onClick={goPrev}
         >
-          ‹
+          <ChevronLeftIcon size={CAROUSEL_ARROW_ICON_SIZE} strokeWidth={1.5} />
         </button>
       ) : null}
       {showControls ? (
@@ -277,7 +279,7 @@ export function ObjectGalleryCarousel({
           disabled={isPreviewActive}
           onClick={goNext}
         >
-          ›
+          <ChevronRightIcon size={CAROUSEL_ARROW_ICON_SIZE} strokeWidth={1.5} />
         </button>
       ) : null}
     </div>
