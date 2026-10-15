@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import type { UpdateDefinition } from '@opden-data-layer/core/update-registry';
 import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
@@ -17,13 +17,11 @@ import {
 } from '../../application/address-json-field-labels';
 import {
   coerceFormValueForValidation,
-  geoFormValueFromRaw,
   getJsonFieldDescriptors,
   getTextEnumValues,
   initialValueForDefinition,
   unwrapRootStringArraySchema,
   validateUpdateValue,
-  type GeoFormValue,
   type JsonFieldDescriptor,
 } from '../../application/update-value-form.utils';
 import { GeoUpdateForm } from './geo-update-form';

@@ -1,7 +1,5 @@
 'use client';
 
-import { useI18n } from '@/i18n/providers/i18n-provider';
-
 import type { CategoryNavItem } from '../../domain/types/category-nav';
 import type { ProfileShopFiltersState } from '../../domain/profile-shop-filters-url';
 import { buildProfileShopHref } from '../../domain/profile-shop-filters-url';

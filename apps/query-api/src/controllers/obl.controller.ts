@@ -9,7 +9,6 @@ import {
   listOblRelationshipsQuerySchema,
   listOblArbitrationQuerySchema,
   listOblDisputeResolutionQuerySchema,
-  oblAccountQuerySchema,
   oblLedgerListQuerySchema,
   pairBalanceQuerySchema,
   searchOblOffersQuerySchema,

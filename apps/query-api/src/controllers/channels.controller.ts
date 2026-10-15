@@ -7,7 +7,6 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
 import { ZodBodyPipe, ZodQueryPipe } from '../pipes';
 import {

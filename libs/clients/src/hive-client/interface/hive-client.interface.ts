@@ -8,7 +8,6 @@ import {
   HiveFollowRelation,
   HiveMutedAccount,
   HiveAccountHistoryPage,
-  HiveAccountHistoryRow,
   HiveBlogEntry,
   HiveDynamicGlobalProperties,
   HiveRewardFund,
@@ -18,8 +17,6 @@ import {
   HiveSavingsWithdrawRequest,
   HiveVestingDelegation,
   HiveVestingDelegationExpiration,
-  HiveFindVestingDelegationsResult,
-  HiveFindVestingDelegationExpirationsResult,
 } from '../type';
 import { CommentOptionsOperation } from '@hiveio/dhive/lib/chain/operation';
 import { BeneficiaryRoute } from '@hiveio/dhive/lib/chain/comment';

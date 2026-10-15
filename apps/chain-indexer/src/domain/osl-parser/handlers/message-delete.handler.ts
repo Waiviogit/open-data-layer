@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
   blockTimestampToUnixSeconds,
-  buildOslMessageId,
 } from '@opden-data-layer/core';
 import { MessagesRepository } from '../../../repositories/messages.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';

@@ -4,7 +4,6 @@ import {
   applySortCustomToMenuItems,
   applySortCustomToListItems,
   projectedListItems,
-  projectedMenuItemsFromListItems,
   resolveMenuItemsForView,
   sortListItemsListsFirst,
   projectedGeoLatLon,

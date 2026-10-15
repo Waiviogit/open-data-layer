@@ -1,6 +1,5 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OBJECT_TYPES } from '@opden-data-layer/core';
-import { ObjectsCore } from '@opden-data-layer/odl-db-types';
 
 import type { OdlEventContext } from '../odl-action-handler';
 import { WriteGuardRunner } from '../guards';

@@ -4,7 +4,6 @@ import {
 } from '@/modules/feed/application/dto/object-fields';
 
 import {
-  ABOUT_SECTION_BLOCK_ORDER,
   BOOK_HOISTED_AUTHOR_BLOCK_ORDER,
   bookTypeAboutRemainderOrder,
   HEADER_BLOCK_ORDER,
@@ -53,7 +52,6 @@ import {
   projectedGalleryAlbums,
   projectedPreviewGallery,
   projectedLeftRailPreviewGallery,
-  projectedGalleryImageUrls,
   projectedIdentifierRows,
   projectedProductGroupId,
   projectedGeoLatLon,

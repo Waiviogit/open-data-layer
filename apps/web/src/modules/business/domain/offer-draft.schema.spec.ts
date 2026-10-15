@@ -8,7 +8,6 @@ import {
   emptyOfferFields,
   type OfferDraftFields,
   type OfferDraftState,
-  type OfferEditorStep,
 } from './offer-form.types';
 
 describe('offer-draft.schema', () => {

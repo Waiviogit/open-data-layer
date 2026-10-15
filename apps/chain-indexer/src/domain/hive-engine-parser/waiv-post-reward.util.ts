@@ -1,4 +1,4 @@
-import type { HiveEngineTokensLogEvent, HiveEngineTransaction } from '@opden-data-layer/clients';
+import type { HiveEngineTransaction } from '@opden-data-layer/clients';
 import { WAIV_TOKEN } from '@opden-data-layer/core';
 import {
   WAIV_HE_REWARD_EVENTS,

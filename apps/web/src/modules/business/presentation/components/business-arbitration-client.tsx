@@ -17,7 +17,6 @@ import type { DisputeAuthority } from '../../domain/dispute-resolution';
 import type {
   LedgerContractRow,
   LedgerDisputeRow,
-  LedgerInvoiceRow,
 } from '../../domain/ledger.types';
 import { businessRoutes } from '../../domain/routes';
 import type { OblCursorPage } from '../../domain/obl-pagination.types';

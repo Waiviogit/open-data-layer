@@ -13,15 +13,6 @@ import { UsersModule } from '../domain/users';
 import { WalletModule } from '../domain/wallet';
 import { OblModule } from '../domain/obl';
 import { MessagingModule } from '../domain/messaging/messaging.module';
-import {
-  GetChannelsEndpoint,
-  GetChannelByIdEndpoint,
-  GetChannelByAliasEndpoint,
-  GetChannelMessagesEndpoint,
-  GetObjectChannelEndpoint,
-  GetObjectChannelMessagesEndpoint,
-  GetMemoPublicKeyEndpoint,
-} from '../domain/messaging';
 import { McpController } from './mcp.controller';
 import { McpService } from './mcp.service';
 

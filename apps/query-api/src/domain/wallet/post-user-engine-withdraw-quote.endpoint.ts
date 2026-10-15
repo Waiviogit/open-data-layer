@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { AccountsCurrentRepository } from '../../repositories';
 import { EngineWithdrawQuoteService } from './engine-swap/engine-withdraw-quote.service';

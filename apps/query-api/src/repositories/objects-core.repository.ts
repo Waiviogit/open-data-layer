@@ -1,6 +1,5 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { OBJECT_PAGE_VISIBLE_STATUSES } from '@opden-data-layer/core';
-import type { ObjectStatus } from '@opden-data-layer/odl-db-types';
 import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 import type { Database } from '../database';

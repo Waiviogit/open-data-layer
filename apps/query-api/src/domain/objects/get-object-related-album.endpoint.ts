@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { UPDATE_TYPES } from '@opden-data-layer/core';
-import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import {
   AggregatedObjectRepository,

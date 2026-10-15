@@ -13,7 +13,6 @@ import type {
   ReviewsFeedSubType,
 } from '@/modules/object/domain/object-page.types';
 import { REVIEWS_FEED_SUB_VALUES } from '@/modules/object/domain/object-page.types';
-import type { ProjectedGalleryAlbumView } from '@/modules/object/domain/object-page.types';
 import type { RelatedAlbumListView, RelatedAlbumPreviewView } from '@/modules/object/domain/related-album.types';
 import {
   ObjectFollowersSubNav,

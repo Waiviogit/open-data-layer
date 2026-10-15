@@ -5,7 +5,6 @@ import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import { AggregatedObjectRepository } from '../../repositories';
 import { projectFieldValue } from './project-field';
 import type { RankVoteProjection, RefSummary } from './projected-object.types';
-import { emptyRankVoteProjection } from './projected-object.types';
 import type { ListItemsRecursiveCountService } from './list-items-recursive-count.service';
 
 /**

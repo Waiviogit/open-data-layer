@@ -3,7 +3,6 @@
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { CloseIcon } from '@/icons';
 
-import type { MessageItem } from '../domain/messaging.types';
 import { buildReplyQuoteJson, messageDisplayBody } from '../domain/messaging.helpers';
 import type { MessagingComposeIntent } from '../domain/messaging.types';
 

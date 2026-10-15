@@ -1,6 +1,5 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OBJECT_TYPES } from '@opden-data-layer/core';
-import { ObjectsCore } from '@opden-data-layer/odl-db-types';
 
 import { UpdateCreateHandler } from './update-create.handler';
 import {

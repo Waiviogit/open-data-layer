@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import type { UpdateDefinition } from '../types';
 import { labelArraySchema } from '../schemas/string-schemas';
 import { UPDATE_ARRAY_MAX } from '../string-limits';

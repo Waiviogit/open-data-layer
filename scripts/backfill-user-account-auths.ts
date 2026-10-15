@@ -25,7 +25,6 @@ import {
   clampBackfillBatchSize,
   isValidHiveAccountName,
   nextLookupAccountsLowerBound,
-  nextUserBatchCursor,
   resolveBackfillDelayMs,
 } from '../apps/chain-indexer/src/domain/hive-social/backfill-account-auth.helpers';
 import { shouldApplyAuthorityReplace } from '../apps/chain-indexer/src/domain/hive-social/account-authority-guard';

@@ -1,4 +1,4 @@
-import type { Area, MediaSize, Point, Size } from 'react-easy-crop';
+import type { MediaSize, Point, Size } from 'react-easy-crop';
 
 import type { ImageEditorConfig, ImageEditorExportParams } from './image-editor.types';
 

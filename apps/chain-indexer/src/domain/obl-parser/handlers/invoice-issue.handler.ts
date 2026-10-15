@@ -5,7 +5,7 @@ import { OblRepository } from '../../../repositories/obl.repository';
 import type { OdlActionHandler, OdlEventContext } from '../../odl-shared';
 import { invoiceIssuePayloadSchema } from '../obl-envelope.schema';
 import { OblNotificationService } from '../obl-notification.service';
-import { normalizePair, toUsdString, asJsonValue, sumUsdAmounts } from '../obl.utils';
+import { normalizePair, asJsonValue, sumUsdAmounts } from '../obl.utils';
 
 type NormalizedLine = {
   beneficiary: string;
