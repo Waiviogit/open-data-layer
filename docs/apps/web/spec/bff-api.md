@@ -6,11 +6,12 @@ type: spec
 status: active
 scope: web
 tags: [web, bff, api, cross-cutting]
-updated_at: 2026-06-10
+updated_at: 2026-10-16
 related:
   - docs/apps/web/spec/overview.md
   - docs/apps/web/spec/auth.md
   - docs/apps/web/spec/search.md
+  - docs/apps/query-api/spec/geoip.md
 ---
 
 # web — BFF API routes
@@ -52,6 +53,7 @@ Next.js **Route Handlers** under `apps/web/src/app/api/` proxy to backend servic
 
 - Set **httpOnly** cookies on auth routes (`odl_access`, `odl_refresh`). Details: [auth.md](auth.md).
 - Search and discover routes forward **viewer** (session) and **locale** where query-api supports it.
+- When the upstream lookup needs the browser IP, pass `forwardClientIp: true` on `queryApiFetch` or merge `getClientIpForwardHeaders(await headers())` onto a raw `fetch`. That copies incoming `X-Forwarded-For` **verbatim** (no left-most parse, no `x-real-ip`). Default is off so RSC fetches stay cacheable. Spec: [query-api GeoIP](../../query-api/spec/geoip.md).
 - Env: `AUTH_API_BASE_URL`, `QUERY_API_URL`, `AUTH_JWT_SECRET` — see `apps/web/.env.example`.
 
 ## Verification

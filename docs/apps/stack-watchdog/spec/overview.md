@@ -6,9 +6,10 @@ type: overview
 status: active
 scope: stack-watchdog
 tags: [stack-watchdog, overview]
-updated_at: 2026-06-10
+updated_at: 2026-10-16
 related:
   - docs/README.md
+  - docs/apps/query-api/spec/geoip.md
 ---
 
 # stack-watchdog
@@ -36,6 +37,7 @@ The container mounts **`/var/run/docker.sock`** and bind-mounts the repo at **`I
 | `STACK_WATCHDOG_ENABLED` | Compose sets `'true'` on the watchdog service; omit/false locally for `nx serve` |
 | `STACK_WATCH_RUNTIME_SERVICES` | Optional CSV override for pull+up service names |
 | `STACK_WATCH_EXTRA_PULL_SERVICES` | Optional CSV extra names for **pull** only |
+| `COMPOSE_PROFILES` | When it includes `geoip`, pull+up also include `geoipupdate` (Compose profile; omit without MaxMind keys) |
 
 `scripts/setup-vps.sh` appends **`DEPLOY_ENV`** to `.env` when missing so it stays aligned with the bootstrap target.
 

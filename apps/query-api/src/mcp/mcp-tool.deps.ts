@@ -97,6 +97,10 @@ import type {
   UpsertHiveWalletExemptionEndpoint,
 } from '../domain/wallet';
 
+export type McpRequestContext = {
+  clientIp: string | null;
+};
+
 export interface McpToolDeps {
   search: GetSearchEndpoint;
   searchCounts: GetSearchCountsEndpoint;

@@ -85,6 +85,11 @@ export const queryApiConfigSchema = z.object({
     .url()
     .optional()
     .default('https://api.changelly.com/v2'),
+  GEOIP_DB_PATH: z
+    .string()
+    .optional()
+    .transform((s) => (s?.trim() ? s.trim() : undefined)),
+  TRUST_PROXY: z.coerce.number().int().min(0).optional().default(0),
 });
 
 export type QueryApiConfig = z.infer<typeof queryApiConfigSchema>;

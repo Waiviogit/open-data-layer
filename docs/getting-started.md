@@ -6,7 +6,7 @@ type: overview
 status: active
 scope: platform
 tags: [platform, onboarding, local-dev, docker, migrate, pnpm]
-updated_at: 2026-06-11
+updated_at: 2026-10-16
 related:
   - docs/README.md
   - docs/skills/setup-workspace.md
@@ -76,7 +76,7 @@ Edit `.env` if you need non-default ports or credentials. Default root compose (
 
 | File | Use |
 |------|-----|
-| [`docker-compose.yml`](../docker-compose.yml) | Default entry: infra only (Postgres, Redis, IPFS; ports published) |
+| [`docker-compose.yml`](../docker-compose.yml) | Default entry: infra only (Postgres, Redis, IPFS; optional `geoipupdate`) |
 | [`docker-compose.infra.yml`](../docker-compose.infra.yml) | Same infra stack (can run directly) |
 | [`docker-compose.manual.yml`](../docker-compose.manual.yml) | Full stack: **local Dockerfile builds** (no GHCR) + TLS nginx |
 | [`docker-compose.staging.apps.yml`](../docker-compose.staging.apps.yml) | Pre-built apps from GHCR (`:staging`); use with matching `.infra.yml` on VPS |
@@ -107,6 +107,10 @@ Key variables and their defaults:
 | `START_BLOCK_NUMBER` | `102138605` | chain-indexer |
 | `QUERY_API_URL` | `http://localhost:7000` | web (server — query-api **origin**; HTTP paths use `/query/v1/...`) |
 | `WEB_THEME_SYNC_URL` | *(unset)* | web (server — optional theme sync endpoint) |
+| `COMPOSE_PROFILES` | *(unset)* | `geoip` enables geoipupdate. VPS: setup-vps `up -d` starts it if already set; stack-watchdog pull/up includes it only with this profile |
+| `MAXMIND_ACCOUNT_ID` / `MAXMIND_LICENSE_KEY` | *(unset)* | geoipupdate (GeoLite2-City) |
+| `GEOIP_DB_PATH` | `data/geoip/GeoLite2-City.mmdb` | query-api (host `nx serve`) |
+| `TRUST_PROXY` | `0` local / `1` in Compose | query-api Express hop count |
 
 ---
 
@@ -117,6 +121,23 @@ Start only the services needed for local development — the apps themselves run
 ```bash
 docker compose up postgres redis -d
 ```
+
+### Optional: GeoIP (GeoLite2-City)
+
+`geoipupdate` does **not** use Postgres. It writes `GeoLite2-City.mmdb` to `./data/geoip` (infra bind-mount). query-api reads that file in-process.
+
+1. Set `MAXMIND_ACCOUNT_ID` and `MAXMIND_LICENSE_KEY` in the root `.env`.
+2. Start infra with the profile (do not use the default `docker compose.yml` apps stack):
+
+```bash
+docker compose -f docker-compose.infra.yml --profile geoip up -d
+```
+3. In `apps/query-api/.env`: `GEOIP_DB_PATH=data/geoip/GeoLite2-City.mmdb` and `TRUST_PROXY=0`.
+4. `pnpm nx serve query-api` — the reader retries every 60s until the first download finishes.
+
+Without MaxMind keys, omit the profile. query-api logs that GeoIP is unavailable and keeps running.
+
+Spec: [query-api GeoIP](apps/query-api/spec/geoip.md).
 
 Verify both containers are healthy:
 

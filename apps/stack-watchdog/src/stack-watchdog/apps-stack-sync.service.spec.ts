@@ -1,7 +1,9 @@
 import {
   composeBaseArgs,
+  composeProfilesIncludeGeoip,
   computePullServiceNames,
   computeUpServiceNames,
+  GEOIPUPDATE_SERVICE_NAME,
   MIGRATOR_SERVICE_NAME,
   STACK_WATCHDOG_SERVICE_NAME,
   StackWatchdogSettings,
@@ -50,6 +52,36 @@ describe('apps-stack-sync helpers', () => {
   it('up includes only runtime services', () => {
     const up = computeUpServiceNames(baseSettings());
     expect(up).toEqual(['web', 'query-api']);
+  });
+
+  it('does not add geoipupdate when COMPOSE_PROFILES omits geoip', () => {
+    expect(computePullServiceNames(baseSettings(), 'tools')).not.toContain(
+      GEOIPUPDATE_SERVICE_NAME,
+    );
+    expect(computeUpServiceNames(baseSettings(), '')).not.toContain(
+      GEOIPUPDATE_SERVICE_NAME,
+    );
+  });
+
+  it('appends geoipupdate to pull and up when COMPOSE_PROFILES includes geoip', () => {
+    expect(computePullServiceNames(baseSettings(), 'geoip,tools')).toEqual([
+      'web',
+      'query-api',
+      MIGRATOR_SERVICE_NAME,
+      STACK_WATCHDOG_SERVICE_NAME,
+      GEOIPUPDATE_SERVICE_NAME,
+    ]);
+    expect(computeUpServiceNames(baseSettings(), ' tools, geoip ')).toEqual([
+      'web',
+      'query-api',
+      GEOIPUPDATE_SERVICE_NAME,
+    ]);
+  });
+
+  it('composeProfilesIncludeGeoip matches a comma-separated profile token', () => {
+    expect(composeProfilesIncludeGeoip(undefined)).toBe(false);
+    expect(composeProfilesIncludeGeoip('geoiptools')).toBe(false);
+    expect(composeProfilesIncludeGeoip('geoip')).toBe(true);
   });
 
   it('uniqueServiceNames preserves order and dedupes', () => {

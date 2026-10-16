@@ -1,5 +1,5 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { McpToolDeps } from './mcp-tool.deps';
+import type { McpRequestContext, McpToolDeps } from './mcp-tool.deps';
 import { registerChannelTools } from './tools/channels.tools';
 import { registerCategoryTools } from './tools/categories.tools';
 import { registerCurrencyTools } from './tools/currency.tools';
@@ -10,7 +10,13 @@ import { registerSearchTools } from './tools/search.tools';
 import { registerUserTools } from './tools/users.tools';
 import { registerOblTools } from './tools/obl.tools';
 
-export function registerAllMcpTools(server: McpServer, deps: McpToolDeps): void {
+export function registerAllMcpTools(
+  server: McpServer,
+  deps: McpToolDeps,
+  ctx: McpRequestContext = { clientIp: null },
+): void {
+  // Reserved for geo/IP tools. clientIp is request-derived, never a tool arg.
+  void ctx;
   registerSearchTools(server, deps);
   registerDiscoverTools(server, deps);
   registerObjectTools(server, deps);

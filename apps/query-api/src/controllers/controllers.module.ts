@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth';
 import { DraftsModule } from '../domain/drafts/drafts.module';
 import { FeedModule } from '../domain/feed';
+import { GeoipModule } from '../domain/geoip';
 import { MessagingModule } from '../domain/messaging';
 import { ObjectsModule } from '../domain/objects';
 import { UsersModule } from '../domain/users';
@@ -36,6 +37,7 @@ import { ChannelsController } from './channels.controller';
 @Module({
   imports: [
     ObjectsModule,
+    GeoipModule,
     ObjectUpdatesModule,
     UsersModule,
     FeedModule,

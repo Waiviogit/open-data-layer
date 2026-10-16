@@ -78,5 +78,11 @@ export default () => {
       baseUrl: env.CHANGELLY_BASE_URL,
       requestTimeoutMs: externalTimeoutMs,
     },
+    geoip: {
+      dbPath: env.GEOIP_DB_PATH,
+    },
+    http: {
+      trustProxy: env.TRUST_PROXY,
+    },
   };
 };

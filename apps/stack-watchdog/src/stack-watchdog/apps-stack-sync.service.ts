@@ -5,6 +5,8 @@ import { DockerComposeRunnerService } from './docker-compose-runner.service';
 
 export const STACK_WATCHDOG_SERVICE_NAME = 'stack-watchdog';
 export const MIGRATOR_SERVICE_NAME = 'migrator';
+export const GEOIPUPDATE_SERVICE_NAME = 'geoipupdate';
+export const GEOIP_COMPOSE_PROFILE = 'geoip';
 
 export type StackWatchdogSettings = {
   enabled: boolean;
@@ -39,17 +41,44 @@ export function composeBaseArgs(sw: StackWatchdogSettings): string[] {
   return ['-p', 'apps', '--env-file', envFile, '-f', composeFile];
 }
 
-export function computePullServiceNames(sw: StackWatchdogSettings): string[] {
+/** True when Compose profile `geoip` is enabled (comma-separated `COMPOSE_PROFILES`). */
+export function composeProfilesIncludeGeoip(
+  composeProfiles: string | undefined,
+): boolean {
+  if (composeProfiles == null || composeProfiles.trim() === '') {
+    return false;
+  }
+  return composeProfiles
+    .split(',')
+    .map((s) => s.trim())
+    .includes(GEOIP_COMPOSE_PROFILE);
+}
+
+export function computePullServiceNames(
+  sw: StackWatchdogSettings,
+  composeProfiles?: string,
+): string[] {
   return uniqueServiceNames([
     ...sw.runtimeServiceNames,
     MIGRATOR_SERVICE_NAME,
     STACK_WATCHDOG_SERVICE_NAME,
     ...sw.extraPullServiceNames,
+    ...(composeProfilesIncludeGeoip(composeProfiles)
+      ? [GEOIPUPDATE_SERVICE_NAME]
+      : []),
   ]);
 }
 
-export function computeUpServiceNames(sw: StackWatchdogSettings): string[] {
-  return uniqueServiceNames([...sw.runtimeServiceNames]);
+export function computeUpServiceNames(
+  sw: StackWatchdogSettings,
+  composeProfiles?: string,
+): string[] {
+  return uniqueServiceNames([
+    ...sw.runtimeServiceNames,
+    ...(composeProfilesIncludeGeoip(composeProfiles)
+      ? [GEOIPUPDATE_SERVICE_NAME]
+      : []),
+  ]);
 }
 
 @Injectable()
@@ -81,8 +110,9 @@ export class AppsStackSyncService {
       return;
     }
 
-    const pullNames = computePullServiceNames(sw);
-    const upNames = computeUpServiceNames(sw);
+    const composeProfiles = process.env.COMPOSE_PROFILES;
+    const pullNames = computePullServiceNames(sw, composeProfiles);
+    const upNames = computeUpServiceNames(sw, composeProfiles);
 
     const pullArgs = [...composeBaseArgs(sw), 'pull', ...pullNames];
     this.runner.logComposeInvocation(pullArgs);

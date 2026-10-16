@@ -20,6 +20,7 @@ import { ControllersModule } from './controllers';
 import { McpModule } from './mcp';
 import { DatabaseModule, KYSELY } from './database';
 import { GovernanceModule } from './domain/governance';
+import { GeoipModule } from './domain/geoip';
 import { ObjectProjectionModule } from './domain/object-projection';
 import { RepositoriesModule } from './repositories';
 
@@ -107,6 +108,7 @@ import { RepositoriesModule } from './repositories';
     }),
     RepositoriesModule,
     GovernanceModule,
+    GeoipModule,
     ObjectProjectionModule,
     ControllersModule,
     McpModule,

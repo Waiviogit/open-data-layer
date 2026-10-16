@@ -73,3 +73,7 @@ next-env.d.ts
 .nx/self-healing
 .nx/migrate-runs
 scripts/.backfill-reblog-timestamps.checkpoint.json
+
+# GeoLite MMDB (geoipupdate); keep data/geoip/.gitkeep
+/data/geoip/*.mmdb
+/data/geoip/.geoipupdate.lock

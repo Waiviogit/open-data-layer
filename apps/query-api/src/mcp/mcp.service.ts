@@ -103,7 +103,8 @@ import {
   GetMemoPublicKeyEndpoint,
 } from '../domain/messaging';
 import { QUERY_API_MCP_INSTRUCTIONS } from './mcp-instructions';
-import type { McpToolDeps } from './mcp-tool.deps';
+import { mcpRequestContextFromRequest } from './mcp-request-context';
+import type { McpRequestContext, McpToolDeps } from './mcp-tool.deps';
 import { registerAllMcpTools } from './register-all-tools';
 import { registerQueryMcpResources } from './register-query-mcp-resources';
 
@@ -283,7 +284,7 @@ export class McpService {
     };
   }
 
-  private createServer(): McpServer {
+  private createServer(ctx: McpRequestContext): McpServer {
     const server = new McpServer(
       { name: 'query-api', version: '1.0.0' },
       {
@@ -291,7 +292,7 @@ export class McpService {
         instructions: QUERY_API_MCP_INSTRUCTIONS,
       },
     );
-    registerAllMcpTools(server, this.buildDeps());
+    registerAllMcpTools(server, this.buildDeps(), ctx);
     registerQueryMcpResources(server);
     return server;
   }
@@ -301,7 +302,7 @@ export class McpService {
       sessionIdGenerator: undefined,
       enableJsonResponse: true,
     });
-    const server = this.createServer();
+    const server = this.createServer(mcpRequestContextFromRequest(req));
 
     try {
       await server.connect(transport);

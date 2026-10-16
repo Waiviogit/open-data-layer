@@ -6,7 +6,7 @@ type: overview
 status: active
 scope: query-api
 tags: [query-api, overview]
-updated_at: 2026-06-10
+updated_at: 2026-10-16
 related:
   - docs/README.md
   - docs/spec/objects-domain.md
@@ -73,6 +73,7 @@ The **query-api** application is the **read path**: it serves HTTP endpoints tha
 | [Object threads feed](object-threads-feed.md) | `POST /query/v1/objects/:id/threads` (Reviews > Threads) |
 | [Object SEO](object-seo.md) | SEO fields on resolved objects |
 | [MCP agent mirror](mcp.md) | `POST /query/mcp` — live data tools for agents |
+| [GeoIP lookups](geoip.md) | GeoLite2-City in-process country / lat-lon; `trust proxy` + client IP |
 | [OBL reads](obl.md) | Offer search, mutual ledger, balance, USD→WAIV conversion, offer drafts |
 
 ## Verification

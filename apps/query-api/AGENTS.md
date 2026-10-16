@@ -25,7 +25,7 @@ src/
   pipes/           ZodBodyPipe, ZodQueryPipe
   openapi/         per-resource spec fragments + registry + generate script
   mcp/             MCP Streamable HTTP (`POST /query/mcp`) + tool registrations
-  domain/          feature modules: governance/, objects/, users/, feed/, drafts/, categories/
+  domain/          feature modules: governance/, geoip/, objects/, users/, feed/, drafts/, categories/
 ```
 
 ## Request flow

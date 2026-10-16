@@ -6,13 +6,14 @@ type: spec
 status: active
 scope: query-api
 tags: [query-api, mcp, agent]
-updated_at: 2026-06-11
+updated_at: 2026-10-16
 related:
   - docs/apps/query-api/spec/overview.md
   - docs/skills/query-api-mcp-routing.md
   - docs/skills/wallet-delegation-swap-for-agents.md
   - docs/skills/hive-engine-deposit-for-agents.md
   - docs/skills/knowledge-api-routing.md
+  - docs/apps/query-api/spec/geoip.md
 ---
 
 # query-api MCP (agent mirror)
@@ -36,6 +37,8 @@ Replaces HTTP headers on tools that use `withMcpLocaleContext`:
 | `locale` (default `en-US`) | `Accept-Language` / `X-Locale` |
 | `viewer` | `X-Viewer` |
 | `governance_object_id` | `X-Governance-Object-Id` |
+
+Client IP is **not** a tool argument. `McpRequestContext.clientIp` is taken from the HTTP request (`resolveClientIp` after `trust proxy`). That address is the agent runtime, not a human browser. See [geoip.md](geoip.md).
 
 ## MCP resources and prompts
 

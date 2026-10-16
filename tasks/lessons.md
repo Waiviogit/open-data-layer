@@ -133,6 +133,12 @@
 
 **Rule:** Do not `updateTag` a layout-fetched tag from an **ungated** mount effect. Gate writes with a module-scoped watermark (reserve before POST; release on failure). `feed-read` `tab: messages` is a no-op — header `messages` is `countTotalUnreadForViewer`. Invalidate `userFeedUnreadCounts` **and** `viewerChannels` from channel mark-read once consume is in place.
 
+## GeoIP: plumbing without the consumer is unfinished
+
+**Pattern:** Built `forwardClientIp` on `queryApiFetch` (opt-in, default off for RSC cache) and never passed `true` on `POST /query/v1/objects/resolve` — the page that was supposed to prove browser IP → query-api. Staging via the site then logs the `web` container IP.
+
+**Rule:** If the test path is a web page, wire `forwardClientIp: true` on that fetch in the same change as the query-api probe. Helper + flag with zero callers is not done.
+
 ## Web: notifications WS singleton vs remount
 
 **Pattern:** `configureNotificationsWsUrl` ran during render and reset the singleton whenever it was `undefined` (same URL). Stale `onclose` from a replaced socket scheduled another reconnect → burst of `GET /api/auth/ws-token` and multiple sockets.

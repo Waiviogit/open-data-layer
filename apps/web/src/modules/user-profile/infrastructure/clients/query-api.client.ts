@@ -1,6 +1,12 @@
 import 'server-only';
 
+import { headers } from 'next/headers';
+
 import { env } from '@/config/env';
+import {
+  getClientIpForwardHeaders,
+  mergeForwardClientIpInit,
+} from '@/shared/infrastructure/http/client-ip-forward-headers';
 
 /** Uncached fetch — use for live wallet/swap reads and post-broadcast refresh. */
 export const QUERY_API_LIVE_INIT = {
@@ -10,6 +16,11 @@ export const QUERY_API_LIVE_INIT = {
 export type QueryApiFetchOptions = RequestInit & {
   /** Next.js Data Cache tags — invalidate via `revalidateTag` after on-chain mutations. */
   cacheTags?: string[];
+  /**
+   * When true, copy incoming `X-Forwarded-For` onto the upstream request.
+   * Calls `headers()` — do not set on cached RSC fetches.
+   */
+  forwardClientIp?: boolean;
 };
 
 export type QueryApiFetchOutcome<T> =
@@ -63,14 +74,23 @@ export async function queryApiFetchOutcome<T>(
   path: string,
   init?: QueryApiFetchOptions,
 ): Promise<QueryApiFetchOutcome<T>> {
-  const { cacheTags, ...fetchInit } = init ?? {};
+  const { cacheTags, forwardClientIp, ...fetchInit } = init ?? {};
   const base = env.QUERY_API_URL.replace(/\/$/, '');
   const url = path.startsWith('http')
     ? path
     : `${base}${path.startsWith('/') ? '' : '/'}${path}`;
+  const extra =
+    forwardClientIp === true
+      ? getClientIpForwardHeaders(await headers())
+      : {};
+  const withIp = mergeForwardClientIpInit(
+    fetchInit,
+    forwardClientIp,
+    extra,
+  );
   let res: Response;
   try {
-    res = await fetch(url, buildQueryApiFetchInit(fetchInit, cacheTags));
+    res = await fetch(url, buildQueryApiFetchInit(withIp, cacheTags));
   } catch (err) {
     console.error(`[query-api] network error for ${path}:`, err);
     return { ok: false, status: 'network' };
@@ -99,14 +119,23 @@ export async function queryApiFetch<T>(
   path: string,
   init?: QueryApiFetchOptions,
 ): Promise<T | null> {
-  const { cacheTags, ...fetchInit } = init ?? {};
+  const { cacheTags, forwardClientIp, ...fetchInit } = init ?? {};
   const base = env.QUERY_API_URL.replace(/\/$/, '');
   const url = path.startsWith('http')
     ? path
     : `${base}${path.startsWith('/') ? '' : '/'}${path}`;
+  const extra =
+    forwardClientIp === true
+      ? getClientIpForwardHeaders(await headers())
+      : {};
+  const withIp = mergeForwardClientIpInit(
+    fetchInit,
+    forwardClientIp,
+    extra,
+  );
   let res: Response;
   try {
-    res = await fetch(url, buildQueryApiFetchInit(fetchInit, cacheTags));
+    res = await fetch(url, buildQueryApiFetchInit(withIp, cacheTags));
   } catch (err) {
     console.error(`[query-api] network error for ${path}:`, err);
     return null;

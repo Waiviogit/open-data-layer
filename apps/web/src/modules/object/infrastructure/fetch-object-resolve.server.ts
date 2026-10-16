@@ -26,6 +26,7 @@ export async function fetchProjectedObjectWithCounts(
   const raw = await queryApiFetch<unknown>(RESOLVE_PATH, {
     method: 'POST',
     headers,
+    forwardClientIp: true,
     body: JSON.stringify({
       object_id: objectId,
       update_types: [],

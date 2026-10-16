@@ -1,11 +1,15 @@
 import './openapi/registry';
 import { Logger, VersioningType } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { setupSwagger } from './openapi/setup-swagger';
 import { MainModule } from './main.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(MainModule);
+  const app = await NestFactory.create<NestExpressApplication>(MainModule);
+  const config = app.get(ConfigService);
+  app.set('trust proxy', config.get<number>('http.trustProxy', 0));
   const globalPrefix = 'query';
   app.setGlobalPrefix(globalPrefix);
   app.enableVersioning({
