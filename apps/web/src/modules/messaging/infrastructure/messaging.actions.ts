@@ -1,6 +1,9 @@
 'use server';
 
+import { updateTag } from 'next/cache';
+
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
+import { queryApiCacheTags } from '@/shared/infrastructure/query/query-api-cache-tags';
 
 import { getChannelByIdQuery } from '../application/queries/get-channel-by-id.query';
 import { getChannelMessagesQuery } from '../application/queries/get-channel-messages.query';
@@ -52,9 +55,15 @@ export async function loadOlderObjectChannelMessagesAction(
 export async function markChannelReadAction(
   channelId: string,
   lastReadAtUnix: number,
-): Promise<void> {
+): Promise<boolean> {
   const viewer = await requireViewer();
-  await markChannelRead(channelId, viewer, lastReadAtUnix);
+  const result = await markChannelRead(channelId, viewer, lastReadAtUnix);
+  if (!result) {
+    return false;
+  }
+  updateTag(queryApiCacheTags.viewerChannels(viewer));
+  updateTag(queryApiCacheTags.userFeedUnreadCounts(viewer));
+  return true;
 }
 
 function buildPeerChannelDetail(viewer: string, peer: string): ChannelDetail {

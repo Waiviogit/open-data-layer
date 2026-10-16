@@ -7,6 +7,11 @@ import { useI18n } from '@/i18n/providers/i18n-provider';
 import { useLoginModal } from '@/modules/auth';
 import { UserAvatar } from '@/shared/presentation';
 
+import {
+  consumeMarkChannelRead,
+  latestMessageCreatedAtUnix,
+  releaseMarkChannelRead,
+} from '../application/consume-mark-channel-read';
 import { useSendMessage } from '../application/use-send-message';
 import { useSendEncryptedMessage } from '../application/use-send-encrypted-message';
 import { useUpdateMessage } from '../application/use-update-message';
@@ -45,6 +50,8 @@ import {
 } from '../infrastructure/draft-peer-avatar';
 import {
   buildMessagesHref,
+  clearChannelListUnread,
+  dispatchMessagingChannelRead,
   dispatchMessagingChannelUpdated,
   dispatchMessagingChannelLeft,
   dispatchMessagingChannelMembersAdded,
@@ -53,6 +60,7 @@ import {
   patchChannelDetailMembers,
   patchChannelListItem,
   pickNextChannelAfterLeave,
+  subscribeMessagingChannelRead,
   subscribeMessagingChannelUpdated,
   subscribeMessagingChannelLeft,
   subscribeMessagingChannelMembersAdded,
@@ -361,30 +369,49 @@ export function MessagingInboxClient({
 
   const markReadForMessages = useCallback(
     async (items: MessageItem[]) => {
-      if (!activeChannelId || items.length === 0) {
+      if (!activeChannelId) {
         return;
       }
-      const latest = items.reduce(
-        (max, item) => (item.created_at_unix > max ? item.created_at_unix : max),
-        items[0]?.created_at_unix ?? 0,
-      );
-      if (latest > 0) {
-        await markChannelReadAction(activeChannelId, latest);
+      const latest = latestMessageCreatedAtUnix(items);
+      if (!consumeMarkChannelRead(activeChannelId, latest)) {
+        return;
       }
+      try {
+        const ok = await markChannelReadAction(activeChannelId, latest);
+        if (!ok) {
+          releaseMarkChannelRead(activeChannelId, latest);
+          return;
+        }
+      } catch {
+        releaseMarkChannelRead(activeChannelId, latest);
+        return;
+      }
+      setChannels((prev) =>
+        prev.map((item) => clearChannelListUnread(item, activeChannelId)),
+      );
+      dispatchMessagingChannelRead({ channelId: activeChannelId });
     },
     [activeChannelId],
   );
 
+  const initialLatestReadUnix = latestMessageCreatedAtUnix(initialMessages.items);
+
   useEffect(() => {
-    if (initialMessages.items.length > 0 && activeChannelId) {
+    if (initialLatestReadUnix > 0 && activeChannelId) {
       void markReadForMessages(initialMessages.items);
     }
-  }, [activeChannelId, initialMessages.items, markReadForMessages]);
+  }, [activeChannelId, initialLatestReadUnix, markReadForMessages, initialMessages.items]);
 
   useEffect(() => {
     return subscribeMessagingChannelUpdated((patch) => {
       setChannelDetail((prev) => (prev ? patchChannelDetail(prev, patch) : prev));
       setChannels((prev) => prev.map((item) => patchChannelListItem(item, patch)));
+    });
+  }, []);
+
+  useEffect(() => {
+    return subscribeMessagingChannelRead(({ channelId }) => {
+      setChannels((prev) => prev.map((item) => clearChannelListUnread(item, channelId)));
     });
   }, []);
 

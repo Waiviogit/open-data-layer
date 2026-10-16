@@ -7,6 +7,7 @@ import type { ChannelDetail, ChannelListItem } from '../domain/messaging.types';
 export const MESSAGING_CHANNEL_UPDATED_EVENT = 'messaging:channel-updated';
 export const MESSAGING_CHANNEL_LEFT_EVENT = 'messaging:channel-left';
 export const MESSAGING_CHANNEL_MEMBERS_ADDED_EVENT = 'messaging:channel-members-added';
+export const MESSAGING_CHANNEL_READ_EVENT = 'messaging:channel-read';
 
 export type MessagingChannelUpdatedDetail = {
   channelId: string;
@@ -21,6 +22,10 @@ export type MessagingChannelLeftDetail = {
 export type MessagingChannelMembersAddedDetail = {
   channelId: string;
   accounts: string[];
+};
+
+export type MessagingChannelReadDetail = {
+  channelId: string;
 };
 
 const leftChannelTombstones = new Set<string>();
@@ -74,6 +79,16 @@ export function buildMessagesHref(
     return base;
   }
   return `${base}?${new URLSearchParams({ channel: trimmed }).toString()}`;
+}
+
+export function clearChannelListUnread(
+  item: ChannelListItem,
+  channelId: string,
+): ChannelListItem {
+  if (item.channel_id !== channelId || item.unread_count === 0) {
+    return item;
+  }
+  return { ...item, unread_count: 0 };
 }
 
 export function patchChannelListItem(
@@ -210,6 +225,33 @@ export function subscribeMessagingChannelMembersAdded(
   window.addEventListener(MESSAGING_CHANNEL_MEMBERS_ADDED_EVENT, handler);
   return () =>
     window.removeEventListener(MESSAGING_CHANNEL_MEMBERS_ADDED_EVENT, handler);
+}
+
+export function dispatchMessagingChannelRead(detail: MessagingChannelReadDetail): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  window.dispatchEvent(
+    new CustomEvent<MessagingChannelReadDetail>(MESSAGING_CHANNEL_READ_EVENT, {
+      detail,
+    }),
+  );
+}
+
+export function subscribeMessagingChannelRead(
+  listener: (detail: MessagingChannelReadDetail) => void,
+): () => void {
+  if (typeof window === 'undefined') {
+    return () => undefined;
+  }
+  const handler = (event: Event) => {
+    const custom = event as CustomEvent<MessagingChannelReadDetail>;
+    if (custom.detail?.channelId) {
+      listener(custom.detail);
+    }
+  };
+  window.addEventListener(MESSAGING_CHANNEL_READ_EVENT, handler);
+  return () => window.removeEventListener(MESSAGING_CHANNEL_READ_EVENT, handler);
 }
 
 /** @internal Test helper */

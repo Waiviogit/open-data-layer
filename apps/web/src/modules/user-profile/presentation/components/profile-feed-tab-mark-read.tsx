@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
+import { consumeMarkProfileFeedRead } from './consume-mark-profile-feed-read';
 import { getSegmentsAfterAccount } from './profile-path';
 import { markProfileFeedReadAction } from '../../infrastructure/feed-unread.actions';
 
@@ -36,7 +37,7 @@ export function ProfileFeedTabMarkReadEffect({
     }
     const rest = getSegmentsAfterAccount(pathname);
     const tab = feedTabFromRest(rest);
-    if (!tab) {
+    if (!tab || tab === 'messages' || !consumeMarkProfileFeedRead(accountName, tab)) {
       return;
     }
     void markProfileFeedReadAction(accountName, tab);

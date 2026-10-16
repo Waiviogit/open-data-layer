@@ -30,9 +30,10 @@ const SEARCH_DEBOUNCE_MS = 300;
 
 export type TopNavProps = {
   user: AppHeaderUser | null;
+  messagesUnreadCount?: number;
 };
 
-export function TopNav({ user: _user }: TopNavProps) {
+export function TopNav({ user: _user, messagesUnreadCount = 0 }: TopNavProps) {
   const { t } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
@@ -465,11 +466,11 @@ export function TopNav({ user: _user }: TopNavProps) {
           {searchBarActive ? <CloseIcon size={20} /> : <SearchIcon size={20} />}
         </button>
         {!hideActionsWhileMobileSearch ? (
-          <HeaderActions user={_user} />
+          <HeaderActions user={_user} messagesUnreadCount={messagesUnreadCount} />
         ) : null}
         {hideActionsWhileMobileSearch ? (
           <div className="hidden items-center gap-2 lg:flex">
-            <HeaderActions user={_user} />
+            <HeaderActions user={_user} messagesUnreadCount={messagesUnreadCount} />
           </div>
         ) : null}
       </div>

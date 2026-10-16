@@ -17,8 +17,10 @@ import {
 import type { ChannelListItem } from '../domain/messaging.types';
 import { rememberDraftPeerAvatar } from '../infrastructure/draft-peer-avatar';
 import {
+  clearChannelListUnread,
   mergeViewerChannels,
   patchChannelListItem,
+  subscribeMessagingChannelRead,
   subscribeMessagingChannelUpdated,
   subscribeMessagingChannelLeft,
 } from '../infrastructure/messaging-channel-sync';
@@ -55,6 +57,12 @@ export function MessagingChannelListRail({
   useEffect(() => {
     return subscribeMessagingChannelUpdated((patch) => {
       setChannels((prev) => prev.map((item) => patchChannelListItem(item, patch)));
+    });
+  }, []);
+
+  useEffect(() => {
+    return subscribeMessagingChannelRead(({ channelId }) => {
+      setChannels((prev) => prev.map((item) => clearChannelListUnread(item, channelId)));
     });
   }, []);
 

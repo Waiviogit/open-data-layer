@@ -142,7 +142,7 @@ export class NotificationsWsClientImpl implements NotificationsWsClient {
       if (this.intentionalClose) {
         return;
       }
-      if (this.ws?.readyState === WebSocket.OPEN) {
+      if (this.hasLiveSocket()) {
         return;
       }
       void this.ensureConnected().catch(() => undefined);
@@ -151,7 +151,7 @@ export class NotificationsWsClientImpl implements NotificationsWsClient {
       if (this.intentionalClose) {
         return;
       }
-      if (this.ws?.readyState === WebSocket.OPEN) {
+      if (this.hasLiveSocket()) {
         return;
       }
       void this.ensureConnected().catch(() => undefined);
@@ -348,7 +348,10 @@ export class NotificationsWsClientImpl implements NotificationsWsClient {
     }
   }
 
-  private handleSocketClose(): void {
+  private handleSocketClose(closed: WebSocket): void {
+    if (this.ws !== closed) {
+      return;
+    }
     this.ws = null;
     this.connectPromise = null;
     this.pendingByCorrelation.clear();
@@ -356,6 +359,11 @@ export class NotificationsWsClientImpl implements NotificationsWsClient {
     if (!this.intentionalClose) {
       this.scheduleReconnect();
     }
+  }
+
+  private hasLiveSocket(): boolean {
+    const state = this.ws?.readyState;
+    return state === WebSocket.OPEN || state === WebSocket.CONNECTING;
   }
 
   private async ensureConnected(): Promise<void> {
@@ -393,6 +401,9 @@ export class NotificationsWsClientImpl implements NotificationsWsClient {
       this.ws = ws;
 
       ws.onopen = () => {
+        if (this.ws !== ws) {
+          return;
+        }
         const isReconnect = this.hadSuccessfulConnection;
         this.hadSuccessfulConnection = true;
         this.reconnectAttempt = 0;
@@ -402,9 +413,17 @@ export class NotificationsWsClientImpl implements NotificationsWsClient {
           this.notifyReconnectListeners();
         }
       };
-      ws.onerror = () => reject(new Error('ws_connect_failed'));
+      ws.onerror = () => {
+        if (this.ws !== ws) {
+          return;
+        }
+        reject(new Error('ws_connect_failed'));
+      };
       ws.onclose = () => {
-        this.handleSocketClose();
+        if (this.ws !== ws) {
+          return;
+        }
+        this.handleSocketClose(ws);
       };
       ws.onmessage = (ev) => {
         this.handleMessage(ev.data);
@@ -533,13 +552,21 @@ export function createNotificationsWsClient(
 export function configureNotificationsWsUrl(url: string): void {
   const trimmed = url.trim();
   const nextUrl = trimmed.length > 0 ? trimmed : undefined;
-  if (nextUrl === runtimeWsUrl && singleton !== undefined) {
+  if (nextUrl === runtimeWsUrl) {
     return;
   }
   singleton?.close();
   runtimeWsUrl = nextUrl;
   singleton = undefined;
   singletonForUrl = undefined;
+}
+
+/** @internal Test helper */
+export function resetNotificationsWsSingletonForTests(): void {
+  singleton?.close();
+  singleton = undefined;
+  singletonForUrl = undefined;
+  runtimeWsUrl = undefined;
 }
 
 function resolveNotificationsWsUrl(): string {

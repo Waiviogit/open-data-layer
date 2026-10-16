@@ -11,9 +11,13 @@ import { LoggedInHeaderActions } from './logged-in-header-actions';
 
 export type HeaderActionsProps = {
   user: AppHeaderUser | null;
+  messagesUnreadCount?: number;
 };
 
-export function HeaderActions({ user }: HeaderActionsProps) {
+export function HeaderActions({
+  user,
+  messagesUnreadCount = 0,
+}: HeaderActionsProps) {
   const { t } = useI18n();
   const [loginOpen, setLoginOpen] = useState(false);
 
@@ -35,5 +39,10 @@ export function HeaderActions({ user }: HeaderActionsProps) {
     );
   }
 
-  return <LoggedInHeaderActions user={user} />;
+  return (
+    <LoggedInHeaderActions
+      user={user}
+      messagesUnreadCount={messagesUnreadCount}
+    />
+  );
 }

@@ -1,5 +1,6 @@
 import {
   buildMessagesHref,
+  clearChannelListUnread,
   mergeViewerChannels,
   pickNextChannelAfterLeave,
   resetMessagingChannelTombstonesForTests,
@@ -66,5 +67,12 @@ describe('messaging-channel-sync', () => {
   it('buildMessagesHref omits query when no channel selected', () => {
     expect(buildMessagesHref('alice')).toBe('/@alice/messages');
     expect(buildMessagesHref('alice', 'grp-a')).toBe('/@alice/messages?channel=grp-a');
+  });
+
+  it('clearChannelListUnread zeros only the opened channel', () => {
+    const unread = { ...channel('grp-a', 100), unread_count: 5 };
+    const other = { ...channel('grp-b', 50), unread_count: 3 };
+    expect(clearChannelListUnread(unread, 'grp-a').unread_count).toBe(0);
+    expect(clearChannelListUnread(other, 'grp-a')).toBe(other);
   });
 });

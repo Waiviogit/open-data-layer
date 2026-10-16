@@ -17,6 +17,10 @@ jest.mock('@/modules/notifications', () => ({
   NotificationBell: () => null,
 }));
 
+jest.mock('../hooks/use-messages-unread-count', () => ({
+  useMessagesUnreadCount: (_username: string, initial: number) => initial,
+}));
+
 jest.mock('@/shared/presentation', () => ({
   UserAvatar: () => <span>avatar</span>,
 }));
@@ -48,10 +52,13 @@ const messages = {
   write_post: 'Write',
 } as Messages;
 
-function renderMenu() {
+function renderMenu(messagesUnreadCount = 0) {
   render(
     <I18nProvider locale={'en-US' as LocaleId} messages={messages}>
-      <LoggedInHeaderActions user={{ username: 'gobag' }} />
+      <LoggedInHeaderActions
+        user={{ username: 'gobag' }}
+        messagesUnreadCount={messagesUnreadCount}
+      />
     </I18nProvider>,
   );
   fireEvent.click(screen.getByRole('button', { name: 'Account menu' }));
@@ -104,6 +111,9 @@ describe('LoggedInHeaderActions account menu', () => {
       'aria-current',
       'page',
     );
+    expect(screen.getByRole('menuitem', { name: 'Messages' })).not.toHaveAttribute(
+      'aria-label',
+    );
     expect(screen.getByRole('menuitem', { name: 'Drafts' })).toHaveAttribute(
       'href',
       '/drafts',
@@ -123,5 +133,25 @@ describe('LoggedInHeaderActions account menu', () => {
       expect(item).toHaveAttribute('title', 'Coming soon');
       expect(item.tagName).toBe('DIV');
     }
+  });
+
+  it('shows an unread badge on Messages when inbox messages are waiting', () => {
+    renderMenu(3);
+    const messages = screen.getByRole('menuitem', { name: 'Messages (3)' });
+    expect(messages).toHaveAttribute('href', '/@gobag/messages');
+    expect(messages).toHaveTextContent('3');
+  });
+
+  it('caps the Messages unread badge at 9+', () => {
+    renderMenu(12);
+    expect(screen.getByRole('menuitem', { name: 'Messages (9+)' })).toHaveTextContent(
+      '9+',
+    );
+  });
+
+  it('keeps Messages without a badge when the inbox is caught up', () => {
+    renderMenu(0);
+    expect(screen.getByRole('menuitem', { name: 'Messages' })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'Messages (0)' })).toBeNull();
   });
 });

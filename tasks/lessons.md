@@ -126,3 +126,15 @@
 **Pattern:** While planning, a code default (`chain-indexer` falls back to `osl-mainnet` when `ODL_NETWORK` is unset) was treated as the actual deployment. The plan then added a testnet "risk" warning to agent-wallet. All stacks are on testnet right now and there is no mainnet indexer.
 
 **Rule:** Custom-json network ids (`odl-*`, `osl-*`, `obl-*`) come only from the app's config (`config.oslCustomJsonId` and so on). Do not infer the deployed network from a code default. Do not add network warnings, overrides or hardcoded ids. If the deployed network matters, ask.
+
+## Web: `updateTag` in layout + effect on prop identity = RSC loop
+
+**Pattern:** `markChannelReadAction` and `markProfileFeedReadAction` both called `updateTag(userFeedUnreadCounts)`. That tag is now fetched in `(app)` layout (`AppHeaderUser` badge). Invalidate → layout remounts the messages page → inbox effect + `ProfileFeedTabMarkReadEffect` fire again → infinite POST/~200ms RSC refresh. `useRef` resets on remount.
+
+**Rule:** Do not `updateTag` a layout-fetched tag from an **ungated** mount effect. Gate writes with a module-scoped watermark (reserve before POST; release on failure). `feed-read` `tab: messages` is a no-op — header `messages` is `countTotalUnreadForViewer`. Invalidate `userFeedUnreadCounts` **and** `viewerChannels` from channel mark-read once consume is in place.
+
+## Web: notifications WS singleton vs remount
+
+**Pattern:** `configureNotificationsWsUrl` ran during render and reset the singleton whenever it was `undefined` (same URL). Stale `onclose` from a replaced socket scheduled another reconnect → burst of `GET /api/auth/ws-token` and multiple sockets.
+
+**Rule:** Configure only when the URL changes (`useLayoutEffect`). Ignore `onclose`/`onerror` unless `this.ws === closed`. Overlapping `ensureConnected` must share one `connectPromise` / one token fetch.

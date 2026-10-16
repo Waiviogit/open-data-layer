@@ -1,5 +1,8 @@
 import {
+  configureNotificationsWsUrl,
   createNotificationsWsClient,
+  getNotificationsWsClient,
+  resetNotificationsWsSingletonForTests,
 } from './notifications-ws-client';
 
 type MockWsInstance = {
@@ -126,4 +129,53 @@ describe('NotificationsWsClientImpl reconnect', () => {
     expect(onReconnect).toHaveBeenCalledTimes(1);
     client.close();
   });
+
+  it('shares one socket and one token fetch across overlapping ensureConnected', async () => {
+    const client = createNotificationsWsClient('ws://localhost:7200/notifications/ws');
+    client.addNotificationListener(() => {});
+    client.addNotificationListener(() => {});
+
+    await flushMicrotasks();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(instances).toHaveLength(1);
+    client.close();
+  });
+
+  it('ignores onclose from a replaced socket', async () => {
+    const client = createNotificationsWsClient('ws://localhost:7200/notifications/ws');
+    client.addNotificationListener(() => {});
+    await flushMicrotasks();
+    const first = instances[0];
+    expect(first).toBeDefined();
+
+    first?.close();
+    await flushMicrotasks();
+    await jest.runOnlyPendingTimersAsync();
+    await flushMicrotasks();
+    expect(instances.length).toBeGreaterThanOrEqual(2);
+
+    const afterReconnect = instances.length;
+    first?.onclose?.();
+    await flushMicrotasks();
+    expect(instances.length).toBe(afterReconnect);
+    client.close();
+  });
 });
+
+describe('configureNotificationsWsUrl', () => {
+  afterEach(() => {
+    resetNotificationsWsSingletonForTests();
+  });
+
+  it('does not close the live singleton when the URL is unchanged', () => {
+    configureNotificationsWsUrl('ws://localhost:7200/notifications/ws');
+    const client = getNotificationsWsClient();
+    expect(client).not.toBeNull();
+    const close = jest.spyOn(client!, 'close');
+    configureNotificationsWsUrl('ws://localhost:7200/notifications/ws');
+    configureNotificationsWsUrl('ws://localhost:7200/notifications/ws');
+    expect(close).not.toHaveBeenCalled();
+    close.mockRestore();
+  });
+});
+

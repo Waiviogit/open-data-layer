@@ -7,6 +7,7 @@ import {
   useId,
   useRef,
   useState,
+  type ReactNode,
 } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
@@ -17,6 +18,8 @@ import { clearWalletSession } from '@/modules/auth/infrastructure';
 import { UserAvatar } from '@/shared/presentation';
 
 import type { AppHeaderUser } from '../../domain/app-header-user';
+import { formatUnreadBadgeCount } from '../../domain/format-unread-badge-count';
+import { useMessagesUnreadCount } from '../hooks/use-messages-unread-count';
 
 /** 32×32 hit target — matches `UserAvatar` size={32} and unread notification badge. */
 const HEADER_ICON_BTN_CLASS =
@@ -26,6 +29,7 @@ const HEADER_ICON_SIZE = 20;
 
 export type LoggedInHeaderActionsProps = {
   user: AppHeaderUser;
+  messagesUnreadCount?: number;
 };
 
 function menuNavLinkClassName(active: boolean): string {
@@ -75,16 +79,19 @@ function AccountMenuLink({
   active,
   onNavigate,
   children,
+  ariaLabel,
 }: {
   href: string;
   active: boolean;
   onNavigate: () => void;
-  children: string;
+  children: ReactNode;
+  ariaLabel?: string;
 }) {
   return (
     <Link
       href={href}
       role="menuitem"
+      aria-label={ariaLabel}
       aria-current={active ? 'page' : undefined}
       className={menuNavLinkClassName(active)}
       onClick={onNavigate}
@@ -114,7 +121,10 @@ function DisabledAccountMenuItem({
   );
 }
 
-export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
+export function LoggedInHeaderActions({
+  user,
+  messagesUnreadCount = 0,
+}: LoggedInHeaderActionsProps) {
   const { t } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
@@ -126,6 +136,8 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
   const [logoutPending, setLogoutPending] = useState(false);
 
   const username = user.username;
+  const inboxUnreadCount = useMessagesUnreadCount(username, messagesUnreadCount);
+  const inboxUnreadLabel = formatUnreadBadgeCount(inboxUnreadCount);
   const feedHref = `/@${encodeURIComponent(username)}`;
   const profileAboutHref = `${feedHref}/about`;
   const messagesHref = `${feedHref}/messages`;
@@ -253,8 +265,23 @@ export function LoggedInHeaderActions({ user }: LoggedInHeaderActionsProps) {
               href={messagesHref}
               active={isOwnProfileSection(pathname, username, 'messages')}
               onNavigate={closeMenu}
+              ariaLabel={
+                inboxUnreadLabel
+                  ? `${t('messages')} (${inboxUnreadLabel})`
+                  : undefined
+              }
             >
-              {t('messages')}
+              <span className="inline-flex max-w-full min-w-0 items-center">
+                <span>{t('messages')}</span>
+                {inboxUnreadLabel ? (
+                  <span
+                    className="ms-1 inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-caption font-weight-strong text-accent-fg"
+                    aria-hidden
+                  >
+                    {inboxUnreadLabel}
+                  </span>
+                ) : null}
+              </span>
             </AccountMenuLink>
             <DisabledAccountMenuItem label={t('bookmarks')} title={comingSoon} />
             <AccountMenuLink
