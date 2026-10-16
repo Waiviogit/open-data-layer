@@ -74,6 +74,8 @@ Two icon buttons in `MessagingComposeBar`:
 
 Recipient selection: DM = peer; group = member dropdown. After a successful send the draft clears, the lock stays as the user set it, and the send control shows Sending until the broadcast finishes. **Object activity has no encryption UI** (plain `message_create` only; indexer rejects encrypted object messages).
 
+Lock preference is per viewer in `localStorage` (`odl:messaging:encrypt-lock-v1:{username}`): `{ enabled, memoProbed }`. A mirror cookie `odl_messaging_encrypt_enabled=<username>` lets the messages RSC paint the correct lock before hydration (localStorage is not readable on the server). A successful Keychain `odl-memo-probe` is cached as `memoProbed: true` so later toggles (and DM inline send) skip that prompt; failed/cancelled probes are not stored. Encrypt-on-send still uses Keychain `requestEncodeMessage`.
+
 Decrypt in `MessagingMessageList` (profile inbox only): click encrypted bubble → Keychain `requestVerifyKey`; ephemeral outgoing bubbles are not clickable.
 
 ## API mapping (encryption)

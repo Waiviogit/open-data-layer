@@ -77,6 +77,7 @@ export type MessagingInboxClientProps = {
   initialPeer: string | null;
   initialMessages: MessageHistoryPage;
   initialChannelDetail: ChannelDetail | null;
+  initialEncryptEnabled?: boolean;
   /** Desktop: channel list renders in profile left column (@leftSidebar). */
   listInLeftRail?: boolean;
 };
@@ -89,6 +90,7 @@ export function MessagingInboxClient({
   initialPeer,
   initialMessages,
   initialChannelDetail,
+  initialEncryptEnabled = false,
   listInLeftRail = true,
 }: MessagingInboxClientProps) {
   const router = useRouter();
@@ -639,6 +641,7 @@ export function MessagingInboxClient({
                 peer={composePeer}
                 members={composeMembers}
                 viewerUsername={viewerUsername}
+                initialEncryptEnabled={initialEncryptEnabled}
                 hasPriorMessages={hasPriorMessages}
                 pending={pending || messageUpdatePending}
                 pendingEncrypted={pendingEncrypted}

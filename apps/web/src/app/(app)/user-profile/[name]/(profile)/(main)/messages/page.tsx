@@ -6,6 +6,7 @@ import {
   getViewerChannelsQuery,
   MessagingInboxClient,
 } from '@/modules/messaging';
+import { readEncryptLockEnabledCookie } from '@/modules/messaging/domain/encrypt-lock-cookie.server';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
 
 export default async function UserProfileMessagesPage({
@@ -93,6 +94,7 @@ export default async function UserProfileMessagesPage({
       initialPeer={initialPeer}
       initialMessages={initialMessages}
       initialChannelDetail={initialChannelDetail}
+      initialEncryptEnabled={await readEncryptLockEnabledCookie(viewer)}
       listInLeftRail
     />
   );

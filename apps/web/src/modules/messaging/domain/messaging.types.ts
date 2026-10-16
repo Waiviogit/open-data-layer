@@ -108,6 +108,21 @@ export type SendEncryptedMessageInput = {
 export const PLAIN_SEND_DISCLAIMER_STORAGE_KEY =
   'odl:messaging:plain-send-disclaimer-v1';
 
+export const ENCRYPT_LOCK_STORAGE_KEY_PREFIX = 'odl:messaging:encrypt-lock-v1';
+
+/** SSR hint so the lock icon is correct before hydration. Value is the viewer username. */
+export const ENCRYPT_LOCK_COOKIE = 'odl_messaging_encrypt_enabled';
+export const ENCRYPT_LOCK_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+
+export type MessagingEncryptLockState = {
+  enabled: boolean;
+  memoProbed: boolean;
+};
+
+export function encryptLockStorageKey(username: string): string {
+  return `${ENCRYPT_LOCK_STORAGE_KEY_PREFIX}:${username.trim().toLowerCase()}`;
+}
+
 export const EMPTY_LEAVE_POLICY: ChannelLeavePolicy = {
   can_leave: false,
   requires_successor: false,

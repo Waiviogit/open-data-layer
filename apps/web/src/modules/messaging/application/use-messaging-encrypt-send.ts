@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import {
   encryptEphemeralOneWay,
@@ -10,6 +10,10 @@ import {
 
 import { useHydrateWalletProvider } from '@/modules/auth';
 
+import {
+  readEncryptLockState,
+  writeEncryptLockMemoProbed,
+} from '../domain/messaging.helpers';
 import type { SendEncryptedMessageInput } from '../domain/messaging.types';
 import { canUseKeychainMemoCrypto } from '../infrastructure/memo-crypto-capability';
 import {
@@ -36,6 +40,14 @@ export function useMessagingEncryptSend(viewerUsername: string | null) {
   const [probePending, setProbePending] = useState(false);
   const keychainMemoAvailable = canUseKeychainMemoCrypto();
 
+  useEffect(() => {
+    if (!viewer) {
+      setHasMemoKey(null);
+      return;
+    }
+    setHasMemoKey(readEncryptLockState(viewer).memoProbed ? true : null);
+  }, [viewer]);
+
   const ensureMemoKeyProbed = useCallback(async (): Promise<boolean> => {
     if (!viewer) {
       setHasMemoKey(null);
@@ -48,10 +60,17 @@ export function useMessagingEncryptSend(viewerUsername: string | null) {
     if (hasMemoKey !== null) {
       return hasMemoKey;
     }
+    if (readEncryptLockState(viewer).memoProbed) {
+      setHasMemoKey(true);
+      return true;
+    }
     setProbePending(true);
     try {
       const ok = await probeKeychainMemoKey(viewer);
       setHasMemoKey(ok);
+      if (ok) {
+        writeEncryptLockMemoProbed(viewer);
+      }
       return ok;
     } finally {
       setProbePending(false);

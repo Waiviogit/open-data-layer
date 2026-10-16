@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { useIpfsContentBaseUrl } from '@/config/ipfs-content-base-provider';
 import { LexicalPostEditor } from '@/modules/editor';
@@ -10,7 +10,13 @@ import { AppModal, AppModalCloseButton } from '@/shared/presentation';
 import { buildMessagingMarkdownFromLexical } from '../application/build-messaging-markdown';
 import { useMessagingEncryptSend } from '../application/use-messaging-encrypt-send';
 import type { SendEncryptedMessageInput } from '../domain/messaging.types';
-import { canSendMessageBody, shouldShowPlainSendDisclaimer } from '../domain/messaging.helpers';
+import {
+  canSendMessageBody,
+  readEncryptLockState,
+  shouldShowPlainSendDisclaimer,
+  writeEncryptLockCookie,
+  writeEncryptLockEnabled,
+} from '../domain/messaging.helpers';
 import { MESSAGING_COLUMN_FOOTER_SHELL_CLASS } from './messaging-layout.constants';
 import { EncryptedSendModal } from './encrypted-send-modal';
 import { LockIcon, LockOpenIcon, SendHorizontalIcon } from '@/icons';
@@ -35,6 +41,8 @@ export type MessagingComposeBarProps = {
   initialBody?: string;
   sendAriaLabel?: string;
   editorKey?: number;
+  /** SSR cookie hint so the lock icon matches localStorage before hydration. */
+  initialEncryptEnabled?: boolean;
   onSendPlain: (body: string) => boolean | void | Promise<boolean | void>;
   onSendEncrypted: (input: SendEncryptedMessageInput) => boolean | void | Promise<boolean | void>;
   onRequireLogin?: () => void;
@@ -54,6 +62,7 @@ export function MessagingComposeBar({
   initialBody,
   sendAriaLabel: sendAriaLabelOverride,
   editorKey: editorKeyProp,
+  initialEncryptEnabled = false,
   onSendPlain,
   onSendEncrypted,
   onRequireLogin,
@@ -63,7 +72,7 @@ export function MessagingComposeBar({
   const [bodyLexicalJson, setBodyLexicalJson] = useState('');
   const [internalEditorKey, setInternalEditorKey] = useState(0);
   const editorKey = `${editorKeyProp ?? 0}-${internalEditorKey}`;
-  const [encryptEnabled, setEncryptEnabled] = useState(false);
+  const [encryptEnabled, setEncryptEnabled] = useState(initialEncryptEnabled);
   const [submitPending, setSubmitPending] = useState(false);
   const submitLockRef = useRef(false);
   const [plainDisclaimerOpen, setPlainDisclaimerOpen] = useState(false);
@@ -79,6 +88,27 @@ export function MessagingComposeBar({
   } = useMessagingEncryptSend(viewerUsername);
 
   const viewer = viewerUsername?.trim() ?? '';
+
+  useLayoutEffect(() => {
+    if (!viewer) {
+      setEncryptEnabled(false);
+      return;
+    }
+    const enabled = readEncryptLockState(viewer).enabled;
+    setEncryptEnabled(enabled);
+    writeEncryptLockCookie(viewer, enabled);
+  }, [viewer]);
+
+  const persistEncryptEnabled = useCallback(
+    (value: boolean) => {
+      setEncryptEnabled(value);
+      if (viewer) {
+        writeEncryptLockEnabled(viewer, value);
+      }
+    },
+    [viewer],
+  );
+
   const memberOptions = useMemo(() => {
     const needle = viewer.toLowerCase();
     return members
@@ -249,12 +279,24 @@ export function MessagingComposeBar({
     void (async () => {
       const memoOk = await ensureMemoKeyProbed();
       if (!memoOk) {
-        setEncryptEnabled(true);
+        persistEncryptEnabled(true);
         return;
       }
-      setEncryptEnabled((value) => !value);
+      setEncryptEnabled((value) => {
+        const next = !value;
+        if (viewer) {
+          writeEncryptLockEnabled(viewer, next);
+        }
+        return next;
+      });
     })();
-  }, [ensureMemoKeyProbed, keychainMemoAvailable, lockDisabled]);
+  }, [
+    ensureMemoKeyProbed,
+    keychainMemoAvailable,
+    lockDisabled,
+    persistEncryptEnabled,
+    viewer,
+  ]);
 
   return (
     <>

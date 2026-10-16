@@ -10,6 +10,10 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { I18nProvider } from '@/i18n/providers/i18n-provider';
 import type { LocaleId, Messages } from '@/i18n/types';
 
+import {
+  readEncryptLockState,
+  writeEncryptLockEnabled,
+} from '../domain/messaging.helpers';
 import { PLAIN_SEND_DISCLAIMER_STORAGE_KEY } from '../domain/messaging.types';
 import type { MessagingComposeBarProps } from './messaging-compose-bar';
 import { MessagingComposeBar } from './messaging-compose-bar';
@@ -210,6 +214,36 @@ describe('MessagingComposeBar', () => {
     expect(encryptHarness.buildEncryptedMessage).toHaveBeenCalledWith(
       expect.objectContaining({ body: 'ScrapeCreators', recipient: 'bob' }),
     );
+  });
+
+  it('restores the lock from localStorage without probing', async () => {
+    writeEncryptLockEnabled('alice', true);
+    renderBar();
+
+    await waitFor(() => {
+      expect(buttonNamed('Send encrypted message')).toHaveAttribute('aria-pressed', 'true');
+    });
+    expect(queryButtonNamed('Send public message')).not.toBeInTheDocument();
+    expect(encryptHarness.ensureMemoKeyProbed).not.toHaveBeenCalled();
+  });
+
+  it('paints a pressed lock from the SSR cookie hint', () => {
+    writeEncryptLockEnabled('alice', true);
+    renderBar({ initialEncryptEnabled: true });
+    expect(buttonNamed('Send encrypted message')).toHaveAttribute('aria-pressed', 'true');
+    expect(encryptHarness.ensureMemoKeyProbed).not.toHaveBeenCalled();
+  });
+
+  it('persists the lock when toggled on and off', async () => {
+    renderBar();
+    await pressLock();
+    expect(readEncryptLockState('alice').enabled).toBe(true);
+
+    fireEvent.click(buttonNamed('Send encrypted message'));
+    await waitFor(() => {
+      expect(buttonNamed('Send public message')).toHaveAttribute('aria-pressed', 'false');
+    });
+    expect(readEncryptLockState('alice').enabled).toBe(false);
   });
 
   it('leaves the lock pressed after a successful encrypted inline send', async () => {

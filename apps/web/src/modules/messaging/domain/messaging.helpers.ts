@@ -8,8 +8,19 @@ import {
   generateGroupChannelId,
 } from '@opden-data-layer/hive-broadcast';
 
-import type { ChannelDetail, ChannelListItem, MessageItem } from './messaging.types';
-import { EMPTY_LEAVE_POLICY, PLAIN_SEND_DISCLAIMER_STORAGE_KEY } from './messaging.types';
+import type {
+  ChannelDetail,
+  ChannelListItem,
+  MessageItem,
+  MessagingEncryptLockState,
+} from './messaging.types';
+import {
+  EMPTY_LEAVE_POLICY,
+  ENCRYPT_LOCK_COOKIE,
+  ENCRYPT_LOCK_COOKIE_MAX_AGE_SECONDS,
+  PLAIN_SEND_DISCLAIMER_STORAGE_KEY,
+  encryptLockStorageKey,
+} from './messaging.types';
 
 export {
   MAX_GROUP_CHANNEL_MEMBERS,
@@ -251,6 +262,96 @@ export function dismissPlainSendDisclaimer(): void {
   } catch {
     // ignore
   }
+}
+
+const DEFAULT_ENCRYPT_LOCK_STATE: MessagingEncryptLockState = {
+  enabled: false,
+  memoProbed: false,
+};
+
+function normalizeEncryptLockUsername(username: string): string {
+  return username.trim().toLowerCase();
+}
+
+export function readEncryptLockState(username: string): MessagingEncryptLockState {
+  const account = normalizeEncryptLockUsername(username);
+  if (!account || typeof window === 'undefined') {
+    return { ...DEFAULT_ENCRYPT_LOCK_STATE };
+  }
+  try {
+    const raw = localStorage.getItem(encryptLockStorageKey(account));
+    if (!raw) {
+      return { ...DEFAULT_ENCRYPT_LOCK_STATE };
+    }
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') {
+      return { ...DEFAULT_ENCRYPT_LOCK_STATE };
+    }
+    const record = parsed as Record<string, unknown>;
+    return {
+      enabled: record.enabled === true,
+      memoProbed: record.memoProbed === true,
+    };
+  } catch {
+    return { ...DEFAULT_ENCRYPT_LOCK_STATE };
+  }
+}
+
+function writeEncryptLockState(
+  username: string,
+  patch: Partial<MessagingEncryptLockState>,
+): void {
+  const account = normalizeEncryptLockUsername(username);
+  if (!account || typeof window === 'undefined') {
+    return;
+  }
+  try {
+    const current = readEncryptLockState(account);
+    const next: MessagingEncryptLockState = {
+      enabled: patch.enabled ?? current.enabled,
+      memoProbed: patch.memoProbed === true || current.memoProbed,
+    };
+    localStorage.setItem(encryptLockStorageKey(account), JSON.stringify(next));
+  } catch {
+    // ignore
+  }
+}
+
+export function encryptLockEnabledFromCookie(
+  cookieValue: string | undefined,
+  username: string,
+): boolean {
+  const account = normalizeEncryptLockUsername(username);
+  if (!account || cookieValue == null) {
+    return false;
+  }
+  return cookieValue.trim().toLowerCase() === account;
+}
+
+export function writeEncryptLockCookie(username: string, enabled: boolean): void {
+  const account = normalizeEncryptLockUsername(username);
+  if (!account || typeof document === 'undefined') {
+    return;
+  }
+  try {
+    if (enabled) {
+      document.cookie = `${ENCRYPT_LOCK_COOKIE}=${encodeURIComponent(account)}; Max-Age=${ENCRYPT_LOCK_COOKIE_MAX_AGE_SECONDS}; path=/; SameSite=Lax`;
+      return;
+    }
+    document.cookie = `${ENCRYPT_LOCK_COOKIE}=; Max-Age=0; path=/; SameSite=Lax`;
+  } catch {
+    // ignore
+  }
+}
+
+export function writeEncryptLockEnabled(username: string, enabled: boolean): void {
+  writeEncryptLockState(username, { enabled });
+  writeEncryptLockCookie(username, enabled);
+}
+
+/** Persist a successful Keychain memo probe only. Failures are never cached. */
+export function writeEncryptLockMemoProbed(username: string): void {
+  writeEncryptLockState(username, { memoProbed: true });
 }
 
 export function buildChannelLeavePayload(input: {
