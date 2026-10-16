@@ -118,7 +118,7 @@ Per [channels.md](../../../spec/osl/channels.md), object channels require explic
 
 Server-side `channel_members.last_read_at_unix`. List shows `unread_count`; All/Unread tabs filter client-side. Opening a channel calls mark-read once per channel watermark (module-scoped reserve; released if the POST fails), zeros the left-rail pill via `messaging:channel-read`, and invalidates `viewerChannels` plus `userFeedUnreadCounts` so a refresh does not resurrect the rail or the account-menu badge. Query-api `feed-read` `tab: messages` is a no-op — visiting `/@:name/messages` does not clear inbox unread by itself.
 
-**Account menu badge:** header Messages row shows the same inbox total (`GET /users/:name/feed-unread-counts` → `messages`). SSR seeds the count; notifications WS increments on `message_direct` / `message_group` (not `bell_object_message`).
+**Account menu badge:** header Messages row shows the same inbox total (`GET /users/:name/feed-unread-counts` → `messages`). SSR seeds the count; notifications WS `message_direct` / `message_group` (not `bell_object_message`) invalidates the count tag and live-refetches (debounced 300ms).
 
 ## Group leave
 

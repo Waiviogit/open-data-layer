@@ -38,7 +38,7 @@ Groups are separated by a hairline. Disabled rows are not links (`aria-disabled`
 | My feed | `/@:username` |
 | Profile | `/@:username/about` |
 | Wallet | `/@:username/transfers?type=WAIV` |
-| Messages | `/@:username/messages` — inbox, not a Posts tab. Unread inbox count (`feed-unread-counts.messages`) as a `9+` pill when `> 0`. Live `+1` on WS `message_direct` / `message_group`. Channel `markChannelRead` invalidates the count tag (module-scoped consume prevents a remount POST loop). Visiting `/messages` does not clear the badge by itself. |
+| Messages | `/@:username/messages` — inbox, not a Posts tab. Unread inbox count (`feed-unread-counts.messages`) as a `9+` pill when `> 0`. WS `message_direct` / `message_group` invalidates the unread + channel-list tags and live-refetches the count (debounced). Channel `markChannelRead` also invalidates those tags (module-scoped consume prevents a remount POST loop). Visiting `/messages` does not clear the badge by itself. |
 | Bookmarks | Disabled |
 | Drafts | `/drafts` |
 | Vault | Disabled |

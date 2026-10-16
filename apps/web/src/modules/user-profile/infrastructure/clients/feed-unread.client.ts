@@ -2,7 +2,12 @@ import 'server-only';
 
 import { z } from 'zod';
 
-import { queryApiFetch, queryApiFetchOutcome, QUERY_API_LIVE_INIT } from './query-api.client';
+import {
+  queryApiFetch,
+  queryApiFetchLive,
+  queryApiFetchOutcome,
+  QUERY_API_LIVE_INIT,
+} from './query-api.client';
 import { queryApiCacheTags } from '@/shared/infrastructure/query/query-api-cache-tags';
 
 const feedUnreadCountsSchema = z.object({
@@ -12,6 +17,18 @@ const feedUnreadCountsSchema = z.object({
 });
 
 export type FeedUnreadCountsView = z.infer<typeof feedUnreadCountsSchema>;
+
+function parseFeedUnreadCounts(raw: unknown): FeedUnreadCountsView | null {
+  const parsed = feedUnreadCountsSchema.safeParse(raw);
+  if (!parsed.success) {
+    console.error(
+      '[fetchUserFeedUnreadCounts] unexpected response shape:',
+      parsed.error.flatten(),
+    );
+    return null;
+  }
+  return parsed.data;
+}
 
 export async function fetchUserFeedUnreadCounts(
   accountName: string,
@@ -25,15 +42,21 @@ export async function fetchUserFeedUnreadCounts(
   if (raw === null) {
     return null;
   }
-  const parsed = feedUnreadCountsSchema.safeParse(raw);
-  if (!parsed.success) {
-    console.error(
-      '[fetchUserFeedUnreadCounts] unexpected response shape:',
-      parsed.error.flatten(),
-    );
+  return parseFeedUnreadCounts(raw);
+}
+
+export async function fetchUserFeedUnreadCountsLive(
+  accountName: string,
+  viewer: string,
+): Promise<FeedUnreadCountsView | null> {
+  const path = `/query/v1/users/${encodeURIComponent(accountName)}/feed-unread-counts`;
+  const raw = await queryApiFetchLive<unknown>(path, {
+    headers: { 'X-Viewer': viewer },
+  });
+  if (raw === null) {
     return null;
   }
-  return parsed.data;
+  return parseFeedUnreadCounts(raw);
 }
 
 export async function markUserProfileFeedRead(
