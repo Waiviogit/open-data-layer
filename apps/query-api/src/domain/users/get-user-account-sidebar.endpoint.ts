@@ -22,6 +22,7 @@ import { parseProfileCryptoWallets } from './parse-profile-crypto-wallets';
 import { parseProfileSocialLinks } from './parse-profile-social-links';
 import { resolvePostingJsonMetadata } from './resolve-posting-json-metadata';
 import type { UserAccountSidebarView } from './user-account-sidebar.types';
+import { WaivDieselPoolCache } from './waiv-diesel-pool.cache';
 import { WaivRewardPoolCache } from './waiv-reward-pool.cache';
 
 function parseCoingeckoUsd(block: unknown): number {
@@ -51,6 +52,7 @@ export class GetUserAccountSidebarEndpoint {
     private readonly hiveEngine: HiveEngineClient,
     private readonly hiveRewardFund: HiveRewardFundCache,
     private readonly waivRewardPool: WaivRewardPoolCache,
+    private readonly waivDieselPool: WaivDieselPoolCache,
     private readonly currencyQuery: CurrencyQueryService,
   ) {}
 
@@ -88,7 +90,7 @@ export class GetUserAccountSidebarEndpoint {
         engineRates,
         engineVp,
         waivBalance,
-        dieselPool,
+        quotePriceHive,
       ] = await Promise.all([
         this.hiveAccounts.getAccount(normalized),
         this.hiveClient.findRcAccountsStrict([normalized]),
@@ -103,7 +105,7 @@ export class GetUserAccountSidebarEndpoint {
           account: normalized,
           symbol: WAIV_TOKEN.SYMBOL,
         }),
-        this.hiveEngine.findOneMarketPool({ _id: WAIV_TOKEN.DIESEL_POOL_ID }),
+        this.waivDieselPool.getQuotePriceHive(),
       ]);
 
       if (hiveAccount) {
@@ -127,7 +129,6 @@ export class GetUserAccountSidebarEndpoint {
       const waivUsd = engineRates?.USD ?? 0;
       const stake = Number.parseFloat(waivBalance?.stake ?? '0');
       const delegationsIn = Number.parseFloat(waivBalance?.delegationsIn ?? '0');
-      const quotePriceHive = Number.parseFloat(dieselPool?.quotePrice ?? '0');
 
       voteValues = calculateAccountVoteValues({
         account: hiveAccount ?? {},
@@ -138,7 +139,7 @@ export class GetUserAccountSidebarEndpoint {
         waivDelegationsIn: Number.isFinite(delegationsIn) ? delegationsIn : 0,
         engineVotingPowerPercent: waivMana.upvotingManaPercent,
         waivRewardRate,
-        waivQuotePriceHive: Number.isFinite(quotePriceHive) ? quotePriceHive : 0,
+        waivQuotePriceHive: quotePriceHive,
         hiveUsdForWaiv: hiveUsd,
       });
     } catch (e) {

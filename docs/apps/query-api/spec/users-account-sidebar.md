@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: query-api
 tags: [query-api, users, account-sidebar]
-updated_at: 2026-07-09
+updated_at: 2026-10-16
 related:
   - docs/apps/query-api/spec/users-profile-endpoint.md
   - docs/apps/web/spec/pages/user-profile/components/account-sidebar.md
@@ -62,6 +62,7 @@ Chain/Engine RPC failures degrade to zero mana/vote fields. **Metadata:** when H
 | `query-api:cache:hive:account:{name}` | 60s | Condenser `get_accounts` snapshot — dedupes profile + account-sidebar on the same page load |
 | `query-api:cache:reward-fund:hive` | 60s | `reward_balance / recent_claims` |
 | `query-api:cache:waiv:reward-pool` | 60s | Engine pool `rewardPool / pendingClaims` |
+| `query-api:cache:waiv:diesel-pool` | 60s | Global WAIV/HIVE diesel `quotePrice` (not per-account) |
 
 Prices: `CurrencyQueryService` (Postgres-backed HIVE/USD + WAIV/USD).
 

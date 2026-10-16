@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  Logger,
   NotFoundException,
   Post,
   Query,
@@ -89,8 +88,6 @@ import type {
   MessageHistoryResponseDto,
 } from '../domain/messaging';
 import type { ChannelDetailDto } from '../domain/messaging/get-channel-by-id.endpoint';
-import { GeoipLookupService } from '../domain/geoip';
-import { ReqClientIp } from '../http/client-ip.decorator';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
 import { ReqLocale } from '../http/locale-header.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
@@ -98,8 +95,6 @@ import { ZodBodyPipe, ZodQueryPipe } from '../pipes';
 
 @Controller({ path: 'objects', version: ['1', '2'] })
 export class ObjectsController {
-  private readonly logger = new Logger(ObjectsController.name);
-
   constructor(
     private readonly getObjectById: GetObjectByIdEndpoint,
     private readonly getNestedObjects: GetNestedObjectsEndpoint,
@@ -121,7 +116,6 @@ export class ObjectsController {
     private readonly getObjectChannelEndpoint: GetObjectChannelEndpoint,
     private readonly getObjectChannelMessagesEndpoint: GetObjectChannelMessagesEndpoint,
     private readonly checkActivityDuplicate: CheckActivityDuplicateEndpoint,
-    private readonly geoipLookup: GeoipLookupService,
   ) {}
 
   @Get(':objectId/exists')
@@ -516,11 +510,7 @@ export class ObjectsController {
     @ReqLocale() locale: string,
     @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
     @ReqViewer() viewer: string | undefined,
-    @ReqClientIp() clientIp: string | null,
   ): Promise<ProjectedObjectWithCounts> {
-    this.logger.log(
-      `geoip probe ip=${clientIp} lookup=${JSON.stringify(this.geoipLookup.lookup(clientIp ?? ''))}`,
-    );
     const view = await this.getObjectById.execute({
       objectId: body.object_id,
       updateTypes: body.update_types,

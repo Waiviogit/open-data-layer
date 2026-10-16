@@ -31,5 +31,8 @@ export const HIVE_REWARD_FUND_CACHE_TTL_SEC = 60;
 /** Redis TTL for WAIV Engine reward pool rate (seconds). */
 export const WAIV_REWARD_POOL_CACHE_TTL_SEC = 60;
 
+/** Redis TTL for WAIV/HIVE diesel pool quote price used in account sidebar (seconds). */
+export const WAIV_DIESEL_POOL_CACHE_TTL_SEC = 60;
+
 /** Redis TTL for condenser `get_accounts` snapshot (profile + sidebar dedup). */
 export const HIVE_ACCOUNTS_CACHE_TTL_SEC = 60;

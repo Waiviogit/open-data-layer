@@ -35,7 +35,8 @@ function mergePendingClass(className: string | undefined, pending: boolean): str
 }
 
 /**
- * Client navigation to `/object/…` with prefetch and instant pending feedback.
+ * Client navigation to `/object/…` with instant pending feedback.
+ * Prefetch is off so viewport cards do not render `[object-id]/layout`.
  */
 export function ObjectPageLink({
   href,
@@ -57,6 +58,7 @@ export function ObjectPageLink({
     <Link
       href={href}
       replace={replace}
+      prefetch={false}
       aria-label={ariaLabel}
       title={title}
       aria-busy={pending || undefined}

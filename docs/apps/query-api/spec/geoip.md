@@ -69,7 +69,7 @@ flowchart LR
 ```
 
 - **REST / MCP:** `resolveClientIp(req)` → `normalizeClientIp(req.ip)`. Do not parse `X-Forwarded-For` by hand.
-- **Web:** opt-in `queryApiFetch({ forwardClientIp: true })` copies the incoming `X-Forwarded-For` **verbatim**. Default is false so RSC pages stay cacheable (`headers()` is dynamic). Object-page `POST /query/v1/objects/resolve` sets the flag (GeoIP probe / future country). Do not take the left-most hop and do not read `x-real-ip` (that is the edge with a CDN).
+- **Web:** opt-in `queryApiFetch({ forwardClientIp: true })` copies the incoming `X-Forwarded-For` **verbatim**. Default is false so RSC pages stay cacheable (`headers()` is dynamic). Object-page `POST /query/v1/objects/resolve` sets the flag. Do not take the left-most hop and do not read `x-real-ip` (that is the edge with a CDN).
 - **MCP:** `McpRequestContext.clientIp` comes from the HTTP request, not from tool arguments. That IP is the **agent runtime** (often a datacenter). Do not treat MCP geo as browser geo (affiliate, maps).
 
 Prod nginx publishes `/query/mcp` only. A self-hosted `/query/` location uses the same hop rule.
