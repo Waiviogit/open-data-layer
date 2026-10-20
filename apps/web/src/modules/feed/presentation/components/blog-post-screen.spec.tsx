@@ -85,6 +85,8 @@ const story: FeedStoryView = {
   createdAt: '2026-05-19T10:00:00.000Z',
   excerpt: 'Sauce.',
   title: 'Bechamel',
+  rebloggedByViewer: false,
+  waivRewardEligible: false,
 };
 
 function renderScreen(variant: 'page' | 'modal' = 'page') {
