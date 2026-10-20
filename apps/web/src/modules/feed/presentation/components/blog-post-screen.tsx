@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 
 import { CommentIcon } from '@/icons';
@@ -55,6 +56,7 @@ export function BlogPostScreen({
     permlink: story.permlink,
   });
   const editHref = `/editor?${editorSearch.toString()}`;
+  const authorProfileHref = `/@${encodeURIComponent(story.authorName)}`;
 
   const isModal = variant === 'modal';
   const [commentsExpanded, setCommentsExpanded] = useState(false);
@@ -104,15 +106,28 @@ export function BlogPostScreen({
 
         {/* Author row */}
         <header className="mt-4 flex gap-3">
-          <UserAvatar
-            username={story.authorName}
-            avatarUrl={story.authorAvatarUrl}
-            displayName={displayAuthor}
-            size={40}
-          />
+          <Link
+            href={authorProfileHref}
+            suppressHydrationWarning
+            className="inline-flex shrink-0 self-start rounded-circle focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+            aria-label={`View profile: @${story.authorName}`}
+          >
+            <UserAvatar
+              username={story.authorName}
+              avatarUrl={story.authorAvatarUrl}
+              displayName={displayAuthor}
+              size={40}
+            />
+          </Link>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-              <span className="font-weight-label text-body-sm text-fg">{displayAuthor}</span>
+              <Link
+                href={authorProfileHref}
+                suppressHydrationWarning
+                className="font-weight-label text-body-sm text-fg hover:underline focus-visible:rounded-btn focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+              >
+                {displayAuthor}
+              </Link>
               {repLabel != null ? (
                 <StatHoverTooltip content={t('stat_user_expertise_tooltip')}>
                   <span className="rounded-btn bg-surface-control px-1.5 py-0.5 text-caption font-weight-label text-fg-secondary tabular-nums">

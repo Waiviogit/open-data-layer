@@ -31,7 +31,7 @@ Canonical public URLs use **`/@account/permlink`** (`next.config.js` rewrites th
 
 ## Content layout
 
-`BlogPostScreen` accepts `variant="modal" | "page"`. The footer includes the same **`StoryVoteButton`** like control as feed cards (Hive `vote` op via wallet broadcast; see [feed.md](../../feed.md) “Likes”). **Linked objects** (tagged Waivio objects) appear **below** the HTML body in a collapsible section (`feed_linked_objects`), with one card per object: avatar, name, type · category labels, optional rating row, excerpt, and a heart indicator when the signed-in viewer has **favorited** that object (see query API).
+`BlogPostScreen` accepts `variant="modal" | "page"`. Author avatar and display name are links to `/@account` (same as feed cards), including when the post is already under that user's profile route. Navigating to that account-root URL from a post intercept dismisses the overlay (`useDismissPostInterceptForObjectSurface`). The footer includes the same **`StoryVoteButton`** like control as feed cards (Hive `vote` op via wallet broadcast; see [feed.md](../../feed.md) “Likes”). **Linked objects** (tagged Waivio objects) appear **below** the HTML body in a collapsible section (`feed_linked_objects`), with one card per object: avatar, name, type · category labels, optional rating row, excerpt, and a heart indicator when the signed-in viewer has **favorited** that object (see query API).
 
 ## Single-post API (`X-Viewer`)
 
@@ -58,7 +58,7 @@ Feed story cards still use `Story` for previews; full post views do **not** show
 
 ## Related files
 
-- Article page (hard nav): `apps/web/src/app/(app)/user-profile/[name]/(article)/[permlink]/page.tsx`
-- Modal intercept: `apps/web/src/app/(app)/@modal/(...)user-profile/[name]/[permlink]/page.tsx`
+- Article page (hard nav): `apps/web/src/app/(app)/user-profile/[name]/(article)/post/[permlink]/page.tsx`
+- Modal intercept: `apps/web/src/app/(app)/@modal/(...)user-profile/[name]/post/[permlink]/page.tsx`
 - App layout (receives `modal` slot): `apps/web/src/app/(app)/layout.tsx`
 - Shell: `apps/web/src/modules/feed/presentation/components/post-intercept-modal-shell.tsx`
