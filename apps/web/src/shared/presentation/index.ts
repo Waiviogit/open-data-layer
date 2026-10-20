@@ -68,6 +68,8 @@ export type { ProfileSectionTabSize } from './components/profile-section-tab-cla
 export { PlaceholderSlot } from './components/placeholder-slot';
 export { ShellModeSwitcher } from './components/shell-mode-switcher';
 export { ThemeSwitcher } from './components/theme-switcher';
+export { SocialEmbedHtml } from './components/social-embed-html';
+export type { SocialEmbedHtmlProps } from './components/social-embed-html';
 export {
   VideoPreviewPlayer,
   parseVideoUrl,

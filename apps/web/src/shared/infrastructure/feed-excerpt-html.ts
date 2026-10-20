@@ -160,16 +160,16 @@ function stripThreeSpeakLinksFromExcerpt(raw: string): string {
 }
 
 const VIDEO_SHARE_URL =
-  /https?:\/\/(?:(?:www\.|m\.)?(?:youtube\.com|youtube-nocookie\.com)\/[^\s)<]+|youtu\.be\/[^\s)<]+|(?:www\.)?vimeo\.com\/[^\s)<]+|player\.vimeo\.com\/[^\s)<]+|(?:emb\.)?d\.tube[^\s)<]*|(?:www\.)?tiktok\.com\/[^\s)<]+)/gi;
+  /https?:\/\/(?:(?:www\.|m\.)?(?:youtube\.com|youtube-nocookie\.com)\/[^\s)<]+|youtu\.be\/[^\s)<]+|(?:www\.)?vimeo\.com\/[^\s)<]+|player\.vimeo\.com\/[^\s)<]+|(?:emb\.)?d\.tube[^\s)<]*|(?:www\.)?tiktok\.com\/[^\s)<]+|(?:www\.)?instagram\.com\/[^\s)<]+|(?:www\.|m\.)?facebook\.com\/[^\s)<]+|(?:www\.)?fb\.watch\/[^\s)<]+|(?:www\.|mobile\.)?(?:twitter|x)\.com\/[^\s)<]+|platform\.twitter\.com\/[^\s)<]+|(?:www\.)?linkedin\.com\/[^\s)<]+)/gi;
 
 function stripVideoLinksFromExcerpt(raw: string): string {
   let result = raw;
   result = result.replace(
-    /\[!\[[^\]]*\]\([^)]*\)\]\(\s*https?:\/\/(?:(?:www\.|m\.)?youtube\.com|youtu\.be|vimeo\.com|tiktok\.com)[^)]+\)/gi,
+    /\[!\[[^\]]*\]\([^)]*\)\]\(\s*https?:\/\/(?:(?:www\.|m\.)?youtube\.com|youtu\.be|vimeo\.com|tiktok\.com|instagram\.com|facebook\.com|fb\.watch|(?:twitter|x)\.com|linkedin\.com)[^)]+\)/gi,
     ' ',
   );
   result = result.replace(
-    /\[[^\]]*\]\(\s*https?:\/\/(?:(?:www\.|m\.)?youtube\.com|youtu\.be|vimeo\.com|player\.vimeo\.com|(?:emb\.)?d\.tube|(?:www\.)?tiktok\.com)[^)]+\)/gi,
+    /\[[^\]]*\]\(\s*https?:\/\/(?:(?:www\.|m\.)?youtube\.com|youtu\.be|vimeo\.com|player\.vimeo\.com|(?:emb\.)?d\.tube|(?:www\.)?tiktok\.com|(?:www\.)?instagram\.com|(?:www\.|m\.)?facebook\.com|(?:www\.)?fb\.watch|(?:www\.|mobile\.)?(?:twitter|x)\.com|platform\.twitter\.com|(?:www\.)?linkedin\.com)[^)]+\)/gi,
     ' ',
   );
   result = result.replace(VIDEO_SHARE_URL, ' ');

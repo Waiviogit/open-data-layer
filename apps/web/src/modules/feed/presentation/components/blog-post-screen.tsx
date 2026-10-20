@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { CommentIcon } from '@/icons';
 import { useI18n } from '@/i18n/providers/i18n-provider';
-import { StatHoverTooltip, UserAvatar } from '@/shared/presentation';
+import { SocialEmbedHtml, StatHoverTooltip, UserAvatar } from '@/shared/presentation';
 
 import type { FeedStoryView } from '../../application/dto/feed-story.dto';
 
@@ -144,8 +144,8 @@ export function BlogPostScreen({
 
         {/* Body — video/thumbnails for full post come from sanitized HTML (YouTube URLs → embeds). Feed cards use Story. */}
         {/* suppressHydrationWarning: browser may normalize serialized HTML vs prop string; extensions may touch the subtree. */}
-        <div
-          suppressHydrationWarning
+        <SocialEmbedHtml
+          html={bodyHtmlSafe}
           className={[
             'blog-post-body min-w-0 text-fg leading-body',
             isModal ? 'mt-5 text-body font-editorial leading-editorial' : 'mt-6 text-body',
@@ -161,7 +161,6 @@ export function BlogPostScreen({
             '[&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5',
             '[&_li]:mb-1',
           ].join(' ')}
-          dangerouslySetInnerHTML={{ __html: bodyHtmlSafe }}
         />
 
         <LinkedObjectsSection

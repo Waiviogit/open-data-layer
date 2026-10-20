@@ -168,6 +168,51 @@ describe('sanitizePostBodyHtml', () => {
     );
   });
 
+  it('embeds Facebook watch URLs', () => {
+    const html = sanitizePostBodyHtml(
+      'See https://www.facebook.com/watch/?v=1234567890',
+    );
+    expect(html).toContain('blog-post-facebook-embed');
+    expect(html).toContain('facebook.com/plugins/video.php');
+  });
+
+  it('collapses a Facebook plugin URL followed by the same reel share URL', () => {
+    const html = sanitizePostBodyHtml(
+      'https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Freel%2F1551097835900028\n\nhttps://www.facebook.com/reel/1551097835900028',
+    );
+    expect(html.match(/<iframe/g)?.length).toBe(1);
+    expect(html).toContain('blog-post-facebook-embed--portrait');
+    expect(html).toContain('facebook.com/plugins/video.php');
+  });
+
+  it('embeds LinkedIn activity URNs', () => {
+    const html = sanitizePostBodyHtml(
+      'See https://www.linkedin.com/embed/feed/update/urn:li:activity:7514384350902194176',
+    );
+    expect(html).toContain('blog-post-linkedin-embed');
+    expect(html).toContain(
+      'src="https://www.linkedin.com/embed/feed/update/urn:li:activity:7514384350902194176"',
+    );
+  });
+
+  it('collapses LinkedIn embed + posts URLs that share an activity id', () => {
+    const html = sanitizePostBodyHtml(
+      'https://www.linkedin.com/embed/feed/update/urn:li:activity:7514384350902194176\n\nhttps://www.linkedin.com/posts/lowerfamilyfoods_holiday-recipe-mojo-pork-shoulder-activity-7514384350902194176-Ps7D',
+    );
+    expect(html.match(/<iframe/g)?.length).toBe(1);
+    expect(html).toContain('blog-post-linkedin-embed');
+  });
+
+  it('embeds X status URLs', () => {
+    const html = sanitizePostBodyHtml(
+      'See https://x.com/foodster/status/1234567890123456789',
+    );
+    expect(html).toContain('blog-post-x-embed');
+    expect(html).toContain(
+      'src="https://platform.twitter.com/embed/Tweet.html?id=1234567890123456789"',
+    );
+  });
+
   it('does not nest a second iframe around an existing YouTube embed src', () => {
     const html = sanitizePostBodyHtml(
       '<p><iframe src="https://www.youtube.com/embed/abcdefghijk" title="YouTube video"></iframe></p>',

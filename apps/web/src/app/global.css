@@ -413,7 +413,7 @@
     overflow: hidden;
   }
 
-  /* Injected by sanitize-post-html for YouTube / 3Speak / Instagram / TikTok URLs in body */
+  /* Injected by sanitize-post-html for YouTube / 3Speak / Instagram / TikTok / Facebook / X URLs in body */
   .blog-post-youtube-embed,
   .blog-post-3speak-embed {
     @apply relative my-4 aspect-video w-full max-w-full overflow-hidden bg-bg;
@@ -440,22 +440,86 @@
     margin-block: 1rem;
   }
 
+  .blog-post-facebook-embed {
+    @apply relative my-4 aspect-video w-full max-w-full overflow-hidden bg-bg;
+  }
+
+  .video-embed-facebook-reel,
+  .blog-post-facebook-embed--portrait {
+    position: relative;
+    margin-inline: auto;
+    overflow: hidden;
+    background-color: var(--color-bg);
+    aspect-ratio: 9 / 16;
+    width: min(100%, 22.5rem, calc(min(70vh, 32rem) * 9 / 16));
+  }
+
+  .blog-post-facebook-embed--portrait {
+    margin-block: 1rem;
+  }
+
   .blog-post-youtube-embed iframe,
   .blog-post-youtube-embed--portrait iframe,
   .blog-post-3speak-embed iframe,
   .blog-post-tiktok-embed iframe,
+  .blog-post-facebook-embed iframe,
+  .blog-post-facebook-embed--portrait iframe,
+  .video-embed-facebook-reel iframe,
   .video-embed-portrait iframe {
     @apply absolute inset-0 h-full w-full border-0;
+    overflow: hidden;
   }
 
+  .video-embed-widget,
+  .blog-post-instagram-embed,
+  .blog-post-x-embed,
+  .blog-post-linkedin-embed {
+    @apply relative mx-auto w-full max-w-[540px] overflow-hidden bg-bg;
+  }
+
+  .blog-post-instagram-embed,
+  .blog-post-x-embed,
+  .blog-post-linkedin-embed {
+    @apply my-4 rounded-btn border border-border;
+  }
+
+  .video-embed-widget--instagram,
   .blog-post-instagram-embed {
-    @apply relative my-4 w-full max-w-[540px] overflow-hidden rounded-btn border border-border bg-bg;
-    min-height: 540px;
+    /* 720 media chrome minus likes + comment rows; iframe stays 720 and is clipped. */
+    min-height: 580px;
   }
 
+  .video-embed-widget--x,
+  .blog-post-x-embed {
+    min-height: 500px;
+  }
+
+  .video-embed-widget--linkedin,
+  .blog-post-linkedin-embed {
+    min-height: 960px;
+  }
+
+  .video-embed-widget iframe,
+  .blog-post-instagram-embed iframe,
+  .blog-post-x-embed iframe,
+  .blog-post-linkedin-embed iframe {
+    @apply block w-full border-0;
+    overflow: hidden;
+  }
+
+  .video-embed-widget--instagram iframe,
   .blog-post-instagram-embed iframe {
-    @apply w-full border-0;
-    min-height: 540px;
+    height: 720px;
+  }
+
+  .video-embed-widget--x iframe,
+  .blog-post-x-embed iframe {
+    height: 500px;
+  }
+
+  .video-embed-widget--linkedin iframe,
+  .blog-post-linkedin-embed iframe {
+    height: 960px;
   }
 
   /**

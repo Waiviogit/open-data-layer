@@ -231,4 +231,40 @@ describe('extractVideoEmbedUrl', () => {
       ),
     ).toBe('https://www.tiktok.com/player/v1/7660467808018386206');
   });
+
+  it('returns an Instagram embed URL from a reel in the body', () => {
+    expect(
+      extractVideoEmbedUrl('', 'See https://www.instagram.com/reel/AbCdEfGhIjK extra', ctx),
+    ).toBe('https://www.instagram.com/reel/AbCdEfGhIjK/embed');
+  });
+
+  it('returns a Facebook plugin URL from a watch link in the body', () => {
+    expect(
+      extractVideoEmbedUrl('', 'https://www.facebook.com/watch/?v=1234567890', ctx),
+    ).toBe(
+      'https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fwatch%2F%3Fv%3D1234567890&show_text=false',
+    );
+  });
+
+  it('returns an X embed URL from a status link in the body', () => {
+    expect(
+      extractVideoEmbedUrl(
+        '',
+        'https://x.com/foodster/status/1234567890123456789',
+        ctx,
+      ),
+    ).toBe('https://platform.twitter.com/embed/Tweet.html?id=1234567890123456789');
+  });
+
+  it('returns a LinkedIn embed URL from an activity URN in the body', () => {
+    expect(
+      extractVideoEmbedUrl(
+        '',
+        'https://www.linkedin.com/embed/feed/update/urn:li:activity:7514384350902194176\u2026?_l=ru_RU',
+        ctx,
+      ),
+    ).toBe(
+      'https://www.linkedin.com/embed/feed/update/urn:li:activity:7514384350902194176',
+    );
+  });
 });

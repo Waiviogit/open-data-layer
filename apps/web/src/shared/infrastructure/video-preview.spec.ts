@@ -1,4 +1,8 @@
-import { buildVideoEmbedUrl, parseVideoUrl } from './video-preview';
+import {
+  buildVideoEmbedUrl,
+  isNativeFeedVideoUrl,
+  parseVideoUrl,
+} from './video-preview';
 
 describe('parseVideoUrl', () => {
   it('returns YouTube preview from watch URL', () => {
@@ -165,17 +169,147 @@ describe('parseVideoUrl', () => {
     });
   });
 
+  it('returns an Instagram reel as a widget player', () => {
+    expect(parseVideoUrl('https://www.instagram.com/reel/AbCdEfGhIjK')).toEqual({
+      provider: 'instagram',
+      videoId: 'reel/AbCdEfGhIjK',
+      embedUrl: 'https://www.instagram.com/reel/AbCdEfGhIjK/embed',
+      thumbnailUrl: null,
+      layout: 'widget',
+    });
+  });
+
+  it('returns an Instagram /p/ embed URL as a widget player', () => {
+    expect(
+      parseVideoUrl('https://www.instagram.com/p/DcncWF8DaIb/embed'),
+    ).toEqual({
+      provider: 'instagram',
+      videoId: 'p/DcncWF8DaIb',
+      embedUrl: 'https://www.instagram.com/p/DcncWF8DaIb/embed',
+      thumbnailUrl: null,
+      layout: 'widget',
+    });
+  });
+
+  it('rejects Instagram profile URLs', () => {
+    expect(
+      parseVideoUrl('https://www.instagram.com/whitegarden_restaurant/'),
+    ).toBeNull();
+  });
+
+  it('returns a landscape Facebook watch URL', () => {
+    expect(parseVideoUrl('https://www.facebook.com/watch/?v=1234567890')).toEqual({
+      provider: 'facebook',
+      videoId: 'https://www.facebook.com/watch/?v=1234567890',
+      embedUrl:
+        'https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fwatch%2F%3Fv%3D1234567890&show_text=false',
+      thumbnailUrl: null,
+      layout: 'landscape',
+    });
+  });
+
+  it('returns a portrait Facebook reel URL', () => {
+    expect(parseVideoUrl('https://www.facebook.com/reel/9876543210')).toEqual({
+      provider: 'facebook',
+      videoId: 'https://www.facebook.com/reel/9876543210',
+      embedUrl:
+        'https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Freel%2F9876543210&show_text=false',
+      thumbnailUrl: null,
+      layout: 'portrait',
+    });
+  });
+
+  it('returns a Facebook plugin URL from a page videos path', () => {
+    expect(
+      parseVideoUrl('https://www.facebook.com/SomePage/videos/1234567890'),
+    ).toEqual(
+      expect.objectContaining({
+        provider: 'facebook',
+        layout: 'landscape',
+        embedUrl:
+          'https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fwatch%2F%3Fv%3D1234567890&show_text=false',
+      }),
+    );
+  });
+
+  it('returns a LinkedIn activity embed and strips excerpt ellipsis', () => {
+    const expected = {
+      provider: 'linkedin',
+      videoId: 'activity:7514384350902194176',
+      embedUrl:
+        'https://www.linkedin.com/embed/feed/update/urn:li:activity:7514384350902194176',
+      thumbnailUrl: null,
+      layout: 'widget',
+    };
+    expect(
+      parseVideoUrl(
+        'https://www.linkedin.com/embed/feed/update/urn:li:activity:7514384350902194176',
+      ),
+    ).toEqual(expected);
+    expect(
+      parseVideoUrl(
+        'https://www.linkedin.com/embed/feed/update/urn:li:activity:7514384350902194176\u2026?_l=ru_RU',
+      ),
+    ).toEqual(expected);
+    expect(
+      parseVideoUrl(
+        'https://www.linkedin.com/feed/update/urn:li:activity:7514384350902194176%E2%80%A6',
+      ),
+    ).toEqual(expected);
+  });
+
+  it('returns an X status embed from twitter.com and x.com', () => {
+    const expected = {
+      provider: 'x',
+      videoId: '1234567890123456789',
+      embedUrl:
+        'https://platform.twitter.com/embed/Tweet.html?id=1234567890123456789',
+      thumbnailUrl: null,
+      layout: 'widget',
+    };
+    expect(
+      parseVideoUrl('https://twitter.com/foodster/status/1234567890123456789'),
+    ).toEqual(expected);
+    expect(
+      parseVideoUrl('https://x.com/foodster/status/1234567890123456789?s=20'),
+    ).toEqual(expected);
+  });
+
   it('leaves out-of-scope hosts unclassified', () => {
     const urls = [
       'https://www.twitch.tv/videos/1',
       'https://www.dailymotion.com/video/x7tgad0',
       'https://rumble.com/v1-example.html',
       'https://odysee.com/@a:b/c',
-      'https://www.instagram.com/reel/AbC/',
     ];
     for (const url of urls) {
       expect(parseVideoUrl(url)).toBeNull();
     }
+  });
+
+  it('marks Instagram, Facebook, X, LinkedIn, and TikTok as native feed players', () => {
+    expect(
+      isNativeFeedVideoUrl('https://www.instagram.com/p/DcncWF8DaIb/'),
+    ).toBe(true);
+    expect(
+      isNativeFeedVideoUrl('https://www.facebook.com/watch/?v=1234567890'),
+    ).toBe(true);
+    expect(
+      isNativeFeedVideoUrl('https://x.com/foodster/status/1234567890123456789'),
+    ).toBe(true);
+    expect(
+      isNativeFeedVideoUrl(
+        'https://www.linkedin.com/embed/feed/update/urn:li:activity:7514384350902194176',
+      ),
+    ).toBe(true);
+    expect(
+      isNativeFeedVideoUrl(
+        'https://www.tiktok.com/@paulchefstudio/video/7660467808018386206',
+      ),
+    ).toBe(true);
+    expect(
+      isNativeFeedVideoUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ'),
+    ).toBe(false);
   });
 
   it('rejects an empty share string', () => {
@@ -238,5 +372,25 @@ describe('buildVideoEmbedUrl', () => {
     expect(buildVideoEmbedUrl(preview!, { autoplay: true })).toBe(
       'https://www.tiktok.com/player/v1/7660467808018386206',
     );
+  });
+
+  it('keeps Instagram, Facebook, and X embed URLs without autoplay params', () => {
+    expect(
+      buildVideoEmbedUrl(parseVideoUrl('https://www.instagram.com/p/DcncWF8DaIb/')!, {
+        autoplay: true,
+      }),
+    ).toBe('https://www.instagram.com/p/DcncWF8DaIb/embed');
+    expect(
+      buildVideoEmbedUrl(
+        parseVideoUrl('https://www.facebook.com/watch/?v=1234567890')!,
+        { autoplay: true },
+      ),
+    ).toContain('facebook.com/plugins/video.php');
+    expect(
+      buildVideoEmbedUrl(
+        parseVideoUrl('https://x.com/foodster/status/1234567890123456789')!,
+        { autoplay: true },
+      ),
+    ).toBe('https://platform.twitter.com/embed/Tweet.html?id=1234567890123456789');
   });
 });

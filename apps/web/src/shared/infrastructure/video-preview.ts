@@ -3,9 +3,26 @@ import {
   parseThreeSpeakVideoIdFromEmbedUrl,
 } from './three-speak-preview';
 
-export type VideoPreviewProvider = 'youtube' | 'vimeo' | '3speak' | 'dtube' | 'tiktok';
+export type VideoPreviewProvider =
+  | 'youtube'
+  | 'vimeo'
+  | '3speak'
+  | 'dtube'
+  | 'tiktok'
+  | 'instagram'
+  | 'facebook'
+  | 'x'
+  | 'linkedin';
 
-export type VideoPreviewLayout = 'landscape' | 'portrait';
+export type VideoPreviewLayout = 'landscape' | 'portrait' | 'widget';
+
+const NATIVE_FEED_PROVIDERS: ReadonlySet<VideoPreviewProvider> = new Set([
+  'tiktok',
+  'instagram',
+  'facebook',
+  'x',
+  'linkedin',
+]);
 
 export type ParsedVideoPreview = {
   provider: VideoPreviewProvider;
@@ -51,8 +68,30 @@ const TIKTOK_PLAYER_PATTERN = new RegExp(
   'i',
 );
 
+const INSTAGRAM_POST =
+  /(?:www\.)?instagram\.com\/(p|reels?|tv)\/([A-Za-z0-9_-]+)(?:\/(?:embed(?:\/captioned)?)?)?(?:[/?#].*)?/i;
+
+const FACEBOOK_REEL = /(?:www\.|m\.)?facebook\.com\/reels?\/(\d+)\b/i;
+const FACEBOOK_VIDEOS = /(?:www\.|m\.)?facebook\.com\/[^/\s"'<>]+\/videos\/(\d+)\b/i;
+const FACEBOOK_WATCH = /(?:www\.|m\.)?facebook\.com\/watch\/?\?[^#\s"'<>]*\bv=(\d+)/i;
+const FB_WATCH_SHORT = /(?:www\.)?fb\.watch\/([A-Za-z0-9_-]+)\b/i;
+
+const X_STATUS =
+  /(?:www\.|mobile\.)?(?:twitter|x)\.com\/(?:[A-Za-z0-9_]+|i)\/status\/(\d{10,20})\b/i;
+const X_EMBED = /platform\.twitter\.com\/embed\/Tweet\.html\?[^#\s"'<>]*\bid=(\d{10,20})/i;
+
+const LINKEDIN_URN =
+  /(?:www\.)?linkedin\.com\/(?:embed\/)?feed\/update\/urn:li:(activity|ugcPost|share):(\d{10,20})/i;
+const LINKEDIN_POSTS =
+  /(?:www\.)?linkedin\.com\/posts\/[^/\s"'<>?#]*activity-(\d{10,20})/i;
+
+/** Excerpt truncation (`…` / `%E2%80%A6`) must not become part of the path. */
+export function stripUrlTruncation(url: string): string {
+  return url.replace(/%E2%80%A6/gi, '').replace(/\u2026/g, '');
+}
+
 function normalizeUrl(url: string): string {
-  const trimmed = url.trim();
+  let trimmed = stripUrlTruncation(url.trim());
   if (trimmed.startsWith('//')) {
     return `https:${trimmed}`;
   }
@@ -159,6 +198,20 @@ export function isTikTokEmbedUrl(url: string | null | undefined): boolean {
   return parseTikTokVideoId(url) !== null;
 }
 
+export function isNativeFeedVideoUrl(url: string | null | undefined): boolean {
+  if (!url) {
+    return false;
+  }
+  const parsed = parseVideoUrl(url);
+  return parsed != null && NATIVE_FEED_PROVIDERS.has(parsed.provider);
+}
+
+export function isNativeFeedVideoProvider(
+  provider: VideoPreviewProvider | null | undefined,
+): boolean {
+  return provider != null && NATIVE_FEED_PROVIDERS.has(provider);
+}
+
 /** Legacy Waivio iframe player URL (`embedMedia.js` / `videoHelper.js`). */
 export function buildThreeSpeakEmbedUrl(videoId: string): string {
   return `https://play.3speak.tv/watch?v=${encodeURIComponent(videoId)}&mode=iframe&layout=desktop`;
@@ -166,6 +219,160 @@ export function buildThreeSpeakEmbedUrl(videoId: string): string {
 
 export function buildTikTokEmbedUrl(videoId: string): string {
   return `https://www.tiktok.com/player/v1/${videoId}`;
+}
+
+export function buildInstagramEmbedUrl(kind: string, code: string): string {
+  return `https://www.instagram.com/${kind}/${code}/embed`;
+}
+
+export function buildFacebookEmbedUrl(shareUrl: string): string {
+  return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(shareUrl)}&show_text=false`;
+}
+
+export function buildXEmbedUrl(statusId: string): string {
+  return `https://platform.twitter.com/embed/Tweet.html?id=${statusId}`;
+}
+
+export function buildLinkedInEmbedUrl(kind: string, activityId: string): string {
+  return `https://www.linkedin.com/embed/feed/update/urn:li:${kind}:${activityId}`;
+}
+
+function canonicalizeInstagramKind(kind: string): 'p' | 'reel' | 'tv' | null {
+  const lower = kind.toLowerCase();
+  if (lower === 'p' || lower === 'tv') {
+    return lower;
+  }
+  if (lower === 'reel' || lower === 'reels') {
+    return 'reel';
+  }
+  return null;
+}
+
+function parseInstagramPreview(url: string): ParsedVideoPreview | null {
+  const m = url.match(INSTAGRAM_POST);
+  const kind = m?.[1] ? canonicalizeInstagramKind(m[1]) : null;
+  const code = m?.[2];
+  if (!kind || !code) {
+    return null;
+  }
+  return {
+    provider: 'instagram',
+    videoId: `${kind}/${code}`,
+    embedUrl: buildInstagramEmbedUrl(kind, code),
+    thumbnailUrl: null,
+    layout: 'widget',
+  };
+}
+
+function facebookShareUrlFromPlugin(url: string): string | null {
+  try {
+    const parsed = new URL(url.startsWith('http') ? url : `https://${url}`);
+    const host = parsed.hostname.replace(/^(?:www|m)\./i, '');
+    if (host !== 'facebook.com' || !parsed.pathname.includes('/plugins/video.php')) {
+      return null;
+    }
+    const href = parsed.searchParams.get('href');
+    return href && /^https?:\/\//i.test(href) ? href : null;
+  } catch {
+    return null;
+  }
+}
+
+function parseFacebookPreview(url: string): ParsedVideoPreview | null {
+  const pluginHref = facebookShareUrlFromPlugin(url);
+  const source = pluginHref ?? url;
+  const reel = source.match(FACEBOOK_REEL);
+  if (reel?.[1]) {
+    const shareUrl = `https://www.facebook.com/reel/${reel[1]}`;
+    return {
+      provider: 'facebook',
+      videoId: shareUrl,
+      embedUrl: buildFacebookEmbedUrl(shareUrl),
+      thumbnailUrl: null,
+      layout: 'portrait',
+    };
+  }
+  const videos = source.match(FACEBOOK_VIDEOS);
+  const watch = source.match(FACEBOOK_WATCH);
+  const videoId = videos?.[1] ?? watch?.[1];
+  if (videoId) {
+    const shareUrl = `https://www.facebook.com/watch/?v=${videoId}`;
+    return {
+      provider: 'facebook',
+      videoId: shareUrl,
+      embedUrl: buildFacebookEmbedUrl(shareUrl),
+      thumbnailUrl: null,
+      layout: 'landscape',
+    };
+  }
+  const short = source.match(FB_WATCH_SHORT);
+  if (short?.[1]) {
+    const shareUrl = `https://fb.watch/${short[1]}`;
+    return {
+      provider: 'facebook',
+      videoId: shareUrl,
+      embedUrl: buildFacebookEmbedUrl(shareUrl),
+      thumbnailUrl: null,
+      layout: 'landscape',
+    };
+  }
+  if (pluginHref) {
+    return {
+      provider: 'facebook',
+      videoId: pluginHref,
+      embedUrl: buildFacebookEmbedUrl(pluginHref),
+      thumbnailUrl: null,
+      layout: /\/reels?\//i.test(pluginHref) ? 'portrait' : 'landscape',
+    };
+  }
+  return null;
+}
+
+function parseXPreview(url: string): ParsedVideoPreview | null {
+  const embed = url.match(X_EMBED);
+  const status = url.match(X_STATUS);
+  const statusId = embed?.[1] ?? status?.[1];
+  if (!statusId) {
+    return null;
+  }
+  return {
+    provider: 'x',
+    videoId: statusId,
+    embedUrl: buildXEmbedUrl(statusId),
+    thumbnailUrl: null,
+    layout: 'widget',
+  };
+}
+
+function parseLinkedInPreview(url: string): ParsedVideoPreview | null {
+  const urn = url.match(LINKEDIN_URN);
+  const kind = urn?.[1]?.toLowerCase();
+  const urnId = urn?.[2];
+  if (
+    (kind === 'activity' || kind === 'ugcpost' || kind === 'share') &&
+    urnId
+  ) {
+    const canonicalKind = kind === 'ugcpost' ? 'ugcPost' : kind;
+    return {
+      provider: 'linkedin',
+      videoId: `${canonicalKind}:${urnId}`,
+      embedUrl: buildLinkedInEmbedUrl(canonicalKind, urnId),
+      thumbnailUrl: null,
+      layout: 'widget',
+    };
+  }
+  const posts = url.match(LINKEDIN_POSTS);
+  const postId = posts?.[1];
+  if (!postId) {
+    return null;
+  }
+  return {
+    provider: 'linkedin',
+    videoId: `activity:${postId}`,
+    embedUrl: buildLinkedInEmbedUrl('activity', postId),
+    thumbnailUrl: null,
+    layout: 'widget',
+  };
 }
 
 function buildYouTubeEmbedUrl(videoId: string, autoplay: boolean): string {
@@ -279,6 +486,26 @@ export function parseVideoUrl(url: string): ParsedVideoPreview | null {
     };
   }
 
+  const instagram = parseInstagramPreview(normalized);
+  if (instagram) {
+    return instagram;
+  }
+
+  const facebook = parseFacebookPreview(normalized);
+  if (facebook) {
+    return facebook;
+  }
+
+  const xPreview = parseXPreview(normalized);
+  if (xPreview) {
+    return xPreview;
+  }
+
+  const linkedIn = parseLinkedInPreview(normalized);
+  if (linkedIn) {
+    return linkedIn;
+  }
+
   return null;
 }
 
@@ -302,6 +529,18 @@ export function buildVideoEmbedUrl(
       return buildDTubeEmbedUrl(preview.videoId);
     case 'tiktok':
       return buildTikTokEmbedUrl(preview.videoId);
+    case 'instagram': {
+      const [kind, code] = preview.videoId.split('/');
+      return kind && code ? buildInstagramEmbedUrl(kind, code) : preview.embedUrl;
+    }
+    case 'facebook':
+      return buildFacebookEmbedUrl(preview.videoId);
+    case 'x':
+      return buildXEmbedUrl(preview.videoId);
+    case 'linkedin': {
+      const [kind, id] = preview.videoId.split(':');
+      return kind && id ? buildLinkedInEmbedUrl(kind, id) : preview.embedUrl;
+    }
     default: {
       const _exhaustive: never = preview.provider;
       return _exhaustive;

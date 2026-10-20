@@ -89,6 +89,48 @@ describe('parseMediaEmbedUrl', () => {
     });
   });
 
+  it('embeds Facebook watch and reel URLs', () => {
+    expect(parseMediaEmbedUrl('https://www.facebook.com/watch/?v=1234567890')).toEqual(
+      expect.objectContaining({
+        provider: 'facebook',
+        wrapperClass: 'blog-post-facebook-embed',
+        title: 'Facebook video',
+      }),
+    );
+    expect(parseMediaEmbedUrl('https://www.facebook.com/reel/9876543210')).toEqual(
+      expect.objectContaining({
+        provider: 'facebook',
+        wrapperClass: 'blog-post-facebook-embed blog-post-facebook-embed--portrait',
+      }),
+    );
+  });
+
+  it('embeds LinkedIn activity URNs including truncated excerpt URLs', () => {
+    expect(
+      parseMediaEmbedUrl(
+        'https://www.linkedin.com/embed/feed/update/urn:li:activity:7514384350902194176\u2026?_l=ru_RU',
+      ),
+    ).toEqual({
+      provider: 'linkedin',
+      embedSrc:
+        'https://www.linkedin.com/embed/feed/update/urn:li:activity:7514384350902194176',
+      wrapperClass: 'blog-post-linkedin-embed',
+      title: 'LinkedIn post',
+    });
+  });
+
+  it('embeds X status URLs', () => {
+    expect(
+      parseMediaEmbedUrl('https://x.com/foodster/status/1234567890123456789'),
+    ).toEqual({
+      provider: 'x',
+      embedSrc:
+        'https://platform.twitter.com/embed/Tweet.html?id=1234567890123456789',
+      wrapperClass: 'blog-post-x-embed',
+      title: 'X post',
+    });
+  });
+
   it('accepts protocol-relative and scheme-less Instagram URLs', () => {
     expect(parseMediaEmbedUrl('//www.instagram.com/p/DcncWF8DaIb/')?.embedSrc).toBe(
       'https://www.instagram.com/p/DcncWF8DaIb/embed',
@@ -131,6 +173,21 @@ describe('isProviderEmbedSrc', () => {
         'https://www.tiktok.com/@paulchefstudio/video/7660467808018386206',
       ),
     ).toBe(false);
+    expect(
+      isProviderEmbedSrc(
+        'https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fwatch%2F%3Fv%3D1',
+      ),
+    ).toBe(true);
+    expect(
+      isProviderEmbedSrc(
+        'https://platform.twitter.com/embed/Tweet.html?id=1234567890123456789',
+      ),
+    ).toBe(true);
+    expect(
+      isProviderEmbedSrc(
+        'https://www.linkedin.com/embed/feed/update/urn:li:activity:7514384350902194176',
+      ),
+    ).toBe(true);
   });
 });
 

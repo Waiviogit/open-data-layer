@@ -99,4 +99,17 @@ describe('feedExcerptToSafeHtml', () => {
     expect(html).toContain('Roman carbonara');
     expect(html).toContain('extra');
   });
+
+  it('strips Instagram, Facebook, X, and LinkedIn share URLs when the card already shows a player', () => {
+    const html = feedExcerptToSafeHtml(
+      'See https://www.instagram.com/p/DcncWF8DaIb/ and https://www.facebook.com/watch/?v=1234567890 plus https://x.com/foodster/status/1234567890123456789 and https://www.linkedin.com/embed/feed/update/urn:li:activity:7514384350902194176 extra',
+      { stripVideoLinks: true },
+    );
+    expect(html).not.toContain('instagram.com');
+    expect(html).not.toContain('facebook.com');
+    expect(html).not.toContain('x.com');
+    expect(html).not.toContain('linkedin.com');
+    expect(html).toContain('See');
+    expect(html).toContain('extra');
+  });
 });

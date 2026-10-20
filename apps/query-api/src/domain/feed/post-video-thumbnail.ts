@@ -21,6 +21,23 @@ const TIKTOK_VIDEO_PATTERN =
 const TIKTOK_PLAYER_PATTERN =
   /(?:www\.)?tiktok\.com\/(?:player\/v1|embed\/v2)\/(\d{10,20})\b/i;
 
+const INSTAGRAM_POST =
+  /(?:www\.)?instagram\.com\/(p|reels?|tv)\/([A-Za-z0-9_-]+)/i;
+const FACEBOOK_REEL = /(?:www\.|m\.)?facebook\.com\/reels?\/(\d+)\b/i;
+const FACEBOOK_VIDEOS =
+  /(?:www\.|m\.)?facebook\.com\/[^/\s"'<>]+\/videos\/(\d+)\b/i;
+const FACEBOOK_WATCH =
+  /(?:www\.|m\.)?facebook\.com\/watch\/?\?[^#\s"'<>]*\bv=(\d+)/i;
+const FB_WATCH_SHORT = /(?:www\.)?fb\.watch\/([A-Za-z0-9_-]+)\b/i;
+const X_STATUS =
+  /(?:www\.|mobile\.)?(?:twitter|x)\.com\/(?:[A-Za-z0-9_]+|i)\/status\/(\d{10,20})\b/i;
+const X_EMBED =
+  /platform\.twitter\.com\/embed\/Tweet\.html\?[^#\s"'<>]*\bid=(\d{10,20})/i;
+const LINKEDIN_URN =
+  /(?:www\.)?linkedin\.com\/(?:embed\/)?feed\/update\/urn:li:(activity|ugcPost|share):(\d{10,20})/i;
+const LINKEDIN_POSTS =
+  /(?:www\.)?linkedin\.com\/posts\/[^/\s"'<>?#]*activity-(\d{10,20})/i;
+
 const VIMEO_ID_PATTERN = /(?:vimeo\.com\/(?:video\/)?|player\.vimeo\.com\/video\/)(\d+)/;
 
 const THREE_SPEAK_BODY_PATTERN =
@@ -312,6 +329,105 @@ function buildTikTokEmbedUrl(videoId: string): string {
   return `https://www.tiktok.com/player/v1/${videoId}`;
 }
 
+function canonicalizeInstagramKind(kind: string): 'p' | 'reel' | 'tv' | null {
+  const lower = kind.toLowerCase();
+  if (lower === 'p' || lower === 'tv') {
+    return lower;
+  }
+  if (lower === 'reel' || lower === 'reels') {
+    return 'reel';
+  }
+  return null;
+}
+
+function buildInstagramEmbedUrl(kind: string, code: string): string {
+  return `https://www.instagram.com/${kind}/${code}/embed`;
+}
+
+function buildFacebookEmbedUrl(shareUrl: string): string {
+  return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(shareUrl)}&show_text=false`;
+}
+
+function buildXEmbedUrl(statusId: string): string {
+  return `https://platform.twitter.com/embed/Tweet.html?id=${statusId}`;
+}
+
+function buildLinkedInEmbedUrl(kind: string, activityId: string): string {
+  return `https://www.linkedin.com/embed/feed/update/urn:li:${kind}:${activityId}`;
+}
+
+function extractInstagramEmbedFromBody(body: string): string | null {
+  const m = body.match(INSTAGRAM_POST);
+  const kind = m?.[1] ? canonicalizeInstagramKind(m[1]) : null;
+  const code = m?.[2];
+  if (!kind || !code) {
+    return null;
+  }
+  return buildInstagramEmbedUrl(kind, code);
+}
+
+function extractFacebookEmbedFromBody(body: string): string | null {
+  const plugin = body.match(
+    /https?:\/\/(?:www\.)?facebook\.com\/plugins\/video\.php\?[^#\s"'<>]+/i,
+  );
+  if (plugin?.[0]) {
+    try {
+      const href = new URL(plugin[0]).searchParams.get('href');
+      if (href && /^https?:\/\//i.test(href)) {
+        return buildFacebookEmbedUrl(href);
+      }
+    } catch {
+      return plugin[0];
+    }
+  }
+  const reel = body.match(FACEBOOK_REEL);
+  if (reel?.[1]) {
+    return buildFacebookEmbedUrl(`https://www.facebook.com/reel/${reel[1]}`);
+  }
+  const videos = body.match(FACEBOOK_VIDEOS);
+  const watch = body.match(FACEBOOK_WATCH);
+  const videoId = videos?.[1] ?? watch?.[1];
+  if (videoId) {
+    return buildFacebookEmbedUrl(`https://www.facebook.com/watch/?v=${videoId}`);
+  }
+  const short = body.match(FB_WATCH_SHORT);
+  if (short?.[1]) {
+    return buildFacebookEmbedUrl(`https://fb.watch/${short[1]}`);
+  }
+  return null;
+}
+
+function extractXEmbedFromBody(body: string): string | null {
+  const embed = body.match(X_EMBED);
+  const status = body.match(X_STATUS);
+  const statusId = embed?.[1] ?? status?.[1];
+  return statusId ? buildXEmbedUrl(statusId) : null;
+}
+
+function extractLinkedInEmbedFromBody(body: string): string | null {
+  const urn = body.match(LINKEDIN_URN);
+  const kind = urn?.[1]?.toLowerCase();
+  const id = urn?.[2];
+  if (
+    (kind === 'activity' || kind === 'ugcpost' || kind === 'share') &&
+    id
+  ) {
+    const canonicalKind = kind === 'ugcpost' ? 'ugcPost' : kind;
+    return buildLinkedInEmbedUrl(canonicalKind, id);
+  }
+  const posts = body.match(LINKEDIN_POSTS);
+  return posts?.[1] ? buildLinkedInEmbedUrl('activity', posts[1]) : null;
+}
+
+function extractSocialEmbedFromText(text: string): string | null {
+  return (
+    extractInstagramEmbedFromBody(text) ??
+    extractFacebookEmbedFromBody(text) ??
+    extractXEmbedFromBody(text) ??
+    extractLinkedInEmbedFromBody(text)
+  );
+}
+
 function extractYouTubeIdFromThumbnailUrl(url: string): string | null {
   const m = url.match(YOUTUBE_THUMB_HOST);
   return m?.[1] ?? null;
@@ -383,6 +499,10 @@ function embedFromBody(body: string): string | null {
   if (tiktok) {
     return buildTikTokEmbedUrl(tiktok);
   }
+  const social = extractSocialEmbedFromText(body);
+  if (social) {
+    return social;
+  }
   const vm = extractVimeoIdFromBody(body);
   if (vm) {
     return `https://player.vimeo.com/video/${vm}?autoplay=1`;
@@ -408,6 +528,10 @@ function embedFromBody(body: string): string | null {
   const centerTiktok = extractTikTokVideoIdFromBody(centerVideoUrl);
   if (centerTiktok) {
     return buildTikTokEmbedUrl(centerTiktok);
+  }
+  const centerSocial = extractSocialEmbedFromText(centerVideoUrl);
+  if (centerSocial) {
+    return centerSocial;
   }
   const centerVm = extractVimeoIdFromBody(centerVideoUrl);
   if (centerVm) {

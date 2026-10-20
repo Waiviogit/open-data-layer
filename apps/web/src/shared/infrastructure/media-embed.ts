@@ -1,6 +1,12 @@
-import { parseVideoUrl } from './video-preview';
+import { parseVideoUrl, stripUrlTruncation } from './video-preview';
 
-export type MediaEmbedProvider = 'youtube' | 'instagram' | 'tiktok';
+export type MediaEmbedProvider =
+  | 'youtube'
+  | 'instagram'
+  | 'tiktok'
+  | 'facebook'
+  | 'x'
+  | 'linkedin';
 
 export type ParsedMediaEmbed = {
   provider: MediaEmbedProvider;
@@ -9,14 +15,14 @@ export type ParsedMediaEmbed = {
   title: string;
 };
 
-const INSTAGRAM_POST =
-  /^(?:https?:\/\/)?(?:www\.)?instagram\.com\/(p|reel|tv)\/([A-Za-z0-9_-]+)(?:\/(?:embed(?:\/captioned)?)?)?(?:[/?#].*)?$/i;
-
 const YOUTUBE_IFRAME_ALLOW =
   'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
 
 const TIKTOK_IFRAME_ALLOW =
   'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+
+const FACEBOOK_IFRAME_ALLOW =
+  'autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share';
 
 const TRAILING_PUNCTUATION = /[).,;!?]+$/;
 
@@ -30,7 +36,9 @@ function stripTrailingPunctuation(url: string): string {
 
 /** Canonical https URL for storage / markdown. */
 export function canonicalizeMediaUrl(url: string): string {
-  const trimmed = stripTrailingPunctuation(decodeHtmlEntities(url.trim()));
+  const trimmed = stripTrailingPunctuation(
+    stripUrlTruncation(decodeHtmlEntities(url.trim())),
+  );
   if (trimmed === '') {
     return '';
   }
@@ -44,7 +52,7 @@ export function canonicalizeMediaUrl(url: string): string {
 }
 
 /**
- * Detects Instagram post/reel/tv, YouTube watch/shorts/youtu.be, and TikTok video URLs.
+ * Detects Instagram / YouTube / TikTok / Facebook / X / LinkedIn video URLs.
  * Profile URLs like instagram.com/username return null.
  */
 export function parseMediaEmbedUrl(url: string): ParsedMediaEmbed | null {
@@ -53,20 +61,20 @@ export function parseMediaEmbedUrl(url: string): ParsedMediaEmbed | null {
     return null;
   }
 
-  const instagram = normalized.match(INSTAGRAM_POST);
-  const kind = instagram?.[1]?.toLowerCase();
-  const code = instagram?.[2];
-  if (kind && code) {
+  const parsed = parseVideoUrl(normalized);
+  if (!parsed) {
+    return null;
+  }
+
+  if (parsed.provider === 'instagram') {
     return {
       provider: 'instagram',
-      embedSrc: `https://www.instagram.com/${kind}/${code}/embed`,
+      embedSrc: parsed.embedUrl,
       wrapperClass: 'blog-post-instagram-embed',
       title: 'Instagram post',
     };
   }
-
-  const parsed = parseVideoUrl(normalized);
-  if (parsed?.provider === 'youtube') {
+  if (parsed.provider === 'youtube') {
     return {
       provider: 'youtube',
       embedSrc: parsed.embedUrl,
@@ -77,12 +85,39 @@ export function parseMediaEmbedUrl(url: string): ParsedMediaEmbed | null {
       title: 'YouTube video',
     };
   }
-  if (parsed?.provider === 'tiktok') {
+  if (parsed.provider === 'tiktok') {
     return {
       provider: 'tiktok',
       embedSrc: parsed.embedUrl,
       wrapperClass: 'blog-post-tiktok-embed',
       title: 'TikTok video',
+    };
+  }
+  if (parsed.provider === 'facebook') {
+    return {
+      provider: 'facebook',
+      embedSrc: parsed.embedUrl,
+      wrapperClass:
+        parsed.layout === 'portrait'
+          ? 'blog-post-facebook-embed blog-post-facebook-embed--portrait'
+          : 'blog-post-facebook-embed',
+      title: 'Facebook video',
+    };
+  }
+  if (parsed.provider === 'x') {
+    return {
+      provider: 'x',
+      embedSrc: parsed.embedUrl,
+      wrapperClass: 'blog-post-x-embed',
+      title: 'X post',
+    };
+  }
+  if (parsed.provider === 'linkedin') {
+    return {
+      provider: 'linkedin',
+      embedSrc: parsed.embedUrl,
+      wrapperClass: 'blog-post-linkedin-embed',
+      title: 'LinkedIn post',
     };
   }
 
@@ -91,7 +126,7 @@ export function parseMediaEmbedUrl(url: string): ParsedMediaEmbed | null {
 
 /** True when `url` is already a provider embed src (do not wrap again). */
 export function isProviderEmbedSrc(url: string): boolean {
-  return /(?:youtube(?:-nocookie)?\.com\/embed\/|instagram\.com\/(?:p|reel|tv)\/[^/]+\/embed|tiktok\.com\/(?:player\/v1|embed\/v2)\/)/i.test(
+  return /(?:youtube(?:-nocookie)?\.com\/embed\/|instagram\.com\/(?:p|reel|tv)\/[^/]+\/embed|tiktok\.com\/(?:player\/v1|embed\/v2)\/|facebook\.com\/plugins\/video\.php|platform\.twitter\.com\/embed\/Tweet\.html|linkedin\.com\/embed\/feed\/update\/)/i.test(
     url,
   );
 }
@@ -108,6 +143,9 @@ export function mediaEmbedIframeHtml(parsed: ParsedMediaEmbed): string {
   }
   if (parsed.provider === 'tiktok') {
     return `<div class="${parsed.wrapperClass}"><iframe src="${src}" title="${title}" frameborder="0" allow="${TIKTOK_IFRAME_ALLOW}" allowfullscreen loading="lazy"></iframe></div>`;
+  }
+  if (parsed.provider === 'facebook') {
+    return `<div class="${parsed.wrapperClass}"><iframe src="${src}" title="${title}" frameborder="0" allow="${FACEBOOK_IFRAME_ALLOW}" allowfullscreen loading="lazy" scrolling="no"></iframe></div>`;
   }
   return `<div class="${parsed.wrapperClass}"><iframe src="${src}" title="${title}" frameborder="0" scrolling="no" allowfullscreen loading="lazy"></iframe></div>`;
 }

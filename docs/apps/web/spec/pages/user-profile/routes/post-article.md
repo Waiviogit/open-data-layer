@@ -48,7 +48,11 @@ Server-side `sanitizePostHtml` (`apps/web/src/shared/infrastructure/sanitize-pos
 - **3Speak in HTML bodies:** linked poster `<a><img></a>`, `data-linked-url`, or bare watch URLs become `.blog-post-3speak-embed` iframes (`play.3speak.tv/…&mode=iframe&layout=desktop`). Video id capture excludes trailing `)` from markdown link syntax.
 - Standalone **YouTube** watch / `youtu.be` URLs are replaced with an embed iframe inside `.blog-post-youtube-embed` (16:9, `bg-bg`, no border; styles in `apps/web/src/app/global.css`). **Shorts** use the same wrapper plus `.blog-post-youtube-embed--portrait` (9:16; width `min(100%, 22.5rem, calc(min(70vh, 32rem) * 9 / 16))` so max-height cannot pillarbox).
 - Standalone **TikTok** `/@user/video/{id}` URLs become `.blog-post-tiktok-embed` iframes (`https://www.tiktok.com/player/v1/{id}`).
-- Standalone **Instagram** `/p/` `/reel/` `/tv/` URLs (not profile URLs) are replaced with `.blog-post-instagram-embed` iframes (`https://www.instagram.com/{p|reel|tv}/{code}/embed`). Detection lives in `media-embed.ts` and is shared with object Activity bodies.
+- Standalone **Instagram** `/p/` `/reel/` `/tv/` URLs (not profile URLs) are replaced with `.blog-post-instagram-embed` iframes (`https://www.instagram.com/{p|reel|tv}/{code}/embed`). Detection lives in `media-embed.ts` and is shared with object Activity bodies. The wrapper clips the likes count + “Add a comment” rows (Instagram has no hide-likes embed flag).
+- Standalone **Facebook** `/videos/{id}`, `/watch/?v=`, `/reel(s)/`, `fb.watch/`, and existing `plugins/video.php` URLs become `.blog-post-facebook-embed` iframes (`plugins/video.php?href=`). Reels add `--portrait`. Adjacent plugin + share URLs that canonicalize to the same `src` collapse to one iframe.
+- Standalone **X / Twitter** `{user}/status/{id}` URLs become `.blog-post-x-embed` iframes (`platform.twitter.com/embed/Tweet.html?id=`).
+- Standalone **LinkedIn** `embed/feed/update/urn:li:activity|{ugcPost}|share:{id}` and `/posts/…activity-{id}` URLs become `.blog-post-linkedin-embed` iframes (`linkedin.com/embed/feed/update/urn:li:…`). Trailing excerpt ellipsis (`…` / `%E2%80%A6`) is stripped so the embed path stays a valid URN.
+- Instagram, Facebook Reels, X, and LinkedIn iframes listen for host `postMessage` height and grow the wrapper — no inner scrollbar on the card.
 
 Feed story cards still use `Story` for previews; full post views do **not** show a separate hero video above the body — video appears inline from the body content (or from the Peakd prefix preprocess).
 

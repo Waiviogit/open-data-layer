@@ -1,17 +1,20 @@
 'use client';
 
-import { useCallback, useEffect, useState, type MouseEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
 import { PlayIcon } from '@/icons';
 import { getImagePathPost } from '@/shared/infrastructure/image/get-proxy-image-url';
 import {
   buildVideoEmbedUrl,
+  isNativeFeedVideoProvider,
   parseVideoUrl,
   type ParsedVideoPreview,
   type VideoPreviewLayout,
+  type VideoPreviewProvider,
 } from '@/shared/infrastructure/video-preview';
 
+import { useBindSocialEmbedHeights } from '../hooks/use-bind-social-embed-heights';
 import { useVideoPreviewThumbnail } from '../hooks/use-video-preview-thumbnail';
 
 export type VideoPreviewPlayerProps = {
@@ -36,9 +39,20 @@ export type VideoPreviewPlayerProps = {
 const FEED_PORTRAIT_BOX = 'video-embed-portrait';
 const FEED_LANDSCAPE_BOX = 'relative aspect-video w-full overflow-hidden bg-bg';
 
+function feedWidgetBox(provider: VideoPreviewProvider): string {
+  if (provider === 'instagram') {
+    return 'video-embed-widget video-embed-widget--instagram';
+  }
+  if (provider === 'linkedin') {
+    return 'video-embed-widget video-embed-widget--linkedin';
+  }
+  return 'video-embed-widget video-embed-widget--x';
+}
+
 function variantClasses(
   variant: VideoPreviewPlayerProps['variant'],
   layout: VideoPreviewLayout,
+  provider: VideoPreviewProvider,
 ): {
   wrapper: string;
   playingWrapper: string;
@@ -69,12 +83,19 @@ function variantClasses(
       };
     case 'feed':
     default: {
-      const box = layout === 'portrait' ? FEED_PORTRAIT_BOX : FEED_LANDSCAPE_BOX;
+      const box =
+        layout === 'widget'
+          ? feedWidgetBox(provider)
+          : layout === 'portrait' && provider === 'facebook'
+            ? 'video-embed-facebook-reel'
+            : layout === 'portrait'
+              ? FEED_PORTRAIT_BOX
+              : FEED_LANDSCAPE_BOX;
       return {
         wrapper: box,
         playingWrapper: box,
         posterImg: 'absolute inset-0 size-full object-cover',
-        minHeight: 'min-h-0',
+        minHeight: layout === 'widget' ? 'min-h-[400px]' : 'min-h-0',
       };
     }
   }
@@ -93,8 +114,10 @@ export function VideoPreviewPlayer({
 }: VideoPreviewPlayerProps) {
   const { t } = useI18n();
   const preview = typeof source === 'string' ? parseVideoUrl(source) : source;
+  const frameRef = useRef<HTMLDivElement>(null);
   const [internalPlaying, setInternalPlaying] = useState(false);
   const [posterFailed, setPosterFailed] = useState(false);
+  useBindSocialEmbedHeights(frameRef);
 
   const playing = controlledPlaying ?? internalPlaying;
   const setPlaying = useCallback(
@@ -109,9 +132,9 @@ export function VideoPreviewPlayer({
   );
 
   const embedUrl = preview?.embedUrl ?? null;
-  /** TikTok oEmbed is unreliable; feed mounts the native player like the article view. */
+  /** Social hosts without public posters mount the native iframe like the article view. */
   const mountNativeFeedPlayer =
-    preview?.provider === 'tiktok' && variant === 'feed' && !previewOnly;
+    isNativeFeedVideoProvider(preview?.provider) && variant === 'feed' && !previewOnly;
   const previewMediaUrl = useVideoPreviewThumbnail(
     mountNativeFeedPlayer ? null : embedUrl,
     mountNativeFeedPlayer
@@ -139,12 +162,14 @@ export function VideoPreviewPlayer({
     return null;
   }
 
-  const classes = variantClasses(variant, preview.layout);
+  const classes = variantClasses(variant, preview.layout, preview.provider);
   const iframeTitle = title?.trim() ? `${title.trim()} — video` : 'Video';
   const iframeFillClass =
     variant === 'viewer'
       ? 'absolute inset-0 h-full w-full border-0 bg-black'
-      : 'absolute inset-0 h-full w-full border-0 bg-bg';
+      : preview.layout === 'widget'
+        ? 'h-full w-full border-0 bg-bg'
+        : 'absolute inset-0 h-full w-full border-0 bg-bg';
 
   const previewPlayGlyph = previewOnly ? (
     <span
@@ -203,12 +228,13 @@ export function VideoPreviewPlayer({
   };
 
   return (
-    <div className={wrapperClass}>
+    <div ref={frameRef} className={wrapperClass}>
       {showHostEmbed && embedUrl ? (
         <iframe
           title={iframeTitle}
           src={embedUrl}
           className={iframeFillClass}
+          scrolling="no"
           referrerPolicy="strict-origin-when-cross-origin"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
@@ -219,6 +245,7 @@ export function VideoPreviewPlayer({
             title={iframeTitle}
             src={buildVideoEmbedUrl(preview, { autoplay: !mountNativeFeedPlayer })}
             className={iframeFillClass}
+            scrolling="no"
             referrerPolicy="strict-origin-when-cross-origin"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowFullScreen

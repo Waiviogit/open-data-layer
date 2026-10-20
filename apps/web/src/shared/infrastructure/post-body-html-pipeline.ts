@@ -2,11 +2,7 @@ import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
 
 import { getProxyImageUrl } from './image/get-proxy-image-url';
-import {
-  isProviderEmbedSrc,
-  mediaEmbedIframeHtml,
-  parseMediaEmbedUrl,
-} from './media-embed';
+import { mediaEmbedIframeHtml, parseMediaEmbedUrl } from './media-embed';
 import { linkifyBareImageUrls, linkifyHiveMentions } from './social-content-html';
 
 /**
@@ -164,7 +160,7 @@ export function embedThreeSpeakInBody(html: string): string {
 }
 
 /**
- * Replace Instagram / YouTube / TikTok `<a href>` and leftover bare URLs with iframes.
+ * Replace Instagram / YouTube / TikTok / Facebook / X / LinkedIn `<a href>` and leftover bare URLs with iframes.
  * Skip already-embed srcs so existing iframe `src` values are not nested.
  */
 export function embedMediaUrls(html: string): string {
@@ -173,7 +169,13 @@ export function embedMediaUrls(html: string): string {
     !lower.includes('youtube') &&
     !lower.includes('youtu.be') &&
     !lower.includes('instagram.com') &&
-    !lower.includes('tiktok.com')
+    !lower.includes('tiktok.com') &&
+    !lower.includes('facebook.com') &&
+    !lower.includes('fb.watch') &&
+    !lower.includes('://x.com') &&
+    !lower.includes('://www.x.com') &&
+    !lower.includes('twitter.com') &&
+    !lower.includes('linkedin.com')
   ) {
     return html;
   }
@@ -188,14 +190,29 @@ export function embedMediaUrls(html: string): string {
     },
   );
 
-  out = out.replace(/https?:\/\/[^\s<"']+/gi, (url) => {
-    if (isProviderEmbedSrc(url)) {
+  out = out.replace(/https?:\/\/[^\s<"']+/gi, (url, offset: number) => {
+    const prefix = out.slice(Math.max(0, offset - 12), offset);
+    if (/src=["']$/i.test(prefix)) {
       return url;
     }
     const parsed = parseMediaEmbedUrl(url);
     return parsed ? mediaEmbedIframeHtml(parsed) : url;
   });
 
+  return out;
+}
+
+/** Drop plugin+share (or watch+embed) pairs that canonicalize to the same iframe. */
+function collapseAdjacentIdenticalMediaEmbeds(html: string): string {
+  const adjacent =
+    /(<div class="blog-post-[^"]*embed[^"]*">[\s\S]*?<iframe[^>]*\ssrc="([^"]+)"[\s\S]*?<\/div>)((?:\s|<p>\s*<\/p>)*)(<div class="blog-post-[^"]*embed[^"]*">[\s\S]*?<iframe[^>]*\ssrc="\2"[\s\S]*?<\/div>)/gi;
+  let prev = '';
+  let out = html;
+  while (out !== prev) {
+    prev = out;
+    adjacent.lastIndex = 0;
+    out = out.replace(adjacent, '$1');
+  }
   return out;
 }
 
@@ -252,6 +269,11 @@ const POST_BODY_SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
     'instagram.com',
     'www.tiktok.com',
     'tiktok.com',
+    'www.facebook.com',
+    'facebook.com',
+    'platform.twitter.com',
+    'www.linkedin.com',
+    'linkedin.com',
   ],
   transformTags: {
     img: (tagName, attribs) => {
@@ -281,5 +303,7 @@ export function sanitizePostBodyHtml(raw: string): string {
   const intermediate = linkifyHiveMentions(
     embedMediaUrls(embedThreeSpeakInBody(convertMarkdownImages(withImages))),
   );
-  return sanitizeHtml(intermediate, POST_BODY_SANITIZE_OPTIONS);
+  return collapseAdjacentIdenticalMediaEmbeds(
+    sanitizeHtml(intermediate, POST_BODY_SANITIZE_OPTIONS),
+  );
 }
