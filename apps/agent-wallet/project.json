@@ -4,7 +4,7 @@
   "sourceRoot": "apps/agent-wallet/src",
   "projectType": "application",
   "tags": ["type:app"],
-  "implicitDependencies": ["hive-auth", "hive-broadcast"],
+  "implicitDependencies": ["hive-auth", "hive-broadcast", "hive-account"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",

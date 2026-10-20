@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { HiveBroadcastService, WalletAccountsService, WalletStatusService } from '../domain/hive-broadcast.service';
 import { HasSessionService } from '../domain/has-session.service';
 import { HivePostBuildService } from '../domain/hive-post-build.service';
+import { HiveAccountGenerateService } from '../domain/hive-account-generate.service';
 import { HivePostingAuthorityGrantBuildService } from '../domain/hive-posting-authority-grant-build.service';
 import { IpfsUploadService } from '../domain/ipfs-upload.service';
 import { NotificationsSocketService } from '../domain/notifications-socket.service';
@@ -28,6 +29,7 @@ export function registerAgentWalletTools(
     walletDelegationBuild: WalletDelegationBuildService;
     hiveEngineDepositBuild: HiveEngineDepositBuildService;
     postingAuthorityGrantBuild: HivePostingAuthorityGrantBuildService;
+    hiveAccountGenerate: HiveAccountGenerateService;
   },
 ): void {
   server.registerTool(
@@ -805,6 +807,25 @@ export function registerAgentWalletTools(
     async (args) => {
       try {
         const result = deps.hiveEngineDepositBuild.build(args);
+        return jsonToolResult(result);
+      } catch (error) {
+        return toolError((error as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    'hive_generate_account_keys',
+    {
+      description:
+        'Generate a Hive master password and owner/active/posting/memo key pairs for a free account name. Validates Hive name grammar, then live get_accounts — rejects if the name is taken. Returns secrets. Does not broadcast account_create and does not write ~/.odl/accounts.json. Deliver keys to the user and do not persist them.',
+      inputSchema: z.object({
+        account: z.string().min(1).describe('Desired Hive account name (lowercase; @ prefix allowed)'),
+      }),
+    },
+    async (args) => {
+      try {
+        const result = await deps.hiveAccountGenerate.generateAccountKeys(args);
         return jsonToolResult(result);
       } catch (error) {
         return toolError((error as Error).message);

@@ -1,3 +1,9 @@
+## Nx `@nx/js:library`: do not keep `"type": "commonjs"`
+
+**Pattern:** Nx 23 `@nx/js:library` writes `"type": "commonjs"` into the new lib `package.json`. Sibling libs (`hive-auth`, `hive-memo-crypto`, `knowledge`) omit `type` so the consumer (Nest webpack / Next / Jest) owns the module format. A stray `"type"` can flip CJS/ESM resolution for that package when it is later treated as a real workspace package.
+
+**Rule:** After generating a lib, delete `"type"` from `libs/<lib>/package.json`. Match `hive-auth` / `hive-memo-crypto`. Do not add `"type": "module"` either unless the whole workspace switches.
+
 ## Web: client imports and `@/modules/user-social` barrel
 
 **Pattern:** Importing the public `user-social` barrel from a **client** component can pull **server-only** modules (`query-api.client` → `env`) and break the Next.js build.

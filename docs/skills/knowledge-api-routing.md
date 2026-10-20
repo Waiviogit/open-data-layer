@@ -51,6 +51,7 @@ related:
 | Clone repo for sidecar agent | skill | `docs/skills/setup-workspace.md` |
 | Local dev: Docker, migrate, serve | overview | `docs/getting-started.md` |
 | New Hive account | skill | `docs/skills/hive-account-signup.md` |
+| Generate Hive keys for a free name (agent-wallet) | skill | `docs/skills/hive-account-keys-for-agents.md` |
 | Sign/broadcast Hive/ODL txs | skill | `docs/skills/hive-blockchain-broadcast.md` |
 | Large ODL update / IPFS batch (`pageContent`, `skillContent`, … over 8192 B) | skill | `docs/skills/ipfs-file-upload.md` · `hive-has-agent-wallet.md` § IPFS batch |
 | HAS agent session / local agent-wallet | skill | `docs/skills/hive-has-agent-wallet.md` |
@@ -95,6 +96,7 @@ related:
 | `docs/skills/knowledge-api-routing.md` | MCP routing map (this file) |
 | `docs/skills/setup-workspace.md` | Sidecar agent: clone repo, path contract |
 | `docs/skills/hive-account-signup.md` | Create a new Hive account |
+| `docs/skills/hive-account-keys-for-agents.md` | Generate master password + keys for a free Hive name |
 | `docs/skills/hive-blockchain-broadcast.md` | Sign and broadcast ODL / Hive ops |
 | `docs/skills/hive-has-agent-wallet.md` | Local HAS agent-wallet MCP daemon |
 | `docs/skills/has-login-from-chat.md` | HAS login via webLink in Telegram/Slack |

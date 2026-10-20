@@ -12,6 +12,7 @@ related:
   - docs/skills/knowledge-api-routing.md
   - docs/skills/setup-workspace.md
   - docs/skills/hive-blockchain-broadcast.md
+  - docs/skills/hive-account-keys-for-agents.md
   - docs/standards/docs-standards.md
   - docs/apps/auth-api/spec/challenge-flow.md
 ---
@@ -32,6 +33,7 @@ Guide a user through creating a new Hive blockchain account using the best **pub
 - User already has an account — help with **wallet import** or login, not signup.
 - User wants **password reset** or **username rename** — Hive does not support these; explain key custody instead.
 - Task is only about **this repo's local dev** — see [getting-started.md](../getting-started.md).
+- User only needs **local key material** for a free name (no on-chain create) — [hive-account-keys-for-agents.md](hive-account-keys-for-agents.md).
 
 ## Source of truth (required each run)
 
@@ -228,6 +230,7 @@ Non-empty `result[0].name` matching the chosen username → account created.
 
 ## Related
 
+- [Hive account keys for agents](hive-account-keys-for-agents.md) — local master password + four key pairs via agent-wallet
 - [Hive blockchain broadcast](hive-blockchain-broadcast.md) — next step: ODL txs after account exists
 - [signup.hive.io](https://signup.hive.io/) — live provider list (canonical)
 - [Setup agent workspace](setup-workspace.md) — clone repo / GitHub raw for code work

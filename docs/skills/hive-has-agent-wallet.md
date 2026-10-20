@@ -13,6 +13,7 @@ related:
   - docs/skills/osl-messaging.md
   - docs/skills/has-login-from-chat.md
   - docs/skills/hive-account-authority-for-agents.md
+  - docs/skills/hive-account-keys-for-agents.md
   - docs/skills/knowledge-api-routing.md
   - docs/apps/agent-wallet/spec/overview.md
   - docs/apps/web/spec/object-create-broadcast.md

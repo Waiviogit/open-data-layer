@@ -1,0 +1,19 @@
+{
+  "name": "hive-account",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/hive-account/src",
+  "projectType": "library",
+  "tags": ["type:lib", "scope:domain"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/hive-account",
+        "main": "libs/hive-account/src/index.ts",
+        "tsConfig": "libs/hive-account/tsconfig.lib.json",
+        "assets": ["libs/hive-account/*.md"]
+      }
+    }
+  }
+}

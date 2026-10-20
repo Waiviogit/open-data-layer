@@ -25,6 +25,7 @@ ODL build decision table:
 - EXISTING object, gallery photo → odl_build_gallery_item (pass existingGalleryAlbumNames from resolve_object fields.imageGallery)
 - Social post (Instagram/Facebook) onto an EXISTING object → osl_activity_fingerprint → query-api check_object_activity_duplicate → if not duplicate, osl_build_message_create with channelId "obj-ch-{objectId}", originalCreatedAtUnix, and source → wallet_broadcast
 - Hive Engine deposit (BTC/LTC/HBD/HIVE → SWAP.*) → query-api get_user_engine_deposit_address → osl_build_hive_engine_deposit({ account, routing }) → wallet_broadcast({ ops, keyType: "posting" }) before showing the address. Instruction is history only; SWAP.* credit is Hive Engine converter.
+- Free Hive name + local key material (no on-chain create) → hive_generate_account_keys({ account }) — returns master password + WIFs; deliver to user, do not persist
 - Grant/revoke posting authority → hive_build_posting_authority_grant → wallet_broadcast when canSignLocally; HAS grantor session → has_broadcast with keyType active
 - Avatar on existing object: ipfs_upload_image → odl_build_update_create({ updateType: "image", value: { cid } }) → wallet_broadcast
 - Large body on EXISTING object (pageContent, skillContent, legalText, …): odl_build_update_create → if requiresIpfsBatch then ipfs_upload_file + odl_build_batch_import (never broadcast oversize custom_json)
@@ -56,4 +57,4 @@ Object activity (archival imports):
 - The fingerprint comes from the ORIGINAL author caption (osl_activity_fingerprint or query-api dedup-check original_text), never from your rewritten body.
 - Duplicate preflight lives on the query-api MCP server (check_object_activity_duplicate), not in agent-wallet.
 
-Security: binds 127.0.0.1 only; MCP requires Authorization: Bearer. Tool responses never include JWT, HAS secrets, or WIF keys.`;
+Security: binds 127.0.0.1 only; MCP requires Authorization: Bearer. Tool responses never include JWT, HAS secrets, or WIF keys — except hive_generate_account_keys, which returns a master password and private keys for a free name. Deliver those secrets to the user immediately; do not persist them in memory, repo, or ~/.odl/accounts.json unless the user later asks to import.`;

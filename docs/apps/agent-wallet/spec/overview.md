@@ -13,6 +13,7 @@ related:
   - docs/skills/wallet-delegation-swap-for-agents.md
   - docs/skills/hive-engine-deposit-for-agents.md
   - docs/skills/hive-account-authority-for-agents.md
+  - docs/skills/hive-account-keys-for-agents.md
   - docs/skills/hive-blockchain-broadcast.md
   - docs/apps/knowledge-api/spec/overview.md
 ---
@@ -45,6 +46,7 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 - `@opden-data-layer/hive-auth` — `HasClient`
 - `@opden-data-layer/hive-broadcast` — `buildObjectCreateEnvelope`
 - `@opden-data-layer/hive-memo-crypto` — memo encrypt/decrypt; wired via `osl_memo_*` MCP tools ([osl-messaging skill](../../skills/osl-messaging.md))
+- `@opden-data-layer/hive-account` — name grammar + master password / role keys (`hive_generate_account_keys`)
 - Default bind **`127.0.0.1:7500`** — no CORS
 
 ## Feature specs
@@ -58,6 +60,7 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 | Wallet delegations / balances / swaps | [wallet-delegation-swap-for-agents skill](../../skills/wallet-delegation-swap-for-agents.md) |
 | Hive Engine deposit instructions | [hive-engine-deposit-for-agents skill](../../skills/hive-engine-deposit-for-agents.md) |
 | Hive posting authority / act-as grantor | [hive-account-authority-for-agents skill](../../skills/hive-account-authority-for-agents.md) |
+| Hive account key generation (free name) | [hive-account-keys.md](hive-account-keys.md) |
 | HAS login from chat (Telegram, Slack) | [has-login-from-chat skill](../../skills/has-login-from-chat.md) |
 | IPFS image upload + avatar/gallery policy | [ipfs-image-upload skill](../../skills/ipfs-image-upload.md) |
 | IPFS file upload + ODL batch import | [ipfs-file-upload skill](../../skills/ipfs-file-upload.md) |
@@ -77,6 +80,7 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 | `odl_build_gallery_item` | `ops`, `opsCount`, `bytes` — gallery item (+ album ensure when needed) |
 | `hive_build_post` | `ops`, `opsCount: 2`, `json_metadata`, `warnings` — root Hive post (`comment` + `comment_options`); `author` may be a grantor |
 | `hive_build_posting_authority_grant` | `ops`, `keyType: active`, `signerAccount`, `canSignLocally`, `warnings` — grant/revoke posting `account_auths` |
+| `hive_generate_account_keys` | `{ account, masterPassword, keys }` for a free name — secrets; no `account_create`, no `accounts.json` write |
 
 Leo object threads (Reviews > Threads) are **not** built by agent-wallet — see [hive-thread-create skill](../../skills/hive-thread-create.md): agents hand-build one `comment` op and broadcast via `wallet_broadcast`.
 
