@@ -26,7 +26,7 @@ Agent playbook: [hive-account-keys-for-agents.md](../../skills/hive-account-keys
 3. `HiveChainContextService.getAccount` (`get_accounts` on `HIVE_RPC_NODES`). A row → `Hive account already exists: <name>`. RPC errors propagate.
 4. `suggestMasterPassword()` then `deriveAccountKeys(name, password)` — four roles, public prefix `STM`.
 
-Returns `{ account, masterPassword, keys }` as strings. Secrets exist only in the tool response.
+Returns `{ account, masterPassword, keys }`. `keys` is `owner` / `active` / `posting` / `memo`, each `{ private, public }` (`public` prefix `STM`). The value exists only in the tool response. A local save is that object — both sides, one file. `account_create` and any creator hand-off take only the four public keys. Procedure: [hive-account-keys-for-agents.md](../../skills/hive-account-keys-for-agents.md).
 
 ## Verification
 

@@ -80,7 +80,7 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 | `odl_build_gallery_item` | `ops`, `opsCount`, `bytes` — gallery item (+ album ensure when needed) |
 | `hive_build_post` | `ops`, `opsCount: 2`, `json_metadata`, `warnings` — root Hive post (`comment` + `comment_options`); `author` may be a grantor |
 | `hive_build_posting_authority_grant` | `ops`, `keyType: active`, `signerAccount`, `canSignLocally`, `warnings` — grant/revoke posting `account_auths` |
-| `hive_generate_account_keys` | `{ account, masterPassword, keys }` for a free name — secrets; no `account_create`, no `accounts.json` write |
+| `hive_generate_account_keys` | `{ account, masterPassword, keys.{owner,active,posting,memo}.{private,public} }` for a free name — save the full object; no `account_create`, no `accounts.json` write |
 
 Leo object threads (Reviews > Threads) are **not** built by agent-wallet — see [hive-thread-create skill](../../skills/hive-thread-create.md): agents hand-build one `comment` op and broadcast via `wallet_broadcast`.
 

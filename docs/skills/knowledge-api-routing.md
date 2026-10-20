@@ -96,7 +96,7 @@ related:
 | `docs/skills/knowledge-api-routing.md` | MCP routing map (this file) |
 | `docs/skills/setup-workspace.md` | Sidecar agent: clone repo, path contract |
 | `docs/skills/hive-account-signup.md` | Create a new Hive account |
-| `docs/skills/hive-account-keys-for-agents.md` | Generate master password + keys for a free Hive name |
+| `docs/skills/hive-account-keys-for-agents.md` | Generate master password + private and public keys for a free Hive name |
 | `docs/skills/hive-blockchain-broadcast.md` | Sign and broadcast ODL / Hive ops |
 | `docs/skills/hive-has-agent-wallet.md` | Local HAS agent-wallet MCP daemon |
 | `docs/skills/has-login-from-chat.md` | HAS login via webLink in Telegram/Slack |

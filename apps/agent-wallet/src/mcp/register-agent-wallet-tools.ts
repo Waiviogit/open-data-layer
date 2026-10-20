@@ -818,7 +818,7 @@ export function registerAgentWalletTools(
     'hive_generate_account_keys',
     {
       description:
-        'Generate a Hive master password and owner/active/posting/memo key pairs for a free account name. Validates Hive name grammar, then live get_accounts — rejects if the name is taken. Returns secrets. Does not broadcast account_create and does not write ~/.odl/accounts.json. Deliver keys to the user and do not persist them.',
+        'Generate a Hive master password and owner/active/posting/memo key pairs for a free account name. Validates Hive name grammar, then live get_accounts — rejects if the name is taken. Returns { account, masterPassword, keys.{owner,active,posting,memo}.{private,public} }. Does not broadcast account_create and does not write ~/.odl/accounts.json. Deliver or save that full object — every private WIF and every STM public. Do not drop .public. A later account_create or any hand-off to a creator gets only the four STM public keys, never WIFs or the master password. Do not persist into the repo, .env, or accounts.json unless the user asks to import.',
       inputSchema: z.object({
         account: z.string().min(1).describe('Desired Hive account name (lowercase; @ prefix allowed)'),
       }),

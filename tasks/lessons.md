@@ -1,3 +1,9 @@
+## Hive key delivery: private-only template drops publics
+
+**Pattern:** `hive_generate_account_keys` returns `{ private, public }` per role. A skill block that listed only WIFs made the agent `jq` `.private` into the user's file and offer publics as a second file.
+
+**Rule:** The save artifact is the tool object unchanged: master password, four private, four `STM` public, one file, mode `600`. Check with `jq -e` before saying done. Do not regenerate to "add" missing publics.
+
 ## Nx `@nx/js:library`: do not keep `"type": "commonjs"`
 
 **Pattern:** Nx 23 `@nx/js:library` writes `"type": "commonjs"` into the new lib `package.json`. Sibling libs (`hive-auth`, `hive-memo-crypto`, `knowledge`) omit `type` so the consumer (Nest webpack / Next / Jest) owns the module format. A stray `"type"` can flip CJS/ESM resolution for that package when it is later treated as a real workspace package.
