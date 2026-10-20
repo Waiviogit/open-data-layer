@@ -21,6 +21,7 @@ const messages: Record<string, string> = {
   fillOrder_wallet_get: 'Bought {open_pays} from {exchanger}',
   fillOrder_wallet_transferred: 'Sold {current_pays} to {exchanger}',
   power_down_started: 'Started power down',
+  activity_power_down_stop: 'Stopped power down',
   power_down_stopped: 'Power down',
   power_down_withdraw: 'Power down',
   cancel_transfer_from_savings: 'Cancel transfer from savings (request {requestId})',
@@ -98,6 +99,20 @@ describe('WalletHistoryRow', () => {
     expect(amount).toHaveClass('text-fg');
     expect(amount).not.toHaveClass('text-error');
     expect(amount.textContent).toBe('1905.316 HP');
+  });
+
+  it('renders power down stop as Stopped power down without amount', () => {
+    const row: ActivityRowView = {
+      kind: 'wallet_power_down',
+      id: '3d',
+      timestamp: '2026-10-20T12:00:00Z',
+      subtype: 'stop',
+      hpAmount: '0.000 HP',
+    };
+    renderRow(row);
+    expect(screen.getByText('Stopped power down')).toBeInTheDocument();
+    expect(screen.queryByText('0.000 HP')).not.toBeInTheDocument();
+    expect(screen.queryByText('Power down')).not.toBeInTheDocument();
   });
 
   it('renders self power down withdraw without from/to suffix', () => {

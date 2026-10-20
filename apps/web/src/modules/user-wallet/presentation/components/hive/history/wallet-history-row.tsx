@@ -226,7 +226,7 @@ export function WalletHistoryRow({ row, accountName }: { row: ActivityRowView; a
             timestamp={row.timestamp}
             icon={<WalletPowerLightningIcon />}
           >
-            {t('power_down_stopped')}
+            {t('activity_power_down_stop')}
           </WalletHistoryRowShell>
         );
       }

@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, page, user-profile, wallet]
-updated_at: 2026-09-24
+updated_at: 2026-10-20
 related:
   - docs/apps/web/spec/pages/user-profile/profile-shell.md
   - docs/apps/web/spec/pages/user-profile/routes/waiv-wallet-history.md
@@ -44,7 +44,7 @@ Wallet tabs and transfer history under `/@:name/transfers/...`. Wallet primary n
 
 WAIV tab (`?type=WAIV`): summary card with a tinted header (title + est. account value) above balance rows, and Engine token operations (power up/down, transfer, delegate, manage delegations) for the profile owner. Data from `GET /query/v1/users/{name}/wallet/waiv`. **Paginated WAIV wallet transaction history** loads client-side below the summary from `POST /query/v1/users/{name}/wallet/waiv/history` (page size 20, cursor pagination, infinite scroll). Row mapping and amount rules: [waiv-wallet-history.md](waiv-wallet-history.md). Checkbox **Show author and curators rewards** (default off) toggles inclusion of `comments_*Reward` rows from Hive Engine history RPC.
 
-HIVE tab (`?type=HIVE`): L1 wallet summary (tinted header with title + est. USD, then liquid HIVE, HP, delegations net, RC, savings, HBD, interest) plus **paginated wallet transaction history** below the summary. History data from `POST /query/v1/users/{name}/activity` with `filters: ["wallet"]`, page size 20, cursor pagination, infinite scroll. Data from `GET /query/v1/users/{name}/wallet/hive` for balances. Owner actions use L1 broadcast ops (transfer, vesting, savings, HP/RC delegate, claim interest). See [user-hive-wallet-endpoint.md](../../../../../query-api/spec/user-hive-wallet-endpoint.md). **Started power down** (`withdraw_vesting` start) is unsigned `text-fg` — initiating a power down does not change the balance; weekly `fill_vesting_withdraw` rows stay signed.
+HIVE tab (`?type=HIVE`): L1 wallet summary (tinted header with title + est. USD, then liquid HIVE, HP, delegations net, RC, savings, HBD, interest) plus **paginated wallet transaction history** below the summary. History data from `POST /query/v1/users/{name}/activity` with `filters: ["wallet"]`, page size 20, cursor pagination, infinite scroll. Data from `GET /query/v1/users/{name}/wallet/hive` for balances. Owner actions use L1 broadcast ops (transfer, vesting, savings, HP/RC delegate, claim interest). See [user-hive-wallet-endpoint.md](../../../../../query-api/spec/user-hive-wallet-endpoint.md). **Started power down** (`withdraw_vesting` start) is unsigned `text-fg` — initiating a power down does not change the balance; weekly `fill_vesting_withdraw` rows stay signed. A zero-vest `withdraw_vesting` cancel is labeled **Stopped power down** (`activity_power_down_stop`).
 
 **Owner HIVE liquid-row menu (legacy parity):** Power up (primary), Transfer, **Convert to HBD** (`collateralized_convert`, 3.5-day settlement), **Convert to SWAP.HIVE** (opens existing Engine deposit modal), **Withdraw to BTC/LTC/ETH** (Changelly via BFF + client L1 broadcast), Transfer to savings. Deposit to savings (HIVE and HBD) has no recipient field; `transfer_to_savings.to` is the profile account. Changelly flow: BFF `GET/POST /api/users/{name}/wallet/hive/withdraw/*` → query-api → two L1 transfers (pay-in + 0.001 HIVE tracking memo). Spec: [user-hive-changelly-withdraw.md](../../../../../query-api/spec/user-hive-changelly-withdraw.md).
 
