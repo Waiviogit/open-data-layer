@@ -102,6 +102,7 @@ import {
   GetFollowedObjectsMessagesEndpoint,
   GetMemoPublicKeyEndpoint,
 } from '../domain/messaging';
+import { CountryResolverService } from '../domain/geoip';
 import { QUERY_API_MCP_INSTRUCTIONS } from './mcp-instructions';
 import { mcpRequestContextFromRequest } from './mcp-request-context';
 import type { McpRequestContext, McpToolDeps } from './mcp-tool.deps';
@@ -195,10 +196,13 @@ export class McpService {
     private readonly getFollowedObjectsMessages: GetFollowedObjectsMessagesEndpoint,
     private readonly checkObjectActivityDuplicate: CheckActivityDuplicateEndpoint,
     private readonly getMemoPublicKey: GetMemoPublicKeyEndpoint,
+    private readonly countryResolver: CountryResolverService,
   ) {}
 
   private buildDeps(): McpToolDeps {
     return {
+      countryResolver: this.countryResolver,
+      clientIp: null,
       search: this.search,
       searchCounts: this.searchCounts,
       discoverObjects: this.discoverObjects,
@@ -292,7 +296,7 @@ export class McpService {
         instructions: QUERY_API_MCP_INSTRUCTIONS,
       },
     );
-    registerAllMcpTools(server, this.buildDeps(), ctx);
+    registerAllMcpTools(server, { ...this.buildDeps(), clientIp: ctx.clientIp }, ctx);
     registerQueryMcpResources(server);
     return server;
   }

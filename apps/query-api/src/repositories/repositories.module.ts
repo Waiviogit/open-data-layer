@@ -39,6 +39,7 @@ import { MessagingRepository } from './messaging.repository';
 import { ProfileFeedReadCursorRepository } from './profile-feed-read-cursor.repository';
 import { PostRepliesRepository } from './post-replies.repository';
 import { ThreadRepliesRepository } from './thread-replies.repository';
+import { AffiliateObjectsRepository } from './affiliate-objects.repository';
 
 @Module({
   providers: [
@@ -83,6 +84,7 @@ import { ThreadRepliesRepository } from './thread-replies.repository';
     ProfileFeedReadCursorRepository,
     PostRepliesRepository,
     ThreadRepliesRepository,
+    AffiliateObjectsRepository,
   ],
   exports: [
     ObjectsCoreRepository,
@@ -126,6 +128,7 @@ import { ThreadRepliesRepository } from './thread-replies.repository';
     ProfileFeedReadCursorRepository,
     PostRepliesRepository,
     ThreadRepliesRepository,
+    AffiliateObjectsRepository,
   ],
 })
 export class RepositoriesModule {}

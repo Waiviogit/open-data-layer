@@ -7,6 +7,7 @@ import {
   UserMetadataRepository,
   UserShopDeselectRepository,
 } from '../../repositories';
+import { AffiliateLinksEnricher, flattenAffiliateTargets } from '../affiliate';
 import { ObjectProjectionService } from '../object-projection';
 import type { ProjectedObject } from '../object-projection/projected-object.types';
 import type { PaginatedProjectedObjects } from '../social/paginated-objects.types';
@@ -27,6 +28,7 @@ export class GetUserFavoritesEndpoint {
     private readonly aggregatedObjectRepo: AggregatedObjectRepository,
     private readonly objectViewService: ObjectViewService,
     private readonly objectProjection: ObjectProjectionService,
+    private readonly affiliateLinks: AffiliateLinksEnricher,
   ) {}
 
   async execute(
@@ -35,6 +37,7 @@ export class GetUserFavoritesEndpoint {
     locale: string,
     governanceObjectIdFromHeader: string | undefined,
     viewerAccount: string | undefined,
+    countryCode: string | null = null,
   ): Promise<PaginatedProjectedObjects | null> {
     const name = username.trim();
     if (name.length === 0) {
@@ -86,6 +89,12 @@ export class GetUserFavoritesEndpoint {
       governanceObjectIdFromHeader,
       viewerAccount,
       rankVoteProjection,
+    });
+
+    await this.affiliateLinks.enrich(flattenAffiliateTargets(items), {
+      countryCode,
+      personalAccount: name,
+      governanceObjectIdFromHeader,
     });
 
     return {

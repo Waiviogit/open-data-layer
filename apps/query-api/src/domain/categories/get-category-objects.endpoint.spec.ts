@@ -42,6 +42,7 @@ function makeEndpoint(deps: {
     }) as unknown as ObjectFavoriteRepository,
     listItemsRecursiveCountService,
     config,
+    { enrich: jest.fn() } as never,
   );
 }
 

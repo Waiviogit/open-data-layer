@@ -35,4 +35,28 @@ export const redisKey = {
   waivDieselPool: () => buildRedisKey(APP, 'cache', 'waiv', 'diesel-pool'),
   waivGeneratedReportLock: (reportId: string) =>
     buildRedisKey(APP, 'lock', 'waiv-generated-report', reportId),
+  affiliateGovernanceCodes: (governanceObjectId: string, headerObjectId: string) =>
+    buildRedisKey(
+      APP,
+      'cache',
+      'affiliate-codes',
+      'governance',
+      governanceObjectId || 'none',
+      headerObjectId || 'none',
+    ),
+  affiliatePersonalCodes: (
+    account: string,
+    governanceObjectId: string,
+    headerObjectId: string,
+  ) =>
+    buildRedisKey(
+      APP,
+      'cache',
+      'affiliate-codes',
+      'personal',
+      'v2',
+      account.trim().toLowerCase(),
+      governanceObjectId || 'none',
+      headerObjectId || 'none',
+    ),
 } as const;

@@ -1,4 +1,5 @@
 import type { ResolvedObjectView } from '@opden-data-layer/objects-domain';
+import type { AffiliateLink } from '../affiliate/affiliate.types';
 
 /**
  * Human-oriented projection of a {@link ResolvedObjectView} for API / frontend consumption.
@@ -17,6 +18,7 @@ export interface RefSummary {
   listItemsCount?: number;
   /** True when viewer has favorited this ref target. */
   isFavorited?: boolean;
+  affiliateLinks?: AffiliateLink[];
   /** Parent `listItem` update id — used for catalog reject votes. */
   update_id?: string;
 }
@@ -74,6 +76,7 @@ export interface ProjectedObject {
   hasExclusiveOwnership: boolean;
   /** True when `viewerAccount` has any `object_ownership` row (supervised or exclusive). */
   hasOwnershipAuthority: boolean;
+  affiliateLinks?: AffiliateLink[];
   seo?: ProjectedObjectSeo;
   /** Flat Photos-album list for sidebar carousel and description page (legacy `preview_gallery`). */
   previewGallery?: ProjectedGalleryPhoto[];

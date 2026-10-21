@@ -14,7 +14,7 @@ related:
 
 # Category objects (`GET /categories/objects`)
 
-**Back:** [Categories](categories.md) · **Related:** [object ref lists](object-ref-list-endpoints.md)
+**Back:** [Categories](categories.md) · **Related:** [object ref lists](object-ref-list-endpoints.md) · [affiliate links](affiliate-links.md)
 
 ## Purpose
 

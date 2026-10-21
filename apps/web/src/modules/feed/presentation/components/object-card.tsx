@@ -18,9 +18,11 @@ import { objectFields } from '../../application/dto/object-fields';
 import { getRatingDimensionNamesForObjectType } from '@/modules/discover/domain/discover-registry';
 import { AVATAR_PLACEHOLDER_SRC, ObjectThumbnail } from '@/shared/presentation';
 import { MapPinIcon } from '@/icons';
+import { AffiliateLinksRow } from '@/modules/object/presentation/components/affiliate-links-row';
 import { StarRating } from '@/modules/object/presentation/components/star-rating';
 import { AdministrativeHeartButton } from '@/modules/object/presentation/components/administrative-heart-button';
 import { objectPagePath } from '@/shared/routes/object-page-path';
+import { resolveAffiliateLinkVisuals } from '@/modules/object/domain/affiliate-link-visual';
 
 const THUMB_SIZE = 120;
 const MAP_SIDEBAR_THUMB_SIZE = 88;
@@ -246,6 +248,11 @@ export function ObjectCard({
     objectFields.aggregateRatingAspects(o),
   );
   const visibleRatingDims = mapSidebar || popup ? ratingDims.slice(0, 1) : ratingDims;
+  const showAffiliateRow =
+    !editorRow &&
+    !popup &&
+    !mapSidebar &&
+    resolveAffiliateLinkVisuals(o.affiliateLinks ?? []).length > 0;
 
   const [navPending, setNavPending] = useState(false);
   const navPendingCountRef = useRef(0);
@@ -422,6 +429,7 @@ export function ObjectCard({
               {displayText}
             </p>
           ) : null}
+          {showAffiliateRow ? <AffiliateLinksRow links={o.affiliateLinks ?? []} /> : null}
         </div>
         {trailing ? (
           <div className="flex shrink-0 flex-col items-end gap-2">{trailing}</div>

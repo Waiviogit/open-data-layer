@@ -69,5 +69,8 @@ export function projectedListItemToObjectView(item: ProjectedListItem): Projecte
     isFavorited: item.isFavorited ?? false,
     hasSupervisedOwnership: false,
     hasExclusiveOwnership: false,
+    ...(item.affiliateLinks && item.affiliateLinks.length > 0
+      ? { affiliateLinks: item.affiliateLinks }
+      : {}),
   };
 }

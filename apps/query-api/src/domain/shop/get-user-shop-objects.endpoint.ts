@@ -7,6 +7,7 @@ import {
   UserMetadataRepository,
   UserShopDeselectRepository,
 } from '../../repositories';
+import { AffiliateLinksEnricher, flattenAffiliateTargets } from '../affiliate';
 import { parseTagFilters } from '../discover/get-discover-objects.endpoint';
 import { ObjectProjectionService } from '../object-projection';
 import type { ProjectedObject } from '../object-projection/projected-object.types';
@@ -34,6 +35,7 @@ export class GetUserShopObjectsEndpoint {
     private readonly aggregatedObjectRepo: AggregatedObjectRepository,
     private readonly objectViewService: ObjectViewService,
     private readonly objectProjection: ObjectProjectionService,
+    private readonly affiliateLinks: AffiliateLinksEnricher,
   ) {}
 
   async execute(
@@ -42,6 +44,7 @@ export class GetUserShopObjectsEndpoint {
     locale: string,
     governanceObjectIdFromHeader: string | undefined,
     viewerAccount: string | undefined,
+    countryCode: string | null = null,
   ): Promise<ShopObjectsResponse | null> {
     const name = username.trim();
     if (name.length === 0) {
@@ -89,6 +92,12 @@ export class GetUserShopObjectsEndpoint {
       governanceObjectIdFromHeader,
       viewerAccount,
       rankVoteProjection,
+    });
+
+    await this.affiliateLinks.enrich(flattenAffiliateTargets(projected), {
+      countryCode,
+      personalAccount: name,
+      governanceObjectIdFromHeader,
     });
 
     return {

@@ -12,12 +12,16 @@ import {
   homeFeedBodySchema,
   type HomeFeedBody,
 } from '../domain/feed';
+import { postByKeyQuerySchema } from '../domain/feed/schemas/post-by-key-query.schema';
 import { postVotersQuerySchema } from '../domain/feed/schemas/post-voters.schema';
+import { CountryResolverService } from '../domain/geoip';
+import { ReqClientIp } from '../http/client-ip.decorator';
 import { ReqCurrency } from '../http/currency-query.decorator';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
 import { ReqLocale } from '../http/locale-header.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
 import { ZodQueryPipe, ZodBodyPipe } from '../pipes';
+import type { PostByKeyQuery } from '../domain/feed/schemas/post-by-key-query.schema';
 import type { PostVotersQuery } from '../domain/feed/schemas/post-voters.schema';
 
 @Controller({ path: 'posts', version: '1' })
@@ -27,6 +31,7 @@ export class PostsController {
     private readonly getPostDiscussion: GetPostDiscussionEndpoint,
     private readonly getPostVoters: GetPostVotersEndpoint,
     private readonly getHomeFeed: GetHomeFeedEndpoint,
+    private readonly countryResolver: CountryResolverService,
   ) {}
 
   @Post('feed')
@@ -52,6 +57,8 @@ export class PostsController {
     @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
     @ReqViewer() viewer: string | undefined,
     @ReqCurrency() currency: SupportedCurrency,
+    @Query(new ZodQueryPipe(postByKeyQuerySchema)) query: PostByKeyQuery,
+    @ReqClientIp() clientIp: string | null,
   ): Promise<SinglePostViewDto> {
     const result = await this.getPostByKey.execute(
       author,
@@ -60,6 +67,7 @@ export class PostsController {
       governanceObjectIdFromHeader,
       viewer,
       currency,
+      this.countryResolver.resolve(clientIp, query.country),
     );
     if (!result) {
       throw new NotFoundException(`Post not found: ${author}/${permlink}`);

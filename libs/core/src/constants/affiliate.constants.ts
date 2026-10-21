@@ -219,3 +219,60 @@ export const VALID_AFFILIATE_GEO = [
 ] as const;
 
 export type ValidAffiliateGeo = (typeof VALID_AFFILIATE_GEO)[number];
+
+export const AFFILIATE_CODE_SCOPE = {
+  PERSONAL: 'PERSONAL',
+  GOVERNANCE: 'GOVERNANCE',
+} as const;
+
+export const AFFILIATE_CODE_SCOPES = [
+  AFFILIATE_CODE_SCOPE.PERSONAL,
+  AFFILIATE_CODE_SCOPE.GOVERNANCE,
+] as const;
+
+export type AffiliateCodeScope = (typeof AFFILIATE_CODE_SCOPES)[number];
+
+export const AFFILIATE_GEO_GLOBAL = 'GLOBAL';
+
+export const AFFILIATE_NULL_PRODUCT_IDS = ['none', 'null'] as const;
+
+const AFFILIATE_GEOGRAPHY = {
+  ASIA: [
+    'AF', 'AM', 'AZ', 'BH', 'BD', 'BT', 'BN', 'KH', 'CN', 'GE', 'IN', 'ID',
+    'IR', 'IQ', 'IL', 'JP', 'JO', 'KZ', 'KW', 'KG', 'LA', 'LB', 'MY', 'MV',
+    'MN', 'MM', 'NP', 'KP', 'OM', 'PK', 'PS', 'PH', 'QA', 'SA', 'SG', 'KR',
+    'LK', 'SY', 'TW', 'TJ', 'TH', 'TR', 'TM', 'AE', 'UZ', 'VN', 'YE',
+  ],
+  AFRICA: [
+    'DZ', 'AO', 'BJ', 'BW', 'BF', 'BI', 'CM', 'CV', 'CF', 'TD', 'KM', 'CG',
+    'CD', 'CI', 'DJ', 'EG', 'GQ', 'ER', 'ET', 'GA', 'GM', 'GH', 'GN', 'GW',
+    'KE', 'LS', 'LR', 'LY', 'MG', 'MW', 'ML', 'MR', 'MU', 'YT', 'MA', 'MZ',
+    'NA', 'NE', 'NG', 'RE', 'RW', 'ST', 'SN', 'SC', 'SL', 'SO', 'ZA', 'SS',
+    'SD', 'SZ', 'TZ', 'TG', 'TN', 'UG', 'EH', 'ZM', 'ZW',
+  ],
+  'NORTH AMERICA': [
+    'AG', 'BS', 'BB', 'BZ', 'CA', 'CR', 'CU', 'DM', 'DO', 'SV', 'GD', 'GT',
+    'HT', 'HN', 'JM', 'MX', 'NI', 'PA', 'KN', 'LC', 'VC', 'PM', 'TT', 'US',
+  ],
+  'SOUTH AMERICA': [
+    'AR', 'BO', 'BR', 'CL', 'CO', 'EC', 'FK', 'GF', 'GY', 'PY', 'PE', 'SR',
+    'UY', 'VE',
+  ],
+  ANTARCTICA: ['AQ'],
+  EUROPE: [
+    'AL', 'AD', 'AT', 'BY', 'BE', 'BA', 'BG', 'HR', 'CZ', 'CY', 'DK', 'EE',
+    'FI', 'FR', 'DE', 'GI', 'GR', 'HU', 'IS', 'IE', 'IT', 'XK', 'LV', 'LI',
+    'LT', 'LU', 'MT', 'MD', 'MC', 'ME', 'NL', 'MK', 'NO', 'PL', 'PT', 'RO',
+    'RU', 'SM', 'RS', 'SK', 'SI', 'ES', 'SE', 'CH', 'UA', 'GB', 'VA',
+  ],
+  AUSTRALIA: [
+    'AU', 'FJ', 'KI', 'MH', 'FM', 'NR', 'NZ', 'NU', 'PW', 'PG', 'WS', 'SB',
+    'TO', 'TV', 'VU',
+  ],
+} as const;
+
+export const COUNTRY_TO_CONTINENT: Readonly<Record<string, string>> = Object.fromEntries(
+  Object.entries(AFFILIATE_GEOGRAPHY).flatMap(([continent, countries]) =>
+    countries.map((country) => [country, continent]),
+  ),
+);

@@ -143,4 +143,20 @@ describe('mergeLeftRailBlocksForEditMode', () => {
       expect(authors.headingLabel).toBe('Authors');
     }
   });
+
+  it('does not create an affiliateLinks edit slot', () => {
+    const merged = mergeLeftRailBlocksForEditMode(
+      [
+        {
+          kind: 'affiliateLinks',
+          headingLabel: 'Affiliate Link',
+          items: [{ href: 'https://www.amazon.com/dp/B000', image: '', type: 'amazon' }],
+        },
+      ],
+      productSupported,
+      'product',
+    );
+
+    expect(merged.some((block) => block.kind === 'affiliateLinks')).toBe(false);
+  });
 });

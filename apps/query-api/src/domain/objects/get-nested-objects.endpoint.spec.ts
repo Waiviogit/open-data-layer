@@ -53,6 +53,7 @@ function createEndpoint(viewService: ObjectViewService) {
     objectFavoriteRepo,
     listItemsRecursiveCountService,
     config,
+    { enrich: jest.fn() } as never,
   );
 }
 

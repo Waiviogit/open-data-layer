@@ -315,6 +315,42 @@ describe('object-projected-fields', () => {
     });
   });
 
+  it('projectedListItems reads root-level affiliateLinks from a ref summary', () => {
+    const v: ProjectedObjectView = {
+      object_id: 'parent-list',
+      object_type: 'list',
+      semantic_type: null,
+      weight: null,
+      fields: {
+        listItem: [
+          {
+            object_id: 'product-1',
+            object_type: 'product',
+            fields: { name: 'Widget' },
+            affiliateLinks: [
+              {
+                link: 'https://www.amazon.com/dp/B000',
+                image: 'https://cdn.example/a.png',
+                type: 'amazon',
+              },
+            ],
+          },
+        ],
+      },
+      isFavorited: false,
+      hasSupervisedOwnership: false,
+      hasExclusiveOwnership: false,
+    };
+
+    expect(projectedListItems(v)[0]?.affiliateLinks).toEqual([
+      {
+        link: 'https://www.amazon.com/dp/B000',
+        image: 'https://cdn.example/a.png',
+        type: 'amazon',
+      },
+    ]);
+  });
+
   it('falls back to listItem refs when menuItem updates are absent', () => {
     const v: ProjectedObjectView = {
       object_id: 'ylr-waivio',

@@ -2,6 +2,7 @@ import 'server-only';
 
 import { z } from 'zod';
 
+import { affiliateLinkViewSchema } from '@/modules/feed/application/dto/feed-story.dto';
 import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
 import { queryApiFetch } from '@/modules/user-profile/infrastructure/clients/query-api.client';
 
@@ -18,6 +19,7 @@ const refSummarySchema = z.object({
   fields: z.record(z.string(), z.unknown()),
   weight: z.coerce.number().nullable().optional(),
   isFavorited: z.boolean().optional(),
+  affiliateLinks: z.array(affiliateLinkViewSchema).optional(),
 });
 
 const categoryObjectsResponseSchema = z.object({

@@ -32,6 +32,8 @@ import {
   GetUserNotificationSettingsEndpoint,
   type UserNotificationSettingsView,
 } from '../domain/users';
+import { CountryResolverService } from '../domain/geoip';
+import { ReqClientIp } from '../http/client-ip.decorator';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
 import { ReqLocale } from '../http/locale-header.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
@@ -131,6 +133,7 @@ export class UsersController {
     private readonly getUserNotificationSettings: GetUserNotificationSettingsEndpoint,
     private readonly getMemoPublicKey: GetMemoPublicKeyEndpoint,
     private readonly getFollowedObjectsMessages: GetFollowedObjectsMessagesEndpoint,
+    private readonly countryResolver: CountryResolverService,
   ) {}
 
   @Get(':name/categories')
@@ -156,6 +159,7 @@ export class UsersController {
     @ReqLocale() locale: string,
     @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
     @ReqViewer() viewer: string | undefined,
+    @ReqClientIp() clientIp: string | null,
   ): Promise<ShopObjectsResponse | null> {
     return this.getUserShopObjects.execute(
       name,
@@ -163,6 +167,7 @@ export class UsersController {
       locale,
       governanceObjectIdFromHeader,
       viewer,
+      this.countryResolver.resolve(clientIp, query.country),
     );
   }
 
@@ -173,6 +178,7 @@ export class UsersController {
     @ReqLocale() locale: string,
     @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
     @ReqViewer() viewer: string | undefined,
+    @ReqClientIp() clientIp: string | null,
   ): Promise<ShopSectionsResponse | null> {
     return this.getUserShopSections.execute(
       name,
@@ -180,6 +186,7 @@ export class UsersController {
       locale,
       governanceObjectIdFromHeader,
       viewer,
+      this.countryResolver.resolve(clientIp, query.country),
     );
   }
 
@@ -304,6 +311,7 @@ export class UsersController {
     @ReqLocale() locale: string,
     @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
     @ReqViewer() viewer: string | undefined,
+    @ReqClientIp() clientIp: string | null,
   ): Promise<PaginatedProjectedObjects | null> {
     return this.getUserFavorites.execute(
       name,
@@ -311,6 +319,7 @@ export class UsersController {
       locale,
       governanceObjectIdFromHeader,
       viewer,
+      this.countryResolver.resolve(clientIp, query.country),
     );
   }
 

@@ -3,7 +3,7 @@
  *
  * Default types: menu cluster first (when present), then {@link ABOUT_SECTION_BLOCK_ORDER}.
  * Product-like types (`book`, `product`, `service`): parent/publisher, then
- * {@link NAVIGATE_SECTION_BLOCK_ORDER} (gallery → price → options), then menu, then about.
+ * {@link NAVIGATE_SECTION_BLOCK_ORDER} (gallery → price → affiliate → options), then menu, then about.
  * `book`: `author` immediately after header (legacy `By` authors); reading metadata stays after `websites`.
  *
  * @see tmp/waivio-frontend-legacy/src/client/app/Sidebar/ObjectInfo/ObjectInfo.js
@@ -70,6 +70,7 @@ export const NAVIGATE_SECTION_BLOCK_ORDER = [
   'gallery',
   'compareAtPrice',
   'price',
+  'affiliateLinks',
   'saleEvent',
   'options',
 ] as const;
@@ -97,6 +98,7 @@ export const ABOUT_SECTION_BLOCK_ORDER = [
   'tags',
   'gallery',
   'price',
+  'affiliateLinks',
   'options',
   'compareAtPrice',
   'saleEvent',
@@ -155,6 +157,7 @@ export const RECIPE_ABOUT_SECTION_BLOCK_ORDER = [
   'ingredients',
   'servings',
   'gallery',
+  'affiliateLinks',
   'featureList',
   'identifier',
 ] as const;

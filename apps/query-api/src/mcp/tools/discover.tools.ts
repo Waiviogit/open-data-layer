@@ -10,6 +10,7 @@ import type { McpToolDeps } from '../mcp-tool.deps';
 import {
   jsonToolResult,
   pickMcpContext,
+  resolveMcpCountry,
   withMcpLocaleContext,
 } from '../mcp-tool.helpers';
 
@@ -35,6 +36,7 @@ export function registerDiscoverTools(server: McpServer, deps: McpToolDeps): voi
         locale: ctx.locale,
         viewerAccount: ctx.viewerAccount,
         governanceObjectIdFromHeader: ctx.governanceObjectIdFromHeader,
+        countryCode: resolveMcpCountry(deps, args.country),
       });
       return jsonToolResult(result);
     },

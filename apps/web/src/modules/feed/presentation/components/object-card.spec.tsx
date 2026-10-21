@@ -1,14 +1,33 @@
 /**
  * @jest-environment jsdom
  */
-import type { ImgHTMLAttributes, ReactNode } from 'react';
-import { render, screen } from '@testing-library/react';
+import type { AnchorHTMLAttributes, ImgHTMLAttributes, ReactNode } from 'react';
+import { fireEvent, render, screen } from '@testing-library/react';
 
 import type { ProjectedObjectView } from '../../application/dto/object-fields';
+
+jest.mock('@/i18n/providers/i18n-provider', () => ({
+  useI18n: () => ({
+    t: (key: string) => (key === 'Affiliate_Link' ? 'Affiliate Link' : key),
+    locale: 'en-US',
+  }),
+}));
 
 jest.mock('@/shared/presentation', () => ({
   AVATAR_PLACEHOLDER_SRC: '/avatar-placeholder.png',
   shouldUnoptimizeRemoteImage: () => false,
+  HydrationSafeAnchor: ({
+    href,
+    children,
+    target,
+    rel,
+    onClick,
+    className,
+  }: AnchorHTMLAttributes<HTMLAnchorElement>) => (
+    <a href={href} target={target} rel={rel} onClick={onClick} className={className}>
+      {children}
+    </a>
+  ),
 }));
 
 jest.mock('./object-page-link', () => ({
@@ -394,5 +413,83 @@ describe('ObjectCard price and brand/parent', () => {
     expect(screen.getByText('Italian')).toBeInTheDocument();
     // Only one instance of Restaurant (from typeLabel, not duplicated in categoryLabels)
     expect(screen.getAllByText('Restaurant')).toHaveLength(1);
+  });
+});
+
+describe('ObjectCard affiliate links', () => {
+  const affiliateObject: ProjectedObjectView = {
+    ...sampleObject,
+    affiliateLinks: [
+      {
+        link: 'https://www.amazon.com/dp/B000',
+        image: 'https://cdn.example/a.png',
+        type: 'amazon',
+        affiliateCode: 'CODE::100',
+      },
+    ],
+  };
+
+  it('shows the affiliate row on the default layout', () => {
+    render(
+      <ul>
+        <ObjectCard object={affiliateObject} />
+      </ul>,
+    );
+
+    expect(screen.getByText('Affiliate Link:')).toBeInTheDocument();
+    expect(document.querySelector('img[src="https://cdn.example/a.png"]')).not.toBeNull();
+    expect(screen.queryByText('CODE::100')).toBeNull();
+  });
+
+  it('hides the row when affiliateLinks is empty or absent', () => {
+    const { rerender } = render(
+      <ul>
+        <ObjectCard object={sampleObject} />
+      </ul>,
+    );
+    expect(screen.queryByText('Affiliate Link:')).toBeNull();
+
+    rerender(
+      <ul>
+        <ObjectCard object={{ ...sampleObject, affiliateLinks: [] }} />
+      </ul>,
+    );
+    expect(screen.queryByText('Affiliate Link:')).toBeNull();
+  });
+
+  it.each(['editorRow', 'popup', 'mapSidebar'] as const)(
+    'hides the row on compact layout %s',
+    (layout) => {
+      render(<ObjectCard object={affiliateObject} layout={layout} as="div" />);
+      expect(screen.queryByText('Affiliate Link:')).toBeNull();
+    },
+  );
+
+  it('hides the row on popupNameOnly', () => {
+    render(
+      <ObjectCard object={affiliateObject} layout="popup" popupNameOnly as="div" />,
+    );
+    expect(screen.queryByText('Affiliate Link:')).toBeNull();
+  });
+
+  it('shows the row on catalog layout', () => {
+    render(<ObjectCard object={affiliateObject} layout="catalog" as="div" />);
+    expect(screen.getByText('Affiliate Link:')).toBeInTheDocument();
+    expect(document.querySelector('img[src="https://cdn.example/a.png"]')).not.toBeNull();
+  });
+
+  it('does not fire card navigation or analytics on merchant click', () => {
+    const onNavigate = jest.fn();
+    const gtag = jest.fn();
+    (globalThis as { gtag?: jest.Mock }).gtag = gtag;
+
+    render(<ObjectCard object={affiliateObject} onNavigate={onNavigate} as="div" />);
+    const merchant = document.querySelector('a[href="https://www.amazon.com/dp/B000"]');
+    expect(merchant).not.toBeNull();
+    fireEvent.click(merchant as HTMLAnchorElement);
+
+    expect(onNavigate).not.toHaveBeenCalled();
+    expect(gtag).not.toHaveBeenCalled();
+    delete (globalThis as { gtag?: jest.Mock }).gtag;
   });
 });

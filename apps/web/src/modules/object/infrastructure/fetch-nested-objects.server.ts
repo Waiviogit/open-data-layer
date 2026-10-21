@@ -40,6 +40,7 @@ export async function fetchNestedObjectsBatch(
   const raw = await queryApiFetch<unknown>(RESOLVE_NESTED_PATH, {
     method: 'POST',
     headers,
+    forwardClientIp: true,
     body: JSON.stringify({
       ids: uniqueIds,
       ...(init.updateTypes?.length ? { update_types: [...init.updateTypes] } : {}),

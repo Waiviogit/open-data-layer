@@ -1108,3 +1108,145 @@ describe('projectedObjectWithCountsToPageModel url field', () => {
     expect(urlBlock && urlBlock.kind === 'url' ? urlBlock.href : null).toBe('https://peakd.com');
   });
 });
+
+describe('projectedObjectWithCountsToPageModel affiliateLinks', () => {
+  const counts = {
+    followers_count: 0,
+    posts_count: 0,
+    updates_count: 0,
+    favorited_by_count: 0,
+    supervised_count: 0,
+    exclusive_count: 0,
+    is_following: false,
+    viewer_bell: false,
+    update_type_counts: {},
+  };
+
+  const amazonLink = {
+    link: 'https://www.amazon.com/dp/B000',
+    image: 'https://cdn.example/a.png',
+    type: 'amazon',
+  };
+
+  it('places the affiliate block after price and before options on a product', () => {
+    const model = projectedObjectWithCountsToPageModel(
+      {
+        object_id: 'prod-1',
+        object_type: 'product',
+        semantic_type: 'schema:Product',
+        weight: 1,
+        fields: { name: 'Widget', price: '$12' },
+        affiliateLinks: [amazonLink],
+        previewGallery: [
+          { url: 'https://example.com/a.jpg', rankScore: 100, isAvatar: false },
+        ],
+        galleryAlbums: [],
+        ...counts,
+      },
+      {
+        object_id: 'prod-1',
+        options: {
+          Color: [
+            {
+              object_id: 'prod-1',
+              category: 'Color',
+              value: 'Red',
+              position: 0,
+              image: null,
+              price: null,
+              imageUrl: null,
+            },
+          ],
+        },
+      },
+    );
+
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    expect(kinds.indexOf('price')).toBeGreaterThanOrEqual(0);
+    expect(kinds.indexOf('affiliateLinks')).toBe(kinds.indexOf('price') + 1);
+    expect(kinds.indexOf('options')).toBe(kinds.indexOf('affiliateLinks') + 1);
+
+    const block = model.leftRailBlocks.find((item) => item.kind === 'affiliateLinks');
+    expect(block).toMatchObject({
+      kind: 'affiliateLinks',
+      items: [
+        {
+          href: 'https://www.amazon.com/dp/B000',
+          image: 'https://cdn.example/a.png',
+          type: 'amazon',
+        },
+      ],
+    });
+  });
+
+  it('omits the affiliate block when links are empty', () => {
+    const model = projectedObjectWithCountsToPageModel({
+      object_id: 'prod-1',
+      object_type: 'product',
+      semantic_type: 'schema:Product',
+      weight: 1,
+      fields: { name: 'Widget', price: '$12' },
+      previewGallery: [],
+      galleryAlbums: [],
+      ...counts,
+    });
+
+    expect(model.leftRailBlocks.some((block) => block.kind === 'affiliateLinks')).toBe(
+      false,
+    );
+  });
+
+  it('places the affiliate block after gallery on a recipe', () => {
+    const model = projectedObjectWithCountsToPageModel({
+      object_id: 'recipe-1',
+      object_type: 'recipe',
+      semantic_type: 'schema:Recipe',
+      weight: 1,
+      fields: { name: 'Kimchi' },
+      affiliateLinks: [amazonLink],
+      previewGallery: [
+        { url: 'https://example.com/a.jpg', rankScore: 100, isAvatar: false },
+      ],
+      galleryAlbums: [],
+      ...counts,
+    });
+
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    expect(kinds.indexOf('affiliateLinks')).toBe(kinds.indexOf('gallery') + 1);
+  });
+
+  it('places the affiliate block after price on a generic about stack', () => {
+    const model = projectedObjectWithCountsToPageModel({
+      object_id: 'place-1',
+      object_type: 'restaurant',
+      semantic_type: 'schema:Restaurant',
+      weight: 1,
+      fields: { name: 'Cafe', price: '$10' },
+      affiliateLinks: [amazonLink],
+      previewGallery: [],
+      galleryAlbums: [],
+      ...counts,
+    });
+
+    const kinds = model.leftRailBlocks.map((block) => block.kind);
+    expect(kinds.indexOf('affiliateLinks')).toBe(kinds.indexOf('price') + 1);
+  });
+
+  it('omits the affiliate block when every item is unrenderable', () => {
+    const model = projectedObjectWithCountsToPageModel({
+      object_id: 'prod-1',
+      object_type: 'product',
+      semantic_type: 'schema:Product',
+      weight: 1,
+      fields: { name: 'Widget', price: '$12' },
+      affiliateLinks: [{ link: 'https://unknown.example/p/1', image: '', type: 'other' }],
+      previewGallery: [],
+      galleryAlbums: [],
+      ...counts,
+    });
+
+    expect(model.leftRailBlocks.some((block) => block.kind === 'affiliateLinks')).toBe(
+      false,
+    );
+  });
+});

@@ -83,6 +83,7 @@ describe('resolveEditModeLeftRailBlockOrder', () => {
     expect(order.indexOf('category')).toBeLessThan(order.indexOf('rating'));
     expect(order.indexOf('rating')).toBeLessThan(order.indexOf('ingredients'));
     expect(order.indexOf('ingredients')).toBeLessThan(order.indexOf('servings'));
+    expect(order.indexOf('gallery')).toBeLessThan(order.indexOf('affiliateLinks'));
   });
 
   it('uses grouped recipe edit order with commerce before recipe fields', () => {
@@ -99,6 +100,8 @@ describe('resolveEditModeLeftRailBlockOrder', () => {
     const order = resolveAboutSectionBlockOrder('restaurant');
     expect(order.indexOf('description')).toBeLessThan(order.indexOf('category'));
     expect(order.indexOf('category')).toBeLessThan(order.indexOf('rating'));
+    expect(order.indexOf('price')).toBeLessThan(order.indexOf('affiliateLinks'));
+    expect(order.indexOf('affiliateLinks')).toBeLessThan(order.indexOf('options'));
     expect(order.indexOf('url')).toBeGreaterThan(order.indexOf('geo'));
     expect(order.indexOf('url')).toBeLessThan(order.indexOf('websites'));
   });

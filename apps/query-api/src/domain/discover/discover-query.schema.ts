@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { countryQueryField } from '../../http/country-query.schema';
 import {
   DISCOVER_OBJECTS_DEFAULT_LIMIT,
   DISCOVER_OBJECTS_MAX_LIMIT,
@@ -92,6 +93,7 @@ export const discoverObjectsQuerySchema = z.object({
     .max(DISCOVER_OBJECTS_MAX_LIMIT)
     .default(DISCOVER_OBJECTS_DEFAULT_LIMIT)
     .describe('Page size'),
+  country: countryQueryField,
 });
 export type DiscoverObjectsQuery = z.infer<typeof discoverObjectsQuerySchema>;
 

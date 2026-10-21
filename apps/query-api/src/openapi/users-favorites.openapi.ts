@@ -81,6 +81,9 @@ registry.registerPath({
         .max(50)
         .optional()
         .openapi({ description: 'Page size.' }),
+      country: z.string().trim().max(32).optional().openapi({
+        description: 'ISO 3166-1 alpha-2 or affiliate geo token; overrides GeoIP when valid.',
+      }),
     }),
   },
   responses: {

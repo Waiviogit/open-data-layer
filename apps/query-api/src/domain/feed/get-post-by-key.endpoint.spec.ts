@@ -137,6 +137,7 @@ describe('GetPostByKeyEndpoint', () => {
       objectProjection as unknown as ObjectProjectionService,
       hiveClient as unknown as HiveClient,
       createPassthroughPostRewardServiceMock() as unknown as PostRewardService,
+      { enrich: jest.fn() } as never,
     );
   });
 

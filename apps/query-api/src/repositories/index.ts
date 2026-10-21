@@ -64,3 +64,4 @@ export { ProfileFeedReadCursorRepository } from './profile-feed-read-cursor.repo
 export type { ProfileFeedReadCursors } from './profile-feed-read-cursor.repository';
 export { PostRepliesRepository } from './post-replies.repository';
 export { ThreadRepliesRepository } from './thread-replies.repository';
+export { AffiliateObjectsRepository } from './affiliate-objects.repository';

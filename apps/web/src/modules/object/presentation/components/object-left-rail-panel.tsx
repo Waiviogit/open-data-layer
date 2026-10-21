@@ -36,6 +36,7 @@ import {
   OptimisticNavLink,
 } from '@/shared/presentation';
 
+import { AffiliateLinksRow } from './affiliate-links-row';
 import {
   objectStatusClosedLocationBodyKey,
   objectStatusLabelKey,
@@ -682,6 +683,18 @@ export function ObjectLeftRailPanel({
                     {hoveredOption?.price?.trim() || block.text}
                   </span>
                 </div>
+              </div>
+            );
+          case 'affiliateLinks':
+            return (
+              <div key={`affiliate-${index}`} className={LEFT_RAIL_SECTION_CLASS}>
+                <AffiliateLinksRow
+                  links={block.items.map((item) => ({
+                    link: item.href,
+                    image: item.image,
+                    type: item.type,
+                  }))}
+                />
               </div>
             );
           case 'options':

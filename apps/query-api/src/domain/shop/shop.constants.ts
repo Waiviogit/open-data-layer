@@ -10,6 +10,7 @@ export const SHOP_CARD_UPDATE_TYPES = [
   'aggregateRating',
   'title',
   'address',
+  'identifier',
 ] as const;
 
 /** Sample objects per category row in sections mode (fixed; not the section page size). */

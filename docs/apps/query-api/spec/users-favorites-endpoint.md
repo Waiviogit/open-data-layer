@@ -14,7 +14,7 @@ related:
 
 # User favorites endpoints
 
-**Back:** [query-api overview](overview.md)
+**Back:** [query-api overview](overview.md) · **Affiliate:** [affiliate-links.md](affiliate-links.md)
 
 ## Purpose
 

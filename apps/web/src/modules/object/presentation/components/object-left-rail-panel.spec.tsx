@@ -10,6 +10,7 @@ jest.mock('@/i18n/providers/i18n-provider', () => ({
         object_status_permanently_closed: 'Permanently closed',
         object_status_closed_location_body: 'This location is no longer operating.',
         object_status_suggest_correction: 'Suggest a correction',
+        Affiliate_Link: 'Affiliate Link',
         object_edit_add_update: 'Add update',
         object_edit_group_header: 'HEADER',
         object_edit_group_details: 'DETAILS',
@@ -91,10 +92,14 @@ jest.mock('@/shared/presentation', () => ({
   HydrationSafeAnchor: ({
     href,
     children,
-  }: {
-    href: string;
-    children: React.ReactNode;
-  }) => <a href={href}>{children}</a>,
+    target,
+    rel,
+    onClick,
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+    <a href={href} target={target} rel={rel} onClick={onClick}>
+      {children}
+    </a>
+  ),
 }));
 
 import { ObjectLeftRailPanel } from './object-left-rail-panel';
@@ -256,5 +261,34 @@ describe('ObjectLeftRailPanel description inline expand/collapse', () => {
     // Collapsed state again
     expect(screen.queryByText(longDescription)).toBeNull();
     expect(screen.getByRole('button', { name: 'Show more' })).toBeTruthy();
+  });
+});
+
+describe('ObjectLeftRailPanel affiliateLinks', () => {
+  it('renders the merchant row without an edit plus', () => {
+    render(
+      <ObjectLeftRailPanel
+        blocks={[
+          { kind: 'price', headingLabel: 'Price', text: '$12' },
+          {
+            kind: 'affiliateLinks',
+            headingLabel: 'Affiliate Link',
+            items: [
+              {
+                href: 'https://www.amazon.com/dp/B000',
+                image: 'https://cdn.example/a.png',
+                type: 'amazon',
+              },
+            ],
+          },
+        ]}
+        objectTypeKey="product"
+        objectId="prod-1"
+      />,
+    );
+
+    expect(screen.getByText('Affiliate Link:')).toBeInTheDocument();
+    expect(document.querySelector('img[src="https://cdn.example/a.png"]')).not.toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add update' })).toBeNull();
   });
 });

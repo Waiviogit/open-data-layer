@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { countryQueryField } from '../../http/country-query.schema';
 
 const MAX_PAGE = 50;
 const DEFAULT_PAGE = 20;
@@ -24,6 +25,7 @@ export const userFavoritesQuerySchema = z.object({
     .optional()
     .default(DEFAULT_PAGE)
     .describe('Page size'),
+  country: countryQueryField,
 });
 
 export type UserFavoritesQuery = z.infer<typeof userFavoritesQuerySchema>;

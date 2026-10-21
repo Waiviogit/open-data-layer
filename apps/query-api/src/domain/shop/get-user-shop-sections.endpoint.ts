@@ -8,6 +8,7 @@ import {
   UserMetadataRepository,
   UserShopDeselectRepository,
 } from '../../repositories';
+import { AffiliateLinksEnricher, flattenAffiliateTargets } from '../affiliate';
 import { buildUserCategoriesResponse } from '../categories/build-user-categories-response';
 import type { UserCategoriesQuery } from '../categories/categories-query.schema';
 import { parseTagFilters } from '../discover/get-discover-objects.endpoint';
@@ -46,6 +47,7 @@ export class GetUserShopSectionsEndpoint {
     private readonly aggregatedObjectRepo: AggregatedObjectRepository,
     private readonly objectViewService: ObjectViewService,
     private readonly objectProjection: ObjectProjectionService,
+    private readonly affiliateLinks: AffiliateLinksEnricher,
   ) {}
 
   async execute(
@@ -54,6 +56,7 @@ export class GetUserShopSectionsEndpoint {
     locale: string,
     governanceObjectIdFromHeader: string | undefined,
     viewerAccount: string | undefined,
+    countryCode: string | null = null,
   ): Promise<ShopSectionsResponse | null> {
     const name = username.trim();
     if (name.length === 0) {
@@ -184,6 +187,15 @@ export class GetUserShopSectionsEndpoint {
 
     const lastSection = pageItems[pageItems.length - 1];
     const nextCursor = hasMore && lastSection ? lastSection.name : null;
+
+    await this.affiliateLinks.enrich(
+      flattenAffiliateTargets(sections.flatMap((section) => section.items)),
+      {
+        countryCode,
+        personalAccount: name,
+        governanceObjectIdFromHeader,
+      },
+    );
 
     return { sections, cursor: nextCursor, hasMore };
   }

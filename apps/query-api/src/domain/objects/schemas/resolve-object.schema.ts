@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { countryQueryField } from '../../../http/country-query.schema';
 
 export const resolveObjectBodySchema = z.object({
   object_id: z
@@ -13,6 +14,7 @@ export const resolveObjectBodySchema = z.object({
     .boolean()
     .optional()
     .describe('Include rejected updates in projection when true'),
+  country: countryQueryField,
 });
 
 export type ResolveObjectBody = z.infer<typeof resolveObjectBodySchema>;

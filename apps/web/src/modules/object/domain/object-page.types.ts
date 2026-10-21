@@ -193,6 +193,11 @@ export type ObjectLeftRailBlock =
       text: string;
     }
   | {
+      kind: 'affiliateLinks';
+      headingLabel: string;
+      items: { href: string; image: string; type: string }[];
+    }
+  | {
       kind: 'options';
       headingLabel: string;
       currentObjectId: string;

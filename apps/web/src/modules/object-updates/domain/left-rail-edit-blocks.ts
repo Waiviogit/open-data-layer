@@ -53,6 +53,8 @@ function createEmptyBlock(kind: ObjectLeftRailBlockKind): ObjectLeftRailBlock {
       return { kind: 'gallery', headingLabel, photos: [] };
     case 'price':
       return { kind: 'price', headingLabel, text: '' };
+    case 'affiliateLinks':
+      return { kind: 'affiliateLinks', headingLabel, items: [] };
     case 'options':
       return { kind: 'options', headingLabel, currentObjectId: '', categories: [] };
     case 'workHours':

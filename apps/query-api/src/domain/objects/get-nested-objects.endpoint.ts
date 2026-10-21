@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import { AggregatedObjectRepository, ObjectFavoriteRepository } from '../../repositories';
+import { AffiliateLinksEnricher, flattenAffiliateTargets } from '../affiliate';
 import { GovernanceResolverService } from '../governance';
 import { expandObjectRefs } from '../object-projection/object-ref-expansion';
 import { ListItemsRecursiveCountService } from '../object-projection/list-items-recursive-count.service';
@@ -22,6 +23,7 @@ export interface GetNestedObjectsInput {
   locale: string;
   governanceObjectIdFromHeader?: string;
   viewerAccount?: string;
+  countryCode?: string | null;
 }
 
 @Injectable()
@@ -33,6 +35,7 @@ export class GetNestedObjectsEndpoint {
     private readonly objectFavoriteRepo: ObjectFavoriteRepository,
     private readonly listItemsRecursiveCountService: ListItemsRecursiveCountService,
     private readonly config: ConfigService,
+    private readonly affiliateLinks: AffiliateLinksEnricher,
   ) {}
 
   async execute(input: GetNestedObjectsInput): Promise<ResolveNestedObjectsResponse> {
@@ -108,6 +111,12 @@ export class GetNestedObjectsEndpoint {
         items.push(entry);
       }
     }
+
+    await this.affiliateLinks.enrich(flattenAffiliateTargets(items), {
+      countryCode: input.countryCode ?? null,
+      governanceObjectIdFromHeader: input.governanceObjectIdFromHeader,
+      governance,
+    });
 
     return { items };
   }

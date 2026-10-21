@@ -1,3 +1,6 @@
+/** Redis TTL for parsed affiliate configs (seconds). Legacy: 30 minutes. */
+export const AFFILIATE_CODES_CACHE_TTL_SEC = 1800;
+
 /** In-memory TTL for merged governance snapshots (seconds). */
 export const GOVERNANCE_SNAPSHOT_CACHE_TTL_SEC = 30;
 

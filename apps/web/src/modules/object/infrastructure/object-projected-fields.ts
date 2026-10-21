@@ -1,6 +1,7 @@
 import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
 import { safeHttpUrl } from '@/shared/domain/safe-http-url';
 
+import { parseAffiliateLinks } from '../domain/affiliate-link-visual';
 import { isOptionsObjectType } from '../domain/object-left-rail-order';
 import { resolveSocialLinkHref } from '../domain/resolve-social-link-href';
 
@@ -368,6 +369,7 @@ function refSummaryToListItem(row: Record<string, unknown>): ProjectedListItem |
   const weight = toFiniteNumber(row['weight']);
   const addedAtUnix = toFiniteNumber(row['addedAtUnix']);
   const listItemUpdateId = readString(row['update_id']) ?? undefined;
+  const affiliateLinks = parseAffiliateLinks(row['affiliateLinks']);
   return {
     objectId: object_id,
     objectType: object_type,
@@ -387,6 +389,7 @@ function refSummaryToListItem(row: Record<string, unknown>): ProjectedListItem |
     ...(tagCategoryLabels.length > 0 ? { tagCategoryLabels } : {}),
     ...(aggregateRatingAspects.length > 0 ? { aggregateRatingAspects } : {}),
     ...(isFavorited ? { isFavorited: true } : {}),
+    ...(affiliateLinks.length > 0 ? { affiliateLinks } : {}),
   };
 }
 

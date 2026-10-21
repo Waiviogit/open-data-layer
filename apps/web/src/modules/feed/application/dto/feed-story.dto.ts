@@ -4,6 +4,17 @@ import { FEED_TABS } from '../../domain/feed-tab';
 
 import { postRewardSchema } from './post-reward.dto';
 
+/** Query-api computed merchant affiliate URL on a projected object / ref. */
+export const affiliateLinkViewSchema = z.object({
+  link: z.string(),
+  image: z.string(),
+  affiliateCode: z.string().optional(),
+  type: z.string(),
+  objectId: z.string().optional(),
+});
+
+export type AffiliateLinkView = z.infer<typeof affiliateLinkViewSchema>;
+
 /** Matches query-api `ProjectedObject` JSON shape. */
 export const projectedObjectViewSchema = z.object({
   object_id: z.string(),
@@ -16,6 +27,7 @@ export const projectedObjectViewSchema = z.object({
   hasSupervisedOwnership: z.boolean().optional().default(false),
   hasExclusiveOwnership: z.boolean().optional().default(false),
   seo: z.record(z.string(), z.unknown()).optional(),
+  affiliateLinks: z.array(affiliateLinkViewSchema).optional(),
   previewGallery: z
     .array(
       z.object({

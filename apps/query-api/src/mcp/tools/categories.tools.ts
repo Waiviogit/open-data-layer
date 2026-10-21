@@ -2,7 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { categoryObjectsQuerySchema } from '../../domain/categories/category-objects-query.schema';
 import { catalogDescription } from '../mcp-tool-catalog';
 import type { McpToolDeps } from '../mcp-tool.deps';
-import { jsonToolResult, pickMcpContext, withMcpLocaleContext } from '../mcp-tool.helpers';
+import { jsonToolResult, pickMcpContext, resolveMcpCountry, withMcpLocaleContext } from '../mcp-tool.helpers';
 
 export function registerCategoryTools(server: McpServer, deps: McpToolDeps): void {
   server.registerTool(
@@ -23,6 +23,7 @@ export function registerCategoryTools(server: McpServer, deps: McpToolDeps): voi
         locale: ctx.locale,
         viewerAccount: ctx.viewerAccount,
         governanceObjectIdFromHeader: ctx.governanceObjectIdFromHeader,
+        countryCode: resolveMcpCountry(deps, args.country),
       });
       return jsonToolResult(result);
     },

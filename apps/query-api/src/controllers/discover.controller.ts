@@ -13,6 +13,8 @@ import {
   type DiscoverUsersQuery,
   type DiscoverUsersResponseDto,
 } from '../domain/discover';
+import { CountryResolverService } from '../domain/geoip';
+import { ReqClientIp } from '../http/client-ip.decorator';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
 import { ReqLocale } from '../http/locale-header.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
@@ -24,6 +26,7 @@ export class DiscoverController {
     private readonly getDiscoverObjects: GetDiscoverObjectsEndpoint,
     private readonly getDiscoverUsers: GetDiscoverUsersEndpoint,
     private readonly getDiscoverTagCategories: GetDiscoverTagCategoriesEndpoint,
+    private readonly countryResolver: CountryResolverService,
   ) {}
 
   @Get('objects')
@@ -32,12 +35,14 @@ export class DiscoverController {
     @ReqLocale() locale: string,
     @ReqViewer() viewer: string | undefined,
     @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqClientIp() clientIp: string | null,
   ): Promise<DiscoverObjectsResponseDto> {
     return this.getDiscoverObjects.execute({
       query,
       locale,
       viewerAccount: viewer,
       governanceObjectIdFromHeader,
+      countryCode: this.countryResolver.resolve(clientIp, query.country),
     });
   }
 

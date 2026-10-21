@@ -16,6 +16,8 @@ related:
 
 # Objects resolve (`POST /query/v1/objects/resolve`)
 
+Optional body `country` plus GeoIP produce [affiliate links](affiliate-links.md). `identifier` is always loaded even when `update_types` is an explicit list.
+
 ## Governance object fields
 
 When resolving a `governance` object, governance update types are projected into `fields`:

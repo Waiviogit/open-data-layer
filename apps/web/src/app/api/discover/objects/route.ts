@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { env } from '@/config/env';
 import { getRequestLocale } from '@/i18n/runtime/get-request-locale';
 import { createCookieAuthContextProvider } from '@/shared/infrastructure/auth/cookie-auth-context-provider';
+import { getClientIpForwardHeaders } from '@/shared/infrastructure/http/client-ip-forward-headers';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +23,7 @@ export async function GET(request: NextRequest) {
     Accept: 'application/json',
     'Accept-Language': locale,
     'X-Locale': locale,
+    ...getClientIpForwardHeaders(request.headers),
   };
   const viewer = user?.username?.trim();
   if (viewer) {

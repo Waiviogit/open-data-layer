@@ -140,6 +140,17 @@ const nestedObjectViewSchema = registry.register(
     fields: z.record(z.string(), z.unknown()).openapi({
       description: 'Projected fields keyed by update type id.',
     }),
+    affiliateLinks: z
+      .array(
+        z.object({
+          link: z.string(),
+          image: z.string(),
+          affiliateCode: z.string(),
+          type: z.string(),
+          objectId: z.string(),
+        }),
+      )
+      .optional(),
   }),
 );
 
@@ -499,6 +510,17 @@ const refSummaryOpenApiSchema = registry.register(
     addedAtUnix: z.number().optional(),
     listItemsCount: z.number().int().optional(),
     isFavorited: z.boolean().optional(),
+    affiliateLinks: z
+      .array(
+        z.object({
+          link: z.string(),
+          image: z.string(),
+          affiliateCode: z.string(),
+          type: z.string(),
+          objectId: z.string(),
+        }),
+      )
+      .optional(),
   }),
 );
 
@@ -517,6 +539,9 @@ const objectRefListQueryOpenApi = z.object({
   }),
   cursor: z.string().optional().openapi({
     description: 'Offset cursor (numeric string) for the next page.',
+  }),
+  country: z.string().trim().max(32).optional().openapi({
+    description: 'ISO 3166-1 alpha-2 or affiliate geo token; overrides GeoIP when valid.',
   }),
 });
 

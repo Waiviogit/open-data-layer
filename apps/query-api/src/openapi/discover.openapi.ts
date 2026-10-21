@@ -27,6 +27,32 @@ const discoverTagCategoriesResponseSchema = registry.register(
 
 registry.registerPath({
   method: 'get',
+  path: '/query/v1/discover/objects',
+  tags: [queryApiOpenApiTags.discover],
+  summary: 'Discover object feed',
+  description:
+    'Paginated discover objects. Optional `country` overrides GeoIP for affiliate link geo cascade.',
+  request: {
+    query: z.object({
+      object_type: z.string().min(1).optional(),
+      q: z.string().max(100).optional(),
+      tags: z.union([z.string(), z.array(z.string())]).optional(),
+      sort: z.enum(['newest', 'oldest', 'rank']).optional(),
+      box: z.string().optional().describe('Map bounding box as swLng,swLat,neLng,neLat'),
+      cursor: z.string().optional(),
+      limit: z.coerce.number().int().min(1).optional(),
+      country: z.string().trim().max(32).optional().openapi({
+        description: 'ISO 3166-1 alpha-2 or affiliate geo token; overrides GeoIP when valid.',
+      }),
+    }),
+  },
+  responses: {
+    200: { description: 'Paginated discover objects with optional affiliateLinks.' },
+  },
+});
+
+registry.registerPath({
+  method: 'get',
   path: '/query/v1/discover/tag-categories',
   tags: [queryApiOpenApiTags.discover],
   summary: 'Tag category facets for discover filters',

@@ -24,7 +24,7 @@ related:
 
 **Scope:** Same membership as `object_categories_related` user scopes (`object_favorite` ∪ `object_ownership` ∪ optional `post_objects` branch per `user_metadata.hide_linked_objects` / `hide_recipe_objects` and `user_shop_deselect`). Types bucket: `book`+`product` (shop) or `recipe`.
 
-**Projection:** `ObjectViewService` with update types `name`, `image`, `description`, `tagCategoryItem`, `aggregateRating`; then `ObjectProjectionService.batchProject`.
+**Projection:** `ObjectViewService` with update types including `identifier`; then `ObjectProjectionService.batchProject`. Optional `country` + GeoIP build [affiliate links](affiliate-links.md).
 
 **Client:** Profile `user-shop` and `recipe` central column (`apps/web`): leaf URLs and **any URL with active `tags`/`rating` filters** load `shop-objects` (flat list); non-leaf browse without filters loads `shop-sections`. Sidebar link **Uncategorized** routes to `…/uncategorized` with `uncategorizedOnly=true`. Right column (`ProfileShopFilters`) loads facets from `GET …/shop/filters`; active filters are URL query params `tags` and `rating`.
 

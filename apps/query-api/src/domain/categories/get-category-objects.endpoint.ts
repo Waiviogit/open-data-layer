@@ -6,6 +6,7 @@ import {
   ObjectFavoriteRepository,
   ObjectCategoriesRepository,
 } from '../../repositories';
+import { AffiliateLinksEnricher, flattenAffiliateTargets } from '../affiliate';
 import { GovernanceResolverService } from '../governance';
 import { expandObjectRefs } from '../object-projection/object-ref-expansion';
 import { ListItemsRecursiveCountService } from '../object-projection/list-items-recursive-count.service';
@@ -22,6 +23,7 @@ export interface GetCategoryObjectsInput {
   locale: string;
   governanceObjectIdFromHeader?: string;
   viewerAccount?: string;
+  countryCode?: string | null;
 }
 
 @Injectable()
@@ -34,6 +36,7 @@ export class GetCategoryObjectsEndpoint {
     private readonly objectFavoriteRepo: ObjectFavoriteRepository,
     private readonly listItemsRecursiveCountService: ListItemsRecursiveCountService,
     private readonly config: ConfigService,
+    private readonly affiliateLinks: AffiliateLinksEnricher,
   ) {}
 
   async execute(input: GetCategoryObjectsInput): Promise<ObjectRefListResponseDto> {
@@ -101,6 +104,12 @@ export class GetCategoryObjectsEndpoint {
             object_id: lastRow.object_id,
           })
         : null;
+
+    await this.affiliateLinks.enrich(flattenAffiliateTargets(items), {
+      countryCode: input.countryCode ?? null,
+      governanceObjectIdFromHeader: input.governanceObjectIdFromHeader,
+      governance,
+    });
 
     return { items, hasMore, cursor: nextCursor };
   }

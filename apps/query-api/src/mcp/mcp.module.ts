@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CategoriesModule } from '../domain/categories/categories.module';
 import { DiscoverModule } from '../domain/discover';
+import { GeoipModule } from '../domain/geoip';
 import { FeedModule } from '../domain/feed';
 import { ObjectUpdatesModule } from '../domain/object-updates';
 import { ObjectsModule } from '../domain/objects';
@@ -29,6 +30,7 @@ import { McpService } from './mcp.service';
     ExpertiseModule,
     SearchModule,
     DiscoverModule,
+    GeoipModule,
     WalletModule,
     OblModule,
     MessagingModule,

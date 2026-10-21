@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { countryQueryField } from '../../http/country-query.schema';
 
 const MAX_PAGE = 50;
 const DEFAULT_PAGE = 20;
@@ -20,6 +21,7 @@ export const categoryObjectsQuerySchema = z.object({
     .string()
     .optional()
     .describe('Optional object id to omit from results (e.g. source object page host)'),
+  country: countryQueryField,
 });
 
 export type CategoryObjectsQuery = z.infer<typeof categoryObjectsQuerySchema>;

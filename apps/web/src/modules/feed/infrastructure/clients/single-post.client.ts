@@ -18,5 +18,5 @@ export async function fetchSinglePost(
   if (init?.viewer != null && init.viewer.trim() !== '') {
     headers['X-Viewer'] = init.viewer.trim();
   }
-  return queryApiFetch(path, { headers });
+  return queryApiFetch(path, { headers, forwardClientIp: true });
 }

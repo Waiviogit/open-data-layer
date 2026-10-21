@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { AggregatedObject } from '@opden-data-layer/objects-domain';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import { AggregatedObjectRepository, DiscoverRepository } from '../../repositories';
+import { AffiliateLinksEnricher, flattenAffiliateTargets } from '../affiliate';
 import { GovernanceResolverService } from '../governance';
 import { ObjectProjectionService } from '../object-projection/object-projection.service';
 import { SHOP_CARD_UPDATE_TYPES } from '../shop/shop.constants';
@@ -21,6 +22,7 @@ export interface GetDiscoverObjectsInput {
   locale: string;
   viewerAccount?: string;
   governanceObjectIdFromHeader?: string;
+  countryCode?: string | null;
 }
 
 function orderAggregatedByIds(objects: AggregatedObject[], objectIds: string[]): AggregatedObject[] {
@@ -54,6 +56,7 @@ export class GetDiscoverObjectsEndpoint {
     private readonly objectViewService: ObjectViewService,
     private readonly governanceResolver: GovernanceResolverService,
     private readonly objectProjectionService: ObjectProjectionService,
+    private readonly affiliateLinks: AffiliateLinksEnricher,
   ) {}
 
   async execute(input: GetDiscoverObjectsInput): Promise<DiscoverObjectsResponseDto> {
@@ -101,6 +104,12 @@ export class GetDiscoverObjectsEndpoint {
       governanceObjectIdFromHeader: input.governanceObjectIdFromHeader,
       viewerAccount: input.viewerAccount,
       rankVoteProjection,
+    });
+
+    await this.affiliateLinks.enrich(flattenAffiliateTargets(projected), {
+      countryCode: input.countryCode ?? null,
+      governanceObjectIdFromHeader: input.governanceObjectIdFromHeader,
+      governance,
     });
 
     const lastRow = rows[rows.length - 1];

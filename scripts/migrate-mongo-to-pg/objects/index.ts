@@ -38,6 +38,7 @@ import type {
 } from '@opden-data-layer/odl-db-types';
 import { OBJECT_TYPE_REGISTRY } from '../../../libs/core/src/object-type-registry';
 import { UPDATE_REGISTRY } from '../../../libs/core/src/update-registry';
+import { UPDATE_TYPES } from '../../../libs/core/src/update-registry/update-types';
 import { Kysely, PostgresDialect, sql } from 'kysely';
 import { Pool } from 'pg';
 import streamArray from 'stream-json/streamers/stream-array.js';
@@ -48,6 +49,7 @@ import {
   resolveUpdateType,
 } from './field-name-map';
 import type { MongoRatingVote, MongoWObject, MongoWObjectField } from './types';
+import { shouldSkipLegacyAffiliateCode } from './affiliate-code-skip';
 import {
   createdAtUnixFromObjectId,
   legacyEventSeqFromObjectIdHex,
@@ -92,6 +94,7 @@ interface MigrationStats {
   fieldsSkippedSkippedLegacy: number;
   fieldsSkippedNoRegistry: number;
   fieldsSkippedBadPayload: number;
+  fieldsSkippedAffiliateDomainScope: number;
   fieldsSkippedAuthorityInvalid: number;
   favoriteRowsBuffered: number;
   ownershipRowsBuffered: number;
@@ -271,6 +274,7 @@ class MongoToPgMigrator {
     fieldsSkippedSkippedLegacy: 0,
     fieldsSkippedNoRegistry: 0,
     fieldsSkippedBadPayload: 0,
+    fieldsSkippedAffiliateDomainScope: 0,
     fieldsSkippedAuthorityInvalid: 0,
     favoriteRowsBuffered: 0,
     ownershipRowsBuffered: 0,
@@ -577,6 +581,13 @@ class MongoToPgMigrator {
     const fieldTxId = buildFieldLegacyTransactionId(fieldAuthor, permlink);
     const fieldCreator = field.creator?.trim() ?? objectCreator;
     const fieldBody = normalizeLegacyFieldBody(field.body);
+    if (
+      updateType === UPDATE_TYPES.AFFILIATE_CODE &&
+      shouldSkipLegacyAffiliateCode(fieldBody)
+    ) {
+      this.stats.fieldsSkippedAffiliateDomainScope += 1;
+      return;
+    }
 
     const localeRaw = field.locale?.trim();
     const locale = localeRaw && localeRaw.length > 0 ? localeRaw : null;

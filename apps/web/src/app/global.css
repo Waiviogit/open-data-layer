@@ -178,6 +178,26 @@
     background-color: color-mix(in srgb, var(--color-error) 25%, transparent);
   }
 
+  /**
+   * Merchant affiliate chip — brand-locked, not themed.
+   * Programs (Amazon etc.) require a white 4px tile; theme radius/surface must not apply.
+   */
+  .affiliate-merchant-btn {
+    display: inline-flex;
+    align-items: center;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+    padding: 0 4px;
+    text-align: center;
+  }
+
+  .affiliate-merchant-btn:focus-visible {
+    outline: 2px solid #111;
+    outline-offset: 2px;
+  }
+
   .hero-follow-active {
     @apply border border-border bg-surface-control text-muted;
   }

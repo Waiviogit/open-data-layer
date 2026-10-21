@@ -1,4 +1,5 @@
 import type { CurrencyQueryService } from '@opden-data-layer/currency';
+import type { CountryResolverService } from '../domain/geoip';
 import type {
   OblConversionService,
   OblLedgerService,
@@ -102,6 +103,8 @@ export type McpRequestContext = {
 };
 
 export interface McpToolDeps {
+  countryResolver: CountryResolverService;
+  clientIp: string | null;
   search: GetSearchEndpoint;
   searchCounts: GetSearchCountsEndpoint;
   discoverObjects: GetDiscoverObjectsEndpoint;

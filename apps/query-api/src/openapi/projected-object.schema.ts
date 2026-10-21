@@ -32,5 +32,19 @@ export const projectedObjectOpenApiSchema = registry.register(
       .boolean()
       .describe('True when viewer has supervised or exclusive ownership (legacy aggregate flag).'),
     seo: projectedObjectSeoOpenApiSchema.optional(),
+    affiliateLinks: z
+      .array(
+        z.object({
+          link: z.string(),
+          image: z.string(),
+          affiliateCode: z.string(),
+          type: z.string(),
+          objectId: z.string(),
+        }),
+      )
+      .optional()
+      .describe(
+        'Merchant affiliate URLs for this object when identifier + affiliate program match. Absent when no links apply.',
+      ),
   }),
 );

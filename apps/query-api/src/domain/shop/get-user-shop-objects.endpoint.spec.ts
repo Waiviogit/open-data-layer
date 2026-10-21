@@ -48,6 +48,7 @@ describe('GetUserShopObjectsEndpoint', () => {
       aggregatedObjectRepo as never,
       objectViewService as never,
       objectProjection as never,
+      { enrich: jest.fn() } as never,
     );
 
     const result = await endpoint.execute(
@@ -94,6 +95,7 @@ describe('GetUserShopObjectsEndpoint', () => {
       { loadByObjectIds: jest.fn() } as never,
       { resolve: jest.fn() } as never,
       { batchProject: jest.fn() } as never,
+      { enrich: jest.fn() } as never,
     );
 
     const result = await endpoint.execute(
@@ -121,6 +123,7 @@ describe('GetUserShopObjectsEndpoint', () => {
       {} as never,
       {} as never,
       {} as never,
+      { enrich: jest.fn() } as never,
     );
     expect(
       await endpoint.execute(

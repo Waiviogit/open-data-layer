@@ -46,6 +46,7 @@ export const BLOCK_KIND_TO_UPDATE_TYPES: Record<ObjectLeftRailBlockKind, readonl
   tags: [UPDATE_TYPES.TAG_CATEGORY_ITEM, UPDATE_TYPES.TAG_CATEGORY],
   gallery: [UPDATE_TYPES.IMAGE_GALLERY_ITEM],
   price: [UPDATE_TYPES.PRICE],
+  affiliateLinks: [],
   options: [UPDATE_TYPES.OPTION],
   workHours: [UPDATE_TYPES.WORK_HOURS],
   address: [UPDATE_TYPES.ADDRESS],

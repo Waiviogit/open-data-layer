@@ -9,6 +9,7 @@ import {
   ObjectRefListRepository,
   ObjectsCoreRepository,
 } from '../../repositories';
+import { AffiliateLinksEnricher, flattenAffiliateTargets } from '../affiliate';
 import { GovernanceResolverService } from '../governance';
 import { expandObjectRefs } from '../object-projection/object-ref-expansion';
 import { ListItemsRecursiveCountService } from '../object-projection/list-items-recursive-count.service';
@@ -53,6 +54,7 @@ export class GetObjectRefListEndpoint {
     private readonly listItemsRecursiveCountService: ListItemsRecursiveCountService,
     private readonly objectRefListRepo: ObjectRefListRepository,
     private readonly config: ConfigService,
+    private readonly affiliateLinks: AffiliateLinksEnricher,
   ) {}
 
   async execute(
@@ -62,6 +64,7 @@ export class GetObjectRefListEndpoint {
     locale: string,
     governanceObjectIdFromHeader?: string,
     viewerAccount?: string,
+    countryCode: string | null = null,
   ): Promise<ObjectRefListResponseDto | null> {
     const id = objectId.trim();
     if (id.length === 0) {
@@ -144,6 +147,12 @@ export class GetObjectRefListEndpoint {
         items.push(summary);
       }
     }
+
+    await this.affiliateLinks.enrich(flattenAffiliateTargets(items), {
+      countryCode,
+      governanceObjectIdFromHeader,
+      governance,
+    });
 
     return { items, hasMore, cursor: nextCursor };
   }

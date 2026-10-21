@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: query-api
 tags: [query-api, geoip, maxmind]
-updated_at: 2026-10-16
+updated_at: 2026-10-21
 related:
   - docs/apps/query-api/spec/overview.md
   - docs/getting-started.md
@@ -69,8 +69,9 @@ flowchart LR
 ```
 
 - **REST / MCP:** `resolveClientIp(req)` → `normalizeClientIp(req.ip)`. Do not parse `X-Forwarded-For` by hand.
-- **Web:** opt-in `queryApiFetch({ forwardClientIp: true })` copies the incoming `X-Forwarded-For` **verbatim**. Default is false so RSC pages stay cacheable (`headers()` is dynamic). Object-page `POST /query/v1/objects/resolve` sets the flag. Do not take the left-most hop and do not read `x-real-ip` (that is the edge with a CDN).
+- **Web:** opt-in `queryApiFetch({ forwardClientIp: true })` copies the incoming `X-Forwarded-For` **verbatim**. Default is false so RSC pages stay cacheable (`headers()` is dynamic). Affiliate-geo callers that set the flag: object-page `POST /query/v1/objects/resolve`, shop-objects, shop-sections, favorites list, resolve-nested, single-post. Discover BFF `GET /api/discover/objects` copies incoming XFF the same way (`getClientIpForwardHeaders`). Do not take the left-most hop and do not read `x-real-ip` (that is the edge with a CDN).
 - **MCP:** `McpRequestContext.clientIp` comes from the HTTP request, not from tool arguments. That IP is the **agent runtime** (often a datacenter). Do not treat MCP geo as browser geo (affiliate, maps).
+- **Affiliate:** `CountryResolverService` uses this IP unless `?country=` / MCP `country` is a valid `VALID_AFFILIATE_GEO` token. See [affiliate-links.md](affiliate-links.md).
 
 Prod nginx publishes `/query/mcp` only. A self-hosted `/query/` location uses the same hop rule.
 

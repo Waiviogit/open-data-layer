@@ -22,7 +22,7 @@ Global prefix: `query`; version: URI `v1` (see [query-api overview](overview.md)
 
 ## Purpose
 
-Returns one Hive post by primary key (`author`, `permlink`) for full-page display: **full `body`**, **all** tagged objects resolved with the same update types as the blog feed (`name`, `avatar` via `FEED_OBJECT_UPDATE_TYPES`), and the same **active vote summary** as feed cards (`totalCount`, `previewVoters`, `voted` when `X-Viewer` is set).
+Returns one Hive post by primary key (`author`, `permlink`) for full-page display: **full `body`**, **all** tagged objects resolved with `POST_LINKED_OBJECT_UPDATE_TYPES` (includes `identifier`), optional [affiliate links](affiliate-links.md) via `?country=` / GeoIP, and the same **active vote summary** as feed cards (`totalCount`, `previewVoters`, `voted` when `X-Viewer` is set).
 
 Unlike `POST /query/v1/users/{name}/blog`, this endpoint does **not** cap tagged objects to four chips; order matches the feed (avatar preference, then `objects_core.weight`, then `object_id`).
 

@@ -139,6 +139,12 @@
 
 **Rule:** Custom-json network ids (`odl-*`, `osl-*`, `obl-*`) come only from the app's config (`config.oslCustomJsonId` and so on). Do not infer the deployed network from a code default. Do not add network warnings, overrides or hardcoded ids. If the deployed network matters, ask.
 
+## Web: `@/shared/presentation` barrel pulls Leaflet
+
+**Pattern:** `AffiliateLinksRow` imported `HydrationSafeAnchor` from `@/shared/presentation`. That barrel re-exports `case-transform-text-field` → `@/modules/map` → `react-leaflet` ESM. Jest (and any client graph that evaluates the barrel) then fails with `Unexpected token 'export'`.
+
+**Rule:** From client or Jest-tested UI, import `HydrationSafeAnchor` via `@/shared/presentation/components/hydration-safe-anchor`. Do not pull the shared presentation barrel just for one component.
+
 ## Web: `updateTag` in layout + effect on prop identity = RSC loop
 
 **Pattern:** `markChannelReadAction` and `markProfileFeedReadAction` both called `updateTag(userFeedUnreadCounts)`. That tag is now fetched in `(app)` layout (`AppHeaderUser` badge). Invalidate → layout remounts the messages page → inbox effect + `ProfileFeedTabMarkReadEffect` fire again → infinite POST/~200ms RSC refresh. `useRef` resets on remount.
@@ -150,6 +156,12 @@
 **Pattern:** Built `forwardClientIp` on `queryApiFetch` (opt-in, default off for RSC cache) and never passed `true` on `POST /query/v1/objects/resolve` — the page that was supposed to prove browser IP → query-api. Staging via the site then logs the `web` container IP.
 
 **Rule:** If the test path is a web page, wire `forwardClientIp: true` on that fetch in the same change as the query-api probe. Helper + flag with zero callers is not done.
+
+## Affiliate PERSONAL codes vs exclusive-owner curator
+
+**Pattern:** `dxl-amazon-com` has exclusive owners. Shop-owner PERSONAL `affiliateCode` is curator-`REJECTED`. `parseAffiliateConfig` kept VALID-only → no shop affiliate button even though the user has a live personal code.
+
+**Rule:** PERSONAL codes on shop/favorites belong to `:name`, not the merchant affiliate object's exclusive owners. Load personal views with `include_rejected: true` and keep that creator's latest PERSONAL even when REJECTED. Button/template/geo/types stay VALID-only. Bump the personal Redis key when this contract changes.
 
 ## Web: notifications WS singleton vs remount
 

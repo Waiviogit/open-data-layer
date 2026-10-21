@@ -24,6 +24,7 @@ describe('GetUserFavoritesEndpoint', () => {
       {} as AggregatedObjectRepository,
       {} as ObjectViewService,
       {} as ObjectProjectionService,
+      { enrich: jest.fn() } as never,
     );
     await expect(endpoint.execute('  ', query, 'en-US', undefined, undefined)).resolves.toBeNull();
   });
@@ -52,6 +53,7 @@ describe('GetUserFavoritesEndpoint', () => {
       {} as AggregatedObjectRepository,
       {} as ObjectViewService,
       {} as ObjectProjectionService,
+      { enrich: jest.fn() } as never,
     );
 
     await expect(
@@ -142,6 +144,7 @@ describe('GetUserFavoritesEndpoint', () => {
       aggregatedObjectRepo,
       objectViewService,
       objectProjection,
+      { enrich: jest.fn() } as never,
     );
 
     await expect(

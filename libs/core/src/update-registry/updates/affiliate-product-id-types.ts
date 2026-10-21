@@ -8,6 +8,6 @@ export const UPDATE_AFFILIATE_PRODUCT_ID_TYPES: UpdateDefinition = {
   localizable: false,
   description: 'Supported product ID types for affiliate.',
   value_kind: 'text',
-  cardinality: 'single',
+  cardinality: 'multi',
   schema: affiliateProductIdTypeSchema,
 };

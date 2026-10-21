@@ -1,3 +1,5 @@
+import type { AffiliateLinkView } from '@/modules/feed/application/dto/feed-story.dto';
+
 /** One row from projected `listItem` updates (expanded object_ref). */
 export type ProjectedListItem = {
   objectId: string;
@@ -32,6 +34,8 @@ export type ProjectedListItem = {
   parentRef?: ProjectedListItemRef | null;
   /** Parent `listItem` update id — used for catalog reject votes. */
   listItemUpdateId?: string;
+  /** Computed merchant affiliate URLs from query-api (root of the ref summary). */
+  affiliateLinks?: AffiliateLinkView[];
 };
 
 /** Nested object_ref row on a list-item ref summary. */

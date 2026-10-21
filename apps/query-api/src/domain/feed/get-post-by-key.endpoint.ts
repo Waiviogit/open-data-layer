@@ -14,6 +14,7 @@ import {
 import { mapAccountToUserProfileView } from '../users/account-mapper';
 import { parsePostingMetadata } from '../users/parse-posting-metadata';
 import { resolveAvatarUrlFromHiveMetadata } from '../users/resolve-avatar-url-from-hive-metadata';
+import { AffiliateLinksEnricher, flattenAffiliateTargets } from '../affiliate';
 import { GovernanceResolverService } from '../governance';
 import { buildLinkedObjectSummaries } from './feed-object-summaries';
 import { mapHiveContentToSinglePostView } from './map-hive-content-to-single-post.dto';
@@ -41,6 +42,7 @@ export class GetPostByKeyEndpoint {
     private readonly objectProjection: ObjectProjectionService,
     private readonly hiveClient: HiveClient,
     private readonly postRewardService: PostRewardService,
+    private readonly affiliateLinks: AffiliateLinksEnricher,
   ) {}
 
   async execute(
@@ -50,6 +52,7 @@ export class GetPostByKeyEndpoint {
     governanceObjectIdFromHeader?: string,
     viewerAccount?: string,
     currency: SupportedCurrency = 'USD',
+    countryCode: string | null = null,
   ): Promise<SinglePostViewDto | null> {
     const key = { author, permlink };
     const viewerTrimmed = viewerAccount?.trim() ?? '';
@@ -103,6 +106,7 @@ export class GetPostByKeyEndpoint {
       governanceObjectIdFromHeader,
       viewerAccount,
       viewerReblogKeys.has(`${post.author}\0${post.permlink}`),
+      countryCode,
     );
     const input = buildPostRewardInputFromPostRow(post);
     const [enriched] = await this.postRewardService.enrichFeedItems(
@@ -147,6 +151,7 @@ export class GetPostByKeyEndpoint {
     governanceObjectIdFromHeader: string | undefined,
     viewerAccount: string | undefined,
     rebloggedByViewer = false,
+    countryCode: string | null = null,
   ): Promise<SinglePostViewDto> {
     const pk = `${post.author}\0${post.permlink}`;
     const accountRow = await this.accounts.findByName(post.author);
@@ -200,6 +205,12 @@ export class GetPostByKeyEndpoint {
         rankVoteProjection,
       },
     );
+
+    await this.affiliateLinks.enrich(flattenAffiliateTargets(objects), {
+      countryCode,
+      governanceObjectIdFromHeader,
+      governance,
+    });
 
     const createdAt = new Date(post.created_unix * 1000).toISOString();
 

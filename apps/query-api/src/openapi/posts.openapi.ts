@@ -104,7 +104,12 @@ registry.registerPath({
     'Full post body plus tagged objects (resolved fields for linked-object cards when available) and active vote summary. Optional `X-Viewer` sets administrative heart state per object. Not found when the post row is missing.',
   request: {
     params: z.object({ author: authorParam, permlink: permlinkParam }),
-    query: z.object({ currency: currencyQueryParam }),
+    query: z.object({
+      currency: currencyQueryParam,
+      country: z.string().trim().max(32).optional().openapi({
+        description: 'ISO 3166-1 alpha-2 or affiliate geo token; overrides GeoIP when valid.',
+      }),
+    }),
     headers: z.object({
       'accept-language': z.string().optional(),
       'x-locale': z.string().optional(),

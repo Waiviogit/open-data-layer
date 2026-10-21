@@ -109,6 +109,7 @@ export const OBJECT_LEFT_RAIL_BLOCK_LABEL: Record<string, string> = {
   tags: 'Tags',
   gallery: 'Gallery',
   price: 'Price',
+  affiliateLinks: 'Affiliate Link',
   options: 'Options',
   workHours: 'Hours',
   address: 'Address',

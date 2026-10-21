@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { qsArray, typesArray } from '../categories/categories-query.schema';
+import { countryQueryField } from '../../http/country-query.schema';
 import { SHOP_RATING_FILTER_THRESHOLDS } from './shop.constants';
 
 const shopTagsQuery = z
@@ -54,6 +55,7 @@ export const shopObjectsQuerySchema = z.object({
     .default(20)
     .describe('Page size'),
   cursor: z.string().optional().describe('Opaque cursor (object_id)'),
+  country: countryQueryField,
 });
 
 export type ShopObjectsQuery = z.infer<typeof shopObjectsQuerySchema>;
@@ -75,6 +77,7 @@ export const shopSectionsQuerySchema = z.object({
     .max(10)
     .default(3)
     .describe('Max category sections per page'),
+  country: countryQueryField,
 });
 
 export type ShopSectionsQuery = z.infer<typeof shopSectionsQuerySchema>;

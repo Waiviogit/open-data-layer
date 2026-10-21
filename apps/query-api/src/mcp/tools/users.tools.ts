@@ -22,6 +22,7 @@ import type { McpToolDeps } from '../mcp-tool.deps';
 import {
   jsonToolResult,
   pickMcpContext,
+  resolveMcpCountry,
   toolError,
   withMcpLocaleContext,
 } from '../mcp-tool.helpers';
@@ -760,13 +761,14 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
     },
     async (args) => {
       const ctx = pickMcpContext(args);
-      const { account, objectType, skip, limit } = args;
+      const { account, objectType, skip, limit, country } = args;
       const result = await deps.getUserFavorites.execute(
         account,
         { objectType, skip, limit },
         ctx.locale,
         ctx.governanceObjectIdFromHeader,
         ctx.viewerAccount,
+        resolveMcpCountry(deps, country),
       );
       return jsonToolResult(result);
     },
@@ -881,13 +883,14 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
     },
     async (args) => {
       const ctx = pickMcpContext(args);
-      const { account, types, categoryPath, uncategorizedOnly, limit, cursor, tags, rating } = args;
+      const { account, types, categoryPath, uncategorizedOnly, limit, cursor, tags, rating, country } = args;
       const result = await deps.getUserShopObjects.execute(
         account,
         { types, categoryPath, uncategorizedOnly, limit, cursor, tags, rating },
         ctx.locale,
         ctx.governanceObjectIdFromHeader,
         ctx.viewerAccount,
+        resolveMcpCountry(deps, country),
       );
       return jsonToolResult(result);
     },
@@ -903,13 +906,14 @@ export function registerUserTools(server: McpServer, deps: McpToolDeps): void {
     },
     async (args) => {
       const ctx = pickMcpContext(args);
-      const { account, types, path, cursor, sectionLimit, name, tags, rating } = args;
+      const { account, types, path, cursor, sectionLimit, name, tags, rating, country } = args;
       const result = await deps.getUserShopSections.execute(
         account,
         { types, path, cursor, sectionLimit, name, tags, rating },
         ctx.locale,
         ctx.governanceObjectIdFromHeader,
         ctx.viewerAccount,
+        resolveMcpCountry(deps, country),
       );
       return jsonToolResult(result);
     },

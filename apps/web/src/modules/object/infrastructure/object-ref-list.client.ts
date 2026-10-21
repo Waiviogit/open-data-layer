@@ -2,6 +2,7 @@ import 'server-only';
 
 import { z } from 'zod';
 
+import { affiliateLinkViewSchema } from '@/modules/feed/application/dto/feed-story.dto';
 import type { ProjectedObjectView } from '@/modules/feed/application/dto/object-fields';
 import { objectFields } from '@/modules/feed/application/dto/object-fields';
 import { queryApiFetch } from '@/modules/user-profile/infrastructure/clients/query-api.client';
@@ -22,6 +23,7 @@ const refSummarySchema = z.object({
   fields: z.record(z.string(), z.unknown()),
   weight: z.number().nullable().optional(),
   isFavorited: z.boolean().optional(),
+  affiliateLinks: z.array(affiliateLinkViewSchema).optional(),
 });
 
 const objectRefListResponseSchema = z.object({
@@ -60,6 +62,9 @@ export function refSummaryToProjectedObjectView(
     isFavorited: ref.isFavorited ?? false,
     hasSupervisedOwnership: false,
     hasExclusiveOwnership: false,
+    ...(ref.affiliateLinks && ref.affiliateLinks.length > 0
+      ? { affiliateLinks: ref.affiliateLinks }
+      : {}),
   };
 }
 

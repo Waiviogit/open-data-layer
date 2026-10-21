@@ -41,6 +41,7 @@ Single component: [`apps/web/src/modules/feed/presentation/components/object-car
 - Thumbnail (120×120), brand/parent caption (when present), title link, subtitle (`price` · `object_type` · tag categories).
 - **Rating grid** — 2 columns (`grid-cols-2`), fill order left→right, top→bottom (1→left, 2→left+right, 3→+bottom-left, 4→full 2×2).
 - Description excerpt (plain text, not italic), max **300 characters** (ellipsis when truncated).
+- **Affiliate links** — default and `catalog` layouts only, after the description: `Affiliate Link:` plus merchant logos from query-api `affiliateLinks`. Logos sit in a theme-invariant white `4px` tile (`.affiliate-merchant-btn`) — not `rounded-btn` / `bg-surface`. Hidden when the array is empty/unrenderable, and on `editorRow` / `popup` / `mapSidebar` / `popupNameOnly`. Click opens the merchant URL in a new tab and does not navigate the card. See [query-api affiliate-links](../../query-api/spec/affiliate-links.md).
 - **Favorite heart** (top-right).
 
 ## Rating grid
@@ -78,5 +79,5 @@ Requires logged-in viewer (`viewerUsername` + wallet). Discover passes viewer fr
 
 ```bash
 pnpm nx test hive-broadcast --testPathPatterns=odl-operations.spec
-pnpm nx test web --testPathPatterns="discover-registry|object-card-rating"
+pnpm nx test web --testPathPatterns="discover-registry|object-card-rating|object-card|affiliate-links"
 ```

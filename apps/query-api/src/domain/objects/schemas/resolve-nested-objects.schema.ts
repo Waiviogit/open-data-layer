@@ -1,5 +1,7 @@
 import { UPDATE_REGISTRY } from '@opden-data-layer/core';
 import { z } from 'zod';
+import type { AffiliateLink } from '../../affiliate/affiliate.types';
+import { countryQueryField } from '../../../http/country-query.schema';
 import { NESTED_OBJECT_UPDATE_TYPES } from '../nested-object.constants';
 
 const nestedDefaultUpdateTypesLabel = NESTED_OBJECT_UPDATE_TYPES.join(', ');
@@ -31,6 +33,7 @@ export const resolveNestedObjectsBodySchema = z.object({
         }
       }
     }),
+  country: countryQueryField,
 });
 
 export type ResolveNestedObjectsBody = z.infer<typeof resolveNestedObjectsBodySchema>;
@@ -39,6 +42,7 @@ export type NestedObjectView = {
   object_id: string;
   object_type: string;
   fields: Record<string, unknown>;
+  affiliateLinks?: AffiliateLink[];
 };
 
 export type ResolveNestedObjectsResponse = {

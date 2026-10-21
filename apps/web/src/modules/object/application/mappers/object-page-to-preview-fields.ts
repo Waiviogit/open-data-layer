@@ -187,6 +187,7 @@ function appendLeftRailBlock(
     case 'publisher':
     case 'status':
     case 'options':
+    case 'affiliateLinks':
     case 'compareAtPrice':
     case 'saleEvent':
     case 'featureList':

@@ -6,6 +6,7 @@ export const FAVORITES_CARD_UPDATE_TYPES = [
   'description',
   'tagCategoryItem',
   'aggregateRating',
+  'identifier',
 ] as const;
 
 /** Favorites map list/markers include geo coordinates. */

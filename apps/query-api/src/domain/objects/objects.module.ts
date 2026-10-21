@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ObjectsDomainModule } from '@opden-data-layer/objects-domain';
+import { AffiliateModule } from '../affiliate';
 import { GovernanceModule } from '../governance';
 import { ObjectProjectionModule } from '../object-projection/object-projection.module';
 import { RepositoriesModule } from '../../repositories';
@@ -28,6 +29,7 @@ import { GetObjectOptionsEndpoint } from './get-object-options.endpoint';
     ObjectsDomainModule,
     GovernanceModule,
     ObjectProjectionModule,
+    AffiliateModule,
   ],
   providers: [
     GetObjectByIdEndpoint,

@@ -32,6 +32,7 @@ describe('GetObjectRefListEndpoint', () => {
       listItemsRecursiveCountService as never,
       deps.objectRefListRepo as never,
       config as never,
+      { enrich: jest.fn() } as never,
     );
   }
 

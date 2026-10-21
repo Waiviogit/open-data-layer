@@ -75,6 +75,7 @@ export async function fetchFavoritesObjects(
   const raw = await queryApiFetch<unknown>(path, {
     headers,
     cacheTags: [queryApiCacheTags.userFavorites(name)],
+    forwardClientIp: true,
   });
   if (raw == null) {
     return null;

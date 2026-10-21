@@ -40,7 +40,7 @@ Loaded in parallel with resolve — see [data-loading](../data-loading.md). Mapp
 
 ## Left rail placement
 
-Product-like types use legacy **navigate cluster** order: gallery → price → options **before** menu. See `object-left-rail-order.ts` and [edit-mode](edit-mode.md).
+Product-like types use legacy **navigate cluster** order: gallery → price → affiliate → options **before** menu. The affiliate row is a computed view-only block (no edit `+`). See `object-left-rail-order.ts`, [object-card](../../../object-card.md), [query-api affiliate-links](../../../../query-api/spec/affiliate-links.md), and [edit-mode](edit-mode.md).
 
 ## Verification
 

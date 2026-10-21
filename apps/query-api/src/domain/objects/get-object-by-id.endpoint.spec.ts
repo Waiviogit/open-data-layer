@@ -91,6 +91,7 @@ function makeEndpoint(
     deps.favoriteRepo,
     deps.ownershipRepo,
     deps.postsRepo ?? createPostsRepo(),
+    { enrich: jest.fn() } as never,
   );
 }
 
@@ -283,8 +284,67 @@ describe('GetObjectByIdEndpoint', () => {
       expect.any(Array),
       expect.any(Map),
       expect.objectContaining({
-        update_types: expect.arrayContaining(['title', 'description']),
+        update_types: expect.arrayContaining(['title', 'description', 'identifier']),
         governance: DEFAULT_GOVERNANCE_SNAPSHOT,
+      }),
+    );
+  });
+
+  it('adds identifier when the client passed an explicit update type list', async () => {
+    const mockView: ResolvedObjectView = {
+      object_id: 'o1',
+      object_type: 'x',
+      creator: 'c',
+      weight: null,
+      meta_group_id: null,
+      status: 'active',
+      canonical: null,
+      fields: {},
+    };
+    const repo = {
+      loadByObjectIds: jest.fn().mockResolvedValue({
+        objects: [
+          {
+            core: { object_id: 'o1', object_type: 'x', creator: 'c' },
+            updates: [],
+            validity_votes: [],
+            favorites: [],
+            ownerships: [],
+          },
+        ],
+        voterWaivPowers: new Map(),
+        rankVoteProjection: emptyRankVoteProjection(),
+      }),
+    } as unknown as AggregatedObjectRepository;
+    const viewService = { resolve: jest.fn().mockReturnValue([mockView]) } as unknown as ObjectViewService;
+    const projectionService = {
+      project: jest.fn().mockResolvedValue(projectedFixture('o1')),
+    } as unknown as ObjectProjectionService;
+    const followsRepo = { countByObjectId: jest.fn().mockResolvedValue(0) } as unknown as UserObjectFollowsRepository;
+    const updatesRepo = {
+      countByObjectIdGroupByUpdateType: jest.fn().mockResolvedValue({}),
+      findDistinctLocalesByObjectId: jest.fn().mockResolvedValue([]),
+    } as unknown as ObjectUpdatesRepository;
+    const { governanceResolver } = createEndpointDeps();
+
+    const endpoint = makeEndpoint({
+      repo,
+      viewService,
+      governanceResolver,
+      projectionService,
+      followsRepo,
+      updatesRepo,
+      favoriteRepo: createFavoriteRepo(),
+      ownershipRepo: createOwnershipRepo(),
+    });
+
+    await endpoint.execute({ objectId: 'o1', updateTypes: ['name'], locale: 'en-US' });
+
+    expect(viewService.resolve).toHaveBeenCalledWith(
+      expect.any(Array),
+      expect.any(Map),
+      expect.objectContaining({
+        update_types: ['name', 'identifier'],
       }),
     );
   });

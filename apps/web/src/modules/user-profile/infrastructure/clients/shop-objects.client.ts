@@ -111,7 +111,10 @@ export async function fetchShopObjects(
   const qs = buildShopObjectsSearchParams(params);
   const path = `/query/v1/users/${encodeURIComponent(name)}/shop-objects${qs}`;
   const headers = viewerHeaders(init?.viewer ?? null);
-  const raw = await queryApiFetch<unknown>(path, headers ? { headers } : undefined);
+  const raw = await queryApiFetch<unknown>(path, {
+    ...(headers ? { headers } : {}),
+    forwardClientIp: true,
+  });
   if (raw == null) {
     return null;
   }
@@ -135,7 +138,10 @@ export async function fetchShopSections(
   const qs = buildShopSectionsSearchParams(params);
   const path = `/query/v1/users/${encodeURIComponent(name)}/shop-sections${qs}`;
   const headers = viewerHeaders(init?.viewer ?? null);
-  const raw = await queryApiFetch<unknown>(path, headers ? { headers } : undefined);
+  const raw = await queryApiFetch<unknown>(path, {
+    ...(headers ? { headers } : {}),
+    forwardClientIp: true,
+  });
   if (raw == null) {
     return null;
   }

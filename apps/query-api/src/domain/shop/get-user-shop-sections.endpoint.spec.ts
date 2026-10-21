@@ -69,6 +69,7 @@ describe('GetUserShopSectionsEndpoint', () => {
       aggregatedObjectRepo as never,
       objectViewService as never,
       objectProjection as never,
+      { enrich: jest.fn() } as never,
     );
 
     const result = await endpoint.execute(
@@ -103,6 +104,7 @@ describe('GetUserShopSectionsEndpoint', () => {
       {} as never,
       {} as never,
       {} as never,
+      { enrich: jest.fn() } as never,
     );
 
     const result = await endpoint.execute(

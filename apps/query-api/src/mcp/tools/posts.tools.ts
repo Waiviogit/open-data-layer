@@ -7,6 +7,7 @@ import { VOTERS_PAGE_LIMIT } from '../../domain/feed/feed.constants';
 import {
   jsonToolResult,
   pickMcpContext,
+  resolveMcpCountry,
   toolError,
   withMcpLocaleContext,
 } from '../mcp-tool.helpers';
@@ -52,6 +53,12 @@ export function registerPostTools(server: McpServer, deps: McpToolDeps): void {
             .enum(SUPPORTED_CURRENCIES)
             .default('USD')
             .describe('Reward display currency (see post-reward.md)'),
+          country: z
+            .string()
+            .trim()
+            .max(32)
+            .optional()
+            .describe('ISO 3166-1 alpha-2 or affiliate geo token; overrides GeoIP when valid'),
         }),
       ),
     },
@@ -64,6 +71,7 @@ export function registerPostTools(server: McpServer, deps: McpToolDeps): void {
         ctx.governanceObjectIdFromHeader,
         ctx.viewerAccount,
         args.currency,
+        resolveMcpCountry(deps, args.country),
       );
       if (!result) {
         return toolError(`Post not found: ${args.author}/${args.permlink}`);

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { countryQueryField } from '../../../http/country-query.schema';
 
 const MAX_PAGE = 50;
 const DEFAULT_PAGE = 20;
@@ -15,6 +16,7 @@ export const objectRefListQuerySchema = z.object({
     .string()
     .optional()
     .describe('Opaque cursor from previous page (object_id of last item)'),
+  country: countryQueryField,
 });
 
 export type ObjectRefListQuery = z.infer<typeof objectRefListQuerySchema>;

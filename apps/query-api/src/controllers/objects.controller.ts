@@ -88,6 +88,8 @@ import type {
   MessageHistoryResponseDto,
 } from '../domain/messaging';
 import type { ChannelDetailDto } from '../domain/messaging/get-channel-by-id.endpoint';
+import { CountryResolverService } from '../domain/geoip';
+import { ReqClientIp } from '../http/client-ip.decorator';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
 import { ReqLocale } from '../http/locale-header.decorator';
 import { ReqViewer } from '../http/viewer-header.decorator';
@@ -116,6 +118,7 @@ export class ObjectsController {
     private readonly getObjectChannelEndpoint: GetObjectChannelEndpoint,
     private readonly getObjectChannelMessagesEndpoint: GetObjectChannelMessagesEndpoint,
     private readonly checkActivityDuplicate: CheckActivityDuplicateEndpoint,
+    private readonly countryResolver: CountryResolverService,
   ) {}
 
   @Get(':objectId/exists')
@@ -243,8 +246,17 @@ export class ObjectsController {
     @ReqLocale() locale: string,
     @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
     @ReqViewer() viewer: string | undefined,
+    @ReqClientIp() clientIp: string | null,
   ): Promise<ObjectRefListResponseDto> {
-    return this.getObjectRefList(objectId, UPDATE_TYPES.IS_RELATED_TO, query, locale, governanceObjectIdFromHeader, viewer);
+    return this.getObjectRefList(
+      objectId,
+      UPDATE_TYPES.IS_RELATED_TO,
+      query,
+      locale,
+      governanceObjectIdFromHeader,
+      viewer,
+      clientIp,
+    );
   }
 
   @Get(':objectId/similar')
@@ -254,8 +266,17 @@ export class ObjectsController {
     @ReqLocale() locale: string,
     @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
     @ReqViewer() viewer: string | undefined,
+    @ReqClientIp() clientIp: string | null,
   ): Promise<ObjectRefListResponseDto> {
-    return this.getObjectRefList(objectId, UPDATE_TYPES.IS_SIMILAR_TO, query, locale, governanceObjectIdFromHeader, viewer);
+    return this.getObjectRefList(
+      objectId,
+      UPDATE_TYPES.IS_SIMILAR_TO,
+      query,
+      locale,
+      governanceObjectIdFromHeader,
+      viewer,
+      clientIp,
+    );
   }
 
   @Get(':objectId/add-on')
@@ -265,8 +286,17 @@ export class ObjectsController {
     @ReqLocale() locale: string,
     @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
     @ReqViewer() viewer: string | undefined,
+    @ReqClientIp() clientIp: string | null,
   ): Promise<ObjectRefListResponseDto> {
-    return this.getObjectRefList(objectId, UPDATE_TYPES.ADD_ON, query, locale, governanceObjectIdFromHeader, viewer);
+    return this.getObjectRefList(
+      objectId,
+      UPDATE_TYPES.ADD_ON,
+      query,
+      locale,
+      governanceObjectIdFromHeader,
+      viewer,
+      clientIp,
+    );
   }
 
   private async getObjectRefList(
@@ -279,6 +309,7 @@ export class ObjectsController {
     locale: string,
     governanceObjectIdFromHeader: string | undefined,
     viewer: string | undefined,
+    clientIp: string | null,
   ): Promise<ObjectRefListResponseDto> {
     const decodedId = decodeURIComponent(objectId);
     const result = await this.getObjectRefListEndpoint.execute(
@@ -288,6 +319,7 @@ export class ObjectsController {
       locale,
       governanceObjectIdFromHeader,
       viewer,
+      this.countryResolver.resolve(clientIp, query.country),
     );
     if (!result) {
       throw new NotFoundException(`Object not found: ${decodedId}`);
@@ -510,6 +542,7 @@ export class ObjectsController {
     @ReqLocale() locale: string,
     @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
     @ReqViewer() viewer: string | undefined,
+    @ReqClientIp() clientIp: string | null,
   ): Promise<ProjectedObjectWithCounts> {
     const view = await this.getObjectById.execute({
       objectId: body.object_id,
@@ -518,6 +551,7 @@ export class ObjectsController {
       includeRejected: body.include_rejected,
       governanceObjectIdFromHeader,
       viewerAccount: viewer,
+      countryCode: this.countryResolver.resolve(clientIp, body.country),
     });
     if (!view) {
       throw new NotFoundException(`Object not found: ${body.object_id}`);
@@ -531,6 +565,7 @@ export class ObjectsController {
     @ReqLocale() locale: string,
     @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
     @ReqViewer() viewer: string | undefined,
+    @ReqClientIp() clientIp: string | null,
   ): Promise<ResolveNestedObjectsResponse> {
     return this.getNestedObjects.execute({
       ids: body.ids,
@@ -538,6 +573,7 @@ export class ObjectsController {
       locale,
       governanceObjectIdFromHeader,
       viewerAccount: viewer,
+      countryCode: this.countryResolver.resolve(clientIp, body.country),
     });
   }
 }

@@ -23,6 +23,7 @@ import { SearchModule } from '../domain/search';
 import { DiscoverController } from './discover.controller';
 import { CategoriesController } from './categories.controller';
 import { DiscoverModule } from '../domain/discover';
+import { GeoipModule } from '../domain/geoip';
 import { WalletModule } from '../domain/wallet';
 import { OblModule } from '../domain/obl';
 import { UserWalletController } from './user-wallet.controller';
@@ -48,6 +49,7 @@ import { ChannelsController } from './channels.controller';
     ExpertiseModule,
     SearchModule,
     DiscoverModule,
+    GeoipModule,
     WalletModule,
     OblModule,
     MessagingModule,

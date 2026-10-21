@@ -8,6 +8,7 @@ tags: [object-create, object-create-playbook, affiliate, agent]
 related:
   - docs/skills/object-content-standards.md
   - docs/skills/object-content-routing.md
+  - docs/apps/query-api/spec/affiliate-links.md
 ---
 
 # Create affiliate object
@@ -27,6 +28,8 @@ Call `get_object_create_playbook({ object_type: "affiliate" })` for `required_up
 ## Field semantics
 
 Supported updates (registry): affiliateButton, affiliateProductIdTypes, affiliateGeoArea, affiliateUrlTemplate, affiliateCode, parent, name, description, ….
+
+`affiliateCode` is a JSON array. The first element must be exactly `PERSONAL` or `GOVERNANCE`. Remaining elements are codes, optionally with show chance (`CODE::70`). Domain/host scopes from legacy Waivio are rejected at index, skipped by the mongo migrator, and deleted by migration `00069`. Read path: [affiliate links](../../apps/query-api/spec/affiliate-links.md).
 
 Use `get_update_schema({ update_type })` for `value_kind`, `cardinality`, and `localizable`.
 

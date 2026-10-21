@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ObjectsDomainModule } from '@opden-data-layer/objects-domain';
+import { AffiliateModule } from '../affiliate';
 import { GovernanceModule } from '../governance';
 import { ObjectProjectionModule } from '../object-projection';
 import { RepositoriesModule } from '../../repositories';
@@ -23,7 +24,13 @@ import { GetUserFeedUnreadCountsEndpoint } from './get-user-feed-unread-counts.e
 import { MarkProfileFeedReadEndpoint } from './mark-profile-feed-read.endpoint';
 
 @Module({
-  imports: [RepositoriesModule, ObjectsDomainModule, GovernanceModule, ObjectProjectionModule],
+  imports: [
+    RepositoriesModule,
+    ObjectsDomainModule,
+    GovernanceModule,
+    ObjectProjectionModule,
+    AffiliateModule,
+  ],
   providers: [
     GetObjectPostsFeedEndpoint,
     GetObjectThreadsFeedEndpoint,

@@ -1,5 +1,6 @@
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
+import type { McpToolDeps } from './mcp-tool.deps';
 
 export const mcpLocaleContextFields = {
   locale: z
@@ -36,6 +37,10 @@ export function toolError(message: string): CallToolResult {
     content: [{ type: 'text', text: message }],
     isError: true,
   };
+}
+
+export function resolveMcpCountry(deps: McpToolDeps, override?: string): string | null {
+  return deps.countryResolver.resolve(deps.clientIp, override);
 }
 
 export function pickMcpContext(args: {

@@ -21,6 +21,7 @@ import type { McpToolDeps } from '../mcp-tool.deps';
 import {
   jsonToolResult,
   pickMcpContext,
+  resolveMcpCountry,
   toolError,
   withMcpLocaleContext,
 } from '../mcp-tool.helpers';
@@ -41,6 +42,7 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
         includeRejected: args.include_rejected,
         governanceObjectIdFromHeader: ctx.governanceObjectIdFromHeader,
         viewerAccount: ctx.viewerAccount,
+        countryCode: resolveMcpCountry(deps, args.country),
       });
       if (!result) {
         return toolError(`Object not found: ${args.object_id}`);
@@ -63,6 +65,7 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
         locale: ctx.locale,
         governanceObjectIdFromHeader: ctx.governanceObjectIdFromHeader,
         viewerAccount: ctx.viewerAccount,
+        countryCode: resolveMcpCountry(deps, args.country),
       });
       return jsonToolResult(result);
     },
@@ -126,7 +129,7 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
       { description, inputSchema: refListSchema },
       async (args) => {
         const ctx = pickMcpContext(args);
-        const { object_id, limit, cursor } = args;
+        const { object_id, limit, cursor, country } = args;
         const result = await deps.getObjectRefList.execute(
           object_id,
           updateType,
@@ -134,6 +137,7 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
           ctx.locale,
           ctx.governanceObjectIdFromHeader,
           ctx.viewerAccount,
+          resolveMcpCountry(deps, country),
         );
         if (!result) {
           return toolError(`Object not found: ${object_id}`);

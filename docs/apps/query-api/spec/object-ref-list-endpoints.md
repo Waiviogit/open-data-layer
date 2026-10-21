@@ -17,7 +17,7 @@ related:
 
 # Object reference lists (`related`, `similar`, `add-on`)
 
-**Back:** [query-api overview](overview.md) · **Related:** [Objects resolve](objects-resolve.md), [Object variant options](object-options.md), [User social lists](user-social-lists.md), [Shop categories](categories.md)
+**Back:** [query-api overview](overview.md) · **Related:** [Objects resolve](objects-resolve.md), [Object variant options](object-options.md), [User social lists](user-social-lists.md), [Shop categories](categories.md), [affiliate links](affiliate-links.md)
 
 Paginated lists of objects linked to a source object for shop-style cards (Related / Similar / Add-On rails and center-column feeds).
 

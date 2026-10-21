@@ -38,7 +38,7 @@ Replaces HTTP headers on tools that use `withMcpLocaleContext`:
 | `viewer` | `X-Viewer` |
 | `governance_object_id` | `X-Governance-Object-Id` |
 
-Client IP is **not** a tool argument. `McpRequestContext.clientIp` is taken from the HTTP request (`resolveClientIp` after `trust proxy`). That address is the agent runtime, not a human browser. See [geoip.md](geoip.md).
+Client IP is **not** a tool argument. `McpRequestContext.clientIp` is taken from the HTTP request (`resolveClientIp` after `trust proxy`). That address is the agent runtime, not a human browser. See [geoip.md](geoip.md). Optional `country` on object-list tools overrides GeoIP for [affiliate links](affiliate-links.md).
 
 ## MCP resources and prompts
 

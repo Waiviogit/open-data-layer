@@ -28,6 +28,7 @@ describe('GetDiscoverObjectsEndpoint', () => {
       {} as ObjectViewService,
       {} as GovernanceResolverService,
       {} as ObjectProjectionService,
+      { enrich: jest.fn() } as never,
     );
 
     const result = await endpoint.execute({
@@ -51,6 +52,7 @@ describe('GetDiscoverObjectsEndpoint', () => {
       {} as ObjectViewService,
       {} as GovernanceResolverService,
       {} as ObjectProjectionService,
+      { enrich: jest.fn() } as never,
     );
 
     await endpoint.execute({
@@ -105,6 +107,7 @@ describe('GetDiscoverObjectsEndpoint', () => {
       objectViewService,
       governanceResolver,
       objectProjectionService,
+      { enrich: jest.fn() } as never,
     );
 
     await endpoint.execute({

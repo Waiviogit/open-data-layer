@@ -15,7 +15,7 @@ related:
 
 # Objects resolve-nested (`POST /query/v1/objects/resolve-nested`)
 
-Batch lightweight projection for nested catalog navigation (object page menu, path stack). Returns `NestedObjectView` items: `object_id`, `object_type`, `fields` only — no authority flags, SEO, galleries at top level, or social counts.
+Batch lightweight projection for nested catalog navigation (object page menu, path stack). Returns `NestedObjectView` items: `object_id`, `object_type`, `fields`, optional `affiliateLinks` — no authority flags, SEO, galleries at top level, or social counts. See [affiliate-links.md](affiliate-links.md).
 
 ## Request body
 

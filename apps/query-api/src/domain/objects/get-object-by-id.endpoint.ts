@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { OBJECT_PAGE_VISIBLE_STATUSES } from '@opden-data-layer/core';
+import { OBJECT_PAGE_VISIBLE_STATUSES, UPDATE_TYPES } from '@opden-data-layer/core';
 import { ObjectViewService } from '@opden-data-layer/objects-domain';
 import {
   AggregatedObjectRepository,
@@ -10,6 +10,7 @@ import {
   UserObjectFollowsRepository,
   UserObjectExpertiseRepository,
 } from '../../repositories';
+import { AffiliateLinksEnricher, flattenAffiliateTargets } from '../affiliate';
 import { GovernanceResolverService } from '../governance';
 import { ObjectProjectionService } from '../object-projection/object-projection.service';
 import type { ProjectedObjectWithCounts } from './projected-object-with-counts.types';
@@ -23,6 +24,7 @@ export interface GetObjectByIdInput {
   governanceObjectIdFromHeader?: string;
   /** Optional `X-Viewer` Hive account for projection favorite / ownership / rating context. */
   viewerAccount?: string;
+  countryCode?: string | null;
 }
 
 @Injectable()
@@ -38,6 +40,7 @@ export class GetObjectByIdEndpoint {
     private readonly objectFavoriteRepo: ObjectFavoriteRepository,
     private readonly objectOwnershipRepo: ObjectOwnershipRepository,
     private readonly postsRepo: PostsRepository,
+    private readonly affiliateLinks: AffiliateLinksEnricher,
   ) {}
 
   async execute(input: GetObjectByIdInput): Promise<ProjectedObjectWithCounts | null> {
@@ -53,10 +56,13 @@ export class GetObjectByIdEndpoint {
       return null;
     }
 
-    const updateTypes =
+    const requested =
       input.updateTypes.length > 0
         ? input.updateTypes
         : [...new Set(agg.updates.map((u) => u.update_type))];
+    const updateTypes = requested.includes(UPDATE_TYPES.IDENTIFIER)
+      ? requested
+      : [...requested, UPDATE_TYPES.IDENTIFIER];
 
     const governance = await this.governanceResolver.resolveMergedForObjectView(
       input.governanceObjectIdFromHeader,
@@ -110,6 +116,12 @@ export class GetObjectByIdEndpoint {
     ]);
 
     const updates_count = Object.values(update_type_counts).reduce((sum, n) => sum + n, 0);
+
+    await this.affiliateLinks.enrich(flattenAffiliateTargets([projected]), {
+      countryCode: input.countryCode ?? null,
+      governanceObjectIdFromHeader: input.governanceObjectIdFromHeader,
+      governance,
+    });
 
     return {
       ...projected,

@@ -29,6 +29,7 @@ import type {
   ObjectPrimaryTabView,
   ObjectSwitcherKind,
 } from '../domain/object-page.types';
+import { affiliateRailItems } from '../domain/affiliate-link-visual';
 import {
   OBJECT_LEFT_RAIL_BLOCK_LABEL,
 } from '../domain/object-update-labels';
@@ -672,6 +673,17 @@ function appendAboutSectionBlock(
       }
       break;
     }
+    case 'affiliateLinks': {
+      const items = affiliateRailItems(viewLike.affiliateLinks);
+      if (items.length > 0) {
+        blocks.push({
+          kind: 'affiliateLinks',
+          headingLabel: OBJECT_LEFT_RAIL_BLOCK_LABEL.affiliateLinks,
+          items,
+        });
+      }
+      break;
+    }
     case 'options': {
       const categories = optionsApi ? mapOptionsApiToCategories(optionsApi.options) : [];
       if (categories.length > 0) {
@@ -1030,6 +1042,7 @@ export function projectedObjectWithCountsToPageModel(
     hasExclusiveOwnership: readHasExclusiveOwnership(api),
     previewGallery: api.previewGallery,
     galleryAlbums: api.galleryAlbums,
+    affiliateLinks: api.affiliateLinks,
     ...parentHoist,
   } as ProjectedObjectView;
 

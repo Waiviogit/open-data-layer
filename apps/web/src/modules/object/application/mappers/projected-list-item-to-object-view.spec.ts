@@ -82,4 +82,31 @@ describe('projectedListItemToObjectView', () => {
       fields: { name: 'Miss Bitcoin Shop' },
     });
   });
+
+  it('threads affiliateLinks onto the ObjectCard view', () => {
+    const item: ProjectedListItem = {
+      objectId: 'prod-1',
+      objectType: 'product',
+      name: 'Widget',
+      imageUrl: null,
+      weight: 1,
+      affiliateLinks: [
+        {
+          link: 'https://www.amazon.com/dp/B000',
+          image: 'https://cdn.example/a.png',
+          type: 'amazon',
+        },
+      ],
+    };
+
+    const view = projectedListItemToObjectView(item);
+
+    expect(view.affiliateLinks).toEqual([
+      {
+        link: 'https://www.amazon.com/dp/B000',
+        image: 'https://cdn.example/a.png',
+        type: 'amazon',
+      },
+    ]);
+  });
 });
