@@ -22,6 +22,18 @@
     @apply ring-2 ring-accent ring-offset-2 ring-offset-bg;
   }
 
+  /** Native select highlight: accent at 10% (`--color-accent-soft`), not OS blue. */
+  select {
+    accent-color: var(--color-accent);
+  }
+
+  select option:checked,
+  select option:hover,
+  select option:focus {
+    background-color: var(--color-accent-soft);
+    color: var(--color-fg);
+  }
+
   /**
    * Post editor linked-object percent slider.
    * Native range uses a dark track under color-scheme: dark; fully reset and paint fill via --slider-fill.

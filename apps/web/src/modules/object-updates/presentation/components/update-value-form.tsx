@@ -25,6 +25,7 @@ import {
   type JsonFieldDescriptor,
 } from '../../application/update-value-form.utils';
 import { AffiliateCodeForm } from './affiliate-code-form';
+import { AffiliateGeoAreaForm } from './affiliate-geo-area-form';
 import { GeoUpdateForm } from './geo-update-form';
 import { ImageCidOrUrlForm } from './image-cid-or-url-form';
 import { ImageGalleryItemForm } from './image-gallery-item-form';
@@ -171,6 +172,9 @@ function UpdateValueFields({
   }
 
   if (definition.value_kind === 'text') {
+    if (updateType === UPDATE_TYPES.AFFILIATE_GEO_AREA) {
+      return <AffiliateGeoAreaForm value={value} onChange={onChange} />;
+    }
     const text = typeof value === 'string' ? value : '';
     const textEnumValues = getTextEnumValues(definition.schema);
 

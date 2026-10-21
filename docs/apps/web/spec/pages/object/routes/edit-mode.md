@@ -38,6 +38,7 @@ Logged-in users can toggle **Edit** on an object profile page and add new ODL up
 | `walletAddress` value | Cryptocurrency `<select>` (`WALLET_SYMBOLS` from core) + address + optional title |
 | `affiliateCode` value | Context `<select>` (`PERSONAL` / `GOVERNANCE`) + numbered code rows with frequency sliders that sum to 100%. Submit writes `value_json` `['PERSONAL', 'CODE1::86', 'CODE2::14']`. Not localizable — no locale select. |
 | `affiliateButton` value | Same ImageCidOrUrl form as avatar (`{ url }` or `{ cid }`). Not localizable — no locale select. |
+| `affiliateGeoArea` value | Select shows full English names (legacy `allCountries` / `allContinents`); writes `US` / `EUROPE` / `GLOBAL`. Not localizable — no locale select. |
 | **Tags** block (edit) | Inline pills per `tagCategory`; header `+` adds a new `tagCategory` (inline compose, no modal); dashed **New tag** pill per category broadcasts `tagCategoryItem`; click pill → `update_vote` **for** (orange border when viewer voted for); **×** → `update_vote` **against**; category removal only via Updates tab |
 | Tags data (MVP) | Only consensus-valid projected tags (`include_rejected=false`); per-viewer hide after reject deferred |
 

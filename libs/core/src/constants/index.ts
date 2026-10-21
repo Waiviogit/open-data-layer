@@ -1,4 +1,5 @@
 export * from './affiliate.constants';
+export * from './affiliate-geo-labels';
 export * from './feed.constants';
 export * from './favorites.constants';
 export * from './map-geo.constants';
