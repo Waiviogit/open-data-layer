@@ -36,6 +36,7 @@ Logged-in users can toggle **Edit** on an object profile page and add new ODL up
 | `object_ref` value | Debounced object search (same as menu item); submitted as `value_text` = referenced `object_id` |
 | `geo` value | Latitude/longitude inputs + interactive map (click to set marker; inputs move marker) |
 | `walletAddress` value | Cryptocurrency `<select>` (`WALLET_SYMBOLS` from core) + address + optional title |
+| `affiliateCode` value | Context `<select>` (`PERSONAL` / `GOVERNANCE`) + numbered code rows with frequency sliders that sum to 100%. Submit writes `value_json` `['PERSONAL', 'CODE1::86', 'CODE2::14']`. Not localizable — no locale select. |
 | **Tags** block (edit) | Inline pills per `tagCategory`; header `+` adds a new `tagCategory` (inline compose, no modal); dashed **New tag** pill per category broadcasts `tagCategoryItem`; click pill → `update_vote` **for** (orange border when viewer voted for); **×** → `update_vote` **against**; category removal only via Updates tab |
 | Tags data (MVP) | Only consensus-valid projected tags (`include_rejected=false`); per-viewer hide after reject deferred |
 

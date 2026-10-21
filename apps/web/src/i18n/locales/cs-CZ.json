@@ -3641,5 +3641,9 @@
   "business_field_cancelled_by": "Cancelled by",
   "business_field_cancelled_at": "Cancelled at",
   "business_service_order_cancelled_ref": "This service order is cancelled",
-  "notification_obl_service_order_cancel": "{canceller} cancelled service order {serviceOrderId}"
+  "notification_obl_service_order_cancel": "{canceller} cancelled service order {serviceOrderId}",
+  "object_edit_affiliate_add": "Přidat nové kódy",
+  "object_edit_affiliate_context": "Kontext",
+  "object_edit_affiliate_frequency": "Frekvence použití:",
+  "object_edit_affiliate_remove": "Odebrat"
 }

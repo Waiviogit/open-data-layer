@@ -3823,5 +3823,9 @@
   "business_field_cancelled_by": "Отменил",
   "business_field_cancelled_at": "Отменено",
   "business_service_order_cancelled_ref": "Этот заказ отменён",
-  "notification_obl_service_order_cancel": "{canceller} отменил заказ {serviceOrderId}"
+  "notification_obl_service_order_cancel": "{canceller} отменил заказ {serviceOrderId}",
+  "object_edit_affiliate_add": "Добавить новые коды",
+  "object_edit_affiliate_context": "Контекст",
+  "object_edit_affiliate_frequency": "Частота использования:",
+  "object_edit_affiliate_remove": "Удалить"
 }

@@ -2918,5 +2918,9 @@
   "business_field_cancelled_by": "Cancelled by",
   "business_field_cancelled_at": "Cancelled at",
   "business_service_order_cancelled_ref": "This service order is cancelled",
-  "notification_obl_service_order_cancel": "{canceller} cancelled service order {serviceOrderId}"
+  "notification_obl_service_order_cancel": "{canceller} cancelled service order {serviceOrderId}",
+  "object_edit_affiliate_add": "새 코드 추가",
+  "object_edit_affiliate_context": "컨텍스트",
+  "object_edit_affiliate_frequency": "사용 빈도:",
+  "object_edit_affiliate_remove": "삭제"
 }

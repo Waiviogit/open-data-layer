@@ -3732,5 +3732,9 @@
   "business_field_cancelled_by": "Cancelled by",
   "business_field_cancelled_at": "Cancelled at",
   "business_service_order_cancelled_ref": "This service order is cancelled",
-  "notification_obl_service_order_cancel": "{canceller} cancelled service order {serviceOrderId}"
+  "notification_obl_service_order_cancel": "{canceller} cancelled service order {serviceOrderId}",
+  "object_edit_affiliate_add": "Añadir nuevos códigos",
+  "object_edit_affiliate_context": "Contexto",
+  "object_edit_affiliate_frequency": "Frecuencia de uso:",
+  "object_edit_affiliate_remove": "Eliminar"
 }

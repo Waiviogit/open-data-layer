@@ -24,6 +24,7 @@ import {
   validateUpdateValue,
   type JsonFieldDescriptor,
 } from '../../application/update-value-form.utils';
+import { AffiliateCodeForm } from './affiliate-code-form';
 import { GeoUpdateForm } from './geo-update-form';
 import { ImageCidOrUrlForm } from './image-cid-or-url-form';
 import { ImageGalleryItemForm } from './image-gallery-item-form';
@@ -290,6 +291,9 @@ function UpdateValueFields({
           lockAlbum={lockGalleryAlbum}
         />
       );
+    }
+    if (updateType === UPDATE_TYPES.AFFILIATE_CODE) {
+      return <AffiliateCodeForm value={value} onChange={onChange} />;
     }
     if (updateType === UPDATE_TYPES.STATUS) {
       return (

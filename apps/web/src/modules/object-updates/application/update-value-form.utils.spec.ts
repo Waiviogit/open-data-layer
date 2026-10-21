@@ -1,6 +1,7 @@
 import {
   UPDATE_ADDRESS,
   UPDATE_ADMINS,
+  UPDATE_AFFILIATE_CODE,
   UPDATE_DELEGATION,
   UPDATE_GEO,
   UPDATE_IMAGE,
@@ -339,5 +340,47 @@ describe('update-value-form.utils', () => {
     expect(validateUpdateValue(UPDATE_INGREDIENTS, '\n\n').success).toBe(
       false,
     );
+  });
+
+  it('initialFormValueForUpdateType seeds affiliateCode form object', () => {
+    expect(initialFormValueForUpdateType(UPDATE_TYPES.AFFILIATE_CODE)).toEqual({
+      scope: 'PERSONAL',
+      entries: [{ code: '', chance: 100 }],
+    });
+  });
+
+  it('coerceFormValueForValidation maps affiliateCode form object to array', () => {
+    const coerced = coerceFormValueForValidation(UPDATE_AFFILIATE_CODE, {
+      scope: 'PERSONAL',
+      entries: [
+        { code: 'A', chance: 86 },
+        { code: 'B', chance: 14 },
+      ],
+    });
+    expect(coerced).toEqual(['PERSONAL', 'A::86', 'B::14']);
+  });
+
+  it('validateUpdateValue accepts sanitized affiliateCode form object', () => {
+    const result = validateUpdateValue(UPDATE_AFFILIATE_CODE, {
+      scope: 'GOVERNANCE',
+      entries: [
+        { code: 'A', chance: 70 },
+        { code: 'B', chance: 30 },
+        { code: '', chance: 0 },
+      ],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.value).toEqual(['GOVERNANCE', 'A::70', 'B::30']);
+    }
+  });
+
+  it('validateUpdateValue rejects affiliateCode without a code', () => {
+    expect(
+      validateUpdateValue(UPDATE_AFFILIATE_CODE, {
+        scope: 'PERSONAL',
+        entries: [{ code: '', chance: 100 }],
+      }).success,
+    ).toBe(false);
   });
 });

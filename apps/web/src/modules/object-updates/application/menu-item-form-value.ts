@@ -1,6 +1,7 @@
 import { MENU_ITEM_STYLES, UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
 import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
 
+import { initialAffiliateCodeFormValue } from './affiliate-code-form-value';
 import { initialValueForDefinition } from './update-value-form.utils';
 import { initialWalletAddressFormValue } from './wallet-address-form-value';
 
@@ -21,6 +22,9 @@ export function initialFormValueForUpdateType(updateType: string): unknown {
   }
   if (updateType === UPDATE_TYPES.WALLET_ADDRESS) {
     return initialWalletAddressFormValue();
+  }
+  if (updateType === UPDATE_TYPES.AFFILIATE_CODE) {
+    return initialAffiliateCodeFormValue();
   }
   const def = UPDATE_REGISTRY[updateType];
   return def ? initialValueForDefinition(def) : null;

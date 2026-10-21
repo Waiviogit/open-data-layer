@@ -232,6 +232,9 @@ export const AFFILIATE_CODE_SCOPES = [
 
 export type AffiliateCodeScope = (typeof AFFILIATE_CODE_SCOPES)[number];
 
+/** On-chain chance suffix: `CODE::70`. */
+export const AFFILIATE_CODE_CHANCE_SEPARATOR = '::';
+
 export const AFFILIATE_GEO_GLOBAL = 'GLOBAL';
 
 export const AFFILIATE_NULL_PRODUCT_IDS = ['none', 'null'] as const;

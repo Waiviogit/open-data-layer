@@ -14,6 +14,7 @@ import { sanitizeTelephoneFormValue } from './telephone-form-value';
 import { sanitizeProductWeightFormValue } from './product-weight-form-value';
 import { sanitizeProductSizeFormValue } from './product-size-form-value';
 import { sanitizeWalletAddressFormValue } from './wallet-address-form-value';
+import { sanitizeAffiliateCodeFormValue } from './affiliate-code-form-value';
 import { sanitizeStatusFormValue } from './status-form-value';
 
 export type GeoFormValue = { latitude: string; longitude: string };
@@ -197,6 +198,9 @@ export function coerceFormValueForValidation(
     };
   }
   if (definition.value_kind === 'json') {
+    if (definition.update_type === UPDATE_TYPES.AFFILIATE_CODE) {
+      return sanitizeAffiliateCodeFormValue(raw);
+    }
     if (unwrapRootStringArraySchema(definition.schema)) {
       if (Array.isArray(raw)) {
         return raw
