@@ -5,6 +5,7 @@ import { extractCidFromContentGatewayUrl } from '@/config/ipfs-content-url';
 const IMAGE_CID_OR_URL_TYPES = new Set<string>([
   UPDATE_TYPES.IMAGE,
   UPDATE_TYPES.IMAGE_BACKGROUND,
+  UPDATE_TYPES.AFFILIATE_BUTTON,
 ]);
 
 export function isImageCidOrUrlUpdateType(updateType: string): boolean {

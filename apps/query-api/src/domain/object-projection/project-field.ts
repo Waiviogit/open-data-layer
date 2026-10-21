@@ -303,7 +303,11 @@ export function projectFieldValue(
         if (!row) {
           return null;
         }
-        if (updateType === UPDATE_TYPES.IMAGE || updateType === UPDATE_TYPES.IMAGE_BACKGROUND) {
+        if (
+          updateType === UPDATE_TYPES.IMAGE ||
+          updateType === UPDATE_TYPES.IMAGE_BACKGROUND ||
+          updateType === UPDATE_TYPES.AFFILIATE_BUTTON
+        ) {
           return pickSingleImageDisplayUrlFromResolvedUpdate(row, contentBaseUrl);
         }
         return row.value_json ?? null;

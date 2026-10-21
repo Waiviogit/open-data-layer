@@ -201,6 +201,50 @@ describe('projectFieldValue imageGalleryItem', () => {
   });
 });
 
+describe('projectFieldValue affiliateButton', () => {
+  const baseRow = {
+    update_id: 'btn-1',
+    update_type: UPDATE_TYPES.AFFILIATE_BUTTON,
+    creator: 'c',
+    locale: null,
+    created_at_unix: 1,
+    event_seq: BigInt(1),
+    value_text: null as string | null,
+    value_geo: null,
+    value_json: null as unknown,
+    validity_status: 'VALID' as const,
+    validity_tier: 'baseline' as const,
+    approve_percent: 100,
+    field_weight: null,
+    decisive_vote_event_seq: null,
+    rank_score: null,
+    rank_context: null,
+    rank_decisive_event_seq: null,
+  };
+
+  it('projects a URL button as a display string', () => {
+    const field: ResolvedField = {
+      update_type: UPDATE_TYPES.AFFILIATE_BUTTON,
+      cardinality: 'single',
+      values: [{ ...baseRow, value_json: { url: 'https://img/btn.png' } }],
+    };
+    expect(projectFieldValue(field, UPDATE_TYPES.AFFILIATE_BUTTON, undefined)).toBe(
+      'https://img/btn.png',
+    );
+  });
+
+  it('projects a CID button through the content gateway', () => {
+    const field: ResolvedField = {
+      update_type: UPDATE_TYPES.AFFILIATE_BUTTON,
+      cardinality: 'single',
+      values: [{ ...baseRow, value_json: { cid: 'bafyButton' } }],
+    };
+    expect(
+      projectFieldValue(field, UPDATE_TYPES.AFFILIATE_BUTTON, 'https://ipfs.example'),
+    ).toBe('https://ipfs.example/ipfs-gateway/content/image/bafyButton');
+  });
+});
+
 describe('projectFieldValue tagCategoryItem', () => {
   it('projects category, value, and update_id from valid updates', () => {
     const field: ResolvedField = {

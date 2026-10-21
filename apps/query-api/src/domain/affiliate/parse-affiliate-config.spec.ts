@@ -50,7 +50,9 @@ function completeFields(
 ): ResolvedObjectView['fields'] {
   return {
     [UPDATE_TYPES.AFFILIATE_BUTTON]: field(UPDATE_TYPES.AFFILIATE_BUTTON, [
-      update(UPDATE_TYPES.AFFILIATE_BUTTON, { value_text: 'https://img/btn.png' }),
+      update(UPDATE_TYPES.AFFILIATE_BUTTON, {
+        value_json: { url: 'https://img/btn.png' },
+      }),
     ]),
     [UPDATE_TYPES.AFFILIATE_URL_TEMPLATE]: field(UPDATE_TYPES.AFFILIATE_URL_TEMPLATE, [
       update(UPDATE_TYPES.AFFILIATE_URL_TEMPLATE, {
@@ -135,6 +137,55 @@ describe('parseAffiliateConfig', () => {
     const fields = completeFields();
     delete fields[UPDATE_TYPES.AFFILIATE_BUTTON];
     expect(parseAffiliateConfig(view(fields))).toBeNull();
+  });
+
+  it('resolves a button CID through the content gateway', () => {
+    const parsed = parseAffiliateConfig(
+      view(
+        completeFields({
+          [UPDATE_TYPES.AFFILIATE_BUTTON]: field(UPDATE_TYPES.AFFILIATE_BUTTON, [
+            update(UPDATE_TYPES.AFFILIATE_BUTTON, {
+              value_json: { cid: 'bafyButton' },
+            }),
+          ]),
+        }),
+      ),
+      { contentBaseUrl: 'https://ipfs.example' },
+    );
+    expect(parsed?.button).toBe(
+      'https://ipfs.example/ipfs-gateway/content/image/bafyButton',
+    );
+  });
+
+  it('falls back to legacy value_text when json is empty', () => {
+    const parsed = parseAffiliateConfig(
+      view(
+        completeFields({
+          [UPDATE_TYPES.AFFILIATE_BUTTON]: field(UPDATE_TYPES.AFFILIATE_BUTTON, [
+            update(UPDATE_TYPES.AFFILIATE_BUTTON, {
+              value_text: 'https://img/legacy.png',
+            }),
+          ]),
+        }),
+      ),
+    );
+    expect(parsed?.button).toBe('https://img/legacy.png');
+  });
+
+  it('returns null when a CID button has no contentBaseUrl', () => {
+    expect(
+      parseAffiliateConfig(
+        view(
+          completeFields({
+            [UPDATE_TYPES.AFFILIATE_BUTTON]: field(UPDATE_TYPES.AFFILIATE_BUTTON, [
+              update(UPDATE_TYPES.AFFILIATE_BUTTON, {
+                value_json: { cid: 'bafyButton' },
+              }),
+            ]),
+          }),
+        ),
+      ),
+    ).toBeNull();
   });
 
   it('drops an incomplete object missing geo', () => {

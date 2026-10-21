@@ -42,7 +42,11 @@ export function feedItemImagePreviewUrls(
 ): string[] {
   const base = contentBaseUrl?.trim();
 
-  if (updateType === UPDATE_TYPES.IMAGE || updateType === UPDATE_TYPES.IMAGE_BACKGROUND) {
+  if (
+    updateType === UPDATE_TYPES.IMAGE ||
+    updateType === UPDATE_TYPES.IMAGE_BACKGROUND ||
+    updateType === UPDATE_TYPES.AFFILIATE_BUTTON
+  ) {
     const url = pickSingleImageDisplayUrlFromResolvedUpdate(
       { value_text: valueText, value_json: valueJson } as ResolvedUpdate,
       base,

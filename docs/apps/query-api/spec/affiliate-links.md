@@ -63,3 +63,7 @@ Product ids come from projected `fields.identifier` as `{ value, type }`. Missin
 URL templates accept both `$product_id` / `$affiliate_code` and legacy `$productId` / `$affiliateCode`.
 
 Geo cascade for similar programs: country → continent (`COUNTRY_TO_CONTINENT`) → `GLOBAL`.
+
+## Button image
+
+`affiliateButton` is `imageCidOrUrl` JSON: exactly one of `{ url }` or `{ cid }`. `AffiliateConfig.button` and `affiliateLinks[].image` stay a resolved HTTPS (or raw `url`) string: `value_json.url`, else `cid` via `{IPFS_CONTENT_BASE_URL}/ipfs-gateway/content/image/{cid}`, else legacy `value_text`. Missing or unresolvable button → no affiliate config.

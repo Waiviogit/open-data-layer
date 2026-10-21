@@ -406,7 +406,11 @@ export const identifierStrategy: JsonValueStrategy = {
 export const legacyImageCidOrUrlStrategy: JsonValueStrategy = {
   supports(_legacyFieldName: string, updateType: string): boolean {
     void _legacyFieldName;
-    return updateType === 'image' || updateType === 'imageBackground';
+    return (
+      updateType === 'image' ||
+      updateType === 'imageBackground' ||
+      updateType === 'affiliateButton'
+    );
   },
   transform(rawBody: string): JsonTransformResult {
     const t = rawBody?.trim() ?? '';

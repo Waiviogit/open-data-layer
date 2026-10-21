@@ -5,11 +5,14 @@ import {
   type AffiliateCodeScope,
 } from '@opden-data-layer/core';
 import type { ResolvedObjectView, ResolvedUpdate } from '@opden-data-layer/objects-domain';
+import { pickSingleImageDisplayUrlFromResolvedUpdate } from '../object-projection/image-display-url';
 import type { AffiliateCodeEntry, AffiliateConfig } from './affiliate.types';
 
 export type ParseAffiliateConfigOptions = {
   /** Shop/favorites owner. Their latest PERSONAL code is kept even if curator-rejected. */
   personalCreator?: string;
+  /** Origin for `{ cid }` button images (`IPFS_CONTENT_BASE_URL`). */
+  contentBaseUrl?: string;
 };
 
 function validUpdates(view: ResolvedObjectView, updateType: string): ResolvedUpdate[] {
@@ -21,6 +24,17 @@ function validUpdates(view: ResolvedObjectView, updateType: string): ResolvedUpd
 function firstText(view: ResolvedObjectView, updateType: string): string | null {
   const text = validUpdates(view, updateType)[0]?.value_text?.trim();
   return text && text.length > 0 ? text : null;
+}
+
+function firstButtonImage(
+  view: ResolvedObjectView,
+  contentBaseUrl?: string,
+): string | null {
+  const row = validUpdates(view, UPDATE_TYPES.AFFILIATE_BUTTON)[0];
+  if (!row) {
+    return null;
+  }
+  return pickSingleImageDisplayUrlFromResolvedUpdate(row, contentBaseUrl);
 }
 
 function allTexts(view: ResolvedObjectView, updateType: string): string[] {
@@ -113,7 +127,7 @@ export function parseAffiliateConfig(
   view: ResolvedObjectView,
   options?: ParseAffiliateConfigOptions,
 ): AffiliateConfig | null {
-  const button = firstText(view, UPDATE_TYPES.AFFILIATE_BUTTON);
+  const button = firstButtonImage(view, options?.contentBaseUrl);
   const urlTemplate = firstText(view, UPDATE_TYPES.AFFILIATE_URL_TEMPLATE);
   const productIdTypes = allTexts(view, UPDATE_TYPES.AFFILIATE_PRODUCT_ID_TYPES).map((t) =>
     t.toLowerCase(),

@@ -1,4 +1,7 @@
+import { UPDATE_TYPES } from '@opden-data-layer/core/update-types';
+
 import {
+  isImageCidOrUrlUpdateType,
   normalizeImageCidOrUrlFormValue,
   sanitizeImageCidOrUrlFormValue,
 } from './image-form-value';
@@ -27,6 +30,12 @@ describe('normalizeImageCidOrUrlFormValue', () => {
         url: 'https://cdn.example.com/photo.jpg',
       }),
     ).toEqual({ url: 'https://cdn.example.com/photo.jpg' });
+  });
+});
+
+describe('isImageCidOrUrlUpdateType', () => {
+  it('treats affiliateButton as an imageCidOrUrl update type', () => {
+    expect(isImageCidOrUrlUpdateType(UPDATE_TYPES.AFFILIATE_BUTTON)).toBe(true);
   });
 });
 

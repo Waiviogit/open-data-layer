@@ -52,7 +52,9 @@ function personalView(objectId: string): ResolvedObjectView {
     canonical: null,
     fields: {
       [UPDATE_TYPES.AFFILIATE_BUTTON]: field(UPDATE_TYPES.AFFILIATE_BUTTON, [
-        update(UPDATE_TYPES.AFFILIATE_BUTTON, { value_text: 'https://img/btn.png' }),
+        update(UPDATE_TYPES.AFFILIATE_BUTTON, {
+          value_json: { url: 'https://img/btn.png' },
+        }),
       ]),
       [UPDATE_TYPES.AFFILIATE_URL_TEMPLATE]: field(UPDATE_TYPES.AFFILIATE_URL_TEMPLATE, [
         update(UPDATE_TYPES.AFFILIATE_URL_TEMPLATE, {

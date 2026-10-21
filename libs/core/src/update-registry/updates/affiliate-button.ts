@@ -1,13 +1,13 @@
 import type { UpdateDefinition } from '../types';
-import { urlStringSchema } from '../schemas/string-schemas';
+import { imageCidOrUrlJsonSchema } from '../schemas/image-cid-or-url-json';
 import { UPDATE_TYPES } from '../update-types';
 
 export const UPDATE_AFFILIATE_BUTTON: UpdateDefinition = {
   update_type: UPDATE_TYPES.AFFILIATE_BUTTON,
   namespace: 'odl',
   localizable: false,
-  description: 'Affiliate button or link label.',
-  value_kind: 'text',
+  description: 'Affiliate button image: exactly one of IPFS CID or HTTPS URL.',
+  value_kind: 'json',
   cardinality: 'single',
-  schema: urlStringSchema,
+  schema: imageCidOrUrlJsonSchema,
 };

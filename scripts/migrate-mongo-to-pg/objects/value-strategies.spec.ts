@@ -1,6 +1,7 @@
 import {
   addressStrategy,
   migrateObjectRefBodyToText,
+  transformJsonBody,
   transformTelephoneFromField,
 } from './value-strategies';
 import type { MongoWObjectField } from './types';
@@ -299,6 +300,35 @@ describe('addressStrategy', () => {
         country: 'Unknown',
         postal_code: '0',
       },
+    });
+  });
+});
+
+describe('legacyImageCidOrUrlStrategy affiliateButton', () => {
+  it('maps a plain body string to { url }', () => {
+    expect(
+      transformJsonBody(
+        'affiliateButton',
+        'affiliateButton',
+        'https://cdn.example/logo.png',
+      ),
+    ).toEqual({ ok: true, value: { url: 'https://cdn.example/logo.png' } });
+  });
+
+  it('keeps existing { url } JSON', () => {
+    expect(
+      transformJsonBody(
+        'affiliateButton',
+        'affiliateButton',
+        '{"url":"https://cdn.example/logo.png"}',
+      ),
+    ).toEqual({ ok: true, value: { url: 'https://cdn.example/logo.png' } });
+  });
+
+  it('rejects an empty body', () => {
+    expect(transformJsonBody('affiliateButton', 'affiliateButton', '')).toEqual({
+      ok: false,
+      reason: 'image: empty body',
     });
   });
 });

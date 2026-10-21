@@ -105,9 +105,13 @@ export class AffiliateCodesService {
       include_rejected: options?.includeRejected === true,
       governance: governance ?? DEFAULT_GOVERNANCE_SNAPSHOT,
     });
+    const contentBaseUrl = this.config.get<string | undefined>('ipfs.contentBaseUrl');
     return views
       .map((view) =>
-        parseAffiliateConfig(view, { personalCreator: options?.personalCreator }),
+        parseAffiliateConfig(view, {
+          personalCreator: options?.personalCreator,
+          contentBaseUrl,
+        }),
       )
       .filter((c): c is AffiliateConfig => c != null);
   }
