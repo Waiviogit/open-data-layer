@@ -88,6 +88,32 @@ describe('parseAffiliateConfig', () => {
     });
   });
 
+  it('keeps a raw Amazon camelCase url template', () => {
+    const amazon =
+      'https://www.amazon.fr/dp/$productId/ref=nosim?tag=$affiliateCode';
+    const parsed = parseAffiliateConfig(
+      view(
+        completeFields({
+          [UPDATE_TYPES.AFFILIATE_URL_TEMPLATE]: field(
+            UPDATE_TYPES.AFFILIATE_URL_TEMPLATE,
+            [
+              update(UPDATE_TYPES.AFFILIATE_URL_TEMPLATE, {
+                value_text: amazon,
+              }),
+            ],
+          ),
+        }),
+      ),
+    );
+    expect(parsed?.urlTemplate).toBe(amazon);
+  });
+
+  it('does not rewrite a stored snake template', () => {
+    const snake = 'https://a/$product_id?t=$affiliate_code';
+    const parsed = parseAffiliateConfig(view(completeFields()));
+    expect(parsed?.urlTemplate).toBe(snake);
+  });
+
   it('drops an incomplete object missing urlTemplate', () => {
     const fields = completeFields();
     delete fields[UPDATE_TYPES.AFFILIATE_URL_TEMPLATE];

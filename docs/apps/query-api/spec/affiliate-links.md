@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: query-api
 tags: [query-api, affiliate]
-updated_at: 2026-10-21
+updated_at: 2026-10-22
 related:
   - docs/apps/query-api/spec/overview.md
   - docs/apps/query-api/spec/geoip.md
@@ -60,7 +60,7 @@ MCP: `country` is a tool arg; `clientIp` is request-derived, never a tool arg.
 
 Product ids come from projected `fields.identifier` as `{ value, type }`. Missing or stale-cache identifier → no links, no throw.
 
-URL templates accept both `$product_id` / `$affiliate_code` and legacy `$productId` / `$affiliateCode`.
+Writes require `https://` plus `$productId` and `$affiliateCode`. `http://` is rejected at the registry. Reads still substitute snake `$product_id` / `$affiliate_code` if those tokens are stored.
 
 Geo cascade for similar programs: country → continent (`COUNTRY_TO_CONTINENT`) → `GLOBAL`.
 

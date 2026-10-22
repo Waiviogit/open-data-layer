@@ -84,6 +84,24 @@ describe('buildAffiliateLinks', () => {
     expect(links[0]?.objectId).toBe('aff-g');
   });
 
+  it('substitutes Amazon camelCase placeholders', () => {
+    const links = buildAffiliateLinks(
+      [
+        config({
+          objectId: 'aff-amazon',
+          urlTemplate:
+            'https://www.amazon.fr/dp/$productId/ref=nosim?tag=$affiliateCode',
+        }),
+      ],
+      [{ productId: 'B001', productIdType: 'asin' }],
+      'US',
+    );
+    expect(links).toHaveLength(1);
+    expect(links[0]?.link).toBe(
+      'https://www.amazon.fr/dp/B001/ref=nosim?tag=AFF1',
+    );
+  });
+
   it('substitutes both new and legacy placeholders', () => {
     const links = buildAffiliateLinks(
       [

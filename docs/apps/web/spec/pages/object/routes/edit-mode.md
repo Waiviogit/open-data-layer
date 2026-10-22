@@ -8,7 +8,7 @@ related:
 type: spec
 status: active
 scope: web
-updated_at: 2026-09-22
+updated_at: 2026-10-22
 ---
 
 # Object edit mode (left rail updates)
@@ -40,6 +40,7 @@ Logged-in users can toggle **Edit** on an object profile page and add new ODL up
 | `affiliateButton` value | Same ImageCidOrUrl form as avatar (`{ url }` or `{ cid }`). Not localizable — no locale select. |
 | `affiliateGeoArea` value | Select shows full English names (legacy `allCountries` / `allContinents`); writes `US` / `EUROPE` / `GLOBAL`. Not localizable — no locale select. |
 | `affiliateProductIdTypes` value | Text input; placeholder `Product ID type` (`object_field_affiliateProductIdTypes`). Not localizable — no locale select. |
+| `affiliateUrlTemplate` value | Text input; placeholder `URL template` (`object_field_affiliateUrlTemplate`). Must start with `https://` and include `$productId` / `$affiliateCode` — `http://` is rejected. Disclaimer `affiliate_url_template_info` always under the input. Not localizable — no locale select. |
 | **Tags** block (edit) | Inline pills per `tagCategory`; header `+` adds a new `tagCategory` (inline compose, no modal); dashed **New tag** pill per category broadcasts `tagCategoryItem`; click pill → `update_vote` **for** (orange border when viewer voted for); **×** → `update_vote` **against**; category removal only via Updates tab |
 | Tags data (MVP) | Only consensus-valid projected tags (`include_rejected=false`); per-viewer hide after reject deferred |
 

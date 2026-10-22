@@ -168,3 +168,9 @@
 **Pattern:** `configureNotificationsWsUrl` ran during render and reset the singleton whenever it was `undefined` (same URL). Stale `onclose` from a replaced socket scheduled another reconnect → burst of `GET /api/auth/ws-token` and multiple sockets.
 
 **Rule:** Configure only when the URL changes (`useLayoutEffect`). Ignore `onclose`/`onerror` unless `this.ws === closed`. Overlapping `ensureConnected` must share one `connectPromise` / one token fetch.
+
+## Affiliate URL template: example must match write validation
+
+**Pattern:** Disclaimer copied Waivio `http://www.affiliatesite.com?...` while live rows and Amazon templates are `https://`. Users paste the example and fail (or we later reject `http`).
+
+**Rule:** `affiliateUrlTemplate` write schema requires `https://` (case-insensitive start) plus `$productId` / `$affiliateCode`. Example and error copy use `https://`. Do not use `z.string().url()` — `$` placeholders break URL parse. Read path may still substitute stored `http` templates.

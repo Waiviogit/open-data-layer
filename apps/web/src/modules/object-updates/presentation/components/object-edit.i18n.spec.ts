@@ -46,6 +46,9 @@ describe('Object edit UI i18n keys (en-US)', () => {
       'stateProvince',
       'postalCode',
       'location_country',
+      'affiliate_url_error',
+      'affiliate_url_template_info',
+      'object_field_affiliateUrlTemplate',
     ] as const;
 
     for (const key of keys) {
@@ -53,6 +56,23 @@ describe('Object edit UI i18n keys (en-US)', () => {
       expect(typeof value).toBe('string');
       expect((value as string).length).toBeGreaterThan(0);
     }
+  });
+
+  it('names camelCase URL template tokens in en-US copy', () => {
+    for (const key of ['affiliate_url_error', 'affiliate_url_template_info'] as const) {
+      const value = enUS[key];
+      expect(value).toContain('$productId');
+      expect(value).toContain('$affiliateCode');
+      expect(value).toContain('https://');
+      expect(value).not.toContain('PRODUCTID');
+      expect(value).not.toContain('AFFILIATECODE');
+    }
+    expect(enUS.affiliate_url_template_info).toContain(
+      'https://www.affiliatesite.com',
+    );
+    expect(enUS.affiliate_url_template_info).not.toContain(
+      'http://www.affiliatesite.com',
+    );
   });
 });
 

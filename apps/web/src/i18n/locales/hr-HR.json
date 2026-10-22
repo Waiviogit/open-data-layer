@@ -151,6 +151,8 @@
   "advanced_report_loading_count": "Loading… {count}+",
   "advanced_report_partial": "Partial load ({count} rows); increase date range or retry",
   "advanced_report_unauthorized": "Please log in to view the advanced report.",
+  "affiliate_url_error": "Please enter a valid URL. It should begin with the website name and include $productId and $affiliateCode.",
+  "affiliate_url_template_info": "URL template will be used to generate product links. URL template should begin with the website name and incorporate parameters $productId and $affiliateCode. URL template should be formatted as follows: https://www.affiliatesite.com?productid=$productId&affiliatecode=$affiliateCode.",
   "agree_to": "Pristajem",
   "agree_to_pay_following_commissions_waivio": "Pristajem platiti sljedeće provizije tvrtki Waivio i partnerima",
   "agree_to_pay_following_commissions_waivio)": "Pristajem platiti sljedeće provizije tvrtki Waivio i partnerima",
