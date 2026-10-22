@@ -32,6 +32,9 @@ jest.mock('@/shared/presentation', () => ({
   ),
   ModalShell: ({ open, children }: { open: boolean; children: React.ReactNode }) =>
     open ? <div>{children}</div> : null,
+  SocialEmbedHtml: ({ html, className }: { html: string; className?: string }) => (
+    <div className={className} dangerouslySetInnerHTML={{ __html: html }} />
+  ),
 }));
 
 jest.mock('@/shared/presentation/layout/hooks/use-breakpoint', () => ({

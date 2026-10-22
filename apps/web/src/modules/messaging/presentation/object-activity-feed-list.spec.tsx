@@ -26,6 +26,9 @@ jest.mock('@/shared/presentation', () => ({
     open ? <div>{children}</div> : null,
   ModalShell: ({ open, children }: { open: boolean; children: React.ReactNode }) =>
     open ? <div>{children}</div> : null,
+  SocialEmbedHtml: ({ html, className }: { html: string; className?: string }) => (
+    <div className={className} dangerouslySetInnerHTML={{ __html: html }} />
+  ),
   getImagePathPost: (url: string) => url,
   shouldUnoptimizeRemoteImage: () => true,
 }));
