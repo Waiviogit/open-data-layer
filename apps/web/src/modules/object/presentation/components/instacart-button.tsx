@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { useI18n } from '@/i18n/providers/i18n-provider';
+import { instacartWaitPath } from '@/modules/object/domain/instacart-wait';
 
 export type InstacartButtonVariant = 'card' | 'page';
 
@@ -22,7 +23,6 @@ export function InstacartButton({
 }: InstacartButtonProps) {
   const { t } = useI18n();
   const [error, setError] = useState(false);
-  const [pending, setPending] = useState(false);
   const label =
     variant === 'page'
       ? t('Instacart_Get_Recipe_Ingredients')
@@ -41,15 +41,11 @@ export function InstacartButton({
       <button
         type="button"
         className={variant === 'page' ? 'instacart-btn instacart-btn--page' : 'instacart-btn'}
-        disabled={pending}
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
-          void openInstacartLink(objectId, {
-            onPending: setPending,
-            onError: () => setError(true),
-            onSuccess: () => setError(false),
-          });
+          const popup = window.open(instacartWaitPath(objectId));
+          setError(!popup);
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- static brand asset */}
@@ -70,37 +66,4 @@ export function InstacartButton({
       ) : null}
     </div>
   );
-}
-
-export async function openInstacartLink(
-  objectId: string,
-  hooks: {
-    onPending: (pending: boolean) => void;
-    onError: () => void;
-    onSuccess: () => void;
-  },
-): Promise<void> {
-  const popup = window.open('about:blank');
-  hooks.onPending(true);
-  try {
-    const response = await fetch(
-      `/api/objects/${encodeURIComponent(objectId)}/instacart-link`,
-    );
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    const body = (await response.json()) as { url?: unknown };
-    if (typeof body.url !== 'string' || !body.url.trim()) {
-      throw new Error('missing url');
-    }
-    if (popup) {
-      popup.location.href = body.url;
-    }
-    hooks.onSuccess();
-  } catch {
-    popup?.close();
-    hooks.onError();
-  } finally {
-    hooks.onPending(false);
-  }
 }

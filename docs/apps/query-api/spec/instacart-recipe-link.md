@@ -13,6 +13,7 @@ related:
   - docs/apps/query-api/spec/affiliate-links.md
   - docs/apps/query-api/spec/geoip.md
   - docs/apps/web/spec/object-card.md
+  - docs/apps/web/spec/pages/instacart/page.md
   - docs/apps/web/spec/pages/object/routes/recipe-left-rail.md
 ---
 
@@ -20,7 +21,7 @@ related:
 
 **Back:** [overview](overview.md) · **Related:** [OpenAI](openai.md), [affiliate links](affiliate-links.md), [GeoIP](geoip.md)
 
-Returns a shopping URL for a `recipe` object that has an `identifier` of type `instacart` (case-insensitive; value optional). Recipes never receive `affiliateLinks` — Instacart is the only merchant surface on that type.
+Returns a shopping URL for a `recipe` object that has an `identifier` of type `instacart` (case-insensitive; value optional). Recipes never receive `affiliateLinks` — Instacart is the only merchant surface on that type. Web opens [`/instacart/:id`](../../web/spec/pages/instacart/page.md) first, then this endpoint.
 
 ## Route
 
@@ -51,7 +52,7 @@ Missing `INSTACART_KEY` / `OPENAI_API_KEY` is never 503.
 1. Require `object_type === recipe` and identifier type `instacart`.
 2. **No `INSTACART_KEY`:** `https://www.instacart.com` (host `.ca` when country is `CA`). Optional UTM if a governance instacart affiliate **code** exists. No Redis, OpenAI, or IDP. Ingredients are not required.
 3. **Key + Redis hit** `query-api:cache:instacart-recipe:{objectId}`: apply CA + UTM to the cached **bare** URL. Skip OpenAI / IDP. Cache never stores query params.
-4. **Key + miss:** format ingredients (OpenAI `json_schema` when `OPENAI_API_KEY` is set; else `{ name }[]` + `[description]`). POST Instacart IDP `/idp/v1/products/recipe`. Cache TTL `2_592_000`. Empty ingredients → 422. IDP failure → storefront URL, no cache write.
+4. **Key + miss:** format ingredients (OpenAI `json_schema` when `OPENAI_API_KEY` is set; else `{ name }[]` + `[description]`). `servings` is the first integer ≥ 1 from the object `servings` field, else OpenAI `servings`, else `1`. POST Instacart IDP `/idp/v1/products/recipe`. Cache TTL `2_592_000`. Empty ingredients → 422. IDP failure → storefront URL, no cache write.
 
 UTM (only when a partner code exists):
 

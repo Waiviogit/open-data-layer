@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, object-page, components]
-updated_at: 2026-09-24
+updated_at: 2026-10-22
 related:
   - docs/apps/web/spec/overview.md
 ---
@@ -42,7 +42,7 @@ Single component: [`apps/web/src/modules/feed/presentation/components/object-car
 - **Rating grid** — 2 columns (`grid-cols-2`), fill order left→right, top→bottom (1→left, 2→left+right, 3→+bottom-left, 4→full 2×2).
 - Description excerpt (plain text, not italic), max **300 characters** (ellipsis when truncated).
 - **Affiliate links** — default and `catalog` layouts only, after the description: `Affiliate Link:` plus merchant logos from query-api `affiliateLinks`. Logos sit in a theme-invariant white `4px` tile (`.affiliate-merchant-btn`) — not `rounded-btn` / `bg-surface`. Hidden when the array is empty/unrenderable, and on `editorRow` / `popup` / `mapSidebar` / `popupNameOnly`. Click opens the merchant URL in a new tab and does not navigate the card. **Recipes never render this row** — even if a stale payload still has chips. See [query-api affiliate-links](../../query-api/spec/affiliate-links.md).
-- **Instacart** — default and `catalog` only, after the description, when `object_type` is `recipe` and an identifier type is `instacart`. Brand button (`.instacart-btn`) fetches `GET /api/objects/:id/instacart-link` **on click** (no prefetch). `window.open('about:blank')` then set location; `stopPropagation`. On the object page the same button sits in the **hero** (centered under title/actions), not the left rail. See [query-api instacart-recipe-link](../../query-api/spec/instacart-recipe-link.md).
+- **Instacart** — default and `catalog` only, after the description, when `object_type` is `recipe` and an identifier type is `instacart`. Brand button (`.instacart-btn`) opens `/instacart/:id` **on click** (no prefetch). That wait page fetches `GET /api/objects/:id/instacart-link` and `location.replace`s to Instacart; `stopPropagation`. On the object page the same button sits in the **hero** (centered under title/actions), not the left rail. See [Instacart wait page](pages/instacart/page.md) and [query-api instacart-recipe-link](../../query-api/spec/instacart-recipe-link.md).
 - **Favorite heart** (top-right).
 
 ## Rating grid

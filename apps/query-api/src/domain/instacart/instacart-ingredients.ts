@@ -10,8 +10,34 @@ export type InstacartRecipePayload = {
   link_type: 'recipe';
   ingredients: InstacartIngredient[];
   instructions: string[];
+  servings: number;
   image_url?: string;
 };
+
+export const DEFAULT_INSTACART_SERVINGS = 1;
+
+export function parseServingsCount(raw: unknown): number | null {
+  if (typeof raw === 'number' && Number.isFinite(raw)) {
+    const n = Math.floor(raw);
+    return n >= 1 ? n : null;
+  }
+  if (typeof raw !== 'string') {
+    return null;
+  }
+  const match = raw.trim().match(/(\d+(?:\.\d+)?)/);
+  if (!match?.[1]) {
+    return null;
+  }
+  const n = Math.floor(Number(match[1]));
+  return n >= 1 ? n : null;
+}
+
+export function resolveInstacartServings(
+  fieldValue: unknown,
+  llmServings: number | null,
+): number {
+  return parseServingsCount(fieldValue) ?? llmServings ?? DEFAULT_INSTACART_SERVINGS;
+}
 
 export const INSTACART_INGREDIENTS_JSON_SCHEMA: OpenAiJsonSchema = {
   name: 'instacart_ingredients_schema',
@@ -62,6 +88,12 @@ export const INSTACART_INGREDIENTS_JSON_SCHEMA: OpenAiJsonSchema = {
           type: 'string',
           description: 'preparation step',
         },
+      },
+      servings: {
+        type: 'integer',
+        description:
+          'How many servings the recipe yields. Infer from the description when possible. Minimum 1.',
+        minimum: 1,
       },
     },
     required: ['ingredients', 'instructions'],
@@ -122,12 +154,17 @@ export function buildInstacartIngredientPrompt(input: {
   if description says use this ore that make each as ingredient pick both;
   
   Divide recipe preparation into steps: ${input.preparation}
+  If the text mentions how many people or servings the recipe yields, set servings to that integer (minimum 1).
   `;
 }
 
 export function parseLlmRecipeIngredients(
   raw: unknown,
-): { ingredients: InstacartIngredient[]; instructions: string[] } | null {
+): {
+  ingredients: InstacartIngredient[];
+  instructions: string[];
+  servings: number | null;
+} | null {
   if (raw == null || typeof raw !== 'object' || Array.isArray(raw)) {
     return null;
   }
@@ -152,13 +189,18 @@ export function parseLlmRecipeIngredients(
   if (ingredients.length === 0 || instructions.length === 0) {
     return null;
   }
-  return { ingredients, instructions };
+  return {
+    ingredients,
+    instructions,
+    servings: parseServingsCount(rec.servings),
+  };
 }
 
 export function buildInstacartRecipePayload(input: {
   title: string;
   ingredients: InstacartIngredient[];
   instructions: string[];
+  servings: number;
   imageUrl?: string;
 }): InstacartRecipePayload {
   return {
@@ -166,6 +208,7 @@ export function buildInstacartRecipePayload(input: {
     link_type: 'recipe',
     ingredients: input.ingredients,
     instructions: input.instructions,
+    servings: input.servings,
     ...(input.imageUrl ? { image_url: input.imageUrl } : {}),
   };
 }

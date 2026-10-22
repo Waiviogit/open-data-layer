@@ -590,18 +590,13 @@ describe('ObjectCard Instacart', () => {
   );
 
   it('does not navigate the card when Instacart is clicked', async () => {
-    const popup = { location: { href: 'about:blank' }, close: jest.fn() };
-    window.open = jest.fn().mockReturnValue(popup);
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ url: 'https://www.instacart.com/x' }),
-    }) as typeof fetch;
+    window.open = jest.fn().mockReturnValue({ close: jest.fn() });
     const onNavigate = jest.fn();
 
     render(<ObjectCard object={recipeInstacart} onNavigate={onNavigate} as="div" />);
     fireEvent.click(screen.getByRole('button', { name: 'Get Ingredients' }));
 
     expect(onNavigate).not.toHaveBeenCalled();
-    expect(window.open).toHaveBeenCalledWith('about:blank');
+    expect(window.open).toHaveBeenCalledWith('/instacart/recipe-1');
   });
 });

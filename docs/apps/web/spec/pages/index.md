@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: web
 tags: [web, pages, index]
-updated_at: 2026-06-10
+updated_at: 2026-10-22
 related:
   - docs/apps/web/spec/overview.md
 ---
@@ -32,6 +32,7 @@ Every App Router `page.tsx` under `apps/web/src/app/` maps to a **route area** f
 | `/business` | `business/` | [overview.md](business/overview.md) | `@/modules/business` |
 | `/offers`, `/requests` | `business/` | [overview.md](business/overview.md) | `@/modules/business` (public discovery) |
 | `/sign-in` | `sign-in/` | [page.md](sign-in/page.md) | `@/modules/auth` |
+| `/instacart/:id` | `instacart/` | [page.md](instacart/page.md) | `@/modules/object` wait page → Instacart |
 | `/dev/showcase` | `dev/showcase/` | [page.md](dev/showcase/page.md) | layout demo (internal, `status: draft`) |
 
 ## Object detail (`/object/:id`)

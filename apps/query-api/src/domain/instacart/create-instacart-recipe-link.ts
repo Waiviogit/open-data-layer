@@ -7,6 +7,7 @@ import {
   rawInstacartIngredients,
   readIngredientNames,
   readRecipeImageUrl,
+  resolveInstacartServings,
   type InstacartRecipePayload,
 } from './instacart-ingredients';
 import { INSTACART_INGREDIENTS_JSON_SCHEMA } from './instacart-ingredients';
@@ -80,6 +81,7 @@ export async function createInstacartRecipeLink(
   const raw = rawInstacartIngredients(names, description);
   let ingredients = raw.ingredients;
   let instructions = raw.instructions;
+  let llmServings: number | null = null;
 
   if (deps.openaiKey) {
     const llm = await deps.openai.promptWithJsonSchema({
@@ -95,6 +97,7 @@ export async function createInstacartRecipeLink(
     if (parsed) {
       ingredients = parsed.ingredients;
       instructions = parsed.instructions;
+      llmServings = parsed.servings;
     }
   }
 
@@ -102,6 +105,7 @@ export async function createInstacartRecipeLink(
     title,
     ingredients,
     instructions,
+    servings: resolveInstacartServings(object.fields.servings, llmServings),
     imageUrl: readRecipeImageUrl(object.fields),
   });
   const created = await deps.createRecipe(payload);

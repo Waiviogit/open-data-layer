@@ -115,6 +115,7 @@ describe('createInstacartRecipeLink', () => {
       link_type: 'recipe',
       ingredients: [{ name: 'flour' }, { name: 'eggs' }],
       instructions: ['Mix well'],
+      servings: 1,
     });
     expect(deps.cacheSet).toHaveBeenCalledWith(
       'recipe-1',
@@ -132,6 +133,7 @@ describe('createInstacartRecipeLink', () => {
       result: {
         ingredients: [{ name: 'flour', measurements: [{ quantity: 2, unit: 'cup' }] }],
         instructions: ['Step 1'],
+        servings: 8,
       },
     });
     await createInstacartRecipeLink(RECIPE, deps);
@@ -140,8 +142,34 @@ describe('createInstacartRecipeLink', () => {
     expect(deps.createRecipe.mock.calls[0][0]).toMatchObject({
       ingredients: [{ name: 'flour', measurements: [{ quantity: 2, unit: 'cup' }] }],
       instructions: ['Step 1'],
+      servings: 8,
     });
     expect(deps.cacheSet).toHaveBeenCalled();
+  });
+
+  it('uses object servings over OpenAI when the field is present', async () => {
+    const deps = makeDeps({
+      instacartKey: 'ik',
+      openaiKey: 'ok',
+    });
+    deps.openai.promptWithJsonSchema.mockResolvedValue({
+      result: {
+        ingredients: [{ name: 'flour' }],
+        instructions: ['Mix'],
+        servings: 8,
+      },
+    });
+    await createInstacartRecipeLink(
+      { ...RECIPE, fields: { ...RECIPE.fields, servings: '4-6' } },
+      deps,
+    );
+    expect(deps.createRecipe.mock.calls[0][0]).toMatchObject({ servings: 4 });
+  });
+
+  it('defaults servings to 1 when the field and OpenAI omit them', async () => {
+    const deps = makeDeps({ instacartKey: 'ik' });
+    await createInstacartRecipeLink(RECIPE, deps);
+    expect(deps.createRecipe.mock.calls[0][0]).toMatchObject({ servings: 1 });
   });
 
   it('reapplies CA and UTM on a cache hit and skips OpenAI and IDP', async () => {

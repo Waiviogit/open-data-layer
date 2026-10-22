@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 
 import { InstacartButton } from './instacart-button';
 
@@ -48,22 +48,24 @@ describe('InstacartButton', () => {
     expect(container.firstElementChild?.className).toContain('items-center');
   });
 
-  it('opens about:blank then navigates the popup to the BFF url', async () => {
-    const popup = { location: { href: 'about:blank' }, close: jest.fn() };
-    window.open = jest.fn().mockReturnValue(popup);
-    global.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ url: 'https://www.instacart.com/x' }),
-    }) as typeof fetch;
+  it('opens the wait page and does not fetch from the opener', () => {
+    window.open = jest.fn().mockReturnValue({ close: jest.fn() });
+    global.fetch = jest.fn() as typeof fetch;
 
     render(<InstacartButton objectId="recipe-1" variant="card" />);
     fireEvent.click(screen.getByRole('button', { name: 'Get Ingredients' }));
 
-    expect(window.open).toHaveBeenCalledWith('about:blank');
-    await waitFor(() => {
-      expect(popup.location.href).toBe('https://www.instacart.com/x');
-    });
-    expect(global.fetch).toHaveBeenCalledWith('/api/objects/recipe-1/instacart-link');
+    expect(window.open).toHaveBeenCalledWith('/instacart/recipe-1');
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('shows an error when the wait tab is blocked', () => {
+    window.open = jest.fn().mockReturnValue(null);
+
+    render(<InstacartButton objectId="recipe-1" variant="card" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Get Ingredients' }));
+
+    expect(screen.getByText('Could not open Instacart')).toBeInTheDocument();
   });
 
   it('does not fetch the Instacart URL on mount', () => {
