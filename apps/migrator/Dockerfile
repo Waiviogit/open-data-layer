@@ -1,6 +1,6 @@
 # Ephemeral migrations / data tools: Kysely schema CLI and tsx scripts (mongo import, backfills).
 # Default: apply schema migrations to latest. Override command for mongo imports, etc.
-FROM node:24.12.0-alpine3.23
+FROM node:24.22.1-alpine3.23
 
 WORKDIR /app
 

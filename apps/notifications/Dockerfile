@@ -1,4 +1,4 @@
-FROM node:24.12.0-alpine3.23 AS builder
+FROM node:24.22.1-alpine3.23 AS builder
 
 WORKDIR /app
 
@@ -18,7 +18,7 @@ RUN mkdir -p /deploy \
     && cp dist/apps/notifications/main.js /deploy/main.js \
     && cd /deploy && pnpm install --prod --ignore-workspace --no-frozen-lockfile --config.strictDepBuilds=false
 
-FROM node:24.12.0-alpine3.23 AS production
+FROM node:24.22.1-alpine3.23 AS production
 
 WORKDIR /app
 

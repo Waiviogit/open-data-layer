@@ -6,7 +6,7 @@
 #
 # Requires `output: 'standalone'` in apps/web/next.config.js (see that file).
 
-FROM node:24.12.0-alpine3.23 AS builder
+FROM node:24.22.1-alpine3.23 AS builder
 
 WORKDIR /app
 
@@ -27,7 +27,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 WORKDIR /app
 RUN pnpm exec next build ./apps/web
 
-FROM node:24.12.0-alpine3.23 AS runner
+FROM node:24.22.1-alpine3.23 AS runner
 
 WORKDIR /app
 

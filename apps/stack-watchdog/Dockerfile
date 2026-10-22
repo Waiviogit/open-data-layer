@@ -1,4 +1,4 @@
-FROM node:24.12.0-alpine3.23 AS builder
+FROM node:24.22.1-alpine3.23 AS builder
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ RUN pnpm exec nx run stack-watchdog:build
 RUN mkdir -p /deploy \
     && cp dist/apps/stack-watchdog/main.js /deploy/main.js
 
-FROM node:24-bookworm-slim AS production
+FROM node:24.22.1-bookworm-slim AS production
 
 WORKDIR /app
 

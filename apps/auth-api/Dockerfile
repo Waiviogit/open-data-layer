@@ -1,4 +1,4 @@
-FROM node:24.12.0-alpine3.23 AS builder
+FROM node:24.22.1-alpine3.23 AS builder
 
 WORKDIR /app
 
@@ -19,7 +19,7 @@ RUN apk add --no-cache python3 make g++ \
     && cp dist/apps/auth-api/main.js /deploy/main.js \
     && cd /deploy && pnpm install --prod --ignore-workspace --no-frozen-lockfile --config.strictDepBuilds=false
 
-FROM node:24.12.0-alpine3.23 AS production
+FROM node:24.22.1-alpine3.23 AS production
 
 WORKDIR /app
 
