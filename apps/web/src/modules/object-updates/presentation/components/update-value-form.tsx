@@ -200,7 +200,11 @@ function UpdateValueFields({
     const inputType =
       updateType === 'email' ? 'email' : updateType === 'url' ? 'url' : 'text';
     const placeholder =
-      updateType === UPDATE_TYPES.IMAGE_GALLERY ? t('add_new_album_placeholder') : undefined;
+      updateType === UPDATE_TYPES.IMAGE_GALLERY
+        ? t('add_new_album_placeholder')
+        : updateType === UPDATE_TYPES.AFFILIATE_PRODUCT_ID_TYPES
+          ? t('object_field_affiliateProductIdTypes')
+          : undefined;
 
     if (updateType === UPDATE_TYPES.NAME && text.length <= 80) {
       return (
@@ -219,7 +223,7 @@ function UpdateValueFields({
         {label ? <span className="font-weight-label text-fg">{label}</span> : null}
         {text.length > 80 ? (
           <textarea
-            className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-body-sm text-fg"
+            className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-body-sm text-fg placeholder:text-muted"
             rows={4}
             value={text}
             placeholder={placeholder}
@@ -228,7 +232,7 @@ function UpdateValueFields({
         ) : (
           <input
             type={inputType}
-            className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-body-sm text-fg"
+            className="mt-2 w-full rounded-btn border border-border bg-bg px-3 py-2 text-body-sm text-fg placeholder:text-muted"
             value={text}
             placeholder={placeholder}
             onChange={(e) => onChange(e.target.value)}
