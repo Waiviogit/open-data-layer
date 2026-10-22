@@ -27,3 +27,20 @@ describe('validateQueryApi geoip env', () => {
     expect(() => parse({ TRUST_PROXY: '-1' })).toThrow(/Config validation error/);
   });
 });
+
+describe('validateQueryApi instacart and openai env', () => {
+  it('accepts empty Instacart and OpenAI keys and defaults host and model', () => {
+    const env = parse();
+    expect(env.INSTACART_KEY).toBeUndefined();
+    expect(env.OPENAI_API_KEY).toBeUndefined();
+    expect(env.INSTACART_HOST).toBe('connect.dev.instacart.tools');
+    expect(env.OPENAI_MODEL).toBe('gpt-5.6-luna');
+  });
+
+  it('trims Instacart and OpenAI keys and treats blanks as unset', () => {
+    expect(parse({ INSTACART_KEY: '  abc  ' }).INSTACART_KEY).toBe('abc');
+    expect(parse({ INSTACART_KEY: '   ' }).INSTACART_KEY).toBeUndefined();
+    expect(parse({ OPENAI_API_KEY: '  sk-1  ' }).OPENAI_API_KEY).toBe('sk-1');
+    expect(parse({ OPENAI_API_KEY: '' }).OPENAI_API_KEY).toBeUndefined();
+  });
+});

@@ -12,6 +12,7 @@ import { HIDDEN_ON_DESKTOP_CLASS, shouldHideHeroOnDesktop, useShellMode } from '
 
 import type { ProjectedGalleryAlbumView } from '../../domain/object-page.types';
 import { resolveGalleryPhotoIndexByUrl } from '../../domain/resolve-gallery-photos-album';
+import { InstacartButton } from './instacart-button';
 import { ObjectHeroCoverImage } from './object-hero-cover-image';
 
 export type ObjectHeroEditContext = {
@@ -41,6 +42,8 @@ export type ObjectHeroProps = {
   onBellToggle: () => void;
   onFavoriteToggle: () => void;
   primaryNav: ReactNode;
+  objectId?: string;
+  showInstacartButton?: boolean;
   editContext?: ObjectHeroEditContext;
   galleryPhotosAlbum?: ProjectedGalleryAlbumView | null;
   onOpenGalleryPhoto?: (album: ProjectedGalleryAlbumView, photoIndex: number) => void;
@@ -205,6 +208,8 @@ export function ObjectHero({
   onBellToggle,
   onFavoriteToggle,
   primaryNav,
+  objectId,
+  showInstacartButton = false,
   editContext,
   galleryPhotosAlbum = null,
   onOpenGalleryPhoto,
@@ -467,6 +472,20 @@ export function ObjectHero({
               />
             </div>
           </div>
+          {showInstacartButton && objectId ? (
+            <div className="mt-5 flex justify-center">
+              <InstacartButton
+                objectId={objectId}
+                variant="page"
+                align="center"
+                disclaimerClassName={
+                  hasCoverPhoto
+                    ? 'text-center text-caption hero-on-photo-muted'
+                    : 'text-center text-caption text-nav-fg/70'
+                }
+              />
+            </div>
+          ) : null}
         </ShellInset>
       </ShellFullBleedBand>
 

@@ -120,6 +120,7 @@ In plain CSS (e.g. Leaflet overrides), prefer **`var(--font-size-body)`**, **`va
 - **Video letterbox / iframe backgrounds** — `bg-bg` on feed/article video frames (`.blog-post-youtube-embed`, `.blog-post-tiktok-embed`, `.blog-post-facebook-embed`, `.blog-post-instagram-embed`, `.blog-post-x-embed`, `.blog-post-linkedin-embed`, feed story video). Gallery **viewer** may keep `bg-black` for cinema letterbox.
 - **External brand mimicry** (e.g. Facebook Open Graph preview in object create) may keep platform-specific hex colors, `rounded-md`/`rounded-lg`, and shadow literals on the mimic surface only.
 - **Affiliate merchant buttons** (`.affiliate-merchant-btn` in `global.css`) — white `#fff` tile, `4px` radius, `#e8e8e8` border. Do not apply theme radius/surface/border (`rounded-btn`, `bg-surface`, `border-border`). Label chrome may stay themed.
+- **Instacart recipe button** (`.instacart-btn` in `global.css`) — brand-locked `#003D29` fill, `#FAF1E5` text, `24px` radius. Do not apply theme radius/surface/text tokens on the button itself. Card is 40px / 13px / min 150px; object page is 46px / 16px / min 250px.
 - **Dropdown / media sizing** — arbitrary `min-w-[…]`, `max-h-[…]`, `aspect-[…]` when no layout token exists for that control.
 - **Icon alignment** — `leading-none` on star ratings, carousel arrows, and similar non-text glyphs.
 

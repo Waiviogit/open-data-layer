@@ -6,12 +6,13 @@ type: spec
 status: active
 scope: web
 tags: [web, page, object, recipe]
-updated_at: 2026-08-26
+updated_at: 2026-10-22
 related:
   - docs/apps/web/spec/pages/object/page-shell.md
   - docs/apps/web/spec/pages/object/routes/edit-mode.md
   - docs/apps/web/spec/pages/object/routes/category-feed.md
   - docs/apps/web/spec/pages/discover/page.md
+  - docs/apps/query-api/spec/instacart-recipe-link.md
 ---
 
 # Object page — recipe left rail
@@ -38,7 +39,7 @@ After optional menu cluster (when present):
 | 8 | `rating` | Ratings | Star rows per dimension |
 | 9 | `ingredients` | Ingredients | Bulleted list; first 5 + **Show all {count} ingredients**; discover `q` cleaned via `cleanIngredientSearchQuery` (display stays raw) |
 | 10 | `servings` | Servings | Raw text |
-| 11+ | `gallery`, `featureList`, `identifier` | As populated | After servings |
+| 11+ | `gallery`, `featureList`, `identifier` | As populated | After servings. Instacart is **not** a left-rail block — it lives in the object hero. |
 
 Tag sections order: **Cuisine**, **Pros**, then remaining categories (`Meal Type`, `Diet`, custom).
 

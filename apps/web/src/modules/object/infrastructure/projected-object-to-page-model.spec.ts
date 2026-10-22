@@ -1196,13 +1196,16 @@ describe('projectedObjectWithCountsToPageModel affiliateLinks', () => {
     );
   });
 
-  it('places the affiliate block after gallery on a recipe', () => {
+  it('flags Instacart for the hero and omits affiliateLinks on a recipe', () => {
     const model = projectedObjectWithCountsToPageModel({
       object_id: 'recipe-1',
       object_type: 'recipe',
       semantic_type: 'schema:Recipe',
       weight: 1,
-      fields: { name: 'Kimchi' },
+      fields: {
+        name: 'Kimchi',
+        identifier: [{ type: 'instacart' }],
+      },
       affiliateLinks: [amazonLink],
       previewGallery: [
         { url: 'https://example.com/a.jpg', rankScore: 100, isAvatar: false },
@@ -1212,7 +1215,9 @@ describe('projectedObjectWithCountsToPageModel affiliateLinks', () => {
     });
 
     const kinds = model.leftRailBlocks.map((block) => block.kind);
-    expect(kinds.indexOf('affiliateLinks')).toBe(kinds.indexOf('gallery') + 1);
+    expect(model.showInstacartButton).toBe(true);
+    expect(kinds.includes('instacart')).toBe(false);
+    expect(kinds.includes('affiliateLinks')).toBe(false);
   });
 
   it('places the affiliate block after price on a generic about stack', () => {

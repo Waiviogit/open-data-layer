@@ -34,7 +34,7 @@ Query-api builds optional `affiliateLinks` on projected objects after `identifie
 | `GET …/discover/objects` | — |
 | `GET …/posts/:author/:permlink` | — |
 
-Recipe uses the same shop routes (`types=recipe`). Feed chips (`FEED_OBJECT_UPDATE_TYPES`) and `POST …/favorites/map` are not enriched.
+Recipe uses the same shop routes (`types=recipe`) but **never** receives `affiliateLinks`. Instacart is a separate recipe-only button — see [instacart-recipe-link.md](instacart-recipe-link.md). Feed chips (`FEED_OBJECT_UPDATE_TYPES`) and `POST …/favorites/map` are not enriched.
 
 ## Country
 
@@ -59,7 +59,7 @@ MCP: `country` is a tool arg; `clientIp` is request-derived, never a tool arg.
 
 ## Product ids and placeholders
 
-Product ids come from projected `fields.identifier` as `{ value, type }`. Missing or stale-cache identifier → no links, no throw.
+Product ids come from projected `fields.identifier` as `{ value, type }`. Missing or stale-cache identifier → no links, no throw. `productIdType === instacart` is skipped so Instacart never becomes a white merchant chip on non-recipe types.
 
 Writes require `https://` plus `$productId` and `$affiliateCode`. `http://` is rejected at the registry. Reads still substitute snake `$product_id` / `$affiliate_code` if those tokens are stored.
 

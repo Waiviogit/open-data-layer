@@ -210,6 +210,50 @@
     outline-offset: 2px;
   }
 
+  /**
+   * Instacart brand button — locked green/cream pill, not themed.
+   * Do not apply theme radius/surface/border or text tokens on the button itself.
+   */
+  .instacart-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 150px;
+    height: 40px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 24px;
+    background: #003d29;
+    color: #faf1e5;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .instacart-btn--page {
+    min-width: 250px;
+    height: 46px;
+    font-size: 16px;
+  }
+
+  .instacart-btn:disabled {
+    opacity: 0.72;
+    cursor: wait;
+  }
+
+  .instacart-btn:focus-visible {
+    outline: 2px solid #faf1e5;
+    outline-offset: 2px;
+  }
+
+  .instacart-btn__carrot {
+    width: 18px;
+    height: 22px;
+    object-fit: contain;
+  }
+
   .hero-follow-active {
     @apply border border-border bg-surface-control text-muted;
   }

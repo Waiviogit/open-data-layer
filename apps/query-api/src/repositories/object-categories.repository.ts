@@ -5,6 +5,7 @@ import type { Database } from '../database';
 import { KYSELY } from '../database';
 import type { CategoryObjectsCursorPayload } from '../domain/categories/category-objects-cursor';
 import {
+  authorityObjectsCte,
   buildShopObjectFilterClause,
   buildShopScopeCtes,
   parentPathPrefixSql,
@@ -64,20 +65,7 @@ export class ObjectCategoriesRepository {
 
     try {
       const rows = await sql<{ object_id: string }>`
-        WITH authority_objects AS (
-          SELECT DISTINCT oc.object_id
-          FROM objects_core oc
-          INNER JOIN object_favorite of ON of.object_id = oc.object_id
-            AND of.account = ${account}
-            AND (${authorityTypeFilter})
-            AND oc.status = 'active'
-          UNION
-          SELECT DISTINCT oc.object_id
-          FROM objects_core oc
-          INNER JOIN object_ownership oo ON oo.object_id = oc.object_id
-            AND oo.account = ${account}
-            AND oc.status = 'active'
-        ),
+        WITH ${authorityObjectsCte(account, authorityTypeFilter)},
         post_linked_objects AS (
           SELECT DISTINCT po.object_id
           FROM post_objects po
@@ -161,20 +149,7 @@ export class ObjectCategoriesRepository {
 
     try {
       const rows = await sql<{ category_name: string; object_id: string }>`
-        WITH authority_objects AS (
-          SELECT DISTINCT oc.object_id
-          FROM objects_core oc
-          INNER JOIN object_favorite of ON of.object_id = oc.object_id
-            AND of.account = ${account}
-            AND (${authorityTypeFilter})
-            AND oc.status = 'active'
-          UNION
-          SELECT DISTINCT oc.object_id
-          FROM objects_core oc
-          INNER JOIN object_ownership oo ON oo.object_id = oc.object_id
-            AND oo.account = ${account}
-            AND oc.status = 'active'
-        ),
+        WITH ${authorityObjectsCte(account, authorityTypeFilter)},
         post_linked_objects AS (
           SELECT DISTINCT po.object_id
           FROM post_objects po
@@ -262,20 +237,7 @@ export class ObjectCategoriesRepository {
 
     try {
       const rows = await sql<{ category_name: string; object_count: number | string }>`
-        WITH authority_objects AS (
-          SELECT DISTINCT oc.object_id
-          FROM objects_core oc
-          INNER JOIN object_favorite of ON of.object_id = oc.object_id
-            AND of.account = ${account}
-            AND (${authorityTypeFilter})
-            AND oc.status = 'active'
-          UNION
-          SELECT DISTINCT oc.object_id
-          FROM objects_core oc
-          INNER JOIN object_ownership oo ON oo.object_id = oc.object_id
-            AND oo.account = ${account}
-            AND oc.status = 'active'
-        ),
+        WITH ${authorityObjectsCte(account, authorityTypeFilter)},
         post_linked_objects AS (
           SELECT DISTINCT po.object_id
           FROM post_objects po
@@ -350,20 +312,7 @@ export class ObjectCategoriesRepository {
 
     try {
       const result = await sql<{ object_count: number | string }>`
-        WITH authority_objects AS (
-          SELECT DISTINCT oc.object_id
-          FROM objects_core oc
-          INNER JOIN object_favorite of ON of.object_id = oc.object_id
-            AND of.account = ${account}
-            AND (${authorityTypeFilter})
-            AND oc.status = 'active'
-          UNION
-          SELECT DISTINCT oc.object_id
-          FROM objects_core oc
-          INNER JOIN object_ownership oo ON oo.object_id = oc.object_id
-            AND oo.account = ${account}
-            AND oc.status = 'active'
-        ),
+        WITH ${authorityObjectsCte(account, authorityTypeFilter)},
         post_linked_objects AS (
           SELECT DISTINCT po.object_id
           FROM post_objects po
@@ -420,20 +369,7 @@ export class ObjectCategoriesRepository {
         );
 
         const result = await sql<ShopTagCategoryRow>`
-          WITH authority_objects AS (
-            SELECT DISTINCT oc.object_id
-            FROM objects_core oc
-            INNER JOIN object_favorite of ON of.object_id = oc.object_id
-              AND of.account = ${account}
-              AND (${authorityTypeFilter})
-              AND oc.status = 'active'
-            UNION
-            SELECT DISTINCT oc.object_id
-            FROM objects_core oc
-            INNER JOIN object_ownership oo ON oo.object_id = oc.object_id
-              AND oo.account = ${account}
-              AND oc.status = 'active'
-          ),
+          WITH ${authorityObjectsCte(account, authorityTypeFilter)},
           post_linked_objects AS (
             SELECT DISTINCT po.object_id
             FROM post_objects po
@@ -474,20 +410,7 @@ export class ObjectCategoriesRepository {
       }
 
       const result = await sql<ShopTagCategoryRow>`
-        WITH authority_objects AS (
-          SELECT DISTINCT oc.object_id
-          FROM objects_core oc
-          INNER JOIN object_favorite of ON of.object_id = oc.object_id
-            AND of.account = ${account}
-            AND (${authorityTypeFilter})
-            AND oc.status = 'active'
-          UNION
-          SELECT DISTINCT oc.object_id
-          FROM objects_core oc
-          INNER JOIN object_ownership oo ON oo.object_id = oc.object_id
-            AND oo.account = ${account}
-            AND oc.status = 'active'
-        ),
+        WITH ${authorityObjectsCte(account, authorityTypeFilter)},
         post_linked_objects AS (
           SELECT DISTINCT po.object_id
           FROM post_objects po

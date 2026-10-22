@@ -19,6 +19,8 @@ import { getRatingDimensionNamesForObjectType } from '@/modules/discover/domain/
 import { AVATAR_PLACEHOLDER_SRC, ObjectThumbnail } from '@/shared/presentation';
 import { MapPinIcon } from '@/icons';
 import { AffiliateLinksRow } from '@/modules/object/presentation/components/affiliate-links-row';
+import { InstacartButton } from '@/modules/object/presentation/components/instacart-button';
+import { objectHasInstacartRecipeButton } from '@/modules/object/domain/instacart-recipe-button';
 import { StarRating } from '@/modules/object/presentation/components/star-rating';
 import { AdministrativeHeartButton } from '@/modules/object/presentation/components/administrative-heart-button';
 import { objectPagePath } from '@/shared/routes/object-page-path';
@@ -248,7 +250,11 @@ export function ObjectCard({
     objectFields.aggregateRatingAspects(o),
   );
   const visibleRatingDims = mapSidebar || popup ? ratingDims.slice(0, 1) : ratingDims;
+  const isRecipe = normalizedType === 'recipe';
+  const showInstacartButton =
+    (layout === 'default' || layout === 'catalog') && objectHasInstacartRecipeButton(o);
   const showAffiliateRow =
+    !isRecipe &&
     !editorRow &&
     !popup &&
     !mapSidebar &&
@@ -428,6 +434,9 @@ export function ObjectCard({
             >
               {displayText}
             </p>
+          ) : null}
+          {showInstacartButton ? (
+            <InstacartButton objectId={o.object_id} variant="card" />
           ) : null}
           {showAffiliateRow ? <AffiliateLinksRow links={o.affiliateLinks ?? []} /> : null}
         </div>

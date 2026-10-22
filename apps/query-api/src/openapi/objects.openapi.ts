@@ -889,3 +889,62 @@ registry.registerPath({
     },
   },
 });
+
+const instacartLinkResponseSchema = registry.register(
+  'InstacartRecipeLinkResponse',
+  z.object({
+    url: z.string().openapi({
+      description:
+        'Instacart shopping URL. IDP recipe link when INSTACART_KEY is set; otherwise instacart.com/.ca.',
+    }),
+  }),
+);
+
+registry.registerPath({
+  method: 'get',
+  path: '/query/v1/objects/{objectId}/instacart-link',
+  tags: [queryApiOpenApiTags.objects],
+  summary: 'Instacart recipe shopping link',
+  description:
+    'Returns a recipe shopping URL for objects of type `recipe` that have an `identifier` of type `instacart`. Without INSTACART_KEY this is instacart.com (or .ca). With the key, an Instacart IDP recipe link is created and cached for 30 days. Optional UTM is appended when an instacart affiliate code exists. 404 if the object is missing; 422 if it is not a recipe or has no instacart identifier.',
+  request: {
+    params: z.object({
+      objectId: z
+        .string()
+        .min(1)
+        .openapi({ param: { name: 'objectId', in: 'path', required: true } }),
+    }),
+    query: z.object({
+      country: z.string().trim().max(32).optional().openapi({
+        description: 'ISO country / affiliate geo override; otherwise GeoIP from the client IP.',
+      }),
+    }),
+    headers: z.object({
+      'accept-language': z.string().optional().openapi({
+        description: 'Locale for recipe field projection.',
+      }),
+      'x-locale': z.string().optional().openapi({
+        description: 'Locale override for recipe field projection.',
+      }),
+      'x-governance-object-id': z.string().optional().openapi({
+        description: 'Optional governance object ID merged with platform governance.',
+      }),
+    }),
+  },
+  responses: {
+    200: {
+      description: 'Instacart URL for the recipe.',
+      content: {
+        'application/json': { schema: instacartLinkResponseSchema },
+      },
+    },
+    404: {
+      description: 'Object not found.',
+      content: { 'application/json': { schema: notFoundSchema } },
+    },
+    422: {
+      description:
+        'Not a recipe, missing instacart identifier, or no usable ingredients on the IDP path.',
+    },
+  },
+});

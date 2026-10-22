@@ -403,6 +403,8 @@ export type ObjectPageViewModel = {
   displayWeightLabel: string | null;
   /** Raw `object_type` from query-api / registry key (e.g. `shop`, `place`). */
   objectTypeKey: string;
+  /** Recipe + instacart identifier — brand button in the object hero, not the left rail. */
+  showInstacartButton: boolean;
   objectType: ObjectSwitcherKind;
   /** Default tab/center column on clean `/object/:id` (legacy `defaultShowLink` logic). */
   defaultLanding: ObjectDefaultLanding;

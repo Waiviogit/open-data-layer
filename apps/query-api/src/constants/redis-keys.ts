@@ -45,6 +45,8 @@ export const redisKey = {
       governanceObjectId || 'none',
       headerObjectId || 'none',
     ),
+  instacartRecipeLink: (objectId: string) =>
+    buildRedisKey(APP, 'cache', 'instacart-recipe', objectId),
   affiliatePersonalCodes: (
     account: string,
     governanceObjectId: string,

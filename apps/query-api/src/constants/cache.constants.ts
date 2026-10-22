@@ -39,3 +39,6 @@ export const WAIV_DIESEL_POOL_CACHE_TTL_SEC = 60;
 
 /** Redis TTL for condenser `get_accounts` snapshot (profile + sidebar dedup). */
 export const HIVE_ACCOUNTS_CACHE_TTL_SEC = 60;
+
+/** Redis TTL for Instacart IDP recipe `products_link_url` (30 days). */
+export const INSTACART_RECIPE_LINK_CACHE_TTL_SEC = 2_592_000;

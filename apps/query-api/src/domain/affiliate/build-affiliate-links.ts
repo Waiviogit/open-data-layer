@@ -125,7 +125,10 @@ export function buildAffiliateLinks(
   const links: AffiliateLink[] = [];
   const usedAffiliate: AffiliateConfig[] = [];
   const mappedProductIds = productIds.filter(
-    (el) => el.productId.length > 0 && el.productIdType.length > 0,
+    (el) =>
+      el.productId.length > 0 &&
+      el.productIdType.length > 0 &&
+      el.productIdType.toLowerCase() !== 'instacart',
   );
 
   const exactMatched = configs.filter((el) =>

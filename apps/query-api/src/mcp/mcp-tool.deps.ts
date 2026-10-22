@@ -41,6 +41,7 @@ import type {
   GetObjectOptionsEndpoint,
   GetNestedObjectsEndpoint,
 } from '../domain/objects';
+import type { GetInstacartRecipeLinkEndpoint } from '../domain/instacart';
 import type { GetSearchCountsEndpoint } from '../domain/search/get-search-counts.endpoint';
 import type { GetSearchEndpoint } from '../domain/search/get-search.endpoint';
 import type { GetUserCategoriesEndpoint } from '../domain/categories/get-user-categories.endpoint';
@@ -117,6 +118,7 @@ export interface McpToolDeps {
   getObjectFieldReferencesSummary: GetObjectFieldReferencesSummaryEndpoint;
   getObjectFieldReferencesByType: GetObjectFieldReferencesByTypeEndpoint;
   getObjectOptions: GetObjectOptionsEndpoint;
+  getInstacartRecipeLink: GetInstacartRecipeLinkEndpoint;
   getObjectRelatedAlbumPreview: GetObjectRelatedAlbumPreviewEndpoint;
   getObjectRelatedAlbum: GetObjectRelatedAlbumEndpoint;
   getObjectFollowers: GetObjectFollowersEndpoint;

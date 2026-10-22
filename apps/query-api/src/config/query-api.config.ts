@@ -84,5 +84,15 @@ export default () => {
     http: {
       trustProxy: env.TRUST_PROXY,
     },
+    instacart: {
+      apiKey: env.INSTACART_KEY,
+      host: env.INSTACART_HOST,
+      requestTimeoutMs: externalTimeoutMs,
+    },
+    openai: {
+      apiKey: env.OPENAI_API_KEY,
+      model: env.OPENAI_MODEL,
+      requestTimeoutMs: externalTimeoutMs,
+    },
   };
 };

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { OBJECT_TYPES } from '@opden-data-layer/core';
 import type { GovernanceSnapshot } from '@opden-data-layer/objects-domain';
 import { GovernanceResolverService } from '../governance';
 import { AffiliateCodesService } from './affiliate-codes.service';
@@ -55,6 +56,9 @@ export class AffiliateLinksEnricher {
     }
 
     for (const target of targets) {
+      if (target.object_type === OBJECT_TYPES.RECIPE) {
+        continue;
+      }
       const productIds = readProductIds(target.fields);
       if (productIds.length === 0) {
         continue;

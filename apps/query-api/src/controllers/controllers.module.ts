@@ -3,6 +3,7 @@ import { AuthModule } from '../auth';
 import { DraftsModule } from '../domain/drafts/drafts.module';
 import { FeedModule } from '../domain/feed';
 import { MessagingModule } from '../domain/messaging';
+import { InstacartModule } from '../domain/instacart';
 import { ObjectsModule } from '../domain/objects';
 import { UsersModule } from '../domain/users';
 import { CategoriesModule } from '../domain/categories/categories.module';
@@ -37,6 +38,7 @@ import { ChannelsController } from './channels.controller';
 @Module({
   imports: [
     ObjectsModule,
+    InstacartModule,
     ObjectUpdatesModule,
     UsersModule,
     FeedModule,

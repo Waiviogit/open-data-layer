@@ -30,6 +30,7 @@ import type {
   ObjectSwitcherKind,
 } from '../domain/object-page.types';
 import { affiliateRailItems } from '../domain/affiliate-link-visual';
+import { objectHasInstacartRecipeButton } from '../domain/instacart-recipe-button';
 import {
   OBJECT_LEFT_RAIL_BLOCK_LABEL,
 } from '../domain/object-update-labels';
@@ -674,6 +675,9 @@ function appendAboutSectionBlock(
       break;
     }
     case 'affiliateLinks': {
+      if (isRecipeObjectType(viewLike.object_type ?? '')) {
+        break;
+      }
       const items = affiliateRailItems(viewLike.affiliateLinks);
       if (items.length > 0) {
         blocks.push({
@@ -1107,6 +1111,7 @@ export function projectedObjectWithCountsToPageModel(
         ? formatObjectWeightForDisplay(api.weight)
         : null,
     objectTypeKey: objectTypeRaw,
+    showInstacartButton: objectHasInstacartRecipeButton(viewLike),
     objectType: switcher,
     defaultLanding,
     listItems,

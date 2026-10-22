@@ -4,6 +4,7 @@ import { DiscoverModule } from '../domain/discover';
 import { GeoipModule } from '../domain/geoip';
 import { FeedModule } from '../domain/feed';
 import { ObjectUpdatesModule } from '../domain/object-updates';
+import { InstacartModule } from '../domain/instacart';
 import { ObjectsModule } from '../domain/objects';
 import { SearchModule } from '../domain/search';
 import { ShopModule } from '../domain/shop/shop.module';
@@ -20,6 +21,7 @@ import { McpService } from './mcp.service';
 @Module({
   imports: [
     ObjectsModule,
+    InstacartModule,
     ObjectUpdatesModule,
     UsersModule,
     FeedModule,

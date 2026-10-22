@@ -60,6 +60,13 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
     httpEquivalent: 'GET /query/v1/objects/:id/exists',
   },
   {
+    name: 'get_object_instacart_link',
+    description:
+      'Instacart recipe shopping URL for a recipe that has an instacart identifier. Optional country override.',
+    httpEquivalent: 'GET /query/v1/objects/:id/instacart-link',
+    specPath: 'docs/apps/query-api/spec/instacart-recipe-link.md',
+  },
+  {
     name: 'get_object_options',
     description:
       'Aggregated product variant options grouped by category (Color, Size, etc.) across meta_group_id siblings.',

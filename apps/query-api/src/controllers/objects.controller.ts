@@ -88,6 +88,11 @@ import type {
   MessageHistoryResponseDto,
 } from '../domain/messaging';
 import type { ChannelDetailDto } from '../domain/messaging/get-channel-by-id.endpoint';
+import {
+  GetInstacartRecipeLinkEndpoint,
+  instacartLinkQuerySchema,
+  type InstacartLinkQuery,
+} from '../domain/instacart';
 import { CountryResolverService } from '../domain/geoip';
 import { ReqClientIp } from '../http/client-ip.decorator';
 import { ReqGovernanceObjectId } from '../http/governance-object-id.decorator';
@@ -118,8 +123,26 @@ export class ObjectsController {
     private readonly getObjectChannelEndpoint: GetObjectChannelEndpoint,
     private readonly getObjectChannelMessagesEndpoint: GetObjectChannelMessagesEndpoint,
     private readonly checkActivityDuplicate: CheckActivityDuplicateEndpoint,
+    private readonly getInstacartRecipeLink: GetInstacartRecipeLinkEndpoint,
     private readonly countryResolver: CountryResolverService,
   ) {}
+
+  @Get(':objectId/instacart-link')
+  async getInstacartLink(
+    @Param('objectId') rawObjectId: string,
+    @ReqLocale() locale: string,
+    @ReqGovernanceObjectId() governanceObjectIdFromHeader: string | undefined,
+    @ReqClientIp() clientIp: string | null,
+    @Query(new ZodQueryPipe(instacartLinkQuerySchema)) query: InstacartLinkQuery,
+  ): Promise<{ url: string }> {
+    const objectId = decodeURIComponent(rawObjectId);
+    return this.getInstacartRecipeLink.execute({
+      objectId,
+      locale,
+      countryCode: this.countryResolver.resolve(clientIp, query.country),
+      governanceObjectIdFromHeader,
+    });
+  }
 
   @Get(':objectId/exists')
   async exists(

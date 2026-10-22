@@ -72,6 +72,37 @@ export function registerObjectTools(server: McpServer, deps: McpToolDeps): void 
   );
 
   server.registerTool(
+    'get_object_instacart_link',
+    {
+      description: catalogDescription('get_object_instacart_link'),
+      inputSchema: withMcpLocaleContext(
+        z.object({
+          object_id: z.string().min(1).describe('Recipe object id'),
+          country: z
+            .string()
+            .optional()
+            .describe('ISO country / affiliate geo override'),
+        }),
+      ),
+    },
+    async (args) => {
+      const ctx = pickMcpContext(args);
+      try {
+        const result = await deps.getInstacartRecipeLink.execute({
+          objectId: args.object_id,
+          locale: ctx.locale,
+          countryCode: resolveMcpCountry(deps, args.country),
+          governanceObjectIdFromHeader: ctx.governanceObjectIdFromHeader,
+        });
+        return jsonToolResult(result);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Instacart link failed';
+        return toolError(message);
+      }
+    },
+  );
+
+  server.registerTool(
     'check_object_exists',
     {
       description: catalogDescription('check_object_exists'),

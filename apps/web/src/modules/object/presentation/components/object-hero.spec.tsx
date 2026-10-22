@@ -39,6 +39,12 @@ jest.mock('./object-hero-cover-image', () => ({
   ObjectHeroCoverImage: () => null,
 }));
 
+jest.mock('./instacart-button', () => ({
+  InstacartButton: ({ objectId }: { objectId: string }) => (
+    <button type="button">Get Recipe Ingredients {objectId}</button>
+  ),
+}));
+
 import { ObjectHero } from './object-hero';
 
 const baseProps = {
@@ -186,5 +192,23 @@ describe('ObjectHero avatar gallery', () => {
       screen.getByRole('button', { name: 'object_detail_edit_avatar_background' }),
     );
     expect(onOpenGalleryPhoto).not.toHaveBeenCalled();
+  });
+});
+
+describe('ObjectHero Instacart', () => {
+  it('renders the Instacart button in the hero when flagged', () => {
+    render(
+      <ObjectHero
+        {...baseProps}
+        objectId="recipe-1"
+        showInstacartButton
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Get Recipe Ingredients recipe-1' })).toBeTruthy();
+  });
+
+  it('omits the Instacart button by default', () => {
+    render(<ObjectHero {...baseProps} />);
+    expect(screen.queryByRole('button', { name: /Get Recipe Ingredients/ })).toBeNull();
   });
 });

@@ -177,6 +177,47 @@ describe('buildAffiliateLinks', () => {
     expect(links[0]?.affiliateCode).toBe('AFF1');
   });
 
+  it('still builds an amazon link for a non-recipe identifier', () => {
+    const links = buildAffiliateLinks(
+      [
+        config({
+          objectId: 'aff-amazon',
+          urlTemplate: 'https://www.amazon.com/dp/$productId?tag=$affiliateCode',
+          productIdTypes: ['amazon'],
+        }),
+      ],
+      [{ productId: 'B001', productIdType: 'amazon' }],
+      'US',
+    );
+    expect(links).toHaveLength(1);
+    expect(links[0]?.type).toBe('amazon');
+    expect(links[0]?.link).toContain('B001');
+  });
+
+  it('skips instacart identifiers and still builds amazon links', () => {
+    const links = buildAffiliateLinks(
+      [
+        config({
+          objectId: 'aff-amazon',
+          urlTemplate: 'https://www.amazon.com/dp/$productId?tag=$affiliateCode',
+          productIdTypes: ['amazon'],
+        }),
+        config({
+          objectId: 'aff-instacart',
+          urlTemplate: 'https://www.instacart.com/$productId?t=$affiliateCode',
+          productIdTypes: ['instacart'],
+        }),
+      ],
+      [
+        { productId: 'shop', productIdType: 'instacart' },
+        { productId: 'B001', productIdType: 'amazon' },
+      ],
+      'US',
+    );
+    expect(links.some((link) => link.type.toLowerCase() === 'instacart')).toBe(false);
+    expect(links.some((link) => link.type === 'amazon' && link.link.length > 0)).toBe(true);
+  });
+
   it('emits one config for overlapping product-id-type groups', () => {
     const links = buildAffiliateLinks(
       [

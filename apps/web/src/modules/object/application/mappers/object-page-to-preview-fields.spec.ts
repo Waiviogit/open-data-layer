@@ -17,6 +17,7 @@ function minimalModel(
     tagline: null,
     displayWeightLabel: null,
     objectTypeKey: 'shop',
+    showInstacartButton: false,
     objectType: 'shop',
     defaultLanding: { kind: 'hostContent' },
     listItems: [],

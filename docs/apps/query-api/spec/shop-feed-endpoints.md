@@ -6,7 +6,7 @@ type: spec
 status: active
 scope: query-api
 tags: [query-api, shop-feed-endpoints]
-updated_at: 2026-06-17
+updated_at: 2026-10-22
 related:
   - docs/apps/query-api/spec/overview.md
   - docs/README.md
@@ -22,7 +22,7 @@ related:
 
 **Rating filter SQL:** `rating=6|8|10` maps to ODL `rank_score >= threshold × 1000` on any `aggregateRating` update. Uses persisted `object_updates.rank_score`, or mean `rank_votes.rank` when score is null (same fallback as object projection). Legacy Mongo `average_rating_weight` (0–10) is migrated to `rank_score` during import.
 
-**Scope:** Same membership as `object_categories_related` user scopes (`object_favorite` ∪ `object_ownership` ∪ optional `post_objects` branch per `user_metadata.hide_linked_objects` / `hide_recipe_objects` and `user_shop_deselect`). Types bucket: `book`+`product` (shop) or `recipe`.
+**Scope:** Same membership as `object_categories_related` user scopes (`object_favorite` ∪ `object_ownership` ∪ optional `post_objects` branch per `user_metadata.hide_linked_objects` / `hide_recipe_objects` and `user_shop_deselect`). Types bucket: `book`+`product` (shop) or `recipe`. Both favorite and ownership apply `object_type IN types` (same as `post_objects`).
 
 **Projection:** `ObjectViewService` with update types including `identifier`; then `ObjectProjectionService.batchProject`. Optional `country` + GeoIP build [affiliate links](affiliate-links.md).
 

@@ -129,6 +129,28 @@ export function buildShopScopeCtes(
   return { authorityTypeFilter, postPred, categoryFilter, objectFilter, cursorFilter };
 }
 
+/** Favorites ∪ ownership, both restricted to `scope.types` (same as chain-indexer). */
+export function authorityObjectsCte(
+  account: string,
+  authorityTypeFilter: RawBuilder<unknown>,
+): RawBuilder<unknown> {
+  return sql`authority_objects AS (
+    SELECT DISTINCT oc.object_id
+    FROM objects_core oc
+    INNER JOIN object_favorite of ON of.object_id = oc.object_id
+      AND of.account = ${account}
+      AND (${authorityTypeFilter})
+      AND oc.status = 'active'
+    UNION
+    SELECT DISTINCT oc.object_id
+    FROM objects_core oc
+    INNER JOIN object_ownership oo ON oo.object_id = oc.object_id
+      AND oo.account = ${account}
+      AND (${authorityTypeFilter})
+      AND oc.status = 'active'
+  )`;
+}
+
 export function parentPathPrefixSql(parentPath: readonly string[]) {
   if (parentPath.length === 0) {
     return sql`ARRAY[]::text[]`;

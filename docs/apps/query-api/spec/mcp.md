@@ -66,6 +66,7 @@ Set `QUERY_API_DOCS_ROOT` to repo root in dev if `odl-query://routing` cannot re
 | `resolve_object` | `POST /query/v1/objects/resolve` | [objects-resolve.md](objects-resolve.md) |
 | `resolve_nested_objects` | `POST /query/v1/objects/resolve-nested` | [objects-resolve.md](objects-resolve.md) |
 | `check_object_exists` | `GET /query/v1/objects/:id/exists` | — |
+| `get_object_instacart_link` | `GET /query/v1/objects/:id/instacart-link` | [instacart-recipe-link.md](instacart-recipe-link.md) |
 | `get_object_related` | `GET .../related` | [object-ref-list-endpoints.md](object-ref-list-endpoints.md) |
 | `get_object_related_album_preview` | `GET .../gallery/related/preview` | [object-related-album.md](object-related-album.md) |
 | `get_object_related_album` | `GET .../gallery/related` | [object-related-album.md](object-related-album.md) |

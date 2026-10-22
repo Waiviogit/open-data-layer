@@ -83,7 +83,8 @@ describe('resolveEditModeLeftRailBlockOrder', () => {
     expect(order.indexOf('category')).toBeLessThan(order.indexOf('rating'));
     expect(order.indexOf('rating')).toBeLessThan(order.indexOf('ingredients'));
     expect(order.indexOf('ingredients')).toBeLessThan(order.indexOf('servings'));
-    expect(order.indexOf('gallery')).toBeLessThan(order.indexOf('affiliateLinks'));
+    expect(order.includes('affiliateLinks')).toBe(false);
+    expect(order.includes('instacart')).toBe(false);
   });
 
   it('uses grouped recipe edit order with commerce before recipe fields', () => {

@@ -618,6 +618,8 @@ export function ObjectPageShellClient({
             onBellToggle={onBellToggle}
             onFavoriteToggle={onFavoriteToggle}
             primaryNav={primaryNav}
+            objectId={model.objectId}
+            showInstacartButton={model.showInstacartButton}
             galleryPhotosAlbum={galleryPhotosAlbum}
             onOpenGalleryPhoto={onOpenGalleryPhoto}
             editContext={

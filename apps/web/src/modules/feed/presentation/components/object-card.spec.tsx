@@ -8,7 +8,14 @@ import type { ProjectedObjectView } from '../../application/dto/object-fields';
 
 jest.mock('@/i18n/providers/i18n-provider', () => ({
   useI18n: () => ({
-    t: (key: string) => (key === 'Affiliate_Link' ? 'Affiliate Link' : key),
+    t: (key: string) =>
+      ({
+        Affiliate_Link: 'Affiliate Link',
+        Instacart_Get_Ingredients: 'Get Ingredients',
+        Instacart_Get_Recipe_Ingredients: 'Get Recipe Ingredients',
+        Instacart_Earns_Commissions: 'Earns commissions on purchases',
+        Instacart_Link_Failed: 'Could not open Instacart',
+      })[key] ?? key,
     locale: 'en-US',
   }),
 }));
@@ -491,5 +498,110 @@ describe('ObjectCard affiliate links', () => {
     expect(onNavigate).not.toHaveBeenCalled();
     expect(gtag).not.toHaveBeenCalled();
     delete (globalThis as { gtag?: jest.Mock }).gtag;
+  });
+});
+
+describe('ObjectCard Instacart', () => {
+  const recipeInstacart: ProjectedObjectView = {
+    ...sampleObject,
+    object_id: 'recipe-1',
+    object_type: 'recipe',
+    fields: {
+      name: 'Kimchi',
+      description: 'Fermented cabbage',
+      identifier: [{ type: 'instacart' }],
+    },
+    affiliateLinks: [
+      {
+        link: 'https://www.amazon.com/dp/B000',
+        image: 'https://cdn.example/a.png',
+        type: 'amazon',
+      },
+    ],
+  };
+
+  const originalOpen = window.open;
+  const originalFetch = global.fetch;
+
+  afterEach(() => {
+    window.open = originalOpen;
+    global.fetch = originalFetch;
+  });
+
+  it('shows the Instacart button and hides merchant chips on a recipe', () => {
+    global.fetch = jest.fn() as typeof fetch;
+    render(
+      <ul>
+        <ObjectCard object={recipeInstacart} />
+      </ul>,
+    );
+    expect(screen.getByRole('button', { name: 'Get Ingredients' })).toBeInTheDocument();
+    expect(screen.queryByText('Affiliate Link:')).toBeNull();
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it('hides Instacart and chips on a recipe with only an amazon identifier', () => {
+    render(
+      <ul>
+        <ObjectCard
+          object={{
+            ...recipeInstacart,
+            fields: {
+              name: 'Kimchi',
+              identifier: [{ type: 'amazon', value: 'B001' }],
+            },
+          }}
+        />
+      </ul>,
+    );
+    expect(screen.queryByRole('button', { name: 'Get Ingredients' })).toBeNull();
+    expect(screen.queryByText('Affiliate Link:')).toBeNull();
+  });
+
+  it('still shows amazon chips on a product and hides Instacart', () => {
+    render(
+      <ul>
+        <ObjectCard
+          object={{
+            ...sampleObject,
+            object_type: 'product',
+            fields: { name: 'Widget', identifier: [{ type: 'amazon', value: 'B001' }] },
+            affiliateLinks: [
+              {
+                link: 'https://www.amazon.com/dp/B000',
+                image: 'https://cdn.example/a.png',
+                type: 'amazon',
+              },
+            ],
+          }}
+        />
+      </ul>,
+    );
+    expect(screen.getByText('Affiliate Link:')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Get Ingredients' })).toBeNull();
+  });
+
+  it.each(['editorRow', 'popup', 'mapSidebar'] as const)(
+    'hides the Instacart button on layout %s',
+    (layout) => {
+      render(<ObjectCard object={recipeInstacart} layout={layout} as="div" />);
+      expect(screen.queryByRole('button', { name: 'Get Ingredients' })).toBeNull();
+    },
+  );
+
+  it('does not navigate the card when Instacart is clicked', async () => {
+    const popup = { location: { href: 'about:blank' }, close: jest.fn() };
+    window.open = jest.fn().mockReturnValue(popup);
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ url: 'https://www.instacart.com/x' }),
+    }) as typeof fetch;
+    const onNavigate = jest.fn();
+
+    render(<ObjectCard object={recipeInstacart} onNavigate={onNavigate} as="div" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Get Ingredients' }));
+
+    expect(onNavigate).not.toHaveBeenCalled();
+    expect(window.open).toHaveBeenCalledWith('about:blank');
   });
 });

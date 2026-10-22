@@ -106,4 +106,22 @@ describe('AffiliateLinksEnricher', () => {
     expect(row.affiliateLinks).toHaveLength(1);
     expect(row.affiliateLinks?.[0]?.link).toContain('B001');
   });
+
+  it('never sets affiliateLinks on a recipe even when amazon identifiers match', async () => {
+    const enricher = makeEnricher({
+      governance: [config('aff-1', 'GOVERNANCE', 'G1')],
+    });
+    const row: AffiliateEnrichTarget = {
+      object_id: 'recipe-1',
+      object_type: 'recipe',
+      fields: {
+        identifier: [
+          { value: 'B001', type: 'asin' },
+          { type: 'instacart' },
+        ],
+      },
+    };
+    await enricher.enrich([row], { countryCode: null });
+    expect(row.affiliateLinks).toBeUndefined();
+  });
 });

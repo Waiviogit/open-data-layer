@@ -157,7 +157,6 @@ export const RECIPE_ABOUT_SECTION_BLOCK_ORDER = [
   'ingredients',
   'servings',
   'gallery',
-  'affiliateLinks',
   'featureList',
   'identifier',
 ] as const;

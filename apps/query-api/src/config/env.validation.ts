@@ -90,6 +90,20 @@ export const queryApiConfigSchema = z.object({
     .optional()
     .transform((s) => (s?.trim() ? s.trim() : undefined)),
   TRUST_PROXY: z.coerce.number().int().min(0).optional().default(0),
+  INSTACART_KEY: z
+    .string()
+    .optional()
+    .transform((s) => (s?.trim() ? s.trim() : undefined)),
+  INSTACART_HOST: z
+    .string()
+    .optional()
+    .transform((s) => (s?.trim() ? s.trim() : undefined))
+    .pipe(z.string().optional().default('connect.dev.instacart.tools')),
+  OPENAI_API_KEY: z
+    .string()
+    .optional()
+    .transform((s) => (s?.trim() ? s.trim() : undefined)),
+  OPENAI_MODEL: z.string().optional().default('gpt-5.6-luna'),
 });
 
 export type QueryApiConfig = z.infer<typeof queryApiConfigSchema>;

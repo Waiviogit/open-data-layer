@@ -8,6 +8,6 @@ import { AffiliateLinksEnricher } from './affiliate-links.enricher';
 @Module({
   imports: [RepositoriesModule, ObjectsDomainModule, GovernanceModule],
   providers: [AffiliateCodesService, AffiliateLinksEnricher],
-  exports: [AffiliateLinksEnricher],
+  exports: [AffiliateLinksEnricher, AffiliateCodesService],
 })
 export class AffiliateModule {}
