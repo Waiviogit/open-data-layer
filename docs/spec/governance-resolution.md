@@ -202,7 +202,7 @@ The read-side filter applies independently of the platform-level deletion — it
 In `'full'` mode the effective curator set **E** for any object is:
 
 ```
-recognizedExclusive = { exclusive holders from object_ownership } ∩ { governance admins ∪ governance trusted }
+recognizedExclusive = { exclusive holders from object_ownership } ∩ { governance admins ∪ governance trusted ∪ governance authorities }
 
 if recognizedExclusive is non-empty:
   E = recognizedExclusive   // exclusive dominates, including under object_control=full

@@ -41,6 +41,7 @@ export const redisKey = {
       'cache',
       'affiliate-codes',
       'governance',
+      'v2',
       governanceObjectId || 'none',
       headerObjectId || 'none',
     ),

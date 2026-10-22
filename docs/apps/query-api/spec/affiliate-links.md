@@ -50,6 +50,7 @@ MCP: `country` is a tool arg; `clientIp` is request-derived, never a tool arg.
 
 - Schema: `affiliateCode[0]` is exactly `PERSONAL` or `GOVERNANCE`. Domain scopes are rejected at index, skipped in the mongo migrator, and deleted by `00069`.
 - Empty `governance.authorities` → all active affiliate objects with GOVERNANCE codes (no ownership filter).
+- Exclusive owner set **E** includes `authorities` (legacy `ownership ∩ app.authority`). An authority-created GOVERNANCE code on an object that account holds exclusively is VALID without an admin vote; an E against vote still rejects it.
 - PERSONAL codes on shop / favorites belong to `:name`. Exclusive-owner curator voting does **not** apply: the owner's latest PERSONAL entry is used even when `validity_status` is `REJECTED` (they are not exclusive owners of the merchant affiliate object). Button / template / geo / types stay VALID-only.
 - Same `objectId`: PERSONAL overwrites GOVERNANCE on user-scoped routes.
 - Redis caches parsed `AffiliateConfig[]` (`query-api:cache:affiliate-*-codes:*`, TTL 1800s), never rendered links. Chance pick (`CODE::n`) runs per request. A failed id lookup returns `[]` and **does not** write the key (a genuine empty result may cache `[]`).

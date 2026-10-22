@@ -150,6 +150,92 @@ describe('computeCuratorSet', () => {
     const C = computeCuratorSet(ownerships, governance);
     expect(C.size).toBe(0);
   });
+
+  it('includes an exclusive holder listed only in authorities', () => {
+    const ownerships = [makeOwnership('auth1')];
+    const governance = { ...EMPTY_GOVERNANCE, admins: ['admin1'], authorities: ['auth1'] };
+    const C = computeExclusiveOwnerSet(ownerships, governance);
+    expect([...C]).toEqual(['auth1']);
+  });
+
+  it('recognizes admin and authority exclusive holders and excludes a plain user', () => {
+    const ownerships = [
+      makeOwnership('waivio'),
+      makeOwnership('wiv01'),
+      makeOwnership('waivio.affiliate'),
+    ];
+    const governance = {
+      ...EMPTY_GOVERNANCE,
+      admins: ['waivio'],
+      authorities: ['waivio.affiliate'],
+    };
+    const C = computeExclusiveOwnerSet(ownerships, governance);
+    expect(C.has('waivio')).toBe(true);
+    expect(C.has('waivio.affiliate')).toBe(true);
+    expect(C.has('wiv01')).toBe(false);
+    expect(C.size).toBe(2);
+  });
+
+  it('excludes an exclusive holder outside admins, trusted, and authorities', () => {
+    const ownerships = [makeOwnership('bob')];
+    const governance = { ...EMPTY_GOVERNANCE, admins: ['admin1'], authorities: ['auth1'] };
+    const C = computeExclusiveOwnerSet(ownerships, governance);
+    expect(C.size).toBe(0);
+  });
+
+  it('excludes a supervised authority from E', () => {
+    const ownerships = [makeOwnership('auth1', 'supervised')];
+    const governance = { ...EMPTY_GOVERNANCE, authorities: ['auth1'] };
+    const C = computeExclusiveOwnerSet(ownerships, governance);
+    expect(C.size).toBe(0);
+  });
+
+  it('does not create E from authorities with no ownership row', () => {
+    const governance = { ...EMPTY_GOVERNANCE, authorities: ['auth1'] };
+    const C = computeExclusiveOwnerSet([], governance);
+    expect(C.size).toBe(0);
+  });
+
+  it('keeps the admins ∪ trusted rule when authorities is empty', () => {
+    const ownerships = [makeOwnership('admin1'), makeOwnership('t1'), makeOwnership('bob')];
+    const governance = { ...EMPTY_GOVERNANCE, admins: ['admin1'], trusted: ['t1'] };
+    const C = computeExclusiveOwnerSet(ownerships, governance);
+    expect(C.has('admin1')).toBe(true);
+    expect(C.has('t1')).toBe(true);
+    expect(C.has('bob')).toBe(false);
+    expect(C.size).toBe(2);
+  });
+
+  it('lets a recognized authority owner dominate the object_control=full admin fallback', () => {
+    const ownerships = [makeOwnership('auth1')];
+    const governance = {
+      ...EMPTY_GOVERNANCE,
+      admins: ['admin1'],
+      authorities: ['auth1'],
+      object_control: 'full' as const,
+    };
+    const C = computeExclusiveOwnerSet(ownerships, governance);
+    expect([...C]).toEqual(['auth1']);
+  });
+
+  it('falls back to admins under object_control=full when the authority has no exclusive row', () => {
+    const ownerships = [makeOwnership('bob')];
+    const governance = {
+      ...EMPTY_GOVERNANCE,
+      admins: ['admin1'],
+      authorities: ['auth1'],
+      object_control: 'full' as const,
+    };
+    const C = computeExclusiveOwnerSet(ownerships, governance);
+    expect([...C]).toEqual(['admin1']);
+  });
+
+  it('deduplicates an account listed in both admins and authorities', () => {
+    const ownerships = [makeOwnership('a1')];
+    const governance = { ...EMPTY_GOVERNANCE, admins: ['a1'], authorities: ['a1'] };
+    const C = computeExclusiveOwnerSet(ownerships, governance);
+    expect([...C]).toEqual(['a1']);
+  });
 });
 
 describe('resolveUpdateValidity — curator filter', () => {
@@ -264,6 +350,155 @@ describe('resolveUpdateValidity — curator filter', () => {
       ownerships,
     );
     expect(result.status).toBe('REJECTED');
+  });
+});
+
+describe('resolveUpdateValidity — authority exclusive owner', () => {
+  const ownerships = [makeOwnership('waivio'), makeOwnership('waivio.affiliate')];
+  const governance = {
+    ...EMPTY_GOVERNANCE,
+    admins: ['waivio'],
+    authorities: ['waivio.affiliate'],
+  };
+  const exclusiveSet = computeExclusiveOwnerSet(ownerships, governance);
+  const voterReputations: VoterWaivPowerMap = new Map();
+
+  it('is VALID when the authority created the update and only self-voted for', () => {
+    const update = { ...BASE_UPDATE, creator: 'waivio.affiliate' };
+    const votes = [makeVote('waivio.affiliate', 'for')];
+    const result = resolveUpdateValidity(
+      update,
+      votes,
+      exclusiveSet,
+      governance,
+      voterReputations,
+      ownerships,
+    );
+    expect(result.status).toBe('VALID');
+  });
+
+  it('is REJECTED when the authority later votes against its own update', () => {
+    const update = { ...BASE_UPDATE, creator: 'waivio.affiliate' };
+    const votes = [
+      makeVote('waivio.affiliate', 'for', BigInt(1)),
+      makeVote('waivio.affiliate', 'against', BigInt(2)),
+    ];
+    const result = resolveUpdateValidity(
+      update,
+      votes,
+      exclusiveSet,
+      governance,
+      voterReputations,
+      ownerships,
+    );
+    expect(result.status).toBe('REJECTED');
+  });
+
+  it('lets the later admin against vote reject the authority update', () => {
+    const update = { ...BASE_UPDATE, creator: 'waivio.affiliate' };
+    const votes = [
+      makeVote('waivio.affiliate', 'for', BigInt(1)),
+      makeVote('waivio', 'against', BigInt(2)),
+    ];
+    const result = resolveUpdateValidity(
+      update,
+      votes,
+      exclusiveSet,
+      governance,
+      voterReputations,
+      ownerships,
+    );
+    expect(result.status).toBe('REJECTED');
+  });
+
+  it('lets the later authority for vote validate a non-owner update', () => {
+    const update = { ...BASE_UPDATE, creator: 'bob' };
+    const votes = [
+      makeVote('waivio', 'against', BigInt(1)),
+      makeVote('waivio.affiliate', 'for', BigInt(2)),
+    ];
+    const result = resolveUpdateValidity(
+      update,
+      votes,
+      exclusiveSet,
+      governance,
+      voterReputations,
+      ownerships,
+    );
+    expect(result.status).toBe('VALID');
+  });
+
+  it('rejects a non-E creator with no E votes', () => {
+    const update = { ...BASE_UPDATE, creator: 'wiv01' };
+    const result = resolveUpdateValidity(
+      update,
+      [],
+      exclusiveSet,
+      governance,
+      voterReputations,
+      ownerships,
+    );
+    expect(result.status).toBe('REJECTED');
+  });
+
+  it('rejects community for votes when no E member voted', () => {
+    const update = { ...BASE_UPDATE, creator: 'carol' };
+    const votes = [
+      makeVote('x1', 'for', BigInt(1)),
+      makeVote('x2', 'for', BigInt(2)),
+      makeVote('x3', 'for', BigInt(3)),
+    ];
+    const powers: VoterWaivPowerMap = new Map([
+      ['x1', 100],
+      ['x2', 100],
+      ['x3', 100],
+    ]);
+    const result = resolveUpdateValidity(
+      update,
+      votes,
+      exclusiveSet,
+      governance,
+      powers,
+      ownerships,
+    );
+    expect(result.status).toBe('REJECTED');
+  });
+
+  it.each([
+    ['for', 100],
+    ['against', 0],
+  ] as const)('authority %s vote yields approve_percent %i', (vote, percent) => {
+    const update = { ...BASE_UPDATE, creator: 'bob' };
+    const votes = [makeVote('waivio.affiliate', vote)];
+    const result = resolveUpdateValidity(
+      update,
+      votes,
+      exclusiveSet,
+      governance,
+      voterReputations,
+      ownerships,
+    );
+    expect(result.approve_percent).toBe(percent);
+  });
+
+  it('is VALID when a trusted+authority exclusive owner votes for a stranger update', () => {
+    const authOwnerships = [makeOwnership('a1')];
+    const authGovernance = {
+      ...EMPTY_GOVERNANCE,
+      trusted: ['a1'],
+      authorities: ['a1'],
+    };
+    const authSet = computeExclusiveOwnerSet(authOwnerships, authGovernance);
+    expect([...authSet]).toEqual(['a1']);
+    const result = resolveUpdateValidity(
+      { ...BASE_UPDATE, creator: 'bob' },
+      [makeVote('a1', 'for')],
+      authSet,
+      authGovernance,
+      voterReputations,
+      authOwnerships,
+    );
+    expect(result.status).toBe('VALID');
   });
 });
 

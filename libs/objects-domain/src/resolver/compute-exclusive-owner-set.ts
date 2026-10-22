@@ -4,7 +4,7 @@ import type { ObjectOwnership } from '@opden-data-layer/odl-db-types';
 /**
  * Exclusive owner set E for curator filter, approve_percent, and winner-mode rank.
  *
- * 1. recognizedExclusive = exclusive holders ∩ (admins ∪ trusted)
+ * 1. recognizedExclusive = exclusive holders ∩ (admins ∪ trusted ∪ authorities)
  * 2. If recognizedExclusive nonempty → E = recognizedExclusive (dominates, including object_control=full)
  * 3. Else if object_control = 'full' → E = governance.admins (implicit owners)
  * 4. Else → E = ∅
@@ -17,11 +17,15 @@ export function computeExclusiveOwnerSet(
   ownerships: ObjectOwnership[],
   governance: GovernanceSnapshot,
 ): Set<string> {
-  const adminOrTrusted = new Set([...governance.admins, ...governance.trusted]);
+  const recognizedAuthorities = new Set([
+    ...governance.admins,
+    ...governance.trusted,
+    ...governance.authorities,
+  ]);
   const recognizedExclusive = new Set<string>();
 
   for (const row of ownerships) {
-    if (row.ownership_type === 'exclusive' && adminOrTrusted.has(row.account)) {
+    if (row.ownership_type === 'exclusive' && recognizedAuthorities.has(row.account)) {
       recognizedExclusive.add(row.account);
     }
   }

@@ -31,7 +31,7 @@ Repeat **add** upserts `ownership_type` on PK `(object_id, account)`.
 Exclusive owners in set **E** gate updates. **E** is computed as:
 
 ```
-recognizedExclusive = { exclusive holders } ∩ { governance admins ∪ governance trusted }
+recognizedExclusive = { exclusive holders } ∩ { governance admins ∪ governance trusted ∪ governance authorities }
 
 if recognizedExclusive is non-empty:
   E = recognizedExclusive

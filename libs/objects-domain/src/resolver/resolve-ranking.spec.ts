@@ -120,6 +120,31 @@ describe('computeUpdateRankPersistence', () => {
     expect(r.rank_decisive_event_seq).toBe(BigInt(10));
   });
 
+  it('authority exclusive owner rank vote is decisive over community ranks', () => {
+    const governance = { ...EMPTY_GOVERNANCE, authorities: ['auth1'] };
+    const ownerships = [makeOwnership('auth1')];
+    const votes = [
+      makeRankVote('u1', 'auth1', 3, BigInt(5)),
+      makeRankVote('u1', 'c1', 9, BigInt(6)),
+      makeRankVote('u1', 'c2', 9, BigInt(7)),
+    ];
+    const r = computeUpdateRankPersistence(votes, governance, new Map(), 'winner', ownerships);
+    expect(r.rank_score).toBe(3);
+    expect(r.rank_decisive_event_seq).toBe(BigInt(5));
+  });
+
+  it('latest exclusive rank vote wins between admin and authority', () => {
+    const governance = { ...EMPTY_GOVERNANCE, admins: ['admin1'], authorities: ['auth1'] };
+    const ownerships = [makeOwnership('admin1'), makeOwnership('auth1')];
+    const votes = [
+      makeRankVote('u1', 'admin1', 7, BigInt(1)),
+      makeRankVote('u1', 'auth1', 2, BigInt(2)),
+    ];
+    const r = computeUpdateRankPersistence(votes, governance, new Map(), 'winner', ownerships);
+    expect(r.rank_score).toBe(2);
+    expect(r.rank_decisive_event_seq).toBe(BigInt(2));
+  });
+
   it('average: weighted mean ignores exclusive filter', () => {
     const governance = { ...EMPTY_GOVERNANCE, admins: ['admin1', 'admin2'] };
     const ownerships = [makeOwnership('admin1')];

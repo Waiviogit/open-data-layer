@@ -268,7 +268,7 @@ Queries 1–4 can run in parallel. Collect distinct voter names from **query 3 o
 
 For each object, using the loaded rows, authority records, voter **waiv_power** map, and the governance snapshot:
 
-1. **Compute curator set E** — `recognizedExclusive = { exclusive holders } ∩ { governance admins ∪ governance trusted }`. If `recognizedExclusive` is non-empty, **E = recognizedExclusive** (exclusive dominates, including under `object_control = full`). Else if `object_control = full`, **E = { governance admins }`. Else **E = ∅**.
+1. **Compute curator set E** — `recognizedExclusive = { exclusive holders } ∩ { governance admins ∪ governance trusted ∪ governance authorities }`. If `recognizedExclusive` is non-empty, **E = recognizedExclusive** (exclusive dominates, including under `object_control = full`). Else if `object_control = full`, **E = { governance admins }`. Else **E = ∅**.
 2. Group updates by `update_type`.
 3. Resolve validity per update (tiered):
    - If `E` is non-empty, apply curator filter: an update is valid only if its `creator ∈ E` OR it has a positive validity vote from any member of `E`. Updates satisfying neither are treated as invalid regardless of other votes. `approve_percent` and winner-mode `rank_score` use the same **E**.

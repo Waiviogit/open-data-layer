@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { affiliateLinkViewSchema } from '@/modules/feed/application/dto/feed-story.dto';
+
 /** Matches query-api subscription list sort (`GET .../followers` & `following`). */
 export const USER_SUBSCRIPTION_SORTS = ['rank', 'followers', 'a-z', 'recency'] as const;
 export type UserSubscriptionSort = (typeof USER_SUBSCRIPTION_SORTS)[number];
@@ -36,6 +38,7 @@ export const socialProjectedObjectSchema = z.object({
   hasSupervisedOwnership: z.boolean().optional().default(false),
   hasExclusiveOwnership: z.boolean().optional().default(false),
   seo: z.record(z.string(), z.unknown()).optional(),
+  affiliateLinks: z.array(affiliateLinkViewSchema).optional(),
 });
 
 export type SocialProjectedObjectView = z.infer<typeof socialProjectedObjectSchema>;

@@ -163,6 +163,12 @@
 
 **Rule:** PERSONAL codes on shop/favorites belong to `:name`, not the merchant affiliate object's exclusive owners. Load personal views with `include_rejected: true` and keep that creator's latest PERSONAL even when REJECTED. Button/template/geo/types stay VALID-only. Bump the personal Redis key when this contract changes.
 
+## Curator REJECTED: name the real cause, compare with legacy ownership
+
+**Pattern:** Claimed the GOVERNANCE `affiliateCode` was "REJECTED by other owners' votes". There were no against votes. The real cause: `waivio.affiliate` (governance `authorities`) is not in E = exclusive ∩ (admins ∪ trusted), so its own update without an admin vote fails the curator filter. Legacy counted `obj.authority.ownership ∩ app.authority` as owners.
+
+**Rule:** Before calling something REJECTED, show creator, for/against voters and E as computed from the snapshot. When ODL and legacy diverge on visibility, check object-processor `getObjectAdminsOwnershipAndAdministrative` first.
+
 ## Web: notifications WS singleton vs remount
 
 **Pattern:** `configureNotificationsWsUrl` ran during render and reset the singleton whenever it was `undefined` (same URL). Stale `onclose` from a replaced socket scheduled another reconnect → burst of `GET /api/auth/ws-token` and multiple sockets.
