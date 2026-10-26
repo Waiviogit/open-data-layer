@@ -33,11 +33,6 @@ reason = "Transitive optional dep via less (vite/webpack dev toolchain). image-s
 ignoreUntil = 2027-02-28
 
 [[IgnoredVulns]]
-id = "GHSA-vfj7-8cjw-p6xm"
-reason = "Transitive via micromatch/chokidar (Nx/webpack/tailwind glob tooling). No patched braces release on npm (latest 3.0.3). Dev/build-only; not shipped in production Docker bundles."
-ignoreUntil = 2027-04-12
-
-[[IgnoredVulns]]
 id = "GHSA-rj75-hqrm-r3gf"
 reason = "Remaining hit is postcss-selector-parser@6.1.4 via Tailwind 3.4 / postcss-nested. No 6.x patch (latest 6.1.4); 7.x already overridden to 7.1.6. Build-time trusted CSS only; advisory says that path is not affected."
 ignoreUntil = 2027-04-12
