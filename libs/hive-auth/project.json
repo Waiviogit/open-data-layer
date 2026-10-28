@@ -3,7 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/hive-auth/src",
   "projectType": "library",
-  "tags": [],
+  "tags": ["type:lib", "scope:shared"],
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
