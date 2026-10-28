@@ -303,7 +303,7 @@ Full standards: [`docs/standards/docs-standards.md`](docs/standards/docs-standar
 - **Spec vs code** — if implementation diverges from spec, update the spec or mark explicitly: `> **TODO: spec-code divergence**`.
 - **Behavior change** — update the corresponding doc in the same PR.
 - **Generated registry docs** — `pnpm tsx scripts/gen-object-types-spec.ts` and `pnpm tsx scripts/gen-object-updates-spec.ts` write to `generated/` (gitignored). Source of truth: `OBJECT_TYPE_REGISTRY` and `UPDATE_REGISTRY` in `@opden-data-layer/core`; never edit generated files by hand.
-- **New object type** — add `docs/skills/object-create/{object_type}.md` from `docs/standards/templates/object-create-playbook.md`; run `pnpm check:object-create-playbooks`.
+- **New object type** — add `odl/object-create/references/<kebab>.md` in [Waiviogit/skills](https://github.com/Waiviogit/skills) (`service_offer` → `service-offer.md`). Agents install the catalog with `npx skills add https://github.com/Waiviogit/skills`. Run `pnpm sync:odl-skills` then `pnpm check:object-create-playbooks`.
 - **Code comments** — `@see` references use repo-root paths such as `docs/spec/data-model/flow.md`.
 
 ## Web i18n locale catalogs (`apps/web`)

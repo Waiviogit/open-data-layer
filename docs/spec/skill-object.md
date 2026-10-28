@@ -8,12 +8,11 @@ scope: platform
 tags: [platform, domain, object-type, skill]
 related:
   - docs/spec/object-type-entity.md
-  - docs/skills/object-create/skill.md
 ---
 
 # Skill object type
 
-**Back:** [Spec index](README.md) · **Related:** [object-type-entity](object-type-entity.md), [create playbook](../skills/object-create/skill.md)
+**Back:** [Spec index](README.md) · **Related:** [object-type-entity](object-type-entity.md), playbook `odl/object-create/references/skill.md`
 
 ## Purpose
 

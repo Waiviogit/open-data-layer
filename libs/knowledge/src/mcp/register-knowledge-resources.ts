@@ -1,8 +1,9 @@
 import { ResourceTemplate, type McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { resolveLegacySkillPath } from '../routing/legacy-skill-path';
 import type { KnowledgeMcpDeps } from './mcp-tool.deps';
 
-const ROUTING_PATH = 'docs/skills/knowledge-api-routing.md';
+const ROUTING_PATH = 'odl/knowledge-api-routing/SKILL.md';
 
 export function registerKnowledgeResources(server: McpServer, deps: KnowledgeMcpDeps): void {
   server.registerResource(
@@ -77,7 +78,8 @@ export function registerKnowledgeResources(server: McpServer, deps: KnowledgeMcp
     async (uri, variables) => {
       const rawPath = variables.path;
       const docPath = Array.isArray(rawPath) ? rawPath.join('/') : rawPath;
-      const file = await deps.repo.findFileByPath(docPath);
+      const resolved = resolveLegacySkillPath(docPath);
+      const file = await deps.repo.findFileByPath(resolved.path);
       if (!file) {
         return {
           contents: [
@@ -113,7 +115,7 @@ export function registerKnowledgeResources(server: McpServer, deps: KnowledgeMcp
     async ({ task }) => {
       const steps = [
         '1. Read server instructions from initialize.',
-        '2. Read resource odl-knowledge://routing (or get_file docs/skills/knowledge-api-routing.md).',
+        '2. Read resource odl-knowledge://routing (or get_file odl/knowledge-api-routing/SKILL.md).',
         '3. list_files({ type: "skill" }) — catalog playbooks with description one-liners.',
         task
           ? `4. resolve_doc({ topic: "${task}" }) then get_file on top path.`

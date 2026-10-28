@@ -13,22 +13,39 @@ describe('inferMetadataFromPath', () => {
   });
 
   it('maps skills paths', () => {
-    expect(inferMetadataFromPath('docs/skills/hive-create-account.md')).toMatchObject({
+    expect(inferMetadataFromPath('odl/hive-account-signup/SKILL.md')).toMatchObject({
       type: 'skill',
       scope: 'platform',
+      title: 'hive account signup',
     });
   });
 
   it('maps object-create playbook paths', () => {
-    expect(inferMetadataFromPath('docs/skills/object-create/recipe.md')).toMatchObject({
+    expect(inferMetadataFromPath('odl/object-create/references/recipe.md')).toMatchObject({
       type: 'playbook',
       scope: 'platform',
       tags: expect.arrayContaining(['object-create-playbook', 'recipe']),
     });
   });
 
+  it('maps kebab playbooks and extra references', () => {
+    expect(
+      inferMetadataFromPath('odl/object-create/references/service-offer.md'),
+    ).toMatchObject({
+      type: 'playbook',
+      tags: expect.arrayContaining(['service_offer']),
+    });
+    expect(
+      inferMetadataFromPath('odl/object-create/references/book-catalog.md'),
+    ).toMatchObject({
+      type: 'reference',
+    });
+  });
+
   it('normalizes Windows separators for object-create playbooks', () => {
-    expect(inferMetadataFromPath('docs\\skills\\object-create\\dish.md')).toMatchObject({
+    expect(
+      inferMetadataFromPath('odl\\object-create\\references\\dish.md'),
+    ).toMatchObject({
       type: 'playbook',
       tags: expect.arrayContaining(['dish']),
     });

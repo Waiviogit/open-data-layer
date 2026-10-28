@@ -1,3 +1,5 @@
+import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
+import { playbookFileToObjectType } from '../routing/legacy-skill-path';
 import type { KnowledgeFrontmatter, KnowledgeType } from './knowledge-frontmatter.schema';
 
 const POSIX = (p: string): string => p.replace(/\\/g, '/');
@@ -30,22 +32,43 @@ export function inferMetadataFromPath(relativePath: string): Partial<KnowledgeFr
     return { type: 'agents', scope, title: `AGENTS — ${scope}` };
   }
 
-  if (p.startsWith('docs/skills/object-create/')) {
-    const objectType = p.slice('docs/skills/object-create/'.length).replace(/\.md$/i, '');
-    return {
-      type: 'playbook',
-      scope: 'platform',
-      title: `Create ${objectType} object`,
-      tags: ['object-create', 'object-create-playbook', objectType],
-    };
-  }
-
-  if (p.startsWith('docs/skills/')) {
-    const name = p.slice('docs/skills/'.length).replace(/\.md$/i, '');
+  const skillMatch = /^odl\/([^/]+)\/SKILL\.md$/i.exec(p);
+  if (skillMatch) {
+    const name = skillMatch[1];
     return {
       type: 'skill',
       scope: 'platform',
-      title: name.split('/').pop()?.replace(/-/g, ' ') ?? name,
+      title: name.replace(/-/g, ' '),
+    };
+  }
+
+  const playbookMatch = /^odl\/object-create\/references\/([^/]+)\.md$/i.exec(p);
+  if (playbookMatch) {
+    const fileName = playbookMatch[1];
+    const objectType = playbookFileToObjectType(`${fileName}.md`);
+    if (objectType in OBJECT_TYPE_REGISTRY) {
+      return {
+        type: 'playbook',
+        scope: 'platform',
+        title: `Create ${objectType} object`,
+        tags: ['object-create', 'object-create-playbook', objectType],
+      };
+    }
+    return {
+      type: 'reference',
+      scope: 'platform',
+      title: fileName.replace(/-/g, ' '),
+      tags: ['object-create'],
+    };
+  }
+
+  const referenceMatch = /^odl\/[^/]+\/references\/([^/]+)\.md$/i.exec(p);
+  if (referenceMatch) {
+    const fileName = referenceMatch[1];
+    return {
+      type: 'reference',
+      scope: 'platform',
+      title: fileName.replace(/-/g, ' '),
     };
   }
 

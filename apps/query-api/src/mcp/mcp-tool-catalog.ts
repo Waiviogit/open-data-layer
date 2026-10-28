@@ -6,7 +6,8 @@ export interface QueryMcpToolCatalogEntry {
   specPath?: string;
 }
 
-export const QUERY_MCP_ROUTING_SKILL_PATH = 'docs/skills/query-api-mcp-routing.md';
+export const QUERY_MCP_ROUTING_SKILL_PATH =
+  'vendor/skills/odl/query-api-mcp-routing/SKILL.md';
 
 export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
   {
@@ -272,7 +273,7 @@ export const QUERY_MCP_TOOL_CATALOG: readonly QueryMcpToolCatalogEntry[] = [
   {
     name: 'get_user_engine_deposit_address',
     description:
-      'Hive Engine converter routing only (address/account/memo/pair/exRate/swapSymbol/destination). Does NOT write wallet history. Next: agent-wallet osl_build_hive_engine_deposit with this result as routing, then wallet_broadcast keyType posting, then show the address. Skill: docs/skills/hive-engine-deposit-for-agents.md.',
+      'Hive Engine converter routing only (address/account/memo/pair/exRate/swapSymbol/destination). Does NOT write wallet history. Next: agent-wallet osl_build_hive_engine_deposit with this result as routing, then wallet_broadcast keyType posting, then show the address. Skill: hive-engine-deposit-for-agents.',
     httpEquivalent: 'GET /query/v1/users/:name/wallet/engine/deposit/address',
     specPath: 'docs/apps/query-api/spec/user-engine-swap-endpoints.md',
   },

@@ -43,7 +43,9 @@ jobs:
               - 'docs/**'
               - 'scripts/check-agent-docs.ts'
               - 'scripts/check-object-create-playbooks.ts'
+              - 'scripts/sync-odl-skills.ts'
               - 'scripts/check-core-imports.ts'
+              - 'libs/knowledge/**'
               - 'libs/core/**'
               - 'libs/odl-db-types/**'
               - 'apps/web/src/**'
@@ -62,6 +64,10 @@ jobs:
       - name: Install dependencies
         if: steps.paths.outputs.docs == 'true'
         run: pnpm install --frozen-lockfile
+
+      - name: Sync ODL skills catalog
+        if: steps.paths.outputs.docs == 'true'
+        run: pnpm sync:odl-skills
 
       - name: Verify agent-oriented docs
         if: steps.paths.outputs.docs == 'true'

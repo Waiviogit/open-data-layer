@@ -38,7 +38,7 @@ type PersistedSession = HasSession;
  * Deliberately free of `qrAscii` and of any JWT-shaped string: this payload is
  * what a chat agent relays to the user, and secret redactors cut `eyJ…` blobs.
  *
- * @see docs/skills/has-login-from-chat.md
+ * @see skill has-login-from-chat (Waiviogit/skills)
  */
 export type LoginStartResult = {
   requestId: string;

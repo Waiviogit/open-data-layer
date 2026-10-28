@@ -9,7 +9,6 @@ tags: [knowledge-api, search, mcp, fts, trigram]
 updated_at: 2026-06-11
 related:
   - docs/apps/knowledge-api/spec/overview.md
-  - docs/skills/knowledge-api-routing.md
 ---
 
 # Knowledge hybrid search

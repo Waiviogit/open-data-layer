@@ -2,3 +2,7 @@ export const REINDEX_MIN_INTERVAL_SEC_DEFAULT = 300;
 export const REINDEX_LOCK_TTL_SEC_DEFAULT = 600;
 export const COLD_START_POLL_INTERVAL_MS = 1_000;
 export const COLD_START_MAX_WAIT_MS = 120_000;
+
+export const SKILLS_STATE_TTL_SEC = 7 * 24 * 60 * 60;
+export const SKILLS_REFRESH_LOCK_TTL_SEC = 600;
+export const SKILLS_REFRESH_INTERVAL_NAME = 'skillsRefresh';

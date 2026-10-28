@@ -9,7 +9,6 @@ tags: [platform, onboarding, local-dev, docker, migrate, pnpm]
 updated_at: 2026-10-16
 related:
   - docs/README.md
-  - docs/skills/setup-workspace.md
 ---
 
 # Local Development Environment
@@ -24,7 +23,7 @@ End-to-end guide: **prepare your local development environment**, start infrastr
 
 ## When not to use
 
-- You are onboarding a **sidecar agent without a checkout** (clone repo, path contract only) — use [Setup agent workspace](../skills/setup-workspace.md).
+- You are onboarding a **sidecar agent without a checkout** (clone repo, path contract only) — use skill `setup-workspace` (`npx skills add https://github.com/Waiviogit/skills`).
 - You only need indexed markdown specs — knowledge-api MCP is enough; no Docker or migrate required.
 
 ---

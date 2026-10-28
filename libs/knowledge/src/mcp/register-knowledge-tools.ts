@@ -15,10 +15,12 @@ import {
 } from '../registry/registry-query';
 import { getObjectCreatePlaybook } from '../registry/object-create-playbook';
 import type { KnowledgeDatabase } from '../repository/types';
+import { resolveLegacySkillPath } from '../routing/legacy-skill-path';
 import type { KnowledgeMcpDeps } from './mcp-tool.deps';
 import { jsonToolResult, toolError } from './mcp-tool.helpers';
 
-const KNOWLEDGE_TYPES = 'skill | playbook | spec | overview | lesson | agents | registry';
+const KNOWLEDGE_TYPES =
+  'skill | playbook | reference | spec | overview | lesson | agents | registry';
 
 export function registerKnowledgeTools(server: McpServer, deps: KnowledgeMcpDeps): void {
   server.registerTool(
@@ -94,16 +96,18 @@ export function registerKnowledgeTools(server: McpServer, deps: KnowledgeMcpDeps
         path: z
           .string()
           .min(1)
-          .describe('Repo-relative path, e.g. docs/skills/hive-account-signup.md'),
+          .describe('Repo-relative path, e.g. odl/hive-account-signup/SKILL.md'),
       }),
     },
     async (args) => {
-      const file = await deps.repo.findFileByPath(args.path);
+      const resolved = resolveLegacySkillPath(args.path);
+      const file = await deps.repo.findFileByPath(resolved.path);
       if (!file) {
         return toolError(`File not found: ${args.path}`);
       }
       return jsonToolResult({
         path: file.path,
+        ...(resolved.movedFrom ? { moved_from: resolved.movedFrom } : {}),
         title: file.title,
         description: file.description,
         type: file.type,

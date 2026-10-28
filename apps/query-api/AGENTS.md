@@ -66,7 +66,7 @@ src/
 - Reuse domain Zod schemas for tool `inputSchema` (add `.describe()` on fields; extend with `withMcpLocaleContext` in `mcp-tool.helpers.ts`).
 - Use `catalogDescription(name)` for tool `description` strings.
 - MCP is not REST — do **not** add OpenAPI fragments for `/query/mcp`.
-- Spec: `docs/apps/query-api/spec/mcp.md`; routing skill: `docs/skills/query-api-mcp-routing.md`.
+- Spec: `docs/apps/query-api/spec/mcp.md`; routing skill: `query-api-mcp-routing` (`npx skills add https://github.com/Waiviogit/skills`).
 
 ## Account avatars
 

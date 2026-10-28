@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { RedisClientFactory } from '@opden-data-layer/clients';
 import {
   KnowledgeRepository,
+  reparseSkillsFromStoredBodies,
   runKnowledgeReindex,
   type KnowledgeDatabase,
   type ReindexStats,
@@ -15,6 +16,7 @@ import {
 } from '../constants/reindex';
 import { knowledgeApiRedisKey } from '../constants/redis-keys';
 import { KYSELY } from '../database/database.module';
+import { SkillsRefreshService } from './skills-refresh.service';
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -29,6 +31,7 @@ export class KnowledgeReindexBootstrapService {
     @Inject(KYSELY) private readonly db: Kysely<KnowledgeDatabase>,
     private readonly config: ConfigService,
     private readonly redisFactory: RedisClientFactory,
+    private readonly skillsRefresh: SkillsRefreshService,
   ) {}
 
   private startupReindexEnabled(): boolean {
@@ -62,12 +65,13 @@ export class KnowledgeReindexBootstrapService {
 
     const repo = new KnowledgeRepository(this.db);
     const fileCount = await repo.countFiles();
-    if (fileCount > 0) {
+    if (fileCount === 0) {
+      this.logger.log('Knowledge index empty — running startup reindex before listen');
+      await this.ensureIndexPopulated();
       return;
     }
 
-    this.logger.log('Knowledge index empty — running startup reindex before listen');
-    await this.ensureIndexPopulated();
+    await this.seedSkillsIfMissing();
   }
 
   /** Async warm reindex after listen (throttled). */
@@ -128,6 +132,7 @@ export class KnowledgeReindexBootstrapService {
             const stats = await this.executeReindex();
             await this.recordLastReindexAt();
             this.logStats('cold startup reindex', stats);
+            await this.skillsRefresh.seedFromSnapshot();
           }
           return;
         } finally {
@@ -141,6 +146,22 @@ export class KnowledgeReindexBootstrapService {
     throw new Error(
       `Knowledge index still empty after ${COLD_START_MAX_WAIT_MS}ms waiting for startup reindex`,
     );
+  }
+
+  private async seedSkillsIfMissing(): Promise<void> {
+    const repo = new KnowledgeRepository(this.db);
+    const paths = await repo.listPaths();
+    if (!paths.some((p) => p.startsWith('odl/'))) {
+      this.logger.log('Skills index empty — seeding from snapshot');
+      await this.skillsRefresh.seedFromSnapshot();
+      return;
+    }
+    const stats = await reparseSkillsFromStoredBodies(this.db, {
+      warn: (message) => this.logger.warn(message),
+    });
+    if (stats.indexed > 0) {
+      this.logStats('skills in-place reparse', stats);
+    }
   }
 
   private async executeReindex(): Promise<ReindexStats> {

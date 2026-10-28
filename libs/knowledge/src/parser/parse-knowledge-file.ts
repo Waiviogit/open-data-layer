@@ -13,7 +13,7 @@ export interface ParsedKnowledgeFile {
   contentHash: string;
 }
 
-const DESCRIPTION_MAX_LENGTH = 500;
+const DESCRIPTION_MAX_LENGTH = 1024;
 
 function titleFromBody(body: string, fallback: string): string {
   const match = /^#\s+(.+)$/m.exec(body);

@@ -2,7 +2,11 @@ import { readdir, readFile } from 'node:fs/promises';
 import * as path from 'node:path';
 import { scanKnowledgeSourcePaths } from '../libs/knowledge/src/config/scan-sources';
 import { parseKnowledgeFile } from '../libs/knowledge/src/parser/parse-knowledge-file';
-import { parseFrontmatterYaml, splitFrontmatter } from '../libs/knowledge/src/parser/parse-frontmatter';
+import {
+  isYamlBlockScalarMarker,
+  parseFrontmatterYaml,
+  splitFrontmatter,
+} from '../libs/knowledge/src/parser/parse-frontmatter';
 
 const ROOT = path.resolve(process.cwd());
 
@@ -48,22 +52,25 @@ function extractRoutingTablePaths(markdown: string): string[] {
 }
 
 async function checkSkills(): Promise<void> {
-  const skillsDir = path.join(ROOT, 'docs/skills');
-  const files = (await listMarkdownFiles(skillsDir)).map(rel);
+  const skillsRoot = path.join(ROOT, 'vendor', 'skills');
+  const files = (await listMarkdownFiles(path.join(skillsRoot, 'odl'))).filter(
+    (abs) => abs.endsWith(`${path.sep}SKILL.md`) || abs.endsWith('/SKILL.md'),
+  );
 
   if (files.length === 0) {
-    fail('no docs/skills/*.md files found');
+    fail('no vendor/skills/odl/**/SKILL.md files found — run pnpm sync:odl-skills');
   }
 
-  for (const filePath of files) {
-    const raw = await readFile(path.join(ROOT, filePath), 'utf8');
-    const parsed = parseKnowledgeFile(filePath, raw);
+  for (const abs of files) {
+    const indexedPath = path.relative(skillsRoot, abs).replace(/\\/g, '/');
+    const raw = await readFile(abs, 'utf8');
+    const parsed = parseKnowledgeFile(indexedPath, raw);
     const description = parsed.frontmatter.description?.trim();
-    if (!description) {
-      fail(`${filePath}: missing non-empty frontmatter description`);
+    if (!description || isYamlBlockScalarMarker(description)) {
+      fail(`${indexedPath}: missing non-empty frontmatter description`);
     }
-    if (description.length > 500) {
-      fail(`${filePath}: description exceeds 500 characters`);
+    if (description.length > 1024) {
+      fail(`${indexedPath}: description exceeds 1024 characters`);
     }
   }
 }
@@ -96,16 +103,30 @@ async function checkAppOverviews(): Promise<void> {
 }
 
 async function checkRoutingSkillPaths(): Promise<void> {
-  const routingPath = 'docs/skills/knowledge-api-routing.md';
-  const raw = await readFile(path.join(ROOT, routingPath), 'utf8');
-  const paths = extractRoutingTablePaths(raw);
+  const routingPath = path.join(
+    ROOT,
+    'vendor',
+    'skills',
+    'odl',
+    'knowledge-api-routing',
+    'SKILL.md',
+  );
+  let raw: string;
+  try {
+    raw = await readFile(routingPath, 'utf8');
+  } catch {
+    fail(
+      'vendor/skills/odl/knowledge-api-routing/SKILL.md missing — run pnpm sync:odl-skills',
+    );
+  }
+  const paths = extractRoutingTablePaths(raw).filter((p) => p.startsWith('docs/'));
 
   for (const p of paths) {
     const abs = path.join(ROOT, p);
     try {
       await readFile(abs, 'utf8');
     } catch {
-      fail(`${routingPath}: decision table path does not exist: ${p}`);
+      fail(`knowledge-api-routing: decision table path does not exist: ${p}`);
     }
   }
 }

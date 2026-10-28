@@ -20,8 +20,9 @@ async function readRoutingSkillBody(): Promise<string> {
     return [
       'Routing skill file not found on disk.',
       `Expected: ${QUERY_MCP_ROUTING_SKILL_PATH}`,
-      'Read via knowledge-api: get_file({ path: "docs/skills/query-api-mcp-routing.md" })',
-      'Or set QUERY_API_DOCS_ROOT to the repo root containing docs/.',
+      'Install: npx skills add https://github.com/Waiviogit/skills',
+      'Or knowledge-api: get_file({ path: "odl/query-api-mcp-routing/SKILL.md" })',
+      'Or set QUERY_API_DOCS_ROOT to the repo root and run pnpm sync:odl-skills.',
     ].join('\n');
   }
 }
@@ -93,7 +94,7 @@ export function registerQueryMcpResources(server: McpServer): void {
     async ({ task }) => {
       const steps = [
         '1. Read server instructions from initialize.',
-        '2. Read resource odl-query://routing (or knowledge-api get_file docs/skills/query-api-mcp-routing.md).',
+        '2. Read resource odl-query://routing (or knowledge-api get_file odl/query-api-mcp-routing/SKILL.md).',
         '3. Read odl-query://catalog/tools — full tool list with HTTP mapping.',
         task
           ? `4. For "${task}": use the decision table in routing skill to pick a tool, then call it with locale/viewer as needed.`

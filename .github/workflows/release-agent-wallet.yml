@@ -135,7 +135,7 @@ jobs:
 
           Bearer token is written to \`~/.odl/agent-wallet.token\` on first start.
 
-          Skills: [hive-has-agent-wallet](https://github.com/${{ github.repository }}/blob/development/docs/skills/hive-has-agent-wallet.md), [ipfs-image-upload](https://github.com/${{ github.repository }}/blob/development/docs/skills/ipfs-image-upload.md)
+          Skills: [hive-has-agent-wallet](https://github.com/Waiviogit/skills/blob/master/odl/hive-has-agent-wallet/SKILL.md), [ipfs-image-upload](https://github.com/Waiviogit/skills/blob/master/odl/ipfs-image-upload/SKILL.md)
           EOF
           tar czf release/agent-wallet-portable.tar.gz -C release main.js package.json pnpm-lock.yaml install.sh install.ps1 SHA256SUMS
 

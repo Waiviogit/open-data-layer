@@ -9,10 +9,6 @@ tags: [query-api, mcp, agent]
 updated_at: 2026-10-16
 related:
   - docs/apps/query-api/spec/overview.md
-  - docs/skills/query-api-mcp-routing.md
-  - docs/skills/wallet-delegation-swap-for-agents.md
-  - docs/skills/hive-engine-deposit-for-agents.md
-  - docs/skills/knowledge-api-routing.md
   - docs/apps/query-api/spec/geoip.md
 ---
 
@@ -20,7 +16,7 @@ related:
 
 Read-only **live data** MCP at `POST /query/mcp` (no URI version). Each tool delegates to the same `*Endpoint.execute()` used by HTTP controllers.
 
-**Back:** [overview](overview.md) · **Routing skill:** [query-api-mcp-routing.md](../../skills/query-api-mcp-routing.md)
+**Back:** [overview](overview.md) · **Routing skill:** `query-api-mcp-routing` (`npx skills add https://github.com/Waiviogit/skills`, or knowledge-api `get_file odl/query-api-mcp-routing/SKILL.md`).
 
 ## Stack
 
@@ -48,7 +44,7 @@ Client IP is **not** a tool argument. `McpRequestContext.clientIp` is taken from
 | `odl-query://catalog/tools` | JSON tool catalog |
 | Prompt `first_visit` | Numbered onboarding steps |
 
-Set `QUERY_API_DOCS_ROOT` to repo root in dev if `odl-query://routing` cannot read `docs/skills/query-api-mcp-routing.md` from cwd.
+Set `QUERY_API_DOCS_ROOT` to repo root in dev if `odl-query://routing` cannot read `vendor/skills/odl/query-api-mcp-routing/SKILL.md` from cwd (`pnpm sync:odl-skills`). Fallback: `npx skills add https://github.com/Waiviogit/skills`.
 
 ## Excluded
 

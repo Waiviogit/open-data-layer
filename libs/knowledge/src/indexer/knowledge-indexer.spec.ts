@@ -1,4 +1,5 @@
 import type { Kysely } from 'kysely';
+import { KnowledgeRepository } from '../repository/knowledge.repository';
 import type { KnowledgeDatabase } from '../repository/types';
 import { runKnowledgeReindex } from './knowledge-indexer';
 import { writeAgentRoutesFile } from '../routing/write-agent-routes';
@@ -20,8 +21,9 @@ jest.mock('../repository/knowledge.repository', () => ({
   KnowledgeRepository: jest.fn().mockImplementation(() => ({
     findFileByPath: jest.fn().mockResolvedValue(null),
     upsertFile: jest.fn().mockResolvedValue(undefined),
-    listPaths: jest.fn().mockResolvedValue([]),
+    listPaths: jest.fn().mockResolvedValue(['odl/hive-account-signup/SKILL.md', 'docs/gone.md']),
     listRouteCatalog: jest.fn().mockResolvedValue([]),
+    deleteFileByPath: jest.fn().mockResolvedValue(undefined),
   })),
 }));
 
@@ -51,5 +53,19 @@ describe('runKnowledgeReindex', () => {
     });
 
     expect(writeAgentRoutesFileMock).toHaveBeenCalled();
+  });
+
+  it('does not delete odl/ rows when pruning stale docs', async () => {
+    await runKnowledgeReindex(db, {
+      workspaceRoot: '/tmp/workspace',
+      writeAgentRoutes: false,
+    });
+
+    const instance = (KnowledgeRepository as unknown as jest.Mock).mock.results[0]
+      ?.value as { deleteFileByPath: jest.Mock };
+    expect(instance.deleteFileByPath).toHaveBeenCalledWith('docs/gone.md');
+    expect(instance.deleteFileByPath).not.toHaveBeenCalledWith(
+      'odl/hive-account-signup/SKILL.md',
+    );
   });
 });

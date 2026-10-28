@@ -15,6 +15,7 @@
     "gen:object-updates": "tsx scripts/gen-object-updates-spec.ts",
     "gen:object-types": "tsx scripts/gen-object-types-spec.ts",
     "knowledge:reindex": "tsx --tsconfig tsconfig.base.json --env-file=.env scripts/knowledge-reindex.ts",
+    "sync:odl-skills": "tsx --tsconfig tsconfig.base.json scripts/sync-odl-skills.ts",
     "e2e:knowledge-api": "pnpm migrate && pnpm knowledge:reindex && pnpm nx e2e knowledge-api-e2e",
     "migrate": "tsx --env-file=.env libs/migrations/src/cli.ts latest",
     "migrate:latest": "tsx --env-file=.env libs/migrations/src/cli.ts latest",
@@ -118,6 +119,7 @@
     "stream-chain": "^3.6.0",
     "stream-json": "^3.7.0",
     "swagger-ui-dist": "^5.32.8",
+    "tar": "^7.5.22",
     "tslib": "^2.3.0",
     "ws": "^8.21.0",
     "zod": "^4.6.7"

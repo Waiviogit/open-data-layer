@@ -3,43 +3,54 @@ import { join } from 'node:path';
 
 import { parseKnowledgeFile } from './parse-knowledge-file';
 
-const workspaceRoot = join(__dirname, '../../../..');
+const fixturesRoot = join(__dirname, '../__fixtures__/skills');
+
+function listMdFiles(dir: string, prefix: string): string[] {
+  return readdirSync(dir)
+    .filter((name) => name.endsWith('.md'))
+    .map((name) => join(prefix, name).replace(/\\/g, '/'));
+}
 
 describe('skills taxonomy', () => {
-  const skillsDir = join(workspaceRoot, 'docs/skills');
-  const objectCreateDir = join(skillsDir, 'object-create');
-
-  it('types every object-create doc as playbook and every top-level skill doc as skill', () => {
-    const topLevel = readdirSync(skillsDir)
-      .filter((name) => name.endsWith('.md'))
-      .map((name) => join('docs/skills', name).replace(/\\/g, '/'));
-
-    const playbooks = readdirSync(objectCreateDir)
-      .filter((name) => name.endsWith('.md'))
-      .map((name) => join('docs/skills/object-create', name).replace(/\\/g, '/'));
-
-    expect(playbooks.length).toBe(27);
-
-    for (const relPath of playbooks) {
-      const raw = readFileSync(join(workspaceRoot, relPath), 'utf8');
-      const parsed = parseKnowledgeFile(relPath, raw);
-      expect(parsed.frontmatter.type).toBe('playbook');
-    }
-
-    for (const relPath of topLevel) {
-      const raw = readFileSync(join(workspaceRoot, relPath), 'utf8');
+  it('types SKILL.md as skill, registry playbooks as playbook, extras as reference', () => {
+    const skills = [
+      'odl/hive-account-signup/SKILL.md',
+      'odl/knowledge-api-routing/SKILL.md',
+      'odl/object-create/SKILL.md',
+    ];
+    for (const relPath of skills) {
+      const raw = readFileSync(join(fixturesRoot, relPath), 'utf8');
       const parsed = parseKnowledgeFile(relPath, raw);
       expect(parsed.frontmatter.type).toBe('skill');
+      expect(parsed.frontmatter.description?.trim().length).toBeGreaterThan(0);
     }
-  });
 
-  it('object-create skill doc satisfies the skill contract', () => {
-    const relPath = 'docs/skills/object-create.md';
-    const raw = readFileSync(join(workspaceRoot, relPath), 'utf8');
-    const parsed = parseKnowledgeFile(relPath, raw);
+    const playbooks = listMdFiles(
+      join(fixturesRoot, 'odl/object-create/references'),
+      'odl/object-create/references',
+    );
+    const parsedPlaybooks = playbooks.map((relPath) => ({
+      relPath,
+      parsed: parseKnowledgeFile(
+        relPath,
+        readFileSync(join(fixturesRoot, relPath), 'utf8'),
+      ),
+    }));
 
-    expect(parsed.frontmatter.type).toBe('skill');
-    expect(parsed.frontmatter.description?.trim().length).toBeGreaterThan(0);
-    expect(parsed.frontmatter.description!.length).toBeLessThanOrEqual(500);
+    expect(
+      parsedPlaybooks
+        .filter((row) => row.parsed.frontmatter.type === 'playbook')
+        .map((row) => row.relPath),
+    ).toEqual(
+      expect.arrayContaining([
+        'odl/object-create/references/recipe.md',
+        'odl/object-create/references/dish.md',
+      ]),
+    );
+
+    const catalog = parsedPlaybooks.find((row) =>
+      row.relPath.endsWith('book-catalog.md'),
+    );
+    expect(catalog?.parsed.frontmatter.type).toBe('reference');
   });
 });

@@ -9,15 +9,13 @@ tags: [agent-wallet, hive, keys, account]
 updated_at: 2026-10-20
 related:
   - docs/apps/agent-wallet/spec/overview.md
-  - docs/skills/hive-account-keys-for-agents.md
-  - docs/skills/hive-account-signup.md
 ---
 
 # Hive account key generation
 
 MCP tool `hive_generate_account_keys` issues **local key material** for a name that is not yet on Hive. It does **not** broadcast `account_create` and does **not** write `~/.odl/accounts.json`.
 
-Agent playbook: [hive-account-keys-for-agents.md](../../skills/hive-account-keys-for-agents.md).
+Agent playbook: skill `hive-account-keys-for-agents` (`npx skills add https://github.com/Waiviogit/skills`).
 
 ## Behavior
 
@@ -26,7 +24,7 @@ Agent playbook: [hive-account-keys-for-agents.md](../../skills/hive-account-keys
 3. `HiveChainContextService.getAccount` (`get_accounts` on `HIVE_RPC_NODES`). A row → `Hive account already exists: <name>`. RPC errors propagate.
 4. `suggestMasterPassword()` then `deriveAccountKeys(name, password)` — four roles, public prefix `STM`.
 
-Returns `{ account, masterPassword, keys }`. `keys` is `owner` / `active` / `posting` / `memo`, each `{ private, public }` (`public` prefix `STM`). The value exists only in the tool response. A local save is that object — both sides, one file. `account_create` and any creator hand-off take only the four public keys. Procedure: [hive-account-keys-for-agents.md](../../skills/hive-account-keys-for-agents.md).
+Returns `{ account, masterPassword, keys }`. `keys` is `owner` / `active` / `posting` / `memo`, each `{ private, public }` (`public` prefix `STM`). The value exists only in the tool response. A local save is that object — both sides, one file. `account_create` and any creator hand-off take only the four public keys. Procedure: skill `hive-account-keys-for-agents`.
 
 ## Verification
 

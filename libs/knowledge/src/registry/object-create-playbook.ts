@@ -2,13 +2,13 @@ import { getRequiredObjectCreateUpdates } from '@opden-data-layer/core/object-ty
 import { OBJECT_TYPE_REGISTRY } from '@opden-data-layer/core/object-type-registry';
 import { UPDATE_REGISTRY } from '@opden-data-layer/core/update-registry';
 import type { KnowledgeRepository } from '../repository/knowledge.repository';
+import { objectTypeToPlaybookPath } from '../routing/legacy-skill-path';
 import { objectTypeExamplePayload } from './object-type-serializer';
 
-const PLAYBOOK_PATH_PREFIX = 'docs/skills/object-create/';
 const EXCERPT_MAX_CHARS = 12_000;
 
 export function resolveObjectCreatePlaybookPath(objectType: string): string {
-  return `${PLAYBOOK_PATH_PREFIX}${objectType}.md`;
+  return objectTypeToPlaybookPath(objectType);
 }
 
 export interface ObjectCreatePlaybookResult {

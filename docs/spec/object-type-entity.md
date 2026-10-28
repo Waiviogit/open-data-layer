@@ -77,7 +77,7 @@ New object types and update definitions are added exclusively via pull request:
 - Add an `ObjectType` entry to the type registry constant.
 - Add any new `UpdateDefinition` entries to `UPDATE_REGISTRY` with their Zod schemas.
 - Update `supposed_updates` for UI autocomplete where applicable.
-- Create `docs/skills/object-create/{object_type}.md` from [`docs/standards/templates/object-create-playbook.md`](../standards/templates/object-create-playbook.md) and run `pnpm check:object-create-playbooks`.
+- Create `odl/object-create/references/<kebab>.md` in [Waiviogit/skills](https://github.com/Waiviogit/skills) (`service_offer` → `service-offer.md`) and run `pnpm sync:odl-skills` then `pnpm check:object-create-playbooks`.
 - The PR must include a description of the new type, its intended update set, and example values.
 
 Requirements for the PR process will be described in a separate contribution guide.

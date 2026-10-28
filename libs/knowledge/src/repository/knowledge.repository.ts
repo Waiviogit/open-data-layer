@@ -38,6 +38,14 @@ export class KnowledgeRepository {
     return rows.map((r) => r.path);
   }
 
+  async listFilesByPathPrefix(prefix: string): Promise<KnowledgeFileRow[]> {
+    return this.db
+      .selectFrom('knowledge_files')
+      .selectAll()
+      .where('path', 'like', `${prefix}%`)
+      .execute();
+  }
+
   async countFiles(): Promise<number> {
     const row = await this.db
       .selectFrom('knowledge_files')

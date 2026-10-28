@@ -7,7 +7,7 @@ export interface CuratedRoute {
 /** Static high-confidence routes for common agent intents. */
 export const CURATED_ROUTES: CuratedRoute[] = [
   {
-    path: 'docs/skills/object-content-routing.md',
+    path: 'odl/object-content-routing/SKILL.md',
     keywords: [
       'object create',
       'create recipe',
@@ -19,12 +19,12 @@ export const CURATED_ROUTES: CuratedRoute[] = [
     reason: 'curated:object-create',
   },
   {
-    path: 'docs/skills/knowledge-api-routing.md',
+    path: 'odl/knowledge-api-routing/SKILL.md',
     keywords: ['knowledge api', 'mcp routing', 'first visit', 'agent onboarding', 'how to use knowledge'],
     reason: 'curated:mcp-routing',
   },
   {
-    path: 'docs/skills/setup-workspace.md',
+    path: 'odl/setup-workspace/SKILL.md',
     keywords: ['setup workspace', 'sidecar agent', 'clone repo', 'agent workspace'],
     reason: 'curated:agent-workspace',
   },
@@ -44,17 +44,17 @@ export const CURATED_ROUTES: CuratedRoute[] = [
     reason: 'curated:local-dev',
   },
   {
-    path: 'docs/skills/hive-account-signup.md',
+    path: 'odl/hive-account-signup/SKILL.md',
     keywords: ['hive account', 'create hive account', 'signup', 'register hive'],
     reason: 'curated:hive-signup',
   },
   {
-    path: 'docs/skills/hive-blockchain-broadcast.md',
+    path: 'odl/hive-blockchain-broadcast/SKILL.md',
     keywords: ['broadcast', 'custom_json', 'sign transaction', 'dhive', 'blockchain broadcast'],
     reason: 'curated:hive-broadcast',
   },
   {
-    path: 'docs/skills/hive-has-agent-wallet.md',
+    path: 'odl/hive-has-agent-wallet/SKILL.md',
     keywords: [
       'has agent wallet',
       'agent wallet',
@@ -68,7 +68,7 @@ export const CURATED_ROUTES: CuratedRoute[] = [
     reason: 'curated:has-agent-wallet',
   },
   {
-    path: 'docs/skills/hive-post-create.md',
+    path: 'odl/hive-post-create/SKILL.md',
     keywords: [
       'publish post',
       'hive post',
@@ -82,7 +82,7 @@ export const CURATED_ROUTES: CuratedRoute[] = [
     reason: 'curated:hive-post-create',
   },
   {
-    path: 'docs/skills/has-login-from-chat.md',
+    path: 'odl/has-login-from-chat/SKILL.md',
     keywords: [
       'has login telegram',
       'login from chat',
@@ -95,7 +95,7 @@ export const CURATED_ROUTES: CuratedRoute[] = [
     reason: 'curated:has-login-from-chat',
   },
   {
-    path: 'docs/skills/obl-offers-contracts.md',
+    path: 'odl/obl-offers-contracts/SKILL.md',
     keywords: [
       'sign obl contract',
       'obl contract sign',
@@ -109,7 +109,7 @@ export const CURATED_ROUTES: CuratedRoute[] = [
     reason: 'curated:obl-offers-contracts',
   },
   {
-    path: 'docs/skills/obl-ledger.md',
+    path: 'odl/obl-ledger/SKILL.md',
     keywords: [
       'obl balance',
       'obl pair balance',
@@ -123,7 +123,7 @@ export const CURATED_ROUTES: CuratedRoute[] = [
     reason: 'curated:obl-ledger',
   },
   {
-    path: 'docs/skills/obl-disputes.md',
+    path: 'odl/obl-disputes/SKILL.md',
     keywords: [
       'obl dispute',
       'resolve obl dispute',
@@ -136,7 +136,7 @@ export const CURATED_ROUTES: CuratedRoute[] = [
     reason: 'curated:obl-disputes',
   },
   {
-    path: 'docs/skills/build-tenant-site.md',
+    path: 'odl/build-tenant-site/SKILL.md',
     keywords: [
       'create project',
       'create a project',
@@ -159,7 +159,7 @@ export const CURATED_ROUTES: CuratedRoute[] = [
     reason: 'curated:build-tenant-site',
   },
   {
-    path: 'docs/skills/hive-engine-deposit-for-agents.md',
+    path: 'odl/hive-engine-deposit-for-agents/SKILL.md',
     keywords: [
       'btc deposit',
       'swap.btc',

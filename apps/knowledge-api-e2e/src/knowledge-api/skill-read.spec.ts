@@ -175,6 +175,15 @@ describe('POST /knowledge/mcp — read skills', () => {
     expect(data.body).toContain('list_files');
   });
 
+  it('get_file maps a legacy docs/skills path and reports moved_from', async () => {
+    const { data, isError } = await mcpCallTool<GetFileResponse>('get_file', {
+      path: 'docs/skills/hive-account-signup.md',
+    });
+    expect(isError).toBe(false);
+    expect(data.path).toBe(PATHS.hiveSignup);
+    expect(data.moved_from).toBe('docs/skills/hive-account-signup.md');
+  });
+
   it('search_knowledge results include description field', async () => {
     const { data, isError } = await mcpCallTool<SearchKnowledgeResponse>(
       'search_knowledge',
@@ -221,7 +230,7 @@ describe('POST /knowledge/mcp — read skills', () => {
       expect(file?.type).toBe('skill');
       expect(file?.status).toBe('active');
       expect(file?.description?.length).toBeGreaterThan(0);
-      expect(file?.tags.length).toBeGreaterThan(0);
+      expect(file?.description).not.toMatch(/^>-$/);
     }
   });
 });

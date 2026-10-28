@@ -74,6 +74,9 @@ next-env.d.ts
 .nx/migrate-runs
 scripts/.backfill-reblog-timestamps.checkpoint.json
 
+# Vendored ODL skills snapshot (pnpm sync:odl-skills)
+/vendor/
+
 # GeoLite MMDB (geoipupdate); keep data/geoip/.gitkeep
 /data/geoip/*.mmdb
 /data/geoip/.geoipupdate.lock

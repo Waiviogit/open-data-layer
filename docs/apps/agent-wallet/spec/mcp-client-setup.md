@@ -7,7 +7,6 @@ scope: agent-wallet
 tags: [agent-wallet, mcp, setup]
 updated_at: 2026-09-08
 related:
-  - docs/skills/hive-has-agent-wallet.md
   - docs/apps/agent-wallet/spec/overview.md
 ---
 
@@ -17,7 +16,7 @@ Register **agent-wallet** as an HTTP MCP server so your agent gets native tools 
 
 ## Prerequisites
 
-1. Daemon running on `http://127.0.0.1:7500` — see [hive-has-agent-wallet skill](../../../skills/hive-has-agent-wallet.md).
+1. Daemon running on `http://127.0.0.1:7500` — see skill `hive-has-agent-wallet`.
 2. Bearer token from `~/.odl/agent-wallet.token` (auto-generated on first start).
 
 **Token in config:** MCP client headers cannot read files. Paste the token value inline, or pin it with `AGENT_WALLET_BEARER_TOKEN` in the daemon env so the token survives restarts.
@@ -114,9 +113,9 @@ mcp_servers:
 
 ## Fallback: raw JSON-RPC
 
-If your agent cannot add MCP servers, use `curl` or `Invoke-RestMethod` — never a Python/Node scratch script. See [hive-has-agent-wallet § Fallback](../../../skills/hive-has-agent-wallet.md#fallback-raw-json-rpc).
+If your agent cannot add MCP servers, use `curl` or `Invoke-RestMethod` — never a Python/Node scratch script. See skill `hive-has-agent-wallet` (Fallback: raw JSON-RPC).
 
 ## Related
 
 - [agent-wallet overview](overview.md)
-- [hive-has-agent-wallet skill](../../../skills/hive-has-agent-wallet.md)
+- skill `hive-has-agent-wallet`

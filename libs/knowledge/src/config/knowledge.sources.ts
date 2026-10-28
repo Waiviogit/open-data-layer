@@ -11,7 +11,7 @@ export const KNOWLEDGE_SOURCE_ROOTS: KnowledgeSourceRoot[] = [
   {
     root: '.',
     glob: '**/AGENTS.md',
-    ignore: ['node_modules/**', 'dist/**', 'generated/**', '.git/**'],
+    ignore: ['node_modules/**', 'dist/**', 'generated/**', '.git/**', 'vendor/**'],
   },
 ];
 
@@ -21,6 +21,7 @@ export const KNOWLEDGE_IGNORE_SEGMENTS = [
   'generated',
   '.git',
   'tmp',
+  'vendor',
   /** Draft copies under docs/standards/templates — not agent-searchable. */
   'templates',
 ];

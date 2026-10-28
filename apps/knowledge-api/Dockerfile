@@ -20,9 +20,11 @@ COPY apps/query-api/AGENTS.md ./apps/query-api/AGENTS.md
 COPY apps/scheduler/AGENTS.md ./apps/scheduler/AGENTS.md
 COPY apps/web/AGENTS.md ./apps/web/AGENTS.md
 COPY scripts/stage-knowledge-workspace.ts ./scripts/stage-knowledge-workspace.ts
+COPY scripts/sync-odl-skills.ts ./scripts/sync-odl-skills.ts
 
 RUN pnpm install --frozen-lockfile
 RUN pnpm exec nx run knowledge-api:build
+RUN pnpm sync:odl-skills
 RUN pnpm exec tsx --tsconfig tsconfig.base.json scripts/stage-knowledge-workspace.ts
 
 RUN apk add --no-cache python3 make g++ \
@@ -40,5 +42,6 @@ COPY --from=builder /app/dist/knowledge-workspace ./
 
 ENV KNOWLEDGE_WORKSPACE_ROOT=/app
 ENV KNOWLEDGE_STARTUP_REINDEX=true
+ENV KNOWLEDGE_SKILLS_REMOTE_ENABLED=true
 
 CMD ["node", "main.js"]

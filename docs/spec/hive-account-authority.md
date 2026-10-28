@@ -11,7 +11,6 @@ related:
   - docs/spec/README.md
   - docs/apps/query-api/spec/user-account-auths-endpoint.md
   - docs/apps/chain-indexer/spec/account-authority-grants.md
-  - docs/skills/hive-account-authority-for-agents.md
 ---
 
 # Hive account authority (account_auths)
@@ -112,5 +111,5 @@ Nested signing (`C` signs as `A`) is valid on Hive but invisible to ODL list end
 
 ## Related
 
-- [Hive posting authority for agents](../skills/hive-account-authority-for-agents.md) — agent workflows (act-as, grant/revoke)
+- skill `hive-account-authority-for-agents` — agent workflows (act-as, grant/revoke)
 - [User profile permissions page](../apps/web/spec/pages/user-profile/routes/permissions.md) — web UI for grant management

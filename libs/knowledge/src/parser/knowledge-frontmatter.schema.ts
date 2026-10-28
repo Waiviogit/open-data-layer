@@ -4,6 +4,7 @@ export const KNOWLEDGE_TYPES = [
   'spec',
   'skill',
   'playbook',
+  'reference',
   'overview',
   'adr',
   'lesson',
@@ -16,7 +17,7 @@ export const KNOWLEDGE_STATUSES = ['active', 'draft', 'deprecated'] as const;
 export const knowledgeFrontmatterSchema = z.object({
   id: z.string().optional(),
   title: z.string().optional(),
-  description: z.string().max(500).optional(),
+  description: z.string().max(1024).optional(),
   type: z.enum(KNOWLEDGE_TYPES).optional(),
   status: z.enum(KNOWLEDGE_STATUSES).default('active'),
   scope: z.string().optional(),

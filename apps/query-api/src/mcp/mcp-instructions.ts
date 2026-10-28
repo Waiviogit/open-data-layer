@@ -6,7 +6,7 @@ This is **not** knowledge-api:
 - For specs and field semantics use knowledge-api (search_knowledge / resolve_doc) under docs/apps/query-api/spec/.
 
 First visit:
-1. Read resource odl-query://routing or knowledge-api get_file docs/skills/query-api-mcp-routing.md
+1. Install ODL skills: npx skills add https://github.com/Waiviogit/skills. Or read resource odl-query://routing / knowledge-api get_file odl/query-api-mcp-routing/SKILL.md
 2. Read odl-query://catalog/tools for the full tool list
 3. Pick a tool from the decision table below
 
@@ -30,8 +30,8 @@ Decision table:
 | Token/fiat rates | get_currency_* / get_engine_* |
 | Who delegated authority to me / who can I post as | get_user_authority_grantors (404 = account absent from accounts_current, not "no grantors") |
 | Who did this account delegate authority to | get_user_authority_grantees |
-| Grant/revoke posting or act as grantor | Not here — docs/skills/hive-account-authority-for-agents.md + agent-wallet hive_build_posting_authority_grant |
-| Hive Engine deposit (BTC → SWAP.BTC, …) | get_user_engine_deposit_list / get_user_engine_deposit_address, then agent-wallet osl_build_hive_engine_deposit + wallet_broadcast posting before showing the address — docs/skills/hive-engine-deposit-for-agents.md |
+| Grant/revoke posting or act as grantor | Not here — skill hive-account-authority-for-agents + agent-wallet hive_build_posting_authority_grant |
+| Hive Engine deposit (BTC → SWAP.BTC, …) | get_user_engine_deposit_list / get_user_engine_deposit_address, then agent-wallet osl_build_hive_engine_deposit + wallet_broadcast posting before showing the address — skill hive-engine-deposit-for-agents |
 
 Excluded: user post drafts (JWT writes) — not exposed via MCP.
 

@@ -21,7 +21,7 @@ describe('POST /knowledge/mcp — get_object_create_playbook', () => {
       expect.arrayContaining(['name', 'description', 'image', 'ingredients']),
     );
     expect(data.update_summaries.some((s) => s.update_type === 'name')).toBe(true);
-    expect(data.playbook?.path).toBe('docs/skills/object-create/recipe.md');
+    expect(data.playbook?.path).toBe('odl/object-create/references/recipe.md');
     expect(data.playbook?.excerpt).toContain('Create recipe');
     expect(data.playbook_missing).toBe(false);
   });

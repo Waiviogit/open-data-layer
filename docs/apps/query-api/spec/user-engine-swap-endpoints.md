@@ -10,7 +10,6 @@ updated_at: 2026-07-07
 related:
   - docs/apps/query-api/spec/user-engine-wallet-endpoint.md
   - docs/apps/web/spec/pages/user-profile/routes/engine-wallet-operations.md
-  - docs/skills/hive-engine-deposit-for-agents.md
 ---
 
 # User ENGINE swap / deposit / withdraw endpoints
@@ -71,7 +70,7 @@ Returns deposit routing instructions:
 
 Response fields: `symbol`, `account` (Hive Engine swap account or null), `memo`, `address`, `pair`, `exRate`, `swapSymbol` (e.g. `SWAP.BTC`), `destination` (profile account). `account` is **not** the user.
 
-This endpoint does **not** write `hive_engine_deposit` history. Agents must broadcast OSL `hive_engine_deposit` via agent-wallet `osl_build_hive_engine_deposit` + `wallet_broadcast` (`keyType: posting`) before showing the address. Skill: [hive-engine-deposit-for-agents.md](../../skills/hive-engine-deposit-for-agents.md).
+This endpoint does **not** write `hive_engine_deposit` history. Agents must broadcast OSL `hive_engine_deposit` via agent-wallet `osl_build_hive_engine_deposit` + `wallet_broadcast` (`keyType: posting`) before showing the address. Skill: `hive-engine-deposit-for-agents`.
 
 ## Withdraw list
 

@@ -60,5 +60,8 @@ jobs:
       - name: Create empty .env for CLI scripts
         run: touch .env
 
+      - name: Sync ODL skills catalog
+        run: pnpm sync:odl-skills
+
       - name: Migrate, reindex, and E2E
         run: pnpm e2e:knowledge-api

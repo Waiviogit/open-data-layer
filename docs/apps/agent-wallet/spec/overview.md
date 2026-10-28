@@ -8,13 +8,6 @@ scope: agent-wallet
 tags: [agent-wallet, has, mcp, overview]
 updated_at: 2026-08-20
 related:
-  - docs/skills/hive-has-agent-wallet.md
-  - docs/skills/osl-messaging.md
-  - docs/skills/wallet-delegation-swap-for-agents.md
-  - docs/skills/hive-engine-deposit-for-agents.md
-  - docs/skills/hive-account-authority-for-agents.md
-  - docs/skills/hive-account-keys-for-agents.md
-  - docs/skills/hive-blockchain-broadcast.md
   - docs/apps/knowledge-api/spec/overview.md
 ---
 
@@ -24,10 +17,10 @@ Local NestJS app: loads Hive accounts from a registry (`accounts.json` or env), 
 
 ## Agent first visit
 
-1. Skill: [hive-has-agent-wallet](../../skills/hive-has-agent-wallet.md)
+1. Skill: [hive-has-agent-wallet](https://github.com/Waiviogit/skills/blob/master/odl/hive-has-agent-wallet/SKILL.md) (`npx skills add https://github.com/Waiviogit/skills`)
 2. Download `agent-wallet.js` from [GitHub Releases](https://github.com/Waiviogit/open-data-layer/releases) (or `pnpm nx serve agent-wallet` from monorepo checkout)
 3. Read bearer token from `~/.odl/agent-wallet.token`
-4. Register agent-wallet as an MCP server — [mcp-client-setup.md](mcp-client-setup.md) (preferred). Raw JSON-RPC is the fallback — [hive-has-agent-wallet skill](../../skills/hive-has-agent-wallet.md#fallback-raw-json-rpc).
+4. Register agent-wallet as an MCP server — [mcp-client-setup.md](mcp-client-setup.md) (preferred). Raw JSON-RPC is the fallback — [hive-has-agent-wallet skill](https://github.com/Waiviogit/skills/blob/master/odl/hive-has-agent-wallet/SKILL.md).
 
 ## Distribution
 
@@ -45,7 +38,7 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 - NestJS, `@modelcontextprotocol/sdk` Streamable HTTP (stateless MCP per request)
 - `@opden-data-layer/hive-auth` — `HasClient`
 - `@opden-data-layer/hive-broadcast` — `buildObjectCreateEnvelope`
-- `@opden-data-layer/hive-memo-crypto` — memo encrypt/decrypt; wired via `osl_memo_*` MCP tools ([osl-messaging skill](../../skills/osl-messaging.md))
+- `@opden-data-layer/hive-memo-crypto` — memo encrypt/decrypt; wired via `osl_memo_*` MCP tools (skill `osl-messaging`)
 - `@opden-data-layer/hive-account` — name grammar + master password / role keys (`hive_generate_account_keys`)
 - Default bind **`127.0.0.1:7500`** — no CORS
 
@@ -55,15 +48,15 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 |---------|-----|
 | MCP client registration (Cursor, Claude, Codex, Hermes) | [mcp-client-setup.md](mcp-client-setup.md) |
 | Multi-account local keys, Waivio tokens, signer resolution | [multi-account.md](multi-account.md) |
-| HAS agent wallet (MCP tools, session, security) | [hive-has-agent-wallet skill](../../skills/hive-has-agent-wallet.md) |
-| OSL messaging (read/send/encrypt/notify) | [osl-messaging skill](../../skills/osl-messaging.md) |
-| Wallet delegations / balances / swaps | [wallet-delegation-swap-for-agents skill](../../skills/wallet-delegation-swap-for-agents.md) |
-| Hive Engine deposit instructions | [hive-engine-deposit-for-agents skill](../../skills/hive-engine-deposit-for-agents.md) |
-| Hive posting authority / act-as grantor | [hive-account-authority-for-agents skill](../../skills/hive-account-authority-for-agents.md) |
+| HAS agent wallet (MCP tools, session, security) | skill `hive-has-agent-wallet` |
+| OSL messaging (read/send/encrypt/notify) | skill `osl-messaging` |
+| Wallet delegations / balances / swaps | skill `wallet-delegation-swap-for-agents` |
+| Hive Engine deposit instructions | skill `hive-engine-deposit-for-agents` |
+| Hive posting authority / act-as grantor | skill `hive-account-authority-for-agents` |
 | Hive account key generation (free name) | [hive-account-keys.md](hive-account-keys.md) |
-| HAS login from chat (Telegram, Slack) | [has-login-from-chat skill](../../skills/has-login-from-chat.md) |
-| IPFS image upload + avatar/gallery policy | [ipfs-image-upload skill](../../skills/ipfs-image-upload.md) |
-| IPFS file upload + ODL batch import | [ipfs-file-upload skill](../../skills/ipfs-file-upload.md) |
+| HAS login from chat (Telegram, Slack) | skill `has-login-from-chat` |
+| IPFS image upload + avatar/gallery policy | skill `ipfs-image-upload` |
+| IPFS file upload + ODL batch import | skill `ipfs-file-upload` |
 
 ## MCP tools
 
@@ -82,7 +75,7 @@ CI publishes a **portable archive** (`agent-wallet-portable.tar.gz`: `main.js`, 
 | `hive_build_posting_authority_grant` | `ops`, `keyType: active`, `signerAccount`, `canSignLocally`, `warnings` — grant/revoke posting `account_auths` |
 | `hive_generate_account_keys` | `{ account, masterPassword, keys.{owner,active,posting,memo}.{private,public} }` for a free name — save the full object; no `account_create`, no `accounts.json` write |
 
-Leo object threads (Reviews > Threads) are **not** built by agent-wallet — see [hive-thread-create skill](../../skills/hive-thread-create.md): agents hand-build one `comment` op and broadcast via `wallet_broadcast`.
+Leo object threads (Reviews > Threads) are **not** built by agent-wallet — see skill `hive-thread-create`: agents hand-build one `comment` op and broadcast via `wallet_broadcast`.
 
 | `has_broadcast` | `requestId` |
 | `has_broadcast_status` | `signed` / `rejected` / `error` / `expired`, `transactionId` |

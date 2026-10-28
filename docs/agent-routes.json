@@ -1,6 +1,19 @@
 {
-  "generated_at": "2026-07-17T08:13:27.169Z",
+  "generated_at": "2026-10-28T13:31:33.536Z",
   "routes": [
+    {
+      "path": "docs/apps/agent-wallet/spec/overview.md",
+      "title": "agent-wallet",
+      "description": "Local signing daemon with optional HAS and MCP tools for agent-driven ODL broadcasts.",
+      "type": "overview",
+      "scope": "agent-wallet",
+      "tags": [
+        "agent-wallet",
+        "has",
+        "mcp",
+        "overview"
+      ]
+    },
     {
       "path": "docs/apps/auth-api/overview.md",
       "title": "auth-api",
@@ -183,152 +196,228 @@
       ]
     },
     {
-      "path": "docs/skills/build-tenant-site.md",
-      "title": "Build project (tenant site) on ODL",
-      "description": "Build a user's web project on ODL. Default path — start from the waivio-pages-starter repo (static Next.js, GitHub Pages, Keychain, query-api client); agent uses its own GitHub account to fork, iterate, and deploy, sharing the Pages URL. Fallback path (server required) — fork apps/web from the open-data-layer monorepo.",
+      "path": "odl/build-tenant-site/SKILL.md",
+      "title": "build tenant site",
+      "description": "Build a user's web project on ODL. Default path — start from the waivio-pages-starter repo (static Next.js, GitHub Pages, Keychain, query-api client); agent uses its own GitHub account to fork, iterate, and deploy, sharing the Pages URL. Fallback path (server required) — fork apps/web from the open-data-layer monorepo. Use when building a user's web project on ODL (pages starter or apps/web fork).",
       "type": "skill",
       "scope": "platform",
-      "tags": [
-        "agent",
-        "web",
-        "query-api",
-        "tenant",
-        "create-project",
-        "site-builder",
-        "starter",
-        "github-pages",
-        "static-export",
-        "keychain",
-        "fork"
-      ]
+      "tags": []
     },
     {
-      "path": "docs/skills/hive-account-signup.md",
-      "title": "Hive account signup",
-      "description": "Guide a user through creating a new Hive blockchain account via public signup providers.",
+      "path": "odl/companion-post-workflow/SKILL.md",
+      "title": "companion post workflow",
+      "description": "Link a Hive post to an ODL object after create — json_metadata.objects and body references; build via hive-post-create. Use when linking a Hive post to an ODL object after create.",
       "type": "skill",
       "scope": "platform",
-      "tags": [
-        "hive",
-        "account",
-        "signup",
-        "user",
-        "register",
-        "blockchain",
-        "keys",
-        "onboarding"
-      ]
+      "tags": []
     },
     {
-      "path": "docs/skills/hive-blockchain-broadcast.md",
-      "title": "Hive blockchain broadcast (ODL)",
-      "description": "Build, sign, and broadcast Hive and ODL custom_json transactions using repo libraries and registries.",
+      "path": "odl/has-login-from-chat/SKILL.md",
+      "title": "has login from chat",
+      "description": "Deliver agent-wallet HAS login links in messengers so the user can open Hive Keychain Mobile on phone without QR codes or terminal output. Use when delivering HAS login links in Telegram, Slack, or other messengers.",
       "type": "skill",
       "scope": "platform",
-      "tags": [
-        "hive",
-        "broadcast",
-        "odl",
-        "custom_json",
-        "dhive",
-        "signing",
-        "object-create"
-      ]
+      "tags": []
     },
     {
-      "path": "docs/skills/knowledge-api-routing.md",
-      "title": "Knowledge API routing for agents",
-      "description": "First-visit map for MCP tools, doc types, and which skill or spec to open for a task.",
+      "path": "odl/hive-account-authority-for-agents/SKILL.md",
+      "title": "hive account authority for agents",
+      "description": "Discover delegated posting authority via query-api MCP; grant or revoke posting account_auths; act as grantor with the grantee posting key via agent-wallet local env keys. Use when discovering, granting, or revoking posting authority, or posting as a grantor.",
       "type": "skill",
       "scope": "platform",
-      "tags": [
-        "knowledge-api",
-        "agent",
-        "onboarding",
-        "routing",
-        "mcp",
-        "first-visit"
-      ]
+      "tags": []
     },
     {
-      "path": "docs/skills/obl-disputes.md",
-      "title": "OBL disputes and arbitration",
-      "description": "Open and resolve OBL invoice disputes, apply dispute_rule and arbiter, and read the arbitration inbox.",
+      "path": "odl/hive-account-keys-for-agents/SKILL.md",
+      "title": "hive account keys for agents",
+      "description": "Generate a Hive master password and four private/public key pairs for a free account name via agent-wallet MCP. Save the full object. Does not create the on-chain account. Use when generating Hive keys for a free name before account_create.",
       "type": "skill",
       "scope": "platform",
-      "tags": [
-        "obl",
-        "disputes",
-        "arbitration",
-        "dispute_resolve",
-        "dispute_open",
-        "arbiter",
-        "business"
-      ]
+      "tags": []
     },
     {
-      "path": "docs/skills/obl-ledger.md",
-      "title": "OBL mutual ledger",
-      "description": "Issue OBL invoices, declare/confirm payments, and read pair balances, ledger history, and relationships.",
+      "path": "odl/hive-account-signup/SKILL.md",
+      "title": "hive account signup",
+      "description": "Guide a user through creating a new Hive blockchain account via public signup providers. Use when the user needs a new Hive account or signup before an on-chain write.",
       "type": "skill",
       "scope": "platform",
-      "tags": [
-        "obl",
-        "ledger",
-        "invoice",
-        "payment",
-        "balance",
-        "mutual-ledger",
-        "relationships",
-        "business"
-      ]
+      "tags": []
     },
     {
-      "path": "docs/skills/obl-offers-contracts.md",
-      "title": "OBL offers and contracts",
-      "description": "Discover, publish, and sign OBL offers/contracts including signParams metadata and deterministic contract_id.",
+      "path": "odl/hive-blockchain-broadcast/SKILL.md",
+      "title": "hive blockchain broadcast",
+      "description": "Build, sign, and broadcast Hive and ODL custom_json transactions using repo libraries and registries. Use when building, signing, or broadcasting Hive and ODL custom_json transactions.",
       "type": "skill",
       "scope": "platform",
-      "tags": [
-        "obl",
-        "offers",
-        "contracts",
-        "signParams",
-        "contract_sign",
-        "offer_publish",
-        "business"
-      ]
+      "tags": []
     },
     {
-      "path": "docs/skills/query-api-mcp-routing.md",
-      "title": "Query API MCP routing for agents",
-      "description": "First-visit map for query-api MCP live-data tools and how they differ from knowledge-api docs search.",
+      "path": "odl/hive-engine-deposit-for-agents/SKILL.md",
+      "title": "hive engine deposit for agents",
+      "description": "Get Hive Engine deposit routing via query-api MCP, broadcast an OSL hive_engine_deposit instruction via agent-wallet, then show the user the address. Instruction is history only; SWAP.* credit is the converter. Use when the user asks where to send BTC/LTC/HBD/HIVE for SWAP.* credit.",
       "type": "skill",
       "scope": "platform",
-      "tags": [
-        "query-api",
-        "mcp",
-        "agent",
-        "routing",
-        "live-data"
-      ]
+      "tags": []
     },
     {
-      "path": "docs/skills/setup-workspace.md",
-      "title": "Setup agent workspace",
-      "description": "Clone the monorepo for a sidecar agent and resolve spec paths to source files (not local dev stack).",
+      "path": "odl/hive-has-agent-wallet/SKILL.md",
+      "title": "hive has agent wallet",
+      "description": "Run agent-wallet locally, authenticate via HiveAuth on phone, and broadcast ODL transactions without holding user keys. Use when an autonomous agent must broadcast ODL txs without holding user keys.",
       "type": "skill",
       "scope": "platform",
-      "tags": [
-        "agent",
-        "workspace",
-        "git",
-        "clone",
-        "onboarding",
-        "github",
-        "agent-workspace",
-        "sidecar-agent"
-      ]
+      "tags": []
+    },
+    {
+      "path": "odl/hive-post-create/SKILL.md",
+      "title": "hive post create",
+      "description": "Publish a root Hive post (comment + comment_options) with WAIV-eligible tags, optional beneficiaries, and linked ODL objects via agent-wallet. Use when publishing a root Hive post with WAIV tags or linked ODL objects.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
+    },
+    {
+      "path": "odl/hive-thread-create/SKILL.md",
+      "title": "hive thread create",
+      "description": "Publish a Leo thread on an ODL object (Reviews > Threads) via a single Hive comment op and agent-wallet broadcast — no hive_build_post. Use when publishing a Leo thread on an ODL object (Reviews > Threads).",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
+    },
+    {
+      "path": "odl/image-generate/SKILL.md",
+      "title": "image generate",
+      "description": "Produce ODL avatars and article-preview cards: pick kind, edit from a source still, QA, then IPFS. Use when generating dish, product, or company avatars, or an article preview PNG for a Hive post.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
+    },
+    {
+      "path": "odl/ipfs-file-upload/SKILL.md",
+      "title": "ipfs file upload",
+      "description": "Upload oversized ODL envelopes to IPFS and broadcast batch_import. Use when an ODL envelope exceeds Hive custom_json limits and must be published via batch_import.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
+    },
+    {
+      "path": "odl/ipfs-image-upload/SKILL.md",
+      "title": "ipfs image upload",
+      "description": "Upload images for ODL object updates via agent-wallet ipfs_upload_image. Use when attaching images to ODL object updates via agent-wallet.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
+    },
+    {
+      "path": "odl/knowledge-api-routing/SKILL.md",
+      "title": "knowledge api routing",
+      "description": "First-visit map for MCP tools, doc types, and which skill or spec to open for a task. Use when first connecting to knowledge-api MCP or routing a task to the right spec or skill.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
+    },
+    {
+      "path": "odl/object-activity/SKILL.md",
+      "title": "object activity",
+      "description": "Write a factual digest of a social post onto an ODL object Activity channel. Use when recording Instagram, Facebook, or similar source posts as object-channel messages, not Hive posts or listing updates.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
+    },
+    {
+      "path": "odl/object-content-routing/SKILL.md",
+      "title": "object content routing",
+      "description": "Route agent intent to the correct object-create playbook, workflow, or MCP tool. Use when routing create/enrich intent to the correct object-create playbook or workflow.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
+    },
+    {
+      "path": "odl/object-content-standards/SKILL.md",
+      "title": "object content standards",
+      "description": "Common rules for ODL object create — dedupe, sources, locales, images, broadcast, and verification. Use when applying shared ODL object-create rules for dedupe, locales, images, and broadcast.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
+    },
+    {
+      "path": "odl/object-create/SKILL.md",
+      "title": "object create",
+      "description": "Create an ODL object on chain. Use when the user asks to create a recipe, restaurant, product, or any registered ODL object type.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
+    },
+    {
+      "path": "odl/obl-disputes/SKILL.md",
+      "title": "obl disputes",
+      "description": "Open and resolve OBL invoice disputes, apply dispute_rule and arbiter, and read the arbitration inbox. Use when opening or resolving OBL invoice disputes or reading the arbitration inbox.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
+    },
+    {
+      "path": "odl/obl-ledger/SKILL.md",
+      "title": "obl ledger",
+      "description": "Issue OBL invoices, declare/confirm payments, and read pair balances, ledger history, and relationships. Use when issuing OBL invoices, declaring/confirming payments, or reading pair balances and ledger.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
+    },
+    {
+      "path": "odl/obl-offers-contracts/SKILL.md",
+      "title": "obl offers contracts",
+      "description": "Discover, publish, and sign OBL offers/contracts; create or cancel service orders on a signed contract. Use when discovering, publishing, or signing OBL offers/contracts, or creating/cancelling service orders.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
+    },
+    {
+      "path": "odl/osl-messaging/SKILL.md",
+      "title": "osl messaging",
+      "description": "Read, send, encrypt, and receive OSL channel messages via query-api MCP and agent-wallet. Use when reading, sending, encrypting, or receiving OSL channel messages.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
+    },
+    {
+      "path": "odl/platform-renew/SKILL.md",
+      "title": "platform renew",
+      "description": "Refresh local ODL skills and agent-wallet after a Waivio release. Use when the user says renew or refresh Waivio skills, agent wallet, or MCP tools.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
+    },
+    {
+      "path": "odl/query-api-mcp-routing/SKILL.md",
+      "title": "query api mcp routing",
+      "description": "First-visit map for query-api MCP live-data tools and how they differ from knowledge-api docs search. Use when fetching live platform data via query-api MCP.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
+    },
+    {
+      "path": "odl/restaurant-menu-workflow/SKILL.md",
+      "title": "restaurant menu workflow",
+      "description": "Composite workflow — restaurant object, dishes/drinks, menu navigation, images, and dedupe. Use when creating a restaurant plus its full menu (dishes, drinks, navigation).",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
+    },
+    {
+      "path": "odl/setup-workspace/SKILL.md",
+      "title": "setup workspace",
+      "description": "Clone the monorepo for a sidecar agent and resolve spec paths to source files (not local dev stack). Use when a sidecar agent must clone the ODL monorepo and resolve spec paths to source files.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
+    },
+    {
+      "path": "odl/wallet-delegation-swap-for-agents/SKILL.md",
+      "title": "wallet delegation swap for agents",
+      "description": "Read wallet and delegations via query-api MCP; build HP, RC, and WAIV delegations via agent-wallet; verify after broadcast. Use when listing, sending, or updating HP, RC, or WAIV delegations, or reading wallet balances and swap quotes.",
+      "type": "skill",
+      "scope": "platform",
+      "tags": []
     }
   ]
 }

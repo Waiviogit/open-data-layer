@@ -1,16 +1,17 @@
 export const PATHS = {
-  knowledgeRouting: 'docs/skills/knowledge-api-routing.md',
-  hiveSignup: 'docs/skills/hive-account-signup.md',
-  hiveBroadcast: 'docs/skills/hive-blockchain-broadcast.md',
-  agentWorkspace: 'docs/skills/setup-workspace.md',
+  knowledgeRouting: 'odl/knowledge-api-routing/SKILL.md',
+  hiveSignup: 'odl/hive-account-signup/SKILL.md',
+  hiveBroadcast: 'odl/hive-blockchain-broadcast/SKILL.md',
+  agentWorkspace: 'odl/setup-workspace/SKILL.md',
   localDev: 'docs/getting-started.md',
-  oblOffersContracts: 'docs/skills/obl-offers-contracts.md',
-  oblLedger: 'docs/skills/obl-ledger.md',
-  oblDisputes: 'docs/skills/obl-disputes.md',
-  objectContentRouting: 'docs/skills/object-content-routing.md',
-  objectContentStandards: 'docs/skills/object-content-standards.md',
-  restaurantMenuWorkflow: 'docs/skills/restaurant-menu-workflow.md',
-  companionPostWorkflow: 'docs/skills/companion-post-workflow.md',
+  oblOffersContracts: 'odl/obl-offers-contracts/SKILL.md',
+  oblLedger: 'odl/obl-ledger/SKILL.md',
+  oblDisputes: 'odl/obl-disputes/SKILL.md',
+  objectContentRouting: 'odl/object-content-routing/SKILL.md',
+  objectContentStandards: 'odl/object-content-standards/SKILL.md',
+  restaurantMenuWorkflow: 'odl/restaurant-menu-workflow/SKILL.md',
+  companionPostWorkflow: 'odl/companion-post-workflow/SKILL.md',
+  recipePlaybook: 'odl/object-create/references/recipe.md',
 } as const;
 
 export const ALL_SKILL_PATHS = [
@@ -44,6 +45,7 @@ export interface SearchKnowledgeResponse {
 
 export interface GetFileResponse {
   path: string;
+  moved_from?: string;
   title: string;
   description: string | null;
   type: string;

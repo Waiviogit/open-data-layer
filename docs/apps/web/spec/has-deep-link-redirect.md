@@ -8,7 +8,6 @@ scope: web
 tags: [web, has, hiveauth, keychain, redirect]
 updated_at: 2026-08-12
 related:
-  - docs/skills/has-login-from-chat.md
   - docs/apps/web/spec/routing-proxy.md
   - docs/apps/web/spec/overview.md
 ---
@@ -46,7 +45,7 @@ next 16 bytes auth key
 remaining     account name, ascii
 ```
 
-The compact format exists because base64 of JSON always begins with `eyJ` — the shape of a JWT. Chat clients run secret redactors that cut such strings in half, which silently breaks any login link delivered over a messenger. Compact fragments never contain `eyJ`. See [has-login-from-chat](../../../skills/has-login-from-chat.md).
+The compact format exists because base64 of JSON always begins with `eyJ` — the shape of a JWT. Chat clients run secret redactors that cut such strings in half, which silently breaks any login link delivered over a messenger. Compact fragments never contain `eyJ`. See skill `has-login-from-chat`.
 
 Legacy support stays for binaries already in the wild; it works in a browser, but such links cannot be delivered through chat.
 

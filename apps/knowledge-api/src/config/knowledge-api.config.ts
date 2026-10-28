@@ -27,6 +27,18 @@ export default () => {
       workspaceRoot:
         env.KNOWLEDGE_WORKSPACE_ROOT?.trim() ||
         path.resolve(process.cwd()),
+      skillsRemoteEnabled: env.KNOWLEDGE_SKILLS_REMOTE_ENABLED ?? false,
+      skillsRepo: env.KNOWLEDGE_SKILLS_REPO,
+      skillsBranch: env.KNOWLEDGE_SKILLS_BRANCH,
+      skillsSnapshotDir:
+        env.KNOWLEDGE_SKILLS_SNAPSHOT_DIR?.trim() ||
+        path.join(
+          env.KNOWLEDGE_WORKSPACE_ROOT?.trim() || path.resolve(process.cwd()),
+          'vendor',
+          'skills',
+        ),
+      skillsRefreshIntervalSec: env.KNOWLEDGE_SKILLS_REFRESH_INTERVAL_SEC,
+      githubToken: env.KNOWLEDGE_GITHUB_TOKEN?.trim() || undefined,
     },
   };
 };

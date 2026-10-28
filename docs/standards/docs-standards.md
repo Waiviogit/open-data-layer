@@ -47,7 +47,6 @@ docs/
     README.md                            spec index
     <topic>.md                           cross-cutting domain specs
     data-model/                          PostgreSQL schema, flows, row types
-  skills/                                agent procedural playbooks (indexed by knowledge-api)
   apps/<app>/
     README.md                            app entry point + links
     developer-guide.md                   run, env, operations (when needed)
@@ -139,7 +138,7 @@ A typical feature spec file should use these sections (skip what does not apply)
 
 ## Frontmatter (YAML)
 
-Indexed Markdown (`docs/**`, `docs/skills/**`, `tasks/lessons.md`, `**/AGENTS.md`) may include an optional YAML block at the top. Prefer explicit frontmatter for `tags` and `related`; when frontmatter is omitted, metadata is inferred from the file path at reindex time.
+Indexed Markdown (`docs/**`, `tasks/lessons.md`, `**/AGENTS.md`, plus skills from [Waiviogit/skills](https://github.com/Waiviogit/skills) as `odl/**`) may include an optional YAML block at the top. Prefer explicit frontmatter for `tags` and `related`; when frontmatter is omitted, metadata is inferred from the file path at reindex time.
 
 ```yaml
 ---
@@ -187,58 +186,27 @@ related:
 | `docs/apps/<app>/spec/overview.md` | `overview` | `<app>` |
 | `docs/apps/<app>/spec/*` | `spec` | `<app>` |
 | `docs/architecture/adr/*` | `adr` | `platform` |
-| `docs/skills/*` | `skill` | `platform` |
+| `odl/<name>/SKILL.md` | `skill` | `platform` |
+| `odl/object-create/references/<kebab>.md` (registry type) | `playbook` | `platform` |
+| other `odl/**/references/*.md` | `reference` | `platform` |
 | `tasks/lessons.md` | `lesson` | `platform` |
 | `**/AGENTS.md` | `agents` | app or `platform` |
 
 Reindex after doc changes: `pnpm knowledge:reindex` (local dev). Deployed **knowledge-api** picks up doc changes on pod restart (startup reindex, Redis-throttled ≤5 min on warm index). See [knowledge-api overview](../apps/knowledge-api/spec/overview.md).
 
-## Skill files (`docs/skills/`)
+## Skill files ([Waiviogit/skills](https://github.com/Waiviogit/skills))
 
-Domain procedural playbooks for agents (Hive account creation, deploy runbooks, etc.). **Not** the same as `.agents/skills/` — that folder is Cursor runtime tooling (Next.js, Nx); `docs/skills/` is indexed by knowledge-api and searchable via MCP.
+Domain procedural playbooks for agents live in a separate catalog. **Not** the same as `.agents/skills/` — that folder is Cursor runtime tooling (Next.js, Nx).
 
-**Agent onboarding:** [`docs/skills/knowledge-api-routing.md`](../skills/knowledge-api-routing.md) is the canonical first-visit map. MCP server `instructions` duplicate a compressed version; keep routing skill and instructions aligned when adding tools or paths.
+Install:
 
-**CI:** `pnpm check:agent-docs` and `pnpm check:object-create-playbooks` (registry ↔ `docs/skills/object-create/*.md` one-to-one) run on relevant `docs/**` and registry changes in verify workflow.
-
-Recommended sections (same spirit as feature specs):
-
-1. **Title** — skill name (`# Create Hive account`).
-2. **When to use** — triggers, prerequisites, when *not* to use.
-3. **Steps** — ordered procedure; commands and payloads as fenced blocks.
-4. **Verification** — how to confirm success (commands, expected output, rollback).
-5. **Related** — links to specs, `AGENTS.md`, registry tools (`get_object_create_playbook`, `get_object_type`, …).
-
-**Object-create playbooks:** every `OBJECT_TYPE_REGISTRY` key must have `docs/skills/object-create/{object_type}.md` with tag `object-create-playbook`. Draft scaffold: [`docs/standards/templates/object-create-playbook.md`](../standards/templates/object-create-playbook.md) (`docs/standards/templates/` is **not** indexed; keep `type: template` there so a copy that forgets `type: skill` fails reindex).
-
-Example:
-
-```markdown
----
-title: Create Hive account
-description: Guide a user through creating a new Hive blockchain account.
-type: skill
-scope: platform
-tags: [hive, account]
----
-
-# Create Hive account
-
-## When to use
-
-User needs a new Hive account on mainnet; wallet/keychain available.
-
-## Steps
-
-1. …
-2. …
-
-## Verification
-
-- `hive-js` / API returns account `alice`
+```bash
+npx skills add https://github.com/Waiviogit/skills
 ```
 
-Path inference sets `type: skill` when frontmatter is omitted. Add `tags` for better FTS ranking.
+knowledge-api indexes `odl/<name>/SKILL.md` as `skill` and registry-mapped `odl/object-create/references/<kebab>.md` as `playbook`. Authoring rules: [skills AGENTS.md](https://github.com/Waiviogit/skills/blob/master/AGENTS.md).
+
+**CI:** `pnpm sync:odl-skills` then `pnpm check:agent-docs` and `pnpm check:object-create-playbooks` (every `OBJECT_TYPE_REGISTRY` key has a kebab playbook file).
 
 ### Environment setup (two docs)
 
@@ -246,15 +214,13 @@ Do not mix these into one doc — agents search by intent and must land on the r
 
 | Doc | Indexed path | Use when |
 |-----|--------------|----------|
-| [Setup agent workspace](../skills/setup-workspace.md) | `docs/skills/setup-workspace.md` | Sidecar agent without checkout; clone repo; resolve spec paths to source |
+| setup-workspace skill | `odl/setup-workspace/SKILL.md` | Sidecar agent without checkout; clone repo; resolve spec paths to source |
 | [Getting started](../getting-started.md) | `docs/getting-started.md` | Local dev: Docker, migrations, `pnpm nx serve` |
-
-Cross-link both ways in **When to use** / **When not to use**. Reindex after edits: `pnpm knowledge:reindex`.
 
 ## Agent expectations
 
 - New docs should include frontmatter when metadata is not obvious from the path.
-- New domain procedures belong in `docs/skills/` (not `.agents/skills/`).
+- New domain procedures belong in [Waiviogit/skills](https://github.com/Waiviogit/skills) (not `.agents/skills/`).
 - If you implement a feature and find no spec -> add a spec in `docs/spec/` or `docs/apps/<app>/spec/`.
 - If a spec exists and code diverges -> update the spec or mark divergence: `> **TODO: spec-code divergence**`.
 - If you regenerate reference docs from registries, treat the **code** as source of truth; generated output is illustrative.

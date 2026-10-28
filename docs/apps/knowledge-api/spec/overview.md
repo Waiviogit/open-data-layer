@@ -9,7 +9,6 @@ tags: [knowledge-api, overview]
 updated_at: 2026-06-11
 related:
   - docs/README.md
-  - docs/skills/knowledge-api-routing.md
   - docs/apps/knowledge-api/spec/search.md
 ---
 
@@ -20,12 +19,15 @@ MCP HTTP service for agent access to project documentation, skills, lessons, and
 ## Agent first visit
 
 1. MCP `initialize` — read server **instructions** (workflow + key paths).
-2. Resource `odl-knowledge://routing` or `get_file({ path: "docs/skills/knowledge-api-routing.md" })`.
-3. `resolve_doc({ topic: "<task>" })` → `get_file` on top path.
-4. `list_files({ type: "skill" })` — playbooks with `description` one-liners.
-5. Chain payloads: `get_object_create_playbook` → `get_object_type` / `get_update_schema` (not search).
+2. Install skills locally: `npx skills add https://github.com/Waiviogit/skills`. MCP is the fallback.
+3. Resource `odl-knowledge://routing` or `get_file({ path: "odl/knowledge-api-routing/SKILL.md" })`.
+4. `resolve_doc({ topic: "<task>" })` → `get_file` on top path.
+5. `list_files({ type: "skill" })` — playbooks with `description` one-liners.
+6. Chain payloads: `get_object_create_playbook` → `get_object_type` / `get_update_schema` (not search).
 
-Canonical detail: [Knowledge API routing skill](../../skills/knowledge-api-routing.md). Search detail: [hybrid search](search.md).
+Canonical detail: skill `knowledge-api-routing`. Search detail: [hybrid search](search.md).
+
+Legacy `docs/skills/...` paths still resolve via `get_file` for one release (`moved_from` in the response).
 
 ## Stack
 
@@ -70,14 +72,17 @@ Canonical detail: [Knowledge API routing skill](../../skills/knowledge-api-routi
 
 ## Indexing
 
-Sources: `docs/**/*.md` (except path segment `templates/`, e.g. `docs/standards/templates/`), `tasks/lessons.md`, `**/AGENTS.md`, plus virtual registry docs. Frontmatter `type` must be one of `spec`, `skill`, `overview`, `adr`, `lesson`, `agents`, `registry`. Invalid type fails `pnpm knowledge:reindex` and `pnpm check:agent-docs`.
+Sources: `docs/**/*.md` (except path segment `templates/`, e.g. `docs/standards/templates/`), `tasks/lessons.md`, `**/AGENTS.md`, virtual registry docs, and ODL skills from [Waiviogit/skills](https://github.com/Waiviogit/skills) (`odl/<name>/SKILL.md`). Frontmatter `type` must be one of `spec`, `skill`, `playbook`, `reference`, `overview`, `adr`, `lesson`, `agents`, `registry`. Invalid type fails `pnpm knowledge:reindex` and `pnpm check:agent-docs`.
+
+Docs reindex never deletes `odl/` rows. Skills are reindexed separately (`reindexSkills`) when the `master` commit sha changes.
 
 ### Production / staging (Docker)
 
-The image bundles a staged knowledge workspace (`docs/`, `tasks/lessons.md`, `AGENTS.md` files). On startup:
+The image bundles a staged knowledge workspace (`docs/`, `tasks/lessons.md`, `AGENTS.md` files) plus a skills snapshot (`vendor/skills` + `SKILLS_SHA`). On startup:
 
-1. If `knowledge_files` is **empty** — **sync reindex before HTTP listen** (cold start).
-2. If index is **warm** — **async reindex** after listen, throttled via Redis (`last-at` + lock, default min interval **5 min**).
+1. If `knowledge_files` is **empty** — **sync reindex before HTTP listen** (cold start): docs from the image, skills from the snapshot (no GitHub).
+2. If index is **warm** — **async docs reindex** after listen, throttled via Redis (`last-at` + lock, default min interval **5 min**). Skills refresh is a separate tick: GitHub head-sha with `If-None-Match`, download by sha only when it changed.
+3. GitHub failures keep the current skills index (no rollback to the snapshot).
 
 Env (see table below): `KNOWLEDGE_STARTUP_REINDEX=true`, `REDIS_URI`, `KNOWLEDGE_WORKSPACE_ROOT=/app` (set in Dockerfile).
 
@@ -88,6 +93,7 @@ Health: `GET /knowledge/health` → `{ status, index: { fileCount, ready } }`.
 `KNOWLEDGE_STARTUP_REINDEX` defaults to **false**. Run reindex manually after doc edits:
 
 ```bash
+pnpm sync:odl-skills
 pnpm knowledge:reindex
 pnpm nx serve knowledge-api
 ```
@@ -119,6 +125,12 @@ docker compose -p apps run --rm migrator pnpm exec tsx --tsconfig tsconfig.base.
 | `KNOWLEDGE_REINDEX_LOCK_TTL_SEC` | `600` | Distributed reindex lock TTL |
 | `KNOWLEDGE_WRITE_AGENT_ROUTES` | `false` | Write `docs/agent-routes.json` on startup reindex |
 | `KNOWLEDGE_ALLOW_REINDEX` | `false` | Enable MCP `reindex` tool (dev only) |
+| `KNOWLEDGE_SKILLS_REMOTE_ENABLED` | `false` | `true` in Docker — periodic skills refresh from GitHub |
+| `KNOWLEDGE_SKILLS_REPO` | `Waiviogit/skills` | GitHub `owner/name` |
+| `KNOWLEDGE_SKILLS_BRANCH` | `master` | Branch for head-sha checks |
+| `KNOWLEDGE_SKILLS_SNAPSHOT_DIR` | `<workspace>/vendor/skills` | Cold-start snapshot |
+| `KNOWLEDGE_SKILLS_REFRESH_INTERVAL_SEC` | `300` | Skills tick interval (minimum 60 seconds) |
+| `KNOWLEDGE_GITHUB_TOKEN` | — | Optional; never logged; raises GitHub API rate limit |
 
 ## Cursor MCP config
 
@@ -149,10 +161,10 @@ MCP skill discovery is covered by `apps/knowledge-api-e2e` (real HTTP, no transp
 
 | Scenario | Expected path |
 |----------|---------------|
-| Knowledge API routing | `docs/skills/knowledge-api-routing.md` |
-| Hive account signup | `docs/skills/hive-account-signup.md` |
-| Agent workspace (sidecar / clone) | `docs/skills/setup-workspace.md` |
-| Build a web project (default: waivio-pages-starter → GitHub Pages) | `docs/skills/build-tenant-site.md` |
+| Knowledge API routing | `odl/knowledge-api-routing/SKILL.md` |
+| Hive account signup | `odl/hive-account-signup/SKILL.md` |
+| Agent workspace (sidecar / clone) | `odl/setup-workspace/SKILL.md` |
+| Build a web project (default: waivio-pages-starter → GitHub Pages) | `odl/build-tenant-site/SKILL.md` |
 | Local dev environment | `docs/getting-started.md` |
 | App spec (chain-indexer) | `docs/apps/chain-indexer/spec/vote-ingestion.md` |
 

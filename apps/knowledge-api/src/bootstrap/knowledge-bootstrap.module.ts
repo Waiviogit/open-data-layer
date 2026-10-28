@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { RedisClientModule } from '@opden-data-layer/clients';
 import { DatabaseModule } from '../database/database.module';
 import { KnowledgeReindexBootstrapService } from './knowledge-reindex-bootstrap.service';
+import { SkillsRefreshService } from './skills-refresh.service';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { KnowledgeReindexBootstrapService } from './knowledge-reindex-bootstrap.
       inject: [ConfigService],
     }),
   ],
-  providers: [KnowledgeReindexBootstrapService],
-  exports: [KnowledgeReindexBootstrapService],
+  providers: [SkillsRefreshService, KnowledgeReindexBootstrapService],
+  exports: [KnowledgeReindexBootstrapService, SkillsRefreshService],
 })
 export class KnowledgeBootstrapModule {}

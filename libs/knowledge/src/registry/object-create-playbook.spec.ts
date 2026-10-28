@@ -7,7 +7,10 @@ const mockRepo = {
 describe('resolveObjectCreatePlaybookPath', () => {
   it('maps object type to docs path', () => {
     expect(resolveObjectCreatePlaybookPath('recipe')).toBe(
-      'docs/skills/object-create/recipe.md',
+      'odl/object-create/references/recipe.md',
+    );
+    expect(resolveObjectCreatePlaybookPath('service_offer')).toBe(
+      'odl/object-create/references/service-offer.md',
     );
   });
 });
@@ -28,7 +31,7 @@ describe('getObjectCreatePlaybook', () => {
   it('returns registry, required updates, and summaries for recipe', async () => {
     const body = '# Create recipe\n\n'.padEnd(100, 'x');
     mockRepo.findFileByPath.mockResolvedValue({
-      path: 'docs/skills/object-create/recipe.md',
+      path: 'odl/object-create/references/recipe.md',
       title: 'Create recipe object',
       description: 'Recipe playbook',
       body,
@@ -58,7 +61,7 @@ describe('getObjectCreatePlaybook', () => {
     const section = '\n## Section\n\ncontent line here\n';
     const body = '# Title\n\nintro\n' + section.repeat(800);
     mockRepo.findFileByPath.mockResolvedValue({
-      path: 'docs/skills/object-create/recipe.md',
+      path: 'odl/object-create/references/recipe.md',
       title: 'Create recipe object',
       description: null,
       body,
@@ -85,7 +88,7 @@ describe('getObjectCreatePlaybook', () => {
     expect(result!.playbook_missing).toBe(true);
     expect(result!.playbook).toBeNull();
     expect(result!.warnings).toContain(
-      'playbook file missing: docs/skills/object-create/dish.md',
+      'playbook file missing: odl/object-create/references/dish.md',
     );
   });
 });

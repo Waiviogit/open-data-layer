@@ -30,6 +30,21 @@ export const knowledgeApiConfigSchema = z.object({
     .default(600),
   KNOWLEDGE_WRITE_AGENT_ROUTES: boolEnv,
   KNOWLEDGE_WORKSPACE_ROOT: z.string().optional(),
+  KNOWLEDGE_SKILLS_REMOTE_ENABLED: boolEnv,
+  KNOWLEDGE_SKILLS_REPO: z
+    .string()
+    .regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/)
+    .optional()
+    .default('Waiviogit/skills'),
+  KNOWLEDGE_SKILLS_BRANCH: z.string().min(1).optional().default('master'),
+  KNOWLEDGE_SKILLS_SNAPSHOT_DIR: z.string().optional(),
+  KNOWLEDGE_SKILLS_REFRESH_INTERVAL_SEC: z.coerce
+    .number()
+    .int()
+    .min(60)
+    .optional()
+    .default(300),
+  KNOWLEDGE_GITHUB_TOKEN: z.string().optional(),
 });
 
 export type KnowledgeApiEnv = z.infer<typeof knowledgeApiConfigSchema>;

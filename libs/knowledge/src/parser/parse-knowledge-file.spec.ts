@@ -19,7 +19,7 @@ tags: [hive, tutorial]
 # Ignored heading
 
 Content.`;
-    const parsed = parseKnowledgeFile('docs/skills/hive-create-account.md', raw);
+    const parsed = parseKnowledgeFile('odl/hive-create-account/SKILL.md', raw);
     expect(parsed.frontmatter.title).toBe('Custom title');
     expect(parsed.frontmatter.type).toBe('skill');
     expect(parsed.frontmatter.tags).toEqual(['hive', 'tutorial']);
@@ -33,7 +33,7 @@ description: Recipe playbook.
 # Create recipe
 
 Body.`;
-    const parsed = parseKnowledgeFile('docs/skills/object-create/recipe.md', raw);
+    const parsed = parseKnowledgeFile('odl/object-create/references/recipe.md', raw);
     expect(parsed.frontmatter.type).toBe('playbook');
   });
 
@@ -53,8 +53,24 @@ description: Short agent summary.
 # Title
 
 Body line.`;
-    const parsed = parseKnowledgeFile('docs/skills/example.md', raw);
+    const parsed = parseKnowledgeFile('odl/example/SKILL.md', raw);
     expect(parsed.frontmatter.description).toBe('Short agent summary.');
+  });
+
+  it('folds Agent Skills description: >- block scalars', () => {
+    const raw = `---
+name: example
+description: >-
+  Guide a user through creating a new Hive blockchain account via public signup
+  providers. Use when the user needs a new Hive account.
+---
+# Hive account signup
+
+Body.`;
+    const parsed = parseKnowledgeFile('odl/example/SKILL.md', raw);
+    expect(parsed.frontmatter.description).toBe(
+      'Guide a user through creating a new Hive blockchain account via public signup providers. Use when the user needs a new Hive account.',
+    );
   });
 
   it('rejects unknown frontmatter type', () => {
@@ -75,7 +91,7 @@ Body.`;
 Guide the user through [signup](https://example.com).
 
 ## Steps`;
-    const parsed = parseKnowledgeFile('docs/skills/example.md', raw);
+    const parsed = parseKnowledgeFile('odl/example/SKILL.md', raw);
     expect(parsed.frontmatter.description).toBe('Guide the user through signup.');
   });
 });
